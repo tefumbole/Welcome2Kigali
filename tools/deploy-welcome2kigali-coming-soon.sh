@@ -9,6 +9,18 @@ DEST="${W2K_WEBROOT:-/var/www/welcome2kigali}"
 AVAILABLE="/etc/nginx/sites-available/welcome2kigali"
 ENABLED="/etc/nginx/sites-enabled/welcome2kigali"
 
+# Never write into Beyond / other live apps.
+case "$DEST" in
+  /var/www/beyondtechworld|/var/www/beyondtechworld/*|/var/www/alphabridge|/var/www/alphabridge/*)
+    echo "REFUSING: destination $DEST would overwrite another site."
+    exit 1
+    ;;
+esac
+if [[ "$ROOT" == /var/www/beyondtechworld* ]]; then
+  echo "REFUSING: deploy script invoked from Beyond tree."
+  exit 1
+fi
+
 echo "==> Install Coming Soon files to $DEST"
 mkdir -p "$DEST"
 install -m 644 "$ROOT/coming-soon/index.html" "$DEST/index.html"
@@ -39,5 +51,6 @@ fi
 
 echo ""
 echo "Coming Soon is at $DEST"
-echo "  http://welcome2kigali.net"
+echo "  http://welcome2kigali.net   (Host header only — does not steal Beyond)"
 echo "  https://welcome2kigali.net  (after DNS + SSL)"
+echo "  http://127.0.0.1:3008      (W2K-only port; Beyond stays on :3004)"

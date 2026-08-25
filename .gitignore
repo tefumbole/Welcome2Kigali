@@ -11,5 +11,6 @@ apps/api/uploads/
 .DS_Store
 *.log
 .vite/
+.mysql-data/
 myvps
 myvps.pub

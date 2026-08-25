@@ -16,6 +16,7 @@ services:
       MYSQL_PASSWORD: w2k_local
     volumes:
       - welcome2kigali_mysql_data:/var/lib/mysql
+      - ./tools/mysql/init-welcome2kigali.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
 volumes:

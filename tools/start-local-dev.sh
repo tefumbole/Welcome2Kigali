@@ -31,7 +31,7 @@ ensure_api_env_port() {
 
 echo "Checking Welcome 2 Kigali MySQL..."
 
-if command -v docker >/dev/null 2>&1; then
+if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
   echo "Docker found — starting isolated MySQL container on port 3308..."
   docker compose up -d
   for i in {1..30}; do
@@ -41,8 +41,12 @@ if command -v docker >/dev/null 2>&1; then
     fi
     sleep 1
   done
+fi
+
+if mysql_ready "$(grep '^DB_PORT=' apps/api/.env 2>/dev/null | cut -d= -f2 || echo 3306)"; then
+  echo "Using MySQL from apps/api/.env."
 elif mysql_ready 3306; then
-  echo "Using Homebrew MySQL on port 3306 (Docker not installed)."
+  echo "Using Homebrew MySQL on port 3306 (database welcome2kigali — not Beyond)."
   ensure_api_env_port 3306
 elif mysql_ready 3308; then
   echo "Using MySQL on port 3308."

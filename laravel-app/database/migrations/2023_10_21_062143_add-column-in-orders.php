@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddColumnInOrders3 extends Migration
+class AddColumnInOrders extends Migration
 {
     /**
      * Run the migrations.

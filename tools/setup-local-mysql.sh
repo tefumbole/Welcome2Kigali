@@ -5,18 +5,24 @@
 set -euo pipefail
 
 DB_NAME=welcome2kigali
+DB_API_NAME=welcome2kigali_api
 DB_USER=w2k
 DB_PASS=w2k_local
 
-echo "This script creates database '$DB_NAME' and user '$DB_USER' on local MySQL."
+echo "This script creates '$DB_NAME' (Laravel) and '$DB_API_NAME' (Node API) plus user '$DB_USER'."
 echo "You will be prompted for your MySQL root password."
 echo "Do not run this against Beyond's Hostinger or VPS database."
 echo ""
 
 mysql -u root -p <<SQL
 CREATE DATABASE IF NOT EXISTS ${DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS ${DB_API_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';
+CREATE USER IF NOT EXISTS '${DB_USER}'@'127.0.0.1' IDENTIFIED BY '${DB_PASS}';
 GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';
+GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'127.0.0.1';
+GRANT ALL PRIVILEGES ON ${DB_API_NAME}.* TO '${DB_USER}'@'localhost';
+GRANT ALL PRIVILEGES ON ${DB_API_NAME}.* TO '${DB_USER}'@'127.0.0.1';
 FLUSH PRIVILEGES;
 SQL
 
