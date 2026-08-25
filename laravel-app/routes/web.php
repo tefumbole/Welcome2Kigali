@@ -56,6 +56,8 @@ Route::post('/contracts/sign/{token}/decline', 'ContractSignController@decline')
 
 Route::get('/', 'BeyondController@home')->name('beyond.home');
 Route::get('/about', 'BeyondController@about')->name('beyond.about');
+Route::get('/menu', 'BeyondController@menu')->name('beyond.menu');
+Route::get('/api/public/menu', 'BeyondController@menuData');
 Route::get('/services', 'BeyondController@services')->name('beyond.services');
 Route::get('/projects', 'BeyondController@projects')->name('beyond.projects');
 Route::get('/gallery', 'BeyondController@gallery')->name('beyond.gallery');

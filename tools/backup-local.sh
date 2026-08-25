@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Backup local AlphaBridge database + uploads for the current ERP version.
+# Backup local Welcome 2 Kigali database + uploads for the current ERP version.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -11,9 +11,9 @@ COMMIT="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
 
 DB_HOST="${LOCAL_DB_HOST:-127.0.0.1}"
 DB_PORT="${LOCAL_DB_PORT:-$(grep '^DB_PORT=' apps/api/.env 2>/dev/null | cut -d= -f2 || echo 3306)}"
-DB_USER="${LOCAL_DB_USER:-abt}"
-DB_PASSWORD="${LOCAL_DB_PASSWORD:-alphabridge_local}"
-DB_NAME="${LOCAL_DB_NAME:-alphabridge}"
+DB_USER="${LOCAL_DB_USER:-w2k}"
+DB_PASSWORD="${LOCAL_DB_PASSWORD:-w2k_local}"
+DB_NAME="${LOCAL_DB_NAME:-welcome2kigali}"
 
 mkdir -p backups
 

@@ -76,6 +76,62 @@ class BeyondController extends Controller
         return redirect(url('/about') . '#contact', 301);
     }
 
+    public function menu()
+    {
+        return view('beyond.menu', ['groups' => $this->menuGroups()]);
+    }
+
+    public function menuData()
+    {
+        return response()->json(['groups' => $this->menuGroups()]);
+    }
+
+    private function menuGroups()
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('categories') || ! \Illuminate\Support\Facades\Schema::hasTable('products')) {
+            return [];
+        }
+
+        $categoryNames = [
+            'Coffee & Tea',
+            'Iced & Specialty',
+            'Tea & Hot Beverages',
+            'Fresh & Detox Juices',
+            'Smoothies',
+            'Food',
+        ];
+
+        $categories = \App\Category::where('is_active', 1)
+            ->whereIn('name', $categoryNames)
+            ->orderByRaw('FIELD(name, "'.implode('","', $categoryNames).'")')
+            ->get();
+
+        if ($categories->isEmpty()) {
+            $categories = \App\Category::where('is_active', 1)->orderBy('name')->get();
+        }
+
+        return $categories->map(function ($category) {
+            $items = \App\Product::where('category_id', $category->id)
+                ->where('is_active', 1)
+                ->orderBy('name')
+                ->get()
+                ->map(function ($product) {
+                    return [
+                        'id' => $product->id,
+                        'name' => $product->name,
+                        'details' => $product->product_details,
+                        'price' => (int) $product->price,
+                    ];
+                });
+
+            return [
+                'id' => $category->id,
+                'name' => $category->name,
+                'items' => $items,
+            ];
+        })->values();
+    }
+
     public function events()
     {
         return view('beyond.events', ['events' => []]);

@@ -14,17 +14,12 @@ class SiteMenu
     public static function landingItems()
     {
         return [
-            'home'         => 'Home',
-            'trainings'    => 'Training',
-            'events'       => 'Events',
-            'rentals'      => 'Rentals',
-            'register'     => 'Register Now',
-            'apply'        => 'Apply Now',
-            'permissions'  => 'Permissions',
-            'about'        => 'About Us',
-            'gallery'      => 'Gallery',
-            'shareholders' => 'Shareholders',
-            // Contact is merged into About Us (#contact) — not a separate nav item
+            'home'     => 'Home',
+            'about'    => 'About',
+            'events'   => 'Events',
+            'menu'     => 'Menu',
+            'register' => 'Register',
+            // Login is rendered separately in the header
         ];
     }
 

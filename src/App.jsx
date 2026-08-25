@@ -25,6 +25,7 @@ import RegistrationPage from '@/pages/RegistrationPage';
 import RegisterNowPage from '@/pages/RegisterNowPage';
 import ShareholdersPage from '@/pages/ShareholdersPage';
 import MenuSelectionPage from '@/pages/public/MenuSelectionPage';
+import CafeMenuPage from '@/pages/CafeMenuPage';
 
 // Share Imports
 import SharesPage from '@/pages/SharesPage';
@@ -268,12 +269,12 @@ const LayoutContextWrapper = () => {
 
 // Loading screen component
 const AppLoadingScreen = () => (
-  <div className="min-h-screen bg-gradient-to-br from-[#003D82] to-[#001f42] flex items-center justify-center">
+  <div className="min-h-screen bg-gradient-to-br from-[#0A0A0A] to-[#1a1a1a] flex items-center justify-center">
     <div className="text-center">
       <div className="mb-6">
         <Loader2 className="w-16 h-16 animate-spin text-[#D4AF37] mx-auto" />
       </div>
-      <h2 className="text-2xl font-bold text-white mb-2">Beyond Enterprise</h2>
+      <h2 className="text-2xl font-bold text-white mb-2">Welcome 2 Kigali</h2>
       <p className="text-gray-300">Initializing application...</p>
     </div>
   </div>
@@ -324,6 +325,7 @@ const AppContent = () => {
           <Route path="events" element={<EventsPage />} />
           <Route path="events/:eventId" element={<EventDetailsPage />} />
           <Route path="about" element={<AboutPage />} />
+          <Route path="menu" element={<CafeMenuPage />} />
 
           <Route path="apply-now" element={<ApplyNowPage />} />
           <Route path="job/:jobId/apply" element={<JobApplicationFormPage />} />

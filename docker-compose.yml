@@ -1,19 +1,22 @@
-# Local MySQL for offline development (no internet required after first pull)
+# Local MySQL for Welcome 2 Kigali only — isolated from Beyond / AlphaBridge.
+# Host port 3308 so this never shares Beyond's 3307 instance.
+# Start: docker compose up -d
+# Then point laravel-app/.env and apps/api/.env at this database and migrate locally.
 services:
   mysql:
     image: mysql:8.0
-    container_name: alphabridge-mysql
+    container_name: welcome2kigali-mysql
     restart: unless-stopped
     ports:
-      - "3307:3306"
+      - "3308:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: alphabridge_local
-      MYSQL_DATABASE: alphabridge
-      MYSQL_USER: abt
-      MYSQL_PASSWORD: alphabridge_local
+      MYSQL_ROOT_PASSWORD: w2k_local
+      MYSQL_DATABASE: welcome2kigali
+      MYSQL_USER: w2k
+      MYSQL_PASSWORD: w2k_local
     volumes:
-      - alphabridge_mysql_data:/var/lib/mysql
+      - welcome2kigali_mysql_data:/var/lib/mysql
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
 volumes:
-  alphabridge_mysql_data:
+  welcome2kigali_mysql_data:

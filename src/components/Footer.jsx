@@ -40,14 +40,14 @@ function Footer() {
   const quickLinks = [
     { name: 'Home', path: '/' },
     { name: 'About', path: '/about' },
-    { name: 'Services', path: '/services' },
-    { name: 'Projects', path: '/projects' },
-    { name: 'Contact', path: '/contact' },
-    { name: 'Shareholders Portal', path: '/shareholders' },
+    { name: 'Events', path: '/events' },
+    { name: 'Menu', path: '/menu' },
+    { name: 'Register', path: '/register-now' },
+    { name: 'Login', path: '/login' },
   ];
 
   return (
-    <footer className="bg-[#1a1a2e] text-white mt-auto">
+    <footer className="bg-[#0A0A0A] text-white mt-auto border-t border-[#C5A059]/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
@@ -65,8 +65,9 @@ function Footer() {
                 <span className="text-[#D4AF37]">{COMPANY_NAME_SHORT}</span>
               </div>
             </div>
+            <p className="text-[#C5A059] text-xs tracking-[0.35em] uppercase mb-2">Live. Connect. Thrive.</p>
             <p className="text-gray-300 text-sm mb-4">
-              {tf('tagline', 'Your Technology Bridge to Kigali. Professional IT, networking, security, and audio-visual solutions.')}
+              {tf('tagline', 'A destination. A community. An experience. Experience Rwanda. Belong in Kigali.')}
             </p>
           </div>
 
@@ -94,13 +95,15 @@ function Footer() {
                     className="w-full sm:w-auto bg-[#25D366] hover:bg-[#1EBE57]"
                  />
               </div>
+              {CONTACT_PHONE_DISPLAY ? (
               <a
-                href={`tel:${WHATSAPP_PHONE}`}
+                href={`tel:${WHATSAPP_PHONE || CONTACT_PHONE_DISPLAY.replace(/\s+/g, '')}`}
                 className="flex items-center space-x-3 text-gray-300 hover:text-[#D4AF37] transition-colors text-sm"
               >
                 <Phone className="w-5 h-5 flex-shrink-0" />
                 <span>{CONTACT_PHONE_DISPLAY}</span>
               </a>
+              ) : null}
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
                 className="flex items-center space-x-3 text-gray-300 hover:text-[#D4AF37] transition-colors text-sm"

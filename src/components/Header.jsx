@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Phone, Mail, Scan, ChevronDown, User, LogIn, LogOut, LayoutDashboard, ListTodo, Inbox } from 'lucide-react';
+import { Menu, X, Phone, Mail, ChevronDown, LogIn, LogOut, LayoutDashboard, ListTodo, Inbox } from 'lucide-react';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import BrandLogo from '@/components/BrandLogo';
 import { useAuth } from '@/context/AuthContext';
@@ -15,6 +15,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useSiteLabel } from '@/hooks/useSiteLabel';
+import { CONTACT_EMAIL, CONTACT_PHONE_DISPLAY } from '@/constants/branding';
 
 function Header() {
   const tl = useSiteLabel();
@@ -86,58 +87,45 @@ function Header() {
 
   return (
     <>
-      <header className="bg-[#003D82] sticky top-0 z-40 shadow-lg">
+      <header className="bg-[#0A0A0A] sticky top-0 z-40 shadow-lg border-b border-[#C5A059]/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2 bg-transparent">
               <BrandLogo
-                alt="Company Logo"
+                alt="Welcome 2 Kigali"
                 className="h-[40px] md:h-[50px] lg:h-[60px] w-auto object-contain hover:scale-105 hover:opacity-90 transition-all duration-300"
                 variant="onDark"
+                preferSystemLogo={false}
+                src="/branding/w2k-mark.png"
               />
             </Link>
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center space-x-4 xl:space-x-6">
               <NavLink to="/">{tl('menu', 'Home')}</NavLink>
-              <NavLink to="/trainings">{tl('menu', 'Training')}</NavLink>
+              <NavLink to="/about">{tl('menu', 'About')}</NavLink>
               <NavLink to="/events">{tl('menu', 'Events')}</NavLink>
-
-              <NavLink to="/register-now">{tl('menu', 'Register Now')}</NavLink>
-              <NavLink to="/apply-now" isSpecial={true}>{tl('menu', 'Apply Now')}</NavLink>
-
-              <NavLink to="/about">{tl('menu', 'About Us')}</NavLink>
-              <NavLink to="/shareholders">{tl('menu', 'Shareholders')}</NavLink>
-              <NavLink to="/contact">{tl('menu', 'Contact Us')}</NavLink>
-
-              <Link 
-                to="/qr-scanner" 
-                className={`text-white hover:text-[#D4AF37] transition-colors flex items-center gap-1 text-sm border border-white/20 px-2 py-1 rounded-md hover:border-[#D4AF37] ${isActive('/qr-scanner') ? 'border-[#D4AF37] text-[#D4AF37]' : ''}`}
-                title={tl('menu', 'QR Code Scanner')}
-              >
-                <Scan className="w-4 h-4" />
-                <span className="hidden xl:inline">{tl('menu', 'Scan QR')}</span>
-              </Link>
-
+              <NavLink to="/menu">{tl('menu', 'Menu')}</NavLink>
+              <NavLink to="/register-now">{tl('menu', 'Register')}</NavLink>
               <LanguageSwitcher variant="header" />
             </nav>
 
             {/* Desktop Contact Links & Login */}
             <div className="hidden lg:flex items-center space-x-4">
+              {CONTACT_PHONE_DISPLAY ? (
+                <a
+                  href={`tel:${CONTACT_PHONE_DISPLAY.replace(/\s+/g, '')}`}
+                  className="flex items-center space-x-2 text-white hover:text-[#D4AF37] transition-colors"
+                  title="Call Us"
+                >
+                  <Phone className="w-5 h-5" />
+                </a>
+              ) : null}
               <a
-                href="tel:+237675321739"
-                className="flex items-center space-x-2 text-white hover:text-[#D4AF37] transition-colors"
-                title="Call Us"
-              >
-                <Phone className="w-5 h-5" />
-              </a>
-              <a
-                href="https://mail.hostinger.com"
-                target="_blank"
-                rel="noopener noreferrer"
+                href={`mailto:${CONTACT_EMAIL}`}
                 className="flex items-center space-x-2 text-white hover:text-[#D4AF37] transition-colors mr-2"
-                title="Webmail Login"
+                title="Email"
               >
                 <Mail className="w-5 h-5" />
               </a>
@@ -219,32 +207,16 @@ function Header() {
 
           {/* Mobile Menu */}
           {mobileMenuOpen && (
-            <div className="lg:hidden pb-4 animate-slide-in-from-top bg-[#003D82] absolute left-0 right-0 top-20 px-4 shadow-xl border-t border-gray-800 z-50 overflow-y-auto max-h-[calc(100vh-5rem)]">
+            <div className="lg:hidden pb-4 animate-slide-in-from-top bg-[#0A0A0A] absolute left-0 right-0 top-20 px-4 shadow-xl border-t border-[#C5A059]/30 z-50 overflow-y-auto max-h-[calc(100vh-5rem)]">
               <nav className="flex flex-col space-y-4 pt-4 pb-10">
                 <div className="flex justify-end pb-2 border-b border-gray-700">
                   <LanguageSwitcher variant="header" />
                 </div>
                 <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#D4AF37] text-lg font-medium">{tl('menu', 'Home')}</Link>
-                <Link to="/trainings" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#D4AF37] text-lg font-medium">{tl('menu', 'Training')}</Link>
+                <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#D4AF37] text-lg font-medium">{tl('menu', 'About')}</Link>
                 <Link to="/events" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#D4AF37] text-lg font-medium">{tl('menu', 'Events')}</Link>
-                
-                <Link to="/register-now" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#D4AF37] text-lg font-medium border-t border-gray-700 pt-2">{tl('menu', 'Register Now')}</Link>
-                
-                <Link to="/apply-now" onClick={() => setMobileMenuOpen(false)} className="text-[#D4AF37] font-bold text-lg flex items-center gap-2 bg-white/10 p-2 rounded-md">
-                  {tl('menu', 'Apply Now')}
-                </Link>
-
-                <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#D4AF37] text-lg font-medium">{tl('menu', 'About Us')}</Link>
-                <Link to="/shareholders" onClick={() => setMobileMenuOpen(false)} className="text-[#D4AF37] hover:text-white text-lg font-medium">{tl('menu', 'Shareholders')}</Link>
-                <Link to="/contact" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#D4AF37] text-lg font-medium">{tl('menu', 'Contact Us')}</Link>
-
-                <Link 
-                  to="/qr-scanner" 
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-2 text-lg font-medium text-white hover:text-[#D4AF37] pt-2 border-t border-gray-700"
-                >
-                  <Scan className="w-5 h-5" /> {tl('menu', 'Scan QR Code')}
-                </Link>
+                <Link to="/menu" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#D4AF37] text-lg font-medium">{tl('menu', 'Menu')}</Link>
+                <Link to="/register-now" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-[#D4AF37] text-lg font-medium">{tl('menu', 'Register')}</Link>
 
                 <div className="pt-4 border-t border-gray-700 space-y-3">
                   {user && otpVerified ? (
@@ -313,21 +285,21 @@ function Header() {
                 </div>
 
                 <div className="pt-2 space-y-3 border-t border-gray-700 mt-2">
+                  {CONTACT_PHONE_DISPLAY ? (
+                    <a
+                      href={`tel:${CONTACT_PHONE_DISPLAY.replace(/\s+/g, '')}`}
+                      className="flex items-center space-x-2 text-white hover:text-[#D4AF37] transition-colors"
+                    >
+                      <Phone className="w-5 h-5" />
+                      <span>{CONTACT_PHONE_DISPLAY}</span>
+                    </a>
+                  ) : null}
                   <a
-                    href="tel:+237675321739"
-                    className="flex items-center space-x-2 text-white hover:text-[#D4AF37] transition-colors"
-                  >
-                    <Phone className="w-5 h-5" />
-                    <span>+237 675 321 739</span>
-                  </a>
-                  <a
-                    href="https://mail.hostinger.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={`mailto:${CONTACT_EMAIL}`}
                     className="flex items-center space-x-2 text-white hover:text-[#D4AF37] transition-colors mt-2"
                   >
                     <Mail className="w-5 h-5" />
-                    <span>{tl('menu', 'Webmail Login')}</span>
+                    <span>{CONTACT_EMAIL}</span>
                   </a>
                 </div>
               </nav>

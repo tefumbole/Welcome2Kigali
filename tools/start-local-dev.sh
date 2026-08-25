@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Start AlphaBridge locally: MySQL (Homebrew or Docker) + API + Vite frontend
+# Start Welcome 2 Kigali locally: isolated MySQL (Docker 3308) + API + Vite frontend
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -17,7 +17,7 @@ fi
 
 mysql_ready() {
   local port="$1"
-  mysql -u abt -palphabridge_local -h 127.0.0.1 -P "$port" -e "SELECT 1" >/dev/null 2>&1
+  mysql -u w2k -pw2k_local -h 127.0.0.1 -P "$port" -e "SELECT 1" >/dev/null 2>&1
 }
 
 ensure_api_env_port() {
@@ -29,14 +29,14 @@ ensure_api_env_port() {
   fi
 }
 
-echo "Checking MySQL..."
+echo "Checking Welcome 2 Kigali MySQL..."
 
 if command -v docker >/dev/null 2>&1; then
-  echo "Docker found — starting MySQL container on port 3307..."
+  echo "Docker found — starting isolated MySQL container on port 3308..."
   docker compose up -d
   for i in {1..30}; do
-    if docker compose exec -T mysql mysqladmin ping -h localhost -u root -palphabridge_local --silent 2>/dev/null; then
-      ensure_api_env_port 3307
+    if docker compose exec -T mysql mysqladmin ping -h localhost -u root -pw2k_local --silent 2>/dev/null; then
+      ensure_api_env_port 3308
       break
     fi
     sleep 1
@@ -44,18 +44,19 @@ if command -v docker >/dev/null 2>&1; then
 elif mysql_ready 3306; then
   echo "Using Homebrew MySQL on port 3306 (Docker not installed)."
   ensure_api_env_port 3306
-elif mysql_ready 3307; then
-  echo "Using MySQL on port 3307."
-  ensure_api_env_port 3307
+elif mysql_ready 3308; then
+  echo "Using MySQL on port 3308."
+  ensure_api_env_port 3308
 else
   echo ""
   echo "MySQL is not running. Choose one option:"
   echo ""
-  echo "  A) Homebrew (recommended on Mac without Docker):"
+  echo "  A) Docker (recommended — isolated from Beyond):"
+  echo "     docker compose up -d"
+  echo ""
+  echo "  B) Homebrew:"
   echo "     bash tools/setup-local-mysql.sh"
   echo "     brew services start mysql"
-  echo ""
-  echo "  B) Install Docker Desktop, then run: npm run dev:local"
   echo ""
   exit 1
 fi
@@ -70,10 +71,10 @@ npm run db:migrate
 
 echo ""
 echo "============================================"
-echo "  AlphaBridge local dev"
+echo "  Welcome 2 Kigali local dev"
 echo "  Frontend: http://localhost:3000"
 echo "  API:      http://localhost:3003"
-echo "  Login:    admin@alpha-bridge.net / ChangeMe@123456"
+echo "  Login:    admin@welcome2kigali.local / ChangeMe@123456"
 echo "  OTP:      skipped locally (VITE_DEV_SKIP_OTP=true)"
 echo "============================================"
 echo ""

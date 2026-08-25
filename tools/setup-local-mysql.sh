@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
-# Creates local MySQL database for offline AlphaBridge development.
-# Requires: brew install mysql && brew services start mysql
+# Creates a local MySQL database for Welcome 2 Kigali only (not Beyond).
+# Prefer: docker compose up -d  (port 3308, database welcome2kigali)
+# Homebrew alternative: brew install mysql && brew services start mysql
 set -euo pipefail
 
-DB_NAME=alphabridge
-DB_USER=abt
-DB_PASS=alphabridge_local
+DB_NAME=welcome2kigali
+DB_USER=w2k
+DB_PASS=w2k_local
 
 echo "This script creates database '$DB_NAME' and user '$DB_USER' on local MySQL."
 echo "You will be prompted for your MySQL root password."
+echo "Do not run this against Beyond's Hostinger or VPS database."
 echo ""
 
 mysql -u root -p <<SQL
@@ -19,12 +21,12 @@ FLUSH PRIVILEGES;
 SQL
 
 echo ""
-echo "Local database ready. Next steps:"
-echo "  cp apps/api/.env.local.example apps/api/.env   # if not already set"
+echo "Local Welcome 2 Kigali database ready. Next steps:"
+echo "  cp apps/api/.env.local.example apps/api/.env"
+echo "  cp laravel-app/.env.example laravel-app/.env   # then php artisan key:generate"
 echo "  npm run db:migrate"
-echo "  npm run export:supabase   # once, while online — saves your Supabase data"
-echo "  npm run db:import"
+echo "  cd laravel-app && php artisan migrate && php artisan db:seed"
 echo "  npm run dev:api    # terminal 1"
 echo "  npm run dev        # terminal 2"
 echo ""
-echo "Login: admin@alpha-bridge.net / ChangeMe@123456"
+echo "Login: admin@welcome2kigali.local / ChangeMe@123456"

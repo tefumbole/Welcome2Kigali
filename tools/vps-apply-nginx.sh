@@ -25,6 +25,11 @@ else
   install -m 644 "$NGINX_SRC/beyondtechworld-http.conf" "$AVAILABLE/beyondtechworld"
 fi
 install -m 644 "$NGINX_SRC/okusoma.conf" "$AVAILABLE/okusoma.com"
+if [[ -f /etc/letsencrypt/live/welcome2kigali.net/fullchain.pem ]]; then
+  install -m 644 "$NGINX_SRC/welcome2kigali.conf" "$AVAILABLE/welcome2kigali"
+else
+  install -m 644 "$NGINX_SRC/welcome2kigali-http.conf" "$AVAILABLE/welcome2kigali"
+fi
 
 echo "==> Enable sites (symlinks)"
 ln -sf "$AVAILABLE/000-default-reject" "$ENABLED/000-default-reject"
@@ -33,6 +38,7 @@ ln -sf "$AVAILABLE/beyondtechworld" "$ENABLED/beyondtechworld"
 ln -sf "$AVAILABLE/manukeza" "$ENABLED/manukeza"
 ln -sf "$AVAILABLE/newvision" "$ENABLED/newvision"
 ln -sf "$AVAILABLE/okusoma.com" "$ENABLED/okusoma.com"
+ln -sf "$AVAILABLE/welcome2kigali" "$ENABLED/welcome2kigali"
 
 echo "==> Remove stray backups from sites-enabled"
 find "$ENABLED" -maxdepth 1 -type f -delete 2>/dev/null || true

@@ -1,128 +1,119 @@
 @extends('beyond.layout')
 
-@section('title', 'IT Consultancy & AV Solutions')
-@section('meta_description', 'Beyond Enterprise — your technology bridge to Kigali. IT consultancy, networking, CCTV security, and professional audio-visual solutions in Rwanda.')
+@section('title', 'Expats Club')
+@section('meta_description', 'Welcome 2 Kigali Expats Club — a destination, a community, an experience. Live. Connect. Thrive. in Kigali, Rwanda.')
 
 @section('content')
 
 @php
-    $services = [
-        ['icon' => 'network', 'title' => 'IT Consultancy', 'desc' => 'Enterprise-grade IT solutions and infrastructure planning'],
-        ['icon' => 'share-2', 'title' => 'Networks', 'desc' => 'Professional networking design, deployment, and management'],
-        ['icon' => 'shield', 'title' => 'CCTV & Security', 'desc' => 'Advanced surveillance and security systems'],
-        ['icon' => 'mic', 'title' => 'Sound & Audio', 'desc' => 'Professional audio engineering for events and venues'],
-        ['icon' => 'monitor', 'title' => 'Screens & Lighting', 'desc' => 'LED screens and professional lighting solutions'],
-        ['icon' => 'cable', 'title' => 'Fiber Optics', 'desc' => 'High-speed fiber connectivity and splicing services'],
+    $pillars = [
+        ['icon' => 'music', 'title' => 'Live', 'desc' => 'Entertainment, dining, music, and the energy of urban Kigali.'],
+        ['icon' => 'users', 'title' => 'Connect', 'desc' => 'Networking, community, and friendships across the expat world.'],
+        ['icon' => 'trending-up', 'title' => 'Thrive', 'desc' => 'Wellness, lifestyle, opportunity, and elevated experiences.'],
     ];
-    $whyUs = [
-        ['icon' => 'check-circle-2', 'title' => 'Engineering Standards', 'desc' => 'Built with precision and best practices'],
-        ['icon' => 'shield', 'title' => 'Reliability', 'desc' => 'Dependable systems you can trust'],
-        ['icon' => 'zap', 'title' => 'Fast Support', 'desc' => 'Quick response times and expert assistance'],
-        ['icon' => 'trending-up', 'title' => 'Scalable Solutions', 'desc' => 'Systems that grow with your needs'],
+    $spaces = [
+        ['icon' => 'utensils', 'title' => 'Restaurant', 'desc' => 'Fine dining and everyday tables with Rwandan hospitality.'],
+        ['icon' => 'wine', 'title' => 'Lounge', 'desc' => 'A refined space to meet, linger, and belong.'],
+        ['icon' => 'calendar', 'title' => 'Event Space', 'desc' => 'Club nights, gatherings, and private celebrations.'],
+        ['icon' => 'coffee', 'title' => 'Cafe', 'desc' => 'Crafted coffee, tea, juices, and our signature complimentary bite.'],
     ];
-    $industries = [
-        ['icon' => 'building-2', 'name' => 'Companies'],
-        ['icon' => 'church', 'name' => 'Churches'],
-        ['icon' => 'calendar', 'name' => 'Events'],
-        ['icon' => 'school', 'name' => 'Schools'],
-        ['icon' => 'heart', 'name' => 'NGOs'],
-        ['icon' => 'home', 'name' => 'Homes'],
+    $values = [
+        ['icon' => 'heart', 'title' => 'Hospitality'],
+        ['icon' => 'building-2', 'title' => 'Urban Culture'],
+        ['icon' => 'gem', 'title' => 'Premium Lifestyle'],
+        ['icon' => 'globe', 'title' => 'International Community'],
+        ['icon' => 'map-pin', 'title' => 'Experiential Destination'],
     ];
-    $testimonials = [
-        ['name' => 'Client A', 'role' => 'CEO, Tech Company', 'content' => 'Beyond Enterprise delivered exceptional networking solutions for our office. Professional and reliable.'],
-        ['name' => 'Client B', 'role' => 'Event Organizer', 'content' => 'Their sound and lighting setup made our event unforgettable. Highly recommended!'],
-        ['name' => 'Client C', 'role' => 'School Administrator', 'content' => 'The CCTV system they installed has greatly improved our campus security.'],
-    ];
+    $contactEmail = \App\Support\SiteContent::text('contact.email', 'hello@welcome2kigali.com');
 @endphp
 
 {{-- Hero --}}
-<section class="relative min-h-screen flex flex-col items-center justify-center overflow-hidden py-20 md:py-0">
-    <div class="absolute inset-0 bg-cover bg-center bg-no-repeat" style="background-image:url('{{ \App\Support\SiteContent::image('home.hero_image', '/branding/beyond-hero.png') }}');">
-        <div class="absolute inset-0 bg-black/15"></div>
+<section class="relative min-h-screen flex flex-col items-center justify-center overflow-hidden py-24 bg-black">
+    <div class="absolute inset-0 bg-black">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(197,160,89,0.18),_transparent_60%)]"></div>
     </div>
 
-    @for ($i = 0; $i < 6; $i++)
-        <div class="absolute w-2 h-2 rounded-full bg-brand-gold/40 floaty"
-             style="left: {{ 10 + $i * 15 }}%; top: {{ 20 + ($i % 3) * 25 }}%; animation-delay: {{ $i * 0.4 }}s;"></div>
-    @endfor
+    <div class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full">
+        <img src="{{ \App\Support\SiteBrand::logoUrl($general_setting ?? null) }}"
+             alt="{{ \App\Support\SiteBrand::siteTitle($general_setting ?? null) }}"
+             class="mx-auto h-48 md:h-72 w-auto object-contain drop-shadow-2xl mb-8">
 
-    <div class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full mt-20 md:mt-0">
-        <div class="mb-8 flex flex-col items-center">
-            <img src="{{ \App\Support\SiteBrand::logoUrl($general_setting ?? null) }}" alt="{{ \App\Support\SiteBrand::siteTitle($general_setting ?? null) }}" class="h-20 md:h-24 w-auto object-contain mb-6 drop-shadow-2xl">
-            <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 drop-shadow-2xl tracking-tight">
-                {!! \App\Support\SiteContent::html('home.hero_title', 'Your Technology Bridge to <span class="text-brand-gold">Kigali</span>') !!}
-            </h1>
-            <p class="text-xl md:text-2xl text-white/90 font-light max-w-3xl mx-auto drop-shadow-md">
-                {{ \App\Support\SiteContent::text('home.hero_subtitle', 'Professional IT Consultancy, Enterprise Networking, and Audio-Visual Production, Cloud, AI and Cyber') }}
-            </p>
-        </div>
-        <div class="w-full flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 flex-wrap">
-            <a href="{{ url('/trainings') }}"
-               class="bg-brand-gold hover:bg-[#b5952f] text-brand-blue h-14 px-8 text-lg font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)] rounded-full hover:scale-105 transition-transform inline-flex items-center justify-center">
-                {{ \App\Support\SiteContent::text('home.cta_primary', 'Get a Free Quotation') }} <i data-lucide="arrow-right" class="ml-2 w-5 h-5"></i>
+        <p class="text-brand-gold text-xs md:text-sm tracking-[0.45em] uppercase mb-4">Expats Club · Experience Rwanda</p>
+        <h1 class="font-serif text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-4 tracking-wide">
+            {!! \App\Support\SiteContent::html('home.hero_title', 'A destination. A community. An <span class="text-brand-gold">experience</span>.') !!}
+        </h1>
+        <p class="text-lg md:text-xl text-white/80 font-light max-w-3xl mx-auto">
+            {{ \App\Support\SiteContent::text('home.hero_subtitle', 'Welcome 2 Kigali Expats Club — live, connect, and thrive in Rwanda.') }}
+        </p>
+        <p class="mt-6 text-white tracking-[0.35em] uppercase text-sm">Live. Connect. Thrive.</p>
+
+        <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 flex-wrap">
+            <a href="{{ url('/register-now') }}"
+               class="bg-brand-gold hover:bg-[#b08d45] text-black h-14 px-8 text-lg font-bold rounded-full hover:scale-105 transition-transform inline-flex items-center justify-center">
+                {{ \App\Support\SiteContent::text('home.cta_primary', 'Join the Club') }} <i data-lucide="arrow-right" class="ml-2 w-5 h-5"></i>
             </a>
-            <a href="{{ url('/rentals') }}"
-               class="h-14 px-8 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl bg-white/15 hover:bg-white/25 border border-brand-gold/80 backdrop-blur-sm text-brand-gold inline-flex items-center justify-center gap-2 transition-all">
-                <i data-lucide="package" class="w-5 h-5"></i> Rentals
+            <a href="{{ url('/events') }}"
+               class="h-14 px-8 text-lg font-bold rounded-full border border-brand-gold/80 text-brand-gold hover:bg-white/10 inline-flex items-center justify-center gap-2">
+                <i data-lucide="calendar" class="w-5 h-5"></i> Events
             </a>
-            <a href="https://wa.me/237675321739" target="_blank" rel="noopener"
-               class="h-14 px-8 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl bg-brand-light/40 hover:bg-brand-light/60 border border-white/30 backdrop-blur-sm text-white inline-flex items-center justify-center gap-2 transition-all">
-                <i data-lucide="message-circle" class="w-5 h-5"></i> Chat on WhatsApp
+            <a href="{{ url('/menu') }}"
+               class="h-14 px-8 text-lg font-bold rounded-full border border-white/30 text-white hover:bg-white/10 inline-flex items-center justify-center gap-2">
+                <i data-lucide="coffee" class="w-5 h-5"></i> Cafe Menu
             </a>
         </div>
     </div>
 </section>
 
-{{-- Services --}}
-<section class="py-16 bg-white">
+{{-- Live / Connect / Thrive --}}
+<section class="py-20 bg-black text-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-            <h2 class="text-4xl font-bold text-brand-blue mb-4">{{ \App\Support\SiteContent::text('home.services_heading', 'Our Services') }}</h2>
-            <p class="text-xl text-gray-600">{{ \App\Support\SiteContent::text('home.services_subheading', 'Comprehensive technology solutions for your needs') }}</p>
+        <div class="text-center mb-14">
+            <h2 class="font-serif text-4xl font-bold text-brand-gold mb-3">{{ \App\Support\SiteContent::text('home.why_heading', 'Live. Connect. Thrive.') }}</h2>
+            <p class="text-lg text-gray-300">{{ \App\Support\SiteContent::text('home.why_subheading', 'The pillars of the Welcome 2 Kigali experience') }}</p>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            @foreach ($services as $s)
-                <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 p-8 border border-gray-100">
-                    <div class="text-brand-light mb-4"><i data-lucide="{{ $s['icon'] }}" class="w-12 h-12"></i></div>
-                    <h3 class="text-2xl font-semibold text-brand-blue mb-3">{{ $s['title'] }}</h3>
-                    <p class="text-gray-700">{{ $s['desc'] }}</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            @foreach ($pillars as $p)
+                <div class="border border-brand-gold/30 rounded-xl p-8 text-center bg-white/5 hover:border-brand-gold transition">
+                    <div class="text-brand-gold mb-4 flex justify-center"><i data-lucide="{{ $p['icon'] }}" class="w-12 h-12"></i></div>
+                    <h3 class="font-serif text-2xl tracking-widest uppercase text-white mb-3">{{ $p['title'] }}</h3>
+                    <p class="text-gray-300">{{ $p['desc'] }}</p>
                 </div>
             @endforeach
         </div>
     </div>
 </section>
 
-{{-- Why Beyond --}}
-<section class="py-16 bg-brand-blue">
+{{-- Spaces --}}
+<section class="py-20 bg-brand-cream">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
-            <h2 class="text-4xl font-bold text-white mb-4">{{ \App\Support\SiteContent::text('home.why_heading', 'Why Beyond Enterprise?') }}</h2>
-            <p class="text-xl text-gray-300">{{ \App\Support\SiteContent::text('home.why_subheading', 'Excellence in every solution we deliver') }}</p>
+            <h2 class="font-serif text-4xl font-bold text-black mb-4">{{ \App\Support\SiteContent::text('home.services_heading', 'Restaurant. Lounge. Events. Cafe.') }}</h2>
+            <p class="text-xl text-gray-600">{{ \App\Support\SiteContent::text('home.services_subheading', 'A premium hospitality destination for the international community in Kigali') }}</p>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            @foreach ($whyUs as $f)
-                <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 text-center hover:bg-white/20 transition-all duration-300 border border-white/5">
-                    <div class="text-brand-gold mb-4 flex justify-center"><i data-lucide="{{ $f['icon'] }}" class="w-10 h-10"></i></div>
-                    <h3 class="text-xl font-semibold text-white mb-2">{{ $f['title'] }}</h3>
-                    <p class="text-gray-300 text-sm">{{ $f['desc'] }}</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            @foreach ($spaces as $s)
+                <div class="bg-white rounded-xl p-8 border border-brand-gold/20 shadow-sm hover:shadow-lg transition">
+                    <div class="text-brand-gold mb-4"><i data-lucide="{{ $s['icon'] }}" class="w-10 h-10"></i></div>
+                    <h3 class="text-xl font-semibold text-black mb-2">{{ $s['title'] }}</h3>
+                    <p class="text-gray-600 text-sm">{{ $s['desc'] }}</p>
                 </div>
             @endforeach
         </div>
     </div>
 </section>
 
-{{-- Industries --}}
+{{-- Values --}}
 <section class="py-16 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
-            <h2 class="text-4xl font-bold text-brand-blue mb-4">{{ \App\Support\SiteContent::text('home.industries_heading', 'Industries We Serve') }}</h2>
-            <p class="text-xl text-gray-600">{{ \App\Support\SiteContent::text('home.industries_subheading', 'Trusted by diverse organizations across Africa and the World') }}</p>
+            <h2 class="font-serif text-4xl font-bold text-black mb-4">{{ \App\Support\SiteContent::text('home.industries_heading', 'What we stand for') }}</h2>
+            <p class="text-xl text-gray-600">{{ \App\Support\SiteContent::text('home.industries_subheading', 'Hospitality, urban culture, and a place to belong') }}</p>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            @foreach ($industries as $ind)
-                <div class="bg-white rounded-xl shadow-md p-6 text-center border border-gray-100 hover:shadow-lg transition-shadow">
-                    <div class="text-brand-light mb-3 flex justify-center"><i data-lucide="{{ $ind['icon'] }}" class="w-10 h-10"></i></div>
-                    <h3 class="text-lg font-semibold text-brand-blue">{{ $ind['name'] }}</h3>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+            @foreach ($values as $v)
+                <div class="text-center p-4">
+                    <div class="text-brand-gold mb-3 flex justify-center"><i data-lucide="{{ $v['icon'] }}" class="w-9 h-9"></i></div>
+                    <h3 class="text-sm font-semibold uppercase tracking-wide text-black">{{ $v['title'] }}</h3>
                 </div>
             @endforeach
         </div>
@@ -131,41 +122,41 @@
 
 {{-- Events --}}
 @if(!empty($homeEvents) && $homeEvents->isNotEmpty())
-<section class="py-16 bg-white border-t border-gray-100">
+<section class="py-16 bg-brand-cream border-t border-brand-gold/20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
-            <h2 class="text-4xl font-bold text-brand-blue mb-4">Upcoming Events</h2>
-            <p class="text-xl text-gray-600">Highlights and events from Beyond Enterprise</p>
+            <h2 class="font-serif text-4xl font-bold text-black mb-4">Upcoming Events</h2>
+            <p class="text-xl text-gray-600">Gatherings at the club</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             @foreach($homeEvents as $ev)
-                <a href="{{ url('/events/' . $ev['slug']) }}" class="group block bg-white rounded-xl border border-gray-200 hover:border-brand-blue hover:shadow-xl transition overflow-hidden">
+                <a href="{{ url('/events/' . $ev['slug']) }}" class="group block bg-white rounded-xl border border-gray-200 hover:border-brand-gold hover:shadow-xl transition overflow-hidden">
                     <div class="relative h-44 bg-gray-200 overflow-hidden">
                         @if(!empty($ev['flyer']))
                             <img src="{{ $ev['flyer'] }}" alt="{{ $ev['title'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                         @else
-                            <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-blue to-brand-light">
-                                <i data-lucide="calendar" class="w-12 h-12 text-white opacity-60"></i>
+                            <div class="w-full h-full flex items-center justify-center bg-black">
+                                <i data-lucide="calendar" class="w-12 h-12 text-brand-gold opacity-60"></i>
                             </div>
                         @endif
                         @if(!empty($ev['start']))
-                            <span class="absolute top-3 right-3 bg-brand-gold text-brand-blue text-xs font-bold px-3 py-1 rounded-full">{{ $ev['start']->format('M d') }}</span>
+                            <span class="absolute top-3 right-3 bg-brand-gold text-black text-xs font-bold px-3 py-1 rounded-full">{{ $ev['start']->format('M d') }}</span>
                         @endif
                     </div>
                     <div class="p-5">
-                        <h3 class="text-lg font-bold text-gray-900 group-hover:text-brand-blue line-clamp-2 mb-2">{{ $ev['title'] }}</h3>
+                        <h3 class="text-lg font-bold text-gray-900 group-hover:text-brand-gold line-clamp-2 mb-2">{{ $ev['title'] }}</h3>
                         @if(!empty($ev['start']))
-                            <p class="text-sm text-gray-600 mb-1"><i data-lucide="calendar" class="w-4 h-4 inline text-brand-blue"></i> {{ $ev['start']->format('D, M j, Y g:i A') }}</p>
+                            <p class="text-sm text-gray-600 mb-1"><i data-lucide="calendar" class="w-4 h-4 inline text-brand-gold"></i> {{ $ev['start']->format('D, M j, Y g:i A') }}</p>
                         @endif
                         @if(!empty($ev['venue']))
-                            <p class="text-sm text-gray-600 line-clamp-1"><i data-lucide="map-pin" class="w-4 h-4 inline text-brand-blue"></i> {{ $ev['venue'] }}</p>
+                            <p class="text-sm text-gray-600 line-clamp-1"><i data-lucide="map-pin" class="w-4 h-4 inline text-brand-gold"></i> {{ $ev['venue'] }}</p>
                         @endif
                     </div>
                 </a>
             @endforeach
         </div>
         <div class="text-center mt-10">
-            <a href="{{ url('/events') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-brand-blue text-white font-semibold hover:bg-brand-dark transition">
+            <a href="{{ url('/events') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-black text-brand-gold font-semibold hover:bg-gray-900 transition">
                 View all events <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </a>
         </div>
@@ -173,39 +164,31 @@
 </section>
 @endif
 
-{{-- Testimonials --}}
-<section class="py-16 bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-            <h2 class="text-4xl font-bold text-brand-blue mb-4">{{ \App\Support\SiteContent::text('home.testimonials_heading', 'What Our Clients Say') }}</h2>
-            <p class="text-xl text-gray-600">{{ \App\Support\SiteContent::text('home.testimonials_subheading', 'Trusted by businesses and organizations across Kigali') }}</p>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            @foreach ($testimonials as $t)
-                <div class="bg-white rounded-xl shadow-md p-8 border border-gray-200">
-                    <p class="text-gray-700 italic mb-6">"{{ $t['content'] }}"</p>
-                    <div>
-                        <p class="font-semibold text-brand-blue">{{ $t['name'] }}</p>
-                        <p class="text-sm text-gray-500">{{ $t['role'] }}</p>
-                    </div>
-                </div>
-            @endforeach
-        </div>
+{{-- Cafe teaser --}}
+<section class="py-16 bg-black text-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="font-serif text-4xl font-bold text-brand-gold mb-4">{{ \App\Support\SiteContent::text('home.testimonials_heading', 'Cafe & Restaurant') }}</h2>
+        <p class="text-xl text-gray-300 mb-4">{{ \App\Support\SiteContent::text('home.testimonials_subheading', 'Crafted beverages and food — dine in or take away') }}</p>
+        <p class="text-gray-400 mb-8">Every beverage is served with our signature complimentary bite. Food dishes are added from the kitchen as products in the club menu.</p>
+        <a href="{{ url('/menu') }}"
+           class="inline-flex items-center gap-2 bg-brand-gold text-black font-bold text-lg px-8 py-4 rounded-full hover:scale-105 transition">
+            <i data-lucide="coffee" class="w-5 h-5"></i> View the menu
+        </a>
     </div>
 </section>
 
 {{-- CTA --}}
-<section class="py-16 bg-gradient-to-r from-brand-blue via-brand-light to-brand-blue">
+<section class="py-16 bg-brand-gold">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-4xl font-bold text-white mb-6">{{ \App\Support\SiteContent::text('home.cta_heading', 'Ready to Get Started?') }}</h2>
-        <p class="text-xl text-gray-200 mb-8">{{ \App\Support\SiteContent::text('home.cta_text', 'Contact us today for a consultation and let us bridge your technology needs.') }}</p>
+        <h2 class="font-serif text-4xl font-bold text-black mb-6">{{ \App\Support\SiteContent::text('home.cta_heading', 'Experience Rwanda. Belong in Kigali.') }}</h2>
+        <p class="text-xl text-black/80 mb-8">{{ \App\Support\SiteContent::text('home.cta_text', 'Register for membership, join our events, or visit us at the club.') }}</p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="https://wa.me/237675321739" target="_blank" rel="noopener"
-               class="px-8 py-4 text-lg rounded-lg shadow-xl hover:shadow-2xl bg-[#25D366] hover:bg-[#1EBE57] text-white font-semibold inline-flex items-center justify-center gap-2">
-                <i data-lucide="message-circle" class="w-5 h-5"></i> Chat on WhatsApp
+            <a href="{{ url('/register-now') }}"
+               class="px-8 py-4 text-lg rounded-lg bg-black text-brand-gold font-semibold inline-flex items-center justify-center gap-2">
+                Register
             </a>
-            <a href="mailto:info@beyondtechworld.com"
-               class="bg-white text-brand-blue hover:bg-gray-100 px-8 py-4 text-lg rounded-lg shadow-xl hover:shadow-2xl font-semibold inline-flex items-center justify-center gap-2">
+            <a href="mailto:{{ $contactEmail }}"
+               class="bg-white text-black hover:bg-gray-100 px-8 py-4 text-lg rounded-lg font-semibold inline-flex items-center justify-center gap-2">
                 <i data-lucide="mail" class="w-5 h-5"></i> Email Us
             </a>
         </div>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Welcome 2 Kigali Expats Club | Coming Soon</title>
+  <meta name="description" content="Welcome 2 Kigali Expats Club — a destination, a community, an experience. Coming soon. Live. Connect. Thrive." />
+  <link rel="icon" type="image/png" href="w2k-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --black: #000000;
+      --gold: #c5a059;
+      --gold-bright: #d4af37;
+      --cream: #f7f1e8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      min-height: 100vh;
+      background: var(--black);
+      color: var(--cream);
+      font-family: Montserrat, system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem 1.25rem;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(197, 160, 89, 0.16), transparent 58%);
+      pointer-events: none;
+    }
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 42rem;
+      width: 100%;
+    }
+    .logo {
+      width: min(92vw, 520px);
+      height: auto;
+      display: block;
+      margin: 0 auto 1.75rem;
+      filter: drop-shadow(0 0 28px rgba(197, 160, 89, 0.28));
+    }
+    h1 {
+      font-family: Cinzel, serif;
+      font-weight: 700;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      font-size: clamp(1.15rem, 3.4vw, 1.85rem);
+      color: var(--gold);
+      margin-bottom: 0.85rem;
+    }
+    .rule {
+      width: 4.5rem;
+      height: 1px;
+      background: var(--gold);
+      margin: 0 auto 1.1rem;
+    }
+    p.lead {
+      font-weight: 300;
+      font-size: clamp(0.95rem, 2.2vw, 1.1rem);
+      line-height: 1.6;
+      color: rgba(247, 241, 232, 0.82);
+      max-width: 28rem;
+      margin: 0 auto 1.75rem;
+    }
+    .tagline {
+      letter-spacing: 0.38em;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      color: #fff;
+    }
+    a.mail {
+      display: inline-block;
+      margin-top: 2rem;
+      color: var(--gold);
+      text-decoration: none;
+      border: 1px solid var(--gold);
+      padding: 0.7rem 1.35rem;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      transition: background 0.2s, color 0.2s;
+    }
+    a.mail:hover {
+      background: var(--gold);
+      color: #000;
+    }
+    footer {
+      position: relative;
+      z-index: 1;
+      margin-top: 3rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(247, 241, 232, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <img class="logo" src="w2k-logo.png" alt="Welcome 2 Kigali Expats Club" />
+    <h1>Coming Soon</h1>
+    <div class="rule" aria-hidden="true"></div>
+    <p class="lead">A destination. A community. An experience. We are preparing the club for arrival in Kigali.</p>
+    <p class="tagline">Live. Connect. Thrive.</p>
+    <a class="mail" href="mailto:hello@welcome2kigali.net">hello@welcome2kigali.net</a>
+  </main>
+  <footer>Experience Rwanda. Belong in Kigali.</footer>
+</body>
+</html>

@@ -1,82 +1,68 @@
 @extends('beyond.layout')
 
-@section('title', 'About Beyond Enterprise | Our Vision & Team')
-@section('meta_description', 'Learn about Beyond Enterprise — our history, mission, leadership, and commitment to technological excellence in Rwanda and beyond.')
+@section('title', 'About the Club')
+@section('meta_description', 'Welcome 2 Kigali Expats Club is more than a logo. It is the visual identity of a destination experience in Kigali, Rwanda.')
 
 @section('content')
 
-<section class="relative py-20 bg-brand-blue text-white overflow-hidden">
-    <div class="absolute inset-0 opacity-10">
-        <div class="absolute inset-0 bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop');"></div>
-    </div>
+<section class="relative py-24 bg-black text-white overflow-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(197,160,89,0.16),_transparent_65%)]"></div>
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-4xl md:text-6xl font-bold mb-6">{{ \App\Support\SiteContent::text('about.hero_title', 'Bridging Technology & Innovation') }}</h1>
+        <p class="text-brand-gold text-xs tracking-[0.4em] uppercase mb-4">Welcome 2 Kigali · Expats Club</p>
+        <h1 class="font-serif text-4xl md:text-6xl font-bold mb-6">{{ \App\Support\SiteContent::text('about.hero_title', 'More than a logo. A destination experience.') }}</h1>
         <p class="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto font-light">
-            {{ \App\Support\SiteContent::text('about.hero_subtitle', 'We are a premier IT consultancy and infrastructure firm dedicated to transforming businesses through cutting-edge technology solutions.') }}
+            {{ \App\Support\SiteContent::text('about.hero_subtitle', 'A place where people arrive, connect, discover Rwanda, experience culture, build relationships, and create memories.') }}
         </p>
+        <p class="mt-8 text-brand-gold tracking-[0.35em] uppercase text-sm">Live. Connect. Thrive.</p>
     </div>
 </section>
 
-<section class="py-16 bg-white">
+<section class="py-16 bg-brand-cream">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid md:grid-cols-2 gap-12 items-center">
             <div>
-                <h2 class="text-3xl font-bold text-brand-blue mb-6">{{ \App\Support\SiteContent::text('about.mission_heading', 'Our Mission') }}</h2>
+                <h2 class="font-serif text-3xl font-bold text-black mb-6">{{ \App\Support\SiteContent::text('about.mission_heading', 'Our Mission') }}</h2>
                 <p class="text-lg text-gray-600 mb-8 leading-relaxed">
-                    {{ \App\Support\SiteContent::text('about.mission_text', 'To empower organizations in Africa and beyond with robust, scalable, and secure technology infrastructure. We strive to be the bridge that connects complex technological challenges with simple, effective, and sustainable solutions.') }}
+                    {{ \App\Support\SiteContent::text('about.mission_text', 'To welcome the international community into Kigali with world-class hospitality, authentic Rwandan culture, and a club where people live, connect, and thrive.') }}
                 </p>
                 <div class="grid grid-cols-2 gap-6">
                     <div class="flex items-start gap-3">
-                        <div class="bg-blue-100 p-2 rounded-lg"><i data-lucide="target" class="w-6 h-6 text-brand-blue"></i></div>
+                        <div class="bg-black p-2 rounded-lg"><i data-lucide="heart" class="w-6 h-6 text-brand-gold"></i></div>
                         <div>
-                            <h3 class="font-semibold text-gray-900">Excellence</h3>
-                            <p class="text-sm text-gray-500">World-class standards</p>
+                            <h3 class="font-semibold text-gray-900">Hospitality</h3>
+                            <p class="text-sm text-gray-500">Warm, world-class service</p>
                         </div>
                     </div>
                     <div class="flex items-start gap-3">
-                        <div class="bg-blue-100 p-2 rounded-lg"><i data-lucide="globe-2" class="w-6 h-6 text-brand-blue"></i></div>
+                        <div class="bg-black p-2 rounded-lg"><i data-lucide="globe-2" class="w-6 h-6 text-brand-gold"></i></div>
                         <div>
-                            <h3 class="font-semibold text-gray-900">Global Reach</h3>
-                            <p class="text-sm text-gray-500">International partnerships</p>
+                            <h3 class="font-semibold text-gray-900">Community</h3>
+                            <p class="text-sm text-gray-500">International, membership-oriented</p>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="relative rounded-2xl overflow-hidden shadow-2xl">
-                <img src="{{ \App\Support\SiteContent::image('about.about_image', 'https://horizons-cdn.hostinger.com/81ef3422-3855-479e-bfe8-28a4ceb0df39/513a28b3-47b7-490b-b30a-f9398973361b-a4hCG.png') }}" alt="Team Collaboration" class="w-full h-full object-cover">
+            <div class="relative rounded-2xl overflow-hidden bg-black flex items-center justify-center p-8">
+                <img src="{{ \App\Support\SiteContent::image('about.about_image', '/branding/w2k-logo.png') }}" alt="Welcome 2 Kigali" class="w-full max-h-96 object-contain">
             </div>
-        </div>
-    </div>
-</section>
-
-<section class="py-16 bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-            @foreach ([['15+','Years Experience'],['500+','Projects Completed'],['50+','Team Members'],['20+','Global Partners']] as [$value, $label])
-                <div class="text-center">
-                    <div class="text-4xl font-bold text-brand-blue mb-2">{{ $value }}</div>
-                    <div class="text-gray-600 font-medium">{{ $label }}</div>
-                </div>
-            @endforeach
         </div>
     </div>
 </section>
 
 @if(isset($leaders) && $leaders->count())
-<section id="leadership" class="py-20 bg-brand-blue">
+<section id="leadership" class="py-20 bg-black">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
-            <h2 class="text-4xl font-bold text-white mb-4">{{ \App\Support\SiteContent::text('about.leadership_heading', 'Our Leadership') }}</h2>
+            <h2 class="font-serif text-4xl font-bold text-white mb-4">{{ \App\Support\SiteContent::text('about.leadership_heading', 'Our Leadership') }}</h2>
             <div class="h-1 w-24 bg-brand-gold mx-auto"></div>
-            <p class="mt-4 text-xl text-gray-300">{{ \App\Support\SiteContent::text('about.leadership_subtext', 'The visionaries driving Beyond Enterprise forward') }}</p>
+            <p class="mt-4 text-xl text-gray-300">{{ \App\Support\SiteContent::text('about.leadership_subtext', 'The people hosting Welcome 2 Kigali') }}</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             @foreach($leaders as $leader)
                 <div class="group flex flex-col items-center text-center">
                     <div class="relative mb-6">
-                        <div class="absolute inset-0 bg-gradient-to-br from-brand-gold to-[#F7E7CE] rounded-full blur opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
                         <div class="relative w-48 h-48 rounded-full p-1 bg-gradient-to-br from-brand-gold to-[#8a701f]">
-                            <div class="w-full h-full rounded-full overflow-hidden border-4 border-brand-blue bg-gray-200">
+                            <div class="w-full h-full rounded-full overflow-hidden border-4 border-black bg-gray-200">
                                 @if($leader->photoPublicUrl())
                                     <img src="{{ $leader->photoPublicUrl() }}" alt="{{ $leader->name }}" class="w-full h-full object-cover">
                                 @else
@@ -106,31 +92,39 @@
 
 <section class="py-16 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-3xl font-bold text-brand-blue mb-12">{{ \App\Support\SiteContent::text('about.values_heading', 'Our Core Values') }}</h2>
-        <div class="grid md:grid-cols-3 gap-8">
+        <h2 class="font-serif text-3xl font-bold text-black mb-12">{{ \App\Support\SiteContent::text('about.values_heading', 'The identity combines') }}</h2>
+        <div class="grid md:grid-cols-3 lg:grid-cols-5 gap-6">
             @foreach ([
-                ['users', 'Client First', 'We prioritize our clients\' needs and success above all else.'],
-                ['award', 'Integrity', 'We conduct business with transparency, honesty, and ethical standards.'],
-                ['briefcase', 'Innovation', 'We constantly evolve and adapt to the latest technological advancements.'],
+                ['utensils-crossed', 'Hospitality', 'Warm, welcoming experiences rooted in world-class service and authentic Rwandan hospitality.'],
+                ['building-2', 'Urban Culture', 'A vibrant fusion of modern city life, creativity, music, art, and contemporary African culture.'],
+                ['gem', 'Premium Lifestyle', 'Elevated experiences curated for those who appreciate quality, comfort, and exclusivity.'],
+                ['users', 'International Community', 'A diverse community of global minds coming together, sharing, growing, and belonging.'],
+                ['map-pin', 'Experiential Destination', 'Positioning Kigali as a must-experience destination through immersive, memorable experiences.'],
             ] as [$icon, $title, $desc])
-                <div class="p-6 bg-gray-50 rounded-xl hover:shadow-lg transition-shadow">
-                    <i data-lucide="{{ $icon }}" class="w-12 h-12 text-brand-gold mx-auto mb-4"></i>
-                    <h3 class="text-xl font-bold text-brand-blue mb-2">{{ $title }}</h3>
-                    <p class="text-gray-600">{{ $desc }}</p>
+                <div class="p-6 bg-brand-cream rounded-xl hover:shadow-lg transition-shadow">
+                    <i data-lucide="{{ $icon }}" class="w-10 h-10 text-brand-gold mx-auto mb-4"></i>
+                    <h3 class="text-lg font-bold text-black mb-2">{{ $title }}</h3>
+                    <p class="text-gray-600 text-sm">{{ $desc }}</p>
                 </div>
             @endforeach
         </div>
     </div>
 </section>
 
-<section class="py-16 bg-gradient-to-r from-brand-blue to-brand-dark text-white text-center">
+<section class="py-16 bg-black text-white text-center">
     <div class="max-w-4xl mx-auto px-4">
-        <h2 class="text-3xl font-bold mb-6">{{ \App\Support\SiteContent::text('about.cta_heading', 'Ready to work with us?') }}</h2>
-        <p class="text-xl mb-8 opacity-90">{{ \App\Support\SiteContent::text('about.cta_text', "Let's build something extraordinary together.") }}</p>
-        <a href="https://wa.me/237675321739" target="_blank" rel="noopener"
-           class="inline-flex items-center gap-2 bg-brand-gold text-brand-blue font-bold text-lg px-8 py-4 rounded-full hover:bg-white hover:scale-105 transition-all">
-            <i data-lucide="message-circle" class="w-5 h-5"></i> Chat on WhatsApp
-        </a>
+        <h2 class="font-serif text-3xl font-bold mb-6">{{ \App\Support\SiteContent::text('about.cta_heading', 'Ready to belong in Kigali?') }}</h2>
+        <p class="text-xl mb-8 text-gray-300">{{ \App\Support\SiteContent::text('about.cta_text', 'Join the club, come to an event, or visit the cafe.') }}</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{{ url('/register-now') }}"
+               class="inline-flex items-center gap-2 bg-brand-gold text-black font-bold text-lg px-8 py-4 rounded-full hover:scale-105 transition-all">
+                Register
+            </a>
+            <a href="{{ url('/menu') }}"
+               class="inline-flex items-center gap-2 border border-brand-gold text-brand-gold font-bold text-lg px-8 py-4 rounded-full hover:bg-white/5 transition-all">
+                View the menu
+            </a>
+        </div>
     </div>
 </section>
 
