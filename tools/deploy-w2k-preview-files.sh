@@ -109,6 +109,11 @@ APP=$REMOTE
 mkdir -p "\$APP/public/uploads/membership" \
   "\$APP/resources/views/membership" \
   "\$APP/resources/views/beyond/membership"
+# macOS rsync -a keeps 700 files/dirs that www-data cannot read
+chown -R www-data:www-data "\$APP/app" "\$APP/resources" "\$APP/routes" "\$APP/database" "\$APP/public" "\$APP/VERSION" || true
+find "\$APP/app" "\$APP/resources" "\$APP/routes" "\$APP/database" -type d -exec chmod 755 {} \\;
+find "\$APP/app" "\$APP/resources" "\$APP/routes" "\$APP/database" -type f -exec chmod 644 {} \\;
+chmod 644 "\$APP/VERSION" 2>/dev/null || true
 chown -R www-data:www-data "\$APP/public/uploads/membership" "\$APP/storage" "\$APP/bootstrap/cache"
 chmod -R ug+rwx "\$APP/public/uploads/membership" "\$APP/storage" "\$APP/bootstrap/cache"
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_08_27_150000_create_membership_module.php
