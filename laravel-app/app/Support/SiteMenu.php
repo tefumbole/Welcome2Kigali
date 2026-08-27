@@ -18,7 +18,7 @@ class SiteMenu
             'about'    => 'About',
             'events'   => 'Events',
             'menu'     => 'Menu',
-            'register' => 'Register',
+            'register' => 'Become a Member',
             // Login is rendered separately in the header
         ];
     }
@@ -43,6 +43,7 @@ class SiteMenu
             'permissions'  => 'Permissions',
             'announcements'=> 'Announcements',
             'courses'      => 'Courses',
+            'membership'   => 'Membership',
             'timesheets'   => 'TimeSheets (Employee)',
             'timesheet-admin' => 'TimeSheet Admin',
             'shop'         => 'Shops',

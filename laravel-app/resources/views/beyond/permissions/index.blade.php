@@ -153,8 +153,6 @@
                     Already have an account?
                     <a href="{{ url('/login?redirect=/permissions') }}" class="text-brand-blue font-semibold hover:underline">Sign in</a>
                     ·
-                    <a href="{{ url('/login?tab=signup&redirect=/permissions') }}" class="text-brand-blue font-semibold hover:underline">Sign up</a>
-                    ·
                     <a href="{{ url('/forgot-password') }}" class="text-brand-blue font-semibold hover:underline">Reset password</a>
                 </p>
             </form>

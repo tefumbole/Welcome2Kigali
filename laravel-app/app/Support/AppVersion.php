@@ -22,16 +22,16 @@ class AppVersion
             return self::normalizeSemver($configured);
         }
 
-        return '2.3.0';
+        return '1.1.9';
     }
 
     /**
-     * Canonical ERP display: BCL_ERP_V2.3.0
-     * Bump scheme: patch 0–9 → next minor; minor 0–9 → next major (2.9.9 → 3.0.0).
+     * Canonical display: W2K_V_1.1.9
+     * Bump: 1.1.9 → 1.1.10 → 1.2.1; after 1.10.10 → 2.2.1.
      */
     public static function erp()
     {
-        return 'BCL_ERP_V'.self::label();
+        return 'W2K_V_'.self::label();
     }
 
     /**
@@ -92,11 +92,34 @@ class AppVersion
     protected static function normalizeSemver($value)
     {
         $value = trim((string) $value);
+        $value = preg_replace('/^W2K_V_?\.?/i', '', $value);
         $value = preg_replace('/^BCL_ERP_V\.?/i', '', $value);
         $value = preg_replace('/^ABT_ERP_V\.?/i', '', $value);
         $value = preg_replace('/^BCL\s*V\.?\s*/i', '', $value);
         $value = ltrim($value, 'vV');
 
-        return $value !== '' ? $value : '2.3.0';
+        return $value !== '' ? $value : '1.1.9';
+    }
+
+    /**
+     * 1.1.9 → 1.1.10 → 1.2.1; 1.10.10 → 2.2.1
+     */
+    public static function bump($version)
+    {
+        $parts = explode('.', self::normalizeSemver($version));
+        $major = isset($parts[0]) ? (int) $parts[0] : 1;
+        $minor = isset($parts[1]) ? (int) $parts[1] : 1;
+        $patch = isset($parts[2]) ? (int) $parts[2] : 9;
+        $patch++;
+        if ($patch > 10) {
+            $patch = 1;
+            $minor++;
+        }
+        if ($minor > 10) {
+            $minor = 2;
+            $major++;
+        }
+
+        return $major.'.'.$minor.'.'.$patch;
     }
 }

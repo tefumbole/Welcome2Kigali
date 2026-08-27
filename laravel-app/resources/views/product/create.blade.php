@@ -341,6 +341,40 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="col-md-12 mt-3 membership-benefit-box">
+                                    <h5>Membership Benefit</h5>
+                                    <p class="text-muted small">Optional free or special-price item for Welcome to Kigali members at POS.</p>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <label><input type="checkbox" name="membership_benefit" value="1" id="membership_benefit"> Enable for members</label>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>Kind</label>
+                                            <select name="membership_benefit_kind" class="form-control">
+                                                <option value="free">Free</option>
+                                                <option value="member_price">Member price</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label>Member price</label>
+                                            <input type="number" step="any" name="membership_member_price" class="form-control">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label>Qty</label>
+                                            <input type="number" name="membership_benefit_qty" class="form-control" value="1" min="1">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label>Frequency</label>
+                                            <select name="membership_benefit_frequency" class="form-control">
+                                                <option value="unlimited">Unlimited</option>
+                                                <option value="once_per_day">Per day</option>
+                                                <option value="once_per_week">Per week</option>
+                                                <option value="once_per_month">Per month</option>
+                                                <option value="once_per_period">Per membership period</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <input type="button" value="{{trans('file.submit')}}" id="submit-btn" class="btn btn-primary">

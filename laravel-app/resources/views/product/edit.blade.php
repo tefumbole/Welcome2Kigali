@@ -413,6 +413,39 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="col-md-12 mt-3 membership-benefit-box">
+                                    @php $membershipBenefit = $membershipBenefit ?? null; @endphp
+                                    <h5>Membership Benefit</h5>
+                                    <p class="text-muted small">Optional free or special-price item for Welcome to Kigali members at POS.</p>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <label><input type="checkbox" name="membership_benefit" value="1" id="membership_benefit" @if($membershipBenefit && $membershipBenefit->is_active) checked @endif> Enable for members</label>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>Kind</label>
+                                            <select name="membership_benefit_kind" class="form-control">
+                                                <option value="free" @if(optional($membershipBenefit)->kind==='free') selected @endif>Free</option>
+                                                <option value="member_price" @if(optional($membershipBenefit)->kind==='member_price') selected @endif>Member price</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label>Member price</label>
+                                            <input type="number" step="any" name="membership_member_price" class="form-control" value="{{ optional($membershipBenefit)->member_price }}">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label>Qty</label>
+                                            <input type="number" name="membership_benefit_qty" class="form-control" value="{{ optional($membershipBenefit)->qty ?: 1 }}" min="1">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label>Frequency</label>
+                                            <select name="membership_benefit_frequency" class="form-control">
+                                                @foreach(['unlimited'=>'Unlimited','once_per_day'=>'Per day','once_per_week'=>'Per week','once_per_month'=>'Per month','once_per_period'=>'Per membership period'] as $freq=>$label)
+                                                    <option value="{{ $freq }}" @if(optional($membershipBenefit)->frequency===$freq) selected @endif>{{ $label }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="col-md-12">
                                     <div class="form-group">
                                         <input type="button" value="{{trans('file.submit')}}" class="btn btn-primary" id="submit-btn">

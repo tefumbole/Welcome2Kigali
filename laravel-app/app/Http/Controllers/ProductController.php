@@ -617,6 +617,10 @@ class ProductController extends Controller
         }
         $data['location'] = $request->product_location;
         $lims_product_data = Product::create($data);
+        try {
+            app(\App\Services\MembershipService::class)->syncProductBenefit($lims_product_data->id, $request->all());
+        } catch (\Throwable $e) {
+        }
         //dealing with product variant
         if(!isset($data['is_batch']))
             $data['is_batch'] = null;
@@ -670,8 +674,9 @@ class ProductController extends Controller
             $lims_product_data = Product::where('id', $id)->first();
             $lims_product_variant_data = $lims_product_data->variant()->orderBy('position')->get();
             $lims_warehouse_list = Warehouse::where('is_active', true)->get();
+            $membershipBenefit = \App\MembershipProductBenefit::where('product_id', $id)->first();
 
-            return view('product.edit',compact('lims_product_list', 'lims_brand_list', 'lims_category_list', 'lims_unit_list', 'lims_tax_list', 'lims_product_data', 'lims_product_variant_data', 'lims_warehouse_list', 'role'));
+            return view('product.edit',compact('lims_product_list', 'lims_brand_list', 'lims_category_list', 'lims_unit_list', 'lims_tax_list', 'lims_product_data', 'lims_product_variant_data', 'lims_warehouse_list', 'role', 'membershipBenefit'));
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
@@ -830,6 +835,10 @@ class ProductController extends Controller
             }
         }
         $lims_product_data->update($data);
+        try {
+            app(\App\Services\MembershipService::class)->syncProductBenefit($lims_product_data->id, $request->all());
+        } catch (\Throwable $e) {
+        }
 
         $warehouse = Warehouse::where('is_active', true)->first();
         $check_warehouse = Product_Warehouse::where('product_id', $lims_product_data->id)->where('warehouse_id', $warehouse->id)->first();

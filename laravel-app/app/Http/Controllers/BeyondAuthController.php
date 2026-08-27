@@ -83,7 +83,7 @@ class BeyondAuthController extends Controller
         return view('beyond.auth.login', [
             'prefill' => $request->get('u', ''),
             'guestPassword' => $request->get('guest') === '1',
-            'tab' => $request->get('tab') === 'signup' ? 'signup' : 'signin',
+            'tab' => 'signin',
             'countryCodes' => CountryDialCodes::all(),
             'asCustomer' => $asCustomer,
         ]);
@@ -91,81 +91,9 @@ class BeyondAuthController extends Controller
 
     public function register(Request $request)
     {
-        $data = $request->validate([
-            'full_name' => 'required|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'country_code' => 'required|string|max:10',
-            'phone' => 'required|string|max:40',
-            'password' => 'required|string|min:8|confirmed',
+        return redirect('/login')->withErrors([
+            'identifier' => 'Public sign up is disabled. Sign in with your account.',
         ]);
-
-        $phone = CountryDialCodes::combine($data['country_code'], $data['phone']);
-        if (strlen(preg_replace('/\D/', '', $phone)) < 8) {
-            return back()->withInput()->withErrors(['phone' => 'Enter a valid WhatsApp number.']);
-        }
-
-        if ($this->auth->findByPhone($phone)) {
-            return back()->withInput()->withErrors([
-                'phone' => 'An account already exists with this phone. Sign in or reset your password via WhatsApp OTP.',
-            ]);
-        }
-
-        if (! empty($data['email']) && BeyondUser::whereRaw('LOWER(email) = ?', [strtolower($data['email'])])->exists()) {
-            return back()->withInput()->withErrors(['email' => 'Email is already registered. Sign in or reset your password.']);
-        }
-
-        $base = $this->auth->normalizeUsername(Str::slug($data['full_name'], '.') ?: 'user');
-        if ($base === '') {
-            $base = 'user';
-        }
-        $username = $base;
-        $i = 1;
-        while (BeyondUser::whereRaw('LOWER(username) = ?', [strtolower($username)])->exists()) {
-            $username = $base.$i;
-            $i++;
-        }
-
-        $email = $data['email'] ?? null;
-        if (! $email) {
-            $email = $username.'@beyond.local';
-            $n = 1;
-            while (BeyondUser::whereRaw('LOWER(email) = ?', [strtolower($email)])->exists()) {
-                $email = $username.$n.'@beyond.local';
-                $n++;
-            }
-        }
-
-        $user = BeyondUser::create([
-            'id' => (string) Str::uuid(),
-            'name' => $data['full_name'],
-            'email' => $email,
-            'username' => $username,
-            'password_hash' => $this->auth->hashPassword($data['password']),
-            'role' => 'staff',
-            'status' => 'active',
-            'phone' => $phone,
-            'must_change_credentials' => false,
-        ]);
-        $this->auth->syncProfile($user);
-
-        Auth::guard('beyond')->login($user);
-        $request->session()->put('beyond_masked_phone', $this->whatsapp->maskPhone($phone));
-
-        if ($this->auth->shouldSkipOtp()) {
-            $request->session()->put('beyond_otp_verified', true);
-
-            return redirect($this->loginRedirect($request, $user, BeyondProfile::find($user->id)));
-        }
-
-        $otp = $this->auth->createOtp($phone, 'login');
-        $send = $this->whatsapp->sendOtp($phone, $otp['code']);
-        if (! ($send['success'] ?? false)) {
-            return back()->withInput()->withErrors(['phone' => $send['error'] ?? 'Failed to send WhatsApp OTP.']);
-        }
-
-        $request->session()->forget('beyond_otp_verified');
-
-        return redirect('/otp-verification')->with('success', 'Account created. Enter the WhatsApp code to finish sign up.');
     }
 
     protected function postLoginRedirect(Request $request, $user, $profile)

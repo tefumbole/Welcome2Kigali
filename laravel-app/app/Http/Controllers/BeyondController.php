@@ -78,7 +78,16 @@ class BeyondController extends Controller
 
     public function menu()
     {
-        return view('beyond.menu', ['groups' => $this->menuGroups()]);
+        $cart = session('cart', []);
+        $cartCount = 0;
+        foreach ($cart as $row) {
+            $cartCount += (int) ($row['quantity'] ?? 0);
+        }
+
+        return view('beyond.menu', [
+            'groups' => $this->menuGroups(),
+            'cartCount' => $cartCount,
+        ]);
     }
 
     public function menuData()
@@ -113,23 +122,76 @@ class BeyondController extends Controller
         return $categories->map(function ($category) {
             $items = \App\Product::where('category_id', $category->id)
                 ->where('is_active', 1)
-                ->orderBy('name')
+                ->orderBy('id')
                 ->get()
                 ->map(function ($product) {
+                    $flavors = [];
+                    if (stripos($product->name, 'Flavored Tea') !== false) {
+                        $flavors = ['Cinnamon', 'Earl Grey', 'Chamomile', 'Masala', 'Clover', 'Peppermint', 'Chai', 'Hibiscus'];
+                    }
+
                     return [
                         'id' => $product->id,
                         'name' => $product->name,
                         'details' => $product->product_details,
                         'price' => (int) $product->price,
+                        'flavors' => $flavors,
                     ];
                 });
+
+            $look = $this->menuSectionLook($category->name);
 
             return [
                 'id' => $category->id,
                 'name' => $category->name,
+                'tagline' => $look['tagline'],
+                'blurb' => $look['blurb'],
+                'image' => $look['image'],
                 'items' => $items,
             ];
         })->values();
+    }
+
+    private function menuSectionLook($name)
+    {
+        $map = [
+            'Coffee & Tea' => [
+                'tagline' => 'Crafted to perfection.',
+                'blurb' => '',
+                'image' => url('public/branding/menu/coffee-tea.jpg').'?v=3',
+            ],
+            'Iced & Specialty' => [
+                'tagline' => 'Bold. Smooth. Refreshing.',
+                'blurb' => '',
+                'image' => url('public/branding/menu/iced-specialty.jpg').'?v=3',
+            ],
+            'Tea & Hot Beverages' => [
+                'tagline' => 'Warmth in every cup.',
+                'blurb' => '',
+                'image' => url('public/branding/menu/tea-hot.jpg').'?v=3',
+            ],
+            'Fresh & Detox Juices' => [
+                'tagline' => 'Pure. Vibrant. Nourishing.',
+                'blurb' => 'Made fresh daily with the finest ingredients to uplift, energize and refresh your day.',
+                'image' => url('public/branding/menu/smoothies.jpg').'?v=3',
+            ],
+            'Smoothies' => [
+                'tagline' => 'Creamy. Fruity. Nutritious.',
+                'blurb' => 'Blended to perfection with real fruits and quality ingredients for a deliciously healthy treat.',
+                'image' => url('public/branding/menu/smoothies.jpg').'?v=3',
+            ],
+            'Food' => [
+                'tagline' => 'Coming to the table soon.',
+                'blurb' => '',
+                'image' => url('public/branding/menu/coffee-tea.jpg').'?v=3',
+            ],
+        ];
+
+        return $map[$name] ?? [
+            'tagline' => 'Live. Connect. Thrive.',
+            'blurb' => '',
+            'image' => url('public/branding/menu/coffee-tea.jpg').'?v=3',
+        ];
     }
 
     public function events()

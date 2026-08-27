@@ -97,10 +97,12 @@
 @php
     $role = DB::table('roles')->find(Auth::user()->role_id);
     $dashboard = DB::table('permissions')->where('name', 'dashboard')->first();
-    $dashboard_active = DB::table('role_has_permissions')->where([
-    ['permission_id', $dashboard->id],
-    ['role_id', $role->id]
-    ])->first();
+    $dashboard_active = ($dashboard && $role)
+        ? DB::table('role_has_permissions')->where([
+            ['permission_id', $dashboard->id],
+            ['role_id', $role->id],
+        ])->first()
+        : null;
  @endphp
 @if($dashboard_active)
 @php
@@ -326,21 +328,22 @@
                 </div>
                 <div class="card-body">
                   @php
-                    if($general_setting->theme == 'default.css'){
-                      $color = '#733686';
-                      $color_rgba = 'rgba(115, 54, 134, 0.8)';
-                    }
-                    elseif($general_setting->theme == 'green.css'){
+                    $theme = optional($general_setting)->theme;
+                    if($theme == 'green.css'){
                         $color = '#2ecc71';
                         $color_rgba = 'rgba(46, 204, 113, 0.8)';
                     }
-                    elseif($general_setting->theme == 'blue.css'){
+                    elseif($theme == 'blue.css'){
                         $color = '#3498db';
                         $color_rgba = 'rgba(52, 152, 219, 0.8)';
                     }
-                    elseif($general_setting->theme == 'dark.css'){
+                    elseif($theme == 'dark.css'){
                         $color = '#34495e';
                         $color_rgba = 'rgba(52, 73, 94, 0.8)';
+                    }
+                    else {
+                      $color = '#733686';
+                      $color_rgba = 'rgba(115, 54, 134, 0.8)';
                     }
                   @endphp
                   <canvas id="cashFlow" data-color = "{{$color}}" data-color_rgba = "{{$color_rgba}}" data-recieved = "{{json_encode($payment_recieved)}}" data-sent = "{{json_encode($payment_sent)}}" data-month = "{{json_encode($month)}}" data-label1="{{trans('file.Payment Recieved')}}" data-label2="{{trans('file.Payment Sent')}}"></canvas>

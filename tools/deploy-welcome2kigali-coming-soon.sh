@@ -25,6 +25,7 @@ echo "==> Install Coming Soon files to $DEST"
 mkdir -p "$DEST"
 install -m 644 "$ROOT/coming-soon/index.html" "$DEST/index.html"
 install -m 644 "$ROOT/coming-soon/w2k-logo.png" "$DEST/w2k-logo.png"
+install -m 644 "$ROOT/coming-soon/hero-bg.png" "$DEST/hero-bg.png"
 
 echo "==> Nginx HTTP vhost (SSL swapped in after certbot)"
 if [[ -f /etc/letsencrypt/live/welcome2kigali.net/fullchain.pem ]]; then

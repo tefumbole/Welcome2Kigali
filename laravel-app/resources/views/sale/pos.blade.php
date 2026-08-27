@@ -2481,6 +2481,89 @@
         var product_row_number = <?php echo json_encode(optional($lims_pos_setting_data)->product_number ?? 0) ?>;
         var rowindex;
         var customer_group_rate;
+        var customer_group_discount_mode = 'markup';
+        var posMembership = null;
+        var posDiscountPolicy = 'best';
+        function posParseCustomerGroup(data) {
+            var pct = 0;
+            customer_group_discount_mode = 'markup';
+            posMembership = null;
+            posDiscountPolicy = 'best';
+            if (data && typeof data === 'object' && !Array.isArray(data)) {
+                pct = parseFloat(data.percentage || 0) || 0;
+                customer_group_discount_mode = data.discount_mode || 'markup';
+                posMembership = data.membership || null;
+                posDiscountPolicy = data.policy || 'best';
+            } else {
+                pct = parseFloat(data || 0) || 0;
+            }
+            var signed = pct / 100;
+            customer_group_rate = (customer_group_discount_mode === 'discount') ? -Math.abs(signed) : signed;
+        }
+        function posGroupAdjustedPrice(base) {
+            var price = parseFloat(base) || 0;
+            var adjusted = price + (price * (customer_group_rate || 0));
+            if (posDiscountPolicy === 'best' && customer_group_discount_mode === 'discount') {
+                return Math.min(price, adjusted);
+            }
+            return adjusted;
+        }
+        function posLooksLikeMembershipScan(raw) {
+            var s = String(raw || '').trim();
+            if (!s) return false;
+            if (/membership\/verify\//i.test(s)) return true;
+            if (/^WTK-M-/i.test(s)) return true;
+            return /^[A-Za-z0-9]{20,64}$/.test(s);
+        }
+        function posSelectMemberCustomer(customerId) {
+            var $sel = $('select[name="customer_id"]');
+            if (!$sel.length || !customerId) return;
+            $sel.val(String(customerId));
+            if ($sel.data('selectpicker')) $sel.selectpicker('refresh');
+            $sel.trigger('change');
+        }
+        function posRepriceCart() {
+            $('table.order-list tbody tr').each(function (i) {
+                var $row = $(this);
+                if ($row.find('.membership-benefit-flag').val() === '1') return;
+                var base = parseFloat($row.find('.product-base-price').val());
+                if (isNaN(base)) return;
+                var next = posGroupAdjustedPrice(base);
+                product_price[i] = next;
+                $row.find('.product_price').val(next);
+                $row.find('.product_price_change').attr('value', next);
+                rowindex = i;
+                pos = product_code.indexOf($row.find('.product-code').val());
+                var qty = $row.find('.qty').val() || 1;
+                calculateRowProductData(qty);
+            });
+        }
+        function posApplyMemberBenefit(productId, $row) {
+            var customerId = posCustomerId();
+            if (!customerId || !productId || !posMembership) return;
+            $.get('/sales/membership-benefit/' + customerId + '/' + productId, function (res) {
+                if (!res || !res.ok) return;
+                var idx = $row.index();
+                var base = parseFloat($row.find('.product-base-price').val()) || product_price[idx] || 0;
+                if (res.kind === 'free') {
+                    product_price[idx] = 0;
+                    $row.find('.product-title strong').first().append(' <span class="badge badge-success">FREE MEMBER BENEFIT</span>');
+                } else if (res.member_price != null) {
+                    var memberPrice = parseFloat(res.member_price);
+                    if (posDiscountPolicy === 'best') {
+                        memberPrice = Math.min(memberPrice, product_price[idx]);
+                    }
+                    product_price[idx] = memberPrice;
+                    $row.find('.product-title strong').first().append(' <span class="badge badge-info">MEMBER PRICE</span>');
+                }
+                $row.find('.product_price').val(product_price[idx]);
+                $row.find('.membership-benefit-flag').val('1');
+                $row.find('.membership-benefit-value').val(base);
+                rowindex = idx;
+                pos = product_code.indexOf($row.find('.product-code').val());
+                calculateRowProductData($row.find('.qty').val() || 1);
+            });
+        }
         var row_product_price;
         var pos;
         var keyboard_active = <?php echo json_encode($keybord_active); ?>;
@@ -2865,10 +2948,11 @@
         }
         if (id) {
             $.get('/sales/getcustomergroup/' + id, function(data) {
-                customer_group_rate = (data / 100);
+                posParseCustomerGroup(data);
             });
         } else {
             customer_group_rate = 0;
+            posMembership = null;
         }
 
         var id = posWarehouseId();
@@ -3053,7 +3137,8 @@
             saveValue(this);
             var id = $(this).val();
             $.get('/sales/getcustomergroup/' + id, function(data) {
-                customer_group_rate = (data / 100);
+                posParseCustomerGroup(data);
+                posRepriceCart();
             });
             if (id) {
                 $('#customer-deposit-balance').text(parseFloat(deposit[id] || 0).toFixed(2));
@@ -3760,6 +3845,19 @@
         }
 
         function productSearch(data) {
+            if (posLooksLikeMembershipScan(data)) {
+                $.get('/sales/membership-scan', {q: data}, function(res) {
+                    if (res && res.ok) {
+                        posSelectMemberCustomer(res.customer_id);
+                        return;
+                    }
+                    posProductLookup(data);
+                });
+                return;
+            }
+            posProductLookup(data);
+        }
+        function posProductLookup(data) {
             var customer_id = posCustomerId();
             var warehouse_id = posWarehouseId();
             if (!customer_id) {
@@ -3850,6 +3948,9 @@
             cols += '<input type="hidden" class="product-code" name="product_code[]" value="' + data[1] + '"/>';
             cols += '<input type="hidden" class="product-id" name="product_id[]" value="' + data[9] + '"/>';
             cols += '<input type="hidden" class="product_price" />';
+            cols += '<input type="hidden" class="product-base-price" />';
+            cols += '<input type="hidden" class="membership-benefit-flag" name="membership_benefit[]" value="0" />';
+            cols += '<input type="hidden" class="membership-benefit-value" name="membership_benefit_value[]" value="0" />';
             cols += '<input type="hidden" class="sale-unit" name="sale_unit[]" value="' + temp_unit_name[0] + '"/>';
             cols += '<input type="hidden" class="net_unit_price" name="net_unit_price[]" />';
             cols += '<input type="hidden" class="discount-value" name="discount[]" />';
@@ -3871,12 +3972,15 @@
 
             rowindex = newRow.index();
 
+            var basePrice;
             if(!data[11] && product_warehouse_price[pos]) {
-                product_price.splice(rowindex, 0, parseFloat(product_warehouse_price[pos] * posCurrencyRate()) + parseFloat(product_warehouse_price[pos] * posCurrencyRate() * customer_group_rate));
+                basePrice = parseFloat(product_warehouse_price[pos] * posCurrencyRate());
             }
             else {
-                product_price.splice(rowindex, 0, parseFloat(data[2] * posCurrencyRate()) + parseFloat(data[2] * posCurrencyRate() * customer_group_rate));
+                basePrice = parseFloat(data[2] * posCurrencyRate());
             }
+            product_price.splice(rowindex, 0, posGroupAdjustedPrice(basePrice));
+            $('table.order-list tbody tr:nth-child(' + (rowindex + 1) + ')').find('.product-base-price').val(basePrice);
             product_discount.splice(rowindex, 0, '0.00');
             tax_rate.splice(rowindex, 0, parseFloat(data[3]));
             tax_name.splice(rowindex, 0, data[4]);
@@ -3913,6 +4017,7 @@
             localStorage.setItem("localStorageSaleUnitOperator", localStorageSaleUnitOperator);
             localStorage.setItem("localStorageSaleUnitOperationValue", localStorageSaleUnitOperationValue);
             checkQuantity(1, true);
+            posApplyMemberBenefit(data[9], newRow);
             localStorage.setItem("tbody-id", $("table.order-list tbody").html());
         }
 

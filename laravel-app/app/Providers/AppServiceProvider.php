@@ -32,11 +32,13 @@ class AppServiceProvider extends ServiceProvider
         /*if( (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443) {
             URL::forceScheme('https');
         }*/
-        //setting language
-        if(isset($_COOKIE['language'])) {
-            \App::setLocale($_COOKIE['language']);
-        } else {
-            \App::setLocale('en');
+        $locale = 'en';
+        if (! empty($_COOKIE['language']) && in_array($_COOKIE['language'], ['en', 'fr'], true)) {
+            $locale = $_COOKIE['language'];
+        }
+        \App::setLocale($locale);
+        if (class_exists(\Carbon\Carbon::class)) {
+            \Carbon\Carbon::setLocale($locale);
         }
         Schema::defaultStringLength(191);
 

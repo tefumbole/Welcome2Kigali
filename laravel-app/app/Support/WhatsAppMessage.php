@@ -20,27 +20,34 @@ class WhatsAppMessage
 
     public static function statusBlock($emoji, $title)
     {
-        return $emoji . ' *' . strtoupper($title) . "*\n━━━━━━━━━━━━━━━━\n";
+        $company = self::companyName();
+
+        return "*{$company}*\n\n*{$title}*\n\n";
     }
 
     public static function greeting($name)
     {
-        return 'Hello *' . trim($name) . "*,\n\n";
+        $name = trim((string) $name);
+        if ($name === '') {
+            return "Dear Guest,\n\n";
+        }
+
+        return 'Dear *'.$name."*,\n\n";
     }
 
     public static function bullet($label, $value)
     {
-        return "◾ *{$label}:* {$value}\n";
+        return "• *{$label}:* {$value}\n";
     }
 
     public static function actionLink($label, $url)
     {
-        return "\n👉 *{$label}:*\n{$url}\n";
+        return "\n*{$label}:*\n{$url}\n";
     }
 
     public static function footer()
     {
-        return "\n_" . self::companyName() . '_';
+        return "\nKind regards,\n*".self::companyName()."*";
     }
 
     public static function signatureRequest($customerName, $bookingRef, $signUrl, $company = null, $contractType = null)
@@ -442,7 +449,7 @@ class WhatsAppMessage
             }
         }
 
-        $msg .= "\n━━━━━━━━━━━━━━━━\n";
+        $msg .= "\n";
         $msg .= self::bullet('Total', $money($grandTotal));
         $msg .= self::bullet('Payment', $payingMethod ?: '—');
         if (trim((string) $billingAddress) !== '') {
@@ -480,12 +487,14 @@ class WhatsAppMessage
     {
         $key = strtolower(trim((string) $purpose));
         $map = [
-            'login' => 'Login verification',
-            'password_reset' => 'Password reset',
-            'password reset' => 'Password reset',
-            'reset' => 'Password reset',
-            'register' => 'Account registration',
-            'verify' => 'Account verification',
+            'login' => 'login verification',
+            'password_reset' => 'password reset',
+            'password reset' => 'password reset',
+            'reset' => 'password reset',
+            'register' => 'account registration',
+            'verify' => 'account verification',
+            'permission' => 'permission confirmation',
+            'membership' => 'membership verification',
         ];
 
         return $map[$key] ?? ($purpose ? ucwords(str_replace('_', ' ', (string) $purpose)) : 'Login verification');
@@ -500,15 +509,15 @@ class WhatsAppMessage
         $company = self::companyName();
         $purposeLabel = self::otpPurposeLabel($purpose);
         $minutes = max(1, (int) $expiresMinutes);
+        $otp = preg_replace('/\D/', '', (string) $otp);
 
-        $msg = self::statusBlock('🔐', 'Authentication');
-        $msg .= "Welcome to *{$company}*.\n\n";
-        $msg .= "Your one-time passcode (OTP) is:\n\n";
-        $msg .= "👉 *{$otp}*\n\n";
-        $msg .= "━━━━━━━━━━━━━━━━\n";
-        $msg .= self::bullet('Purpose', $purposeLabel);
-        $msg .= self::bullet('Expires in', "{$minutes} minutes");
-        $msg .= "\n⚠️ *Security notice:* Never share this code with anyone. Our team will never ask for your OTP.";
+        $msg = "*{$company}*\n\n";
+        $msg .= "Dear Guest,\n\n";
+        $msg .= "Thank you for choosing *{$company}*.\n\n";
+        $msg .= "Your one-time verification code for {$purposeLabel} is:\n\n";
+        $msg .= "*{$otp}*\n\n";
+        $msg .= "This code is valid for {$minutes} minute".($minutes === 1 ? '' : 's').".\n\n";
+        $msg .= "Please do not share this code with anyone. Our team will never ask for it.";
         $msg .= self::footer();
 
         return $msg;
@@ -966,6 +975,106 @@ class WhatsAppMessage
         $msg .= self::actionLink('Recover account (OTP)', url('/forgot-password'));
         $msg .= self::actionLink('Go to Timesheets → Working Week', $timesheetUrl);
         $msg .= "\nAfter login, change your password (or recover via WhatsApp OTP), then open *Timesheets* and configure your working week so daily tasks continue.";
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function membershipApplicationReceived($name, $reference)
+    {
+        $company = self::companyName();
+        $msg = "*{$company}*\n\n";
+        $msg .= self::greeting($name);
+        $msg .= "Thank you for your membership application.\n\n";
+        $msg .= "We have received your request and our team will review it shortly. You will receive a WhatsApp message once a decision has been made.\n\n";
+        $msg .= self::bullet('Reference', $reference);
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function membershipApplicationAdmin($adminName, $applicantName, $reference, $loginUrl)
+    {
+        $company = self::companyName();
+        $msg = "*{$company}*\n\n";
+        $msg .= self::greeting($adminName ?: 'Team');
+        $msg .= "A new membership application is ready for review.\n\n";
+        $msg .= self::bullet('Applicant', $applicantName);
+        $msg .= self::bullet('Reference', $reference);
+        $msg .= self::actionLink('Review application', $loginUrl);
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function membershipApproved($name, $number, $status, $expires, $payUrl = null, $verifyUrl = null)
+    {
+        $company = self::companyName();
+        $msg = "*{$company}*\n\n";
+        $msg .= self::greeting($name);
+        $msg .= "Your membership with *{$company}* has been updated.\n\n";
+        $msg .= self::bullet('Membership No', $number);
+        $msg .= self::bullet('Status', $status);
+        if ($expires) {
+            $msg .= self::bullet('Expires', $expires);
+        }
+        if ($payUrl) {
+            $msg .= "\nTo activate or continue your membership, please complete payment using the secure link below.";
+            $msg .= self::actionLink('Pay membership fee', $payUrl);
+        }
+        if ($verifyUrl) {
+            $msg .= self::actionLink('Membership card', $verifyUrl);
+        }
+        $msg .= "\nWe look forward to welcoming you at the club.";
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function membershipRejected($name, $reference, $note = null)
+    {
+        $company = self::companyName();
+        $msg = "*{$company}*\n\n";
+        $msg .= self::greeting($name);
+        $msg .= "Thank you for your interest in membership with *{$company}*.\n\n";
+        $msg .= "After review, we are unable to approve application *{$reference}* at this time.\n";
+        if ($note) {
+            $msg .= "\n".$note."\n";
+        }
+        $msg .= "\nYou are welcome to contact us on this number if you have questions.";
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function membershipMoreInfo($name, $reference, $note)
+    {
+        $company = self::companyName();
+        $msg = "*{$company}*\n\n";
+        $msg .= self::greeting($name);
+        $msg .= "Thank you for your membership application *{$reference}*.\n\n";
+        $msg .= "We need a little more information before we can complete the review.\n\n";
+        $msg .= $note."\n";
+        $msg .= "\nPlease reply on this WhatsApp number with the requested details.";
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function membershipRenewalReminder($name, $number, $expires, $renewUrl, $kind)
+    {
+        $company = self::companyName();
+        $expired = ($kind === 'expired' || $kind === 'after');
+        $msg = "*{$company}*\n\n";
+        $msg .= self::greeting($name);
+        if ($expired) {
+            $msg .= "Your membership *{$number}* has expired. Member pricing and benefits are no longer active.\n\n";
+            $msg .= "You may renew at any time to restore your membership.\n\n";
+        } else {
+            $msg .= "This is a courtesy reminder that your membership *{$number}* is due for renewal.\n\n";
+        }
+        $msg .= self::bullet('Expiry', $expires ?: '—');
+        $msg .= self::actionLink('Renew membership', $renewUrl);
         $msg .= self::footer();
 
         return $msg;

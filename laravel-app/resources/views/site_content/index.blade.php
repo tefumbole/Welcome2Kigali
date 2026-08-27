@@ -64,6 +64,7 @@
                         'projects' => 'tone-blue',
                         'contact'  => 'tone-pink',
                         'gallery'  => 'tone-red',
+                        'menu'     => 'tone-gold',
                     ];
                 @endphp
                 <div class="site-content-tabs-nav">

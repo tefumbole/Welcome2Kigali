@@ -3,119 +3,114 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Welcome 2 Kigali Expats Club | Coming Soon</title>
-  <meta name="description" content="Welcome 2 Kigali Expats Club — a destination, a community, an experience. Coming soon. Live. Connect. Thrive." />
+  <title>Welcome 2 Kigali Expats Club | Coming in 21 Days</title>
+  <meta name="description" content="Welcome 2 Kigali Expats Club — coming in 21 days. A destination, a community, an experience. Live. Connect. Thrive." />
   <link rel="icon" type="image/png" href="w2k-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --black: #000000;
-      --gold: #c5a059;
-      --gold-bright: #d4af37;
-      --cream: #f7f1e8;
+      --gold: #f4b41a;
+      --gold-bright: #ffd54a;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
     body {
       min-height: 100vh;
-      background: var(--black);
-      color: var(--cream);
+      min-height: 100dvh;
+      background: #000;
+      color: var(--gold);
       font-family: Montserrat, system-ui, sans-serif;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      overflow: hidden;
+    }
+    .art {
+      flex: 1 1 auto;
+      min-height: 0;
+      background: #000 url("hero-bg.png") center center / contain no-repeat;
+    }
+    .countdown {
+      flex: 0 0 auto;
       text-align: center;
-      padding: 2rem 1.25rem;
-      overflow-x: hidden;
+      padding: 0 1rem 1.1rem;
     }
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(ellipse at center, rgba(197, 160, 89, 0.16), transparent 58%);
-      pointer-events: none;
+    .eyebrow {
+      font-weight: 600;
+      letter-spacing: 0.55em;
+      text-transform: uppercase;
+      font-size: clamp(0.7rem, 1.6vw, 0.95rem);
+      color: var(--gold-bright);
     }
-    main {
-      position: relative;
-      z-index: 1;
-      max-width: 42rem;
-      width: 100%;
+    .days-num {
+      font-weight: 800;
+      font-size: clamp(5.6rem, 18vw, 11.5rem);
+      letter-spacing: -0.045em;
+      line-height: 0.82;
+      margin: 0.12em 0 0.08em;
+      text-shadow: 0 0 48px rgba(244, 180, 26, 0.32);
     }
-    .logo {
-      width: min(92vw, 520px);
-      height: auto;
-      display: block;
-      margin: 0 auto 1.75rem;
-      filter: drop-shadow(0 0 28px rgba(197, 160, 89, 0.28));
-    }
-    h1 {
-      font-family: Cinzel, serif;
+    .days-label {
       font-weight: 700;
+      letter-spacing: 0.46em;
+      text-transform: uppercase;
+      font-size: clamp(1.2rem, 3.6vw, 2.2rem);
+      color: var(--gold-bright);
+    }
+    .hms {
+      display: flex;
+      justify-content: center;
+      gap: clamp(1.1rem, 4vw, 2.6rem);
+      margin-top: 0.7rem;
+    }
+    .hms strong {
+      display: block;
+      font-size: clamp(1.2rem, 3.2vw, 2rem);
+      font-weight: 700;
+    }
+    .hms span {
+      display: block;
+      margin-top: 0.15rem;
+      font-size: 0.58rem;
       letter-spacing: 0.28em;
       text-transform: uppercase;
-      font-size: clamp(1.15rem, 3.4vw, 1.85rem);
-      color: var(--gold);
-      margin-bottom: 0.85rem;
+      color: rgba(244, 180, 26, 0.68);
     }
-    .rule {
-      width: 4.5rem;
-      height: 1px;
-      background: var(--gold);
-      margin: 0 auto 1.1rem;
-    }
-    p.lead {
-      font-weight: 300;
-      font-size: clamp(0.95rem, 2.2vw, 1.1rem);
-      line-height: 1.6;
-      color: rgba(247, 241, 232, 0.82);
-      max-width: 28rem;
-      margin: 0 auto 1.75rem;
-    }
-    .tagline {
-      letter-spacing: 0.38em;
-      text-transform: uppercase;
-      font-size: 0.72rem;
-      color: #fff;
-    }
-    a.mail {
-      display: inline-block;
-      margin-top: 2rem;
-      color: var(--gold);
-      text-decoration: none;
-      border: 1px solid var(--gold);
-      padding: 0.7rem 1.35rem;
-      border-radius: 999px;
-      font-size: 0.82rem;
-      letter-spacing: 0.08em;
-      transition: background 0.2s, color 0.2s;
-    }
-    a.mail:hover {
-      background: var(--gold);
-      color: #000;
-    }
-    footer {
-      position: relative;
-      z-index: 1;
-      margin-top: 3rem;
-      font-size: 0.7rem;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: rgba(247, 241, 232, 0.4);
+    @media (max-height: 700px) {
+      .days-num { font-size: clamp(4rem, 14vw, 8rem); }
     }
   </style>
 </head>
 <body>
-  <main>
-    <img class="logo" src="w2k-logo.png" alt="Welcome 2 Kigali Expats Club" />
-    <h1>Coming Soon</h1>
-    <div class="rule" aria-hidden="true"></div>
-    <p class="lead">A destination. A community. An experience. We are preparing the club for arrival in Kigali.</p>
-    <p class="tagline">Live. Connect. Thrive.</p>
-    <a class="mail" href="mailto:hello@welcome2kigali.net">hello@welcome2kigali.net</a>
-  </main>
-  <footer>Experience Rwanda. Belong in Kigali.</footer>
+  <div class="art" role="img" aria-label="Welcome 2 Expat Club"></div>
+  <section class="countdown" aria-live="polite">
+    <p class="eyebrow">Coming in</p>
+    <div class="days-num" id="days">21</div>
+    <div class="days-label">Days</div>
+    <div class="hms">
+      <div><strong id="hours">00</strong><span>Hours</span></div>
+      <div><strong id="mins">00</strong><span>Minutes</span></div>
+      <div><strong id="secs">00</strong><span>Seconds</span></div>
+    </div>
+  </section>
+  <script>
+    // Midnight 16 Sep 2026 CAT — reads as 21 days throughout 25 Aug.
+    var LAUNCH = new Date("2026-09-16T00:00:00+02:00").getTime();
+    function pad(n) { return String(n).padStart(2, "0"); }
+    function tick() {
+      var left = Math.max(0, LAUNCH - Date.now());
+      var d = Math.floor(left / 86400000);
+      var h = Math.floor((left % 86400000) / 3600000);
+      var m = Math.floor((left % 3600000) / 60000);
+      var s = Math.floor((left % 60000) / 1000);
+      document.getElementById("days").textContent = String(d);
+      document.getElementById("hours").textContent = pad(h);
+      document.getElementById("mins").textContent = pad(m);
+      document.getElementById("secs").textContent = pad(s);
+    }
+    tick();
+    setInterval(tick, 1000);
+  </script>
 </body>
 </html>

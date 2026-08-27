@@ -79,16 +79,6 @@ function CafeMenuPage() {
               )}
             </div>
           ))}
-          <div className="mt-8 grid sm:grid-cols-2 gap-4">
-            <div className="border border-[#C5A059]/40 rounded-xl p-6 bg-white">
-              <p className="text-[#C5A059] text-xs tracking-widest uppercase mb-2">Dine in</p>
-              <p className="text-gray-700">Elegantly served. Thoughtfully paired.</p>
-            </div>
-            <div className="border border-[#C5A059]/40 rounded-xl p-6 bg-white">
-              <p className="text-[#C5A059] text-xs tracking-widest uppercase mb-2">Take away</p>
-              <p className="text-gray-700">Beautifully packed. Always with your bite.</p>
-            </div>
-          </div>
           <p className="text-center text-gray-500 text-sm mt-8">Prices are in FRW | Tax included</p>
         </div>
       </section>

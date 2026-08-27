@@ -57,7 +57,7 @@
             @yield('auth_body')
             <div class="mt-6 pt-4 border-t border-gray-100 text-center text-xs text-gray-500 leading-relaxed">
                 <div class="font-bold text-brand-blue tracking-wide">{{ \App\Support\AppVersion::bcl() }}</div>
-                <div class="mt-1">Developed By: <span class="font-semibold text-gray-700">Sr. Engr. Tefu R. Mbole</span></div>
+                <div class="mt-1">{{ __('site.footer.developed') }} <span class="font-semibold text-gray-700">Sr. Engr. Tefu R. Mbole</span></div>
             </div>
         </div>
     </div>

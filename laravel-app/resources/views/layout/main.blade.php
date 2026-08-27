@@ -1031,9 +1031,9 @@
                         @if(Auth::user()->role_id != 7)
                             <li><a href="{{ url('/admin') }}"> <i class="dripicons-meter"></i><span>{{ __('file.dashboard') }}</span></a></li>
                         @endif
-                        @if(in_array((int) Auth::user()->role_id, [1, 2], true))
-                            <li><a href="{{ url('/admin/site-content') }}"> <i class="dripicons-web"></i><span>Site Content</span></a></li>
-                            <li><a href="{{ url('/admin/leaders') }}"> <i class="dripicons-user-group"></i><span>About Us Leaders</span></a></li>
+                        @if(\App\Support\StaffAccess::canManageSite())
+                            <li><a href="{{ url('/admin/site-content') }}" data-nav-key="site-content"> <i class="dripicons-web"></i><span>Site Content</span></a></li>
+                            <li><a href="{{ url('/admin/leaders') }}" data-nav-key="leaders"> <i class="dripicons-user-group"></i><span>About Us Leaders</span></a></li>
                         @endif
                         <?php
                         $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
@@ -1540,6 +1540,31 @@
                                     <li id="courses-cert-menu"><a href="{{ route('courses.certificates') }}">Certificates</a></li>
                                     <li id="courses-progress-menu"><a href="{{ route('courses.progress') }}">Student Progress</a></li>
                                     <li id="courses-feedback-menu"><a href="{{ route('courses.feedback') }}">Feedback</a></li>
+                                </ul>
+                            </li>
+                        @endif
+                        @php
+                            $membership_module_permission = \Spatie\Permission\Models\Permission::where('name', 'membership_module')->first();
+                            $membership_module_active = $role && $membership_module_permission ? \DB::table('role_has_permissions')->where([
+                                ['permission_id', $membership_module_permission->id],
+                                ['role_id', $role->id]
+                            ])->first() : null;
+                        @endphp
+                        @if($membership_module_active || in_array(strtolower(optional($role)->name), ['admin', 'owner', 'super admin'], true))
+                            <li><a href="#membership-module" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-id-card"></i><span>Membership</span></a>
+                                <ul id="membership-module" class="collapse list-unstyled ">
+                                    <li id="membership-dash-menu"><a href="{{ route('membership.admin.dashboard') }}">Dashboard</a></li>
+                                    <li id="membership-apps-menu"><a href="{{ route('membership.admin.applications') }}">Applications</a></li>
+                                    <li id="membership-members-menu"><a href="{{ route('membership.admin.members') }}">Members</a></li>
+                                    <li id="membership-plans-menu"><a href="{{ route('membership.admin.plans') }}">Plans</a></li>
+                                    <li id="membership-promo-menu"><a href="{{ route('membership.admin.promotions') }}">Promotions</a></li>
+                                    <li id="membership-ben-menu"><a href="{{ route('membership.admin.benefits') }}">Benefits</a></li>
+                                    <li id="membership-pay-menu"><a href="{{ route('membership.admin.payments') }}">Payments</a></li>
+                                    <li id="membership-agr-menu"><a href="{{ route('membership.admin.agreements') }}">Agreements</a></li>
+                                    <li id="membership-doc-menu"><a href="{{ route('membership.admin.documents') }}">Documents</a></li>
+                                    <li id="membership-note-menu"><a href="{{ route('membership.admin.notifications') }}">Notifications</a></li>
+                                    <li id="membership-rep-menu"><a href="{{ route('membership.admin.reports') }}">Reports</a></li>
+                                    <li id="membership-set-menu"><a href="{{ route('membership.admin.settings') }}">Settings</a></li>
                                 </ul>
                             </li>
                         @endif

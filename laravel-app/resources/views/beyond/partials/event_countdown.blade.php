@@ -1,6 +1,6 @@
 @php
     $compact = !empty($compact);
-    $countdownLabel = $countdownLabel ?? ($compact ? 'Starts in' : 'Countdown');
+    $countdownLabel = $countdownLabel ?? ($compact ? __('site.events.starts_in') : __('site.events.countdown'));
 @endphp
 <div class="event-countdown {{ $compact ? 'event-countdown--compact bg-brand-blue text-white rounded-lg py-3 px-3' : 'bg-brand-blue text-white py-8' }}"
      data-countdown
@@ -13,14 +13,14 @@
             <p class="text-brand-gold font-semibold uppercase tracking-wider text-[10px] mb-1">{{ $countdownLabel }}</p>
         @endunless
         <div class="countdown-units flex justify-center {{ $compact ? 'gap-2' : 'gap-4 md:gap-8' }} flex-wrap" data-units>
-            <div><span class="cd-days {{ $compact ? 'text-lg font-bold' : 'text-4xl md:text-5xl font-bold' }} tabular-nums">--</span><span class="block {{ $compact ? 'text-[9px]' : 'text-sm' }} text-gray-300">Days</span></div>
-            <div><span class="cd-hours {{ $compact ? 'text-lg font-bold' : 'text-4xl md:text-5xl font-bold' }} tabular-nums">--</span><span class="block {{ $compact ? 'text-[9px]' : 'text-sm' }} text-gray-300">Hrs</span></div>
-            <div><span class="cd-mins {{ $compact ? 'text-lg font-bold' : 'text-4xl md:text-5xl font-bold' }} tabular-nums">--</span><span class="block {{ $compact ? 'text-[9px]' : 'text-sm' }} text-gray-300">Min</span></div>
-            <div><span class="cd-secs {{ $compact ? 'text-lg font-bold' : 'text-4xl md:text-5xl font-bold' }} tabular-nums">--</span><span class="block {{ $compact ? 'text-[9px]' : 'text-sm' }} text-gray-300">Sec</span></div>
+            <div><span class="cd-days {{ $compact ? 'text-lg font-bold' : 'text-4xl md:text-5xl font-bold' }} tabular-nums">--</span><span class="block {{ $compact ? 'text-[9px]' : 'text-sm' }} text-gray-300">{{ __('site.events.days') }}</span></div>
+            <div><span class="cd-hours {{ $compact ? 'text-lg font-bold' : 'text-4xl md:text-5xl font-bold' }} tabular-nums">--</span><span class="block {{ $compact ? 'text-[9px]' : 'text-sm' }} text-gray-300">{{ __('site.events.hrs') }}</span></div>
+            <div><span class="cd-mins {{ $compact ? 'text-lg font-bold' : 'text-4xl md:text-5xl font-bold' }} tabular-nums">--</span><span class="block {{ $compact ? 'text-[9px]' : 'text-sm' }} text-gray-300">{{ __('site.events.min') }}</span></div>
+            <div><span class="cd-secs {{ $compact ? 'text-lg font-bold' : 'text-4xl md:text-5xl font-bold' }} tabular-nums">--</span><span class="block {{ $compact ? 'text-[9px]' : 'text-sm' }} text-gray-300">{{ __('site.events.sec') }}</span></div>
         </div>
-        <p class="countdown-done hidden {{ $compact ? 'text-sm font-bold mt-1' : 'text-2xl font-bold mt-4' }}" data-done>{{ $completionMessage ?? 'The event is here!' }}</p>
+        <p class="countdown-done hidden {{ $compact ? 'text-sm font-bold mt-1' : 'text-2xl font-bold mt-4' }}" data-done>{{ $completionMessage ?? __('site.events.here') }}</p>
         @unless($compact)
-            <p class="text-xs text-gray-400 mt-3">Times shown in {{ str_replace('_', ' ', $timezone ?? 'Africa/Kigali') }}</p>
+            <p class="text-xs text-gray-400 mt-3">{{ __('site.events.times_in', ['tz' => str_replace('_', ' ', $timezone ?? 'Africa/Kigali')]) }}</p>
         @endunless
     </div>
 </div>

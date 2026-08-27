@@ -11,10 +11,20 @@ class LanguageController extends Controller
 {
     public function switchLanguage($locale)
     {
-    	setcookie('language', $locale, time() + (86400 * 365), "/");
-        /*$language = Language::firstOrNew(['id' => 1]);
-        $language->code = $locale;
-        $language->save();*/
-    	return Redirect::back();
+        if (! in_array($locale, ['en', 'fr'], true)) {
+            $locale = 'en';
+        }
+
+        setcookie('language', $locale, time() + (86400 * 365), '/');
+        if (function_exists('session')) {
+            session(['language' => $locale]);
+        }
+
+        $back = url()->previous();
+        if (! $back || $back === url()->current()) {
+            return redirect('/');
+        }
+
+        return redirect($back);
     }
 }

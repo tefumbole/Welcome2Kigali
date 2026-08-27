@@ -8,6 +8,6 @@ class CustomerGroup extends Model
 {
     protected $fillable =[
 
-        "name", "percentage", "is_active", "credit_limit"
+        "name", "percentage", "is_active", "credit_limit", "discount_mode", "is_system"
     ];
 }

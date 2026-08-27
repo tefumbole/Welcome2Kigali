@@ -1,7 +1,7 @@
 @extends('beyond.layout')
 
-@section('title', 'Register Now')
-@section('meta_description', 'Register for Beyond Enterprise training programs and courses.')
+@section('title', __('site.register.title'))
+@section('meta_description', __('site.register.sub'))
 
 @section('content')
 
@@ -10,9 +10,9 @@
         <div class="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-overlay" style="background-image:url('https://images.unsplash.com/photo-1693045181224-9fc2f954f054');"></div>
         <div class="absolute inset-0 bg-gradient-to-t from-brand-blue via-transparent to-transparent"></div>
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center text-white z-10">
-            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-2">Register Now</h1>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-2">{{ __('site.register.heading') }}</h1>
             <p class="text-lg md:text-xl text-blue-100 max-w-2xl">
-                Join Beyond Enterprise and elevate your skills with our premium courses. Select your courses below to get started.
+                {{ __('site.register.sub') }}
             </p>
         </div>
     </div>
@@ -33,8 +33,8 @@
             <form method="POST" action="{{ route('training.register') }}" @submit="onSubmit" class="flex flex-col lg:flex-row gap-8">
                 @csrf
                 <div class="flex-1 space-y-4">
-                    <h2 class="text-xl font-bold text-brand-blue">Select Courses</h2>
-                    <input type="search" x-model="search" placeholder="Search courses..."
+                    <h2 class="text-xl font-bold text-brand-blue">{{ __('site.register.select') }}</h2>
+                    <input type="search" x-model="search" placeholder="{{ __('site.register.search') }}"
                            class="w-full rounded-md border border-gray-200 px-3 py-2 focus:border-brand-blue outline-none">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[520px] overflow-y-auto pr-1">
                         @foreach ($courses as $course)
@@ -54,31 +54,31 @@
                 </div>
 
                 <div class="w-full lg:w-[380px] space-y-4">
-                    <h2 class="text-xl font-bold text-brand-blue">Your Details</h2>
+                    <h2 class="text-xl font-bold text-brand-blue">{{ __('site.register.details') }}</h2>
                     <div>
-                        <label class="text-sm font-semibold text-gray-700">Full Name *</label>
+                        <label class="text-sm font-semibold text-gray-700">{{ __('site.register.full_name') }}</label>
                         <input required name="client_name" value="{{ old('client_name') }}" type="text" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2">
                     </div>
                     <div>
-                        <label class="text-sm font-semibold text-gray-700">Email *</label>
+                        <label class="text-sm font-semibold text-gray-700">{{ __('site.register.email') }}</label>
                         <input required name="client_email" value="{{ old('client_email') }}" type="email" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2">
                     </div>
                     <div>
-                        <label class="text-sm font-semibold text-gray-700">Phone *</label>
+                        <label class="text-sm font-semibold text-gray-700">{{ __('site.register.phone') }}</label>
                         <input required name="client_phone" value="{{ old('client_phone') }}" type="tel" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2">
                     </div>
                     <div>
-                        <label class="text-sm font-semibold text-gray-700">Company (optional)</label>
+                        <label class="text-sm font-semibold text-gray-700">{{ __('site.register.company') }}</label>
                         <input name="company_name" value="{{ old('company_name') }}" type="text" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2">
                     </div>
                     <p class="text-sm text-gray-600" x-show="selected.length > 0">
-                        <span class="font-semibold" x-text="selected.length"></span> course(s) selected
+                        <span class="font-semibold" x-text="selected.length"></span> {{ __('site.register.selected') }}
                     </p>
                     <p class="text-sm text-red-600" x-show="error" x-text="error"></p>
                     <button type="submit" class="w-full bg-brand-blue hover:bg-brand-dark text-white font-bold py-3 rounded-md flex items-center justify-center gap-2">
-                        <i data-lucide="send" class="w-5 h-5"></i> Submit Registration
+                        <i data-lucide="send" class="w-5 h-5"></i> {{ __('site.register.submit') }}
                     </button>
-                    <p class="text-xs text-gray-400 text-center">You'll receive a WhatsApp confirmation with your reference number.</p>
+                    <p class="text-xs text-gray-400 text-center">{{ __('site.register.whatsapp_note') }}</p>
                 </div>
             </form>
         </div>
@@ -118,7 +118,7 @@ function registerForm() {
             this.error = '';
             if (this.selected.length === 0) {
                 e.preventDefault();
-                this.error = 'Please select at least one course.';
+                this.error = @json(__('site.register.select_one'));
             }
         }
     };

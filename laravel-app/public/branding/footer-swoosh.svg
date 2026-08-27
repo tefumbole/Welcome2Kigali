@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 380" preserveAspectRatio="xMaxYMax meet" aria-hidden="true">
+  <defs>
+    <linearGradient id="w2kFooterGold" x1="100%" y1="100%" x2="18%" y2="8%">
+      <stop offset="0%" stop-color="#C5A059"/>
+      <stop offset="55%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#C5A059" stop-opacity="0.15"/>
+    </linearGradient>
+    <linearGradient id="w2kFooterFade" x1="100%" y1="50%" x2="0%" y2="50%">
+      <stop offset="0%" stop-color="#fff" stop-opacity="1"/>
+      <stop offset="45%" stop-color="#fff" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="w2kFooterSwooshMask">
+      <rect width="420" height="380" fill="url(#w2kFooterFade)"/>
+    </mask>
+  </defs>
+  <g mask="url(#w2kFooterSwooshMask)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M430 400 C360 372 290 300 210 190 C160 125 115 78 48 18" stroke="url(#w2kFooterGold)" stroke-width="34"/>
+    <path d="M430 400 C385 378 325 315 250 215 C205 158 165 112 95 42" stroke="url(#w2kFooterGold)" stroke-width="20"/>
+  </g>
+</svg>

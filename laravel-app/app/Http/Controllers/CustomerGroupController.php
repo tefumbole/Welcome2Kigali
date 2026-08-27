@@ -136,6 +136,9 @@ class CustomerGroupController extends Controller
         $customer_group_id = $request['customer_groupIdArray'];
         foreach ($customer_group_id as $id) {
             $lims_customer_group_data = CustomerGroup::find($id);
+            if ($lims_customer_group_data && ! empty($lims_customer_group_data->is_system)) {
+                continue;
+            }
             $lims_customer_group_data->is_active = false;
             $lims_customer_group_data->save();
         }
@@ -145,6 +148,9 @@ class CustomerGroupController extends Controller
     public function destroy($id)
     {
         $lims_customer_group_data = CustomerGroup::find($id);
+        if ($lims_customer_group_data && ! empty($lims_customer_group_data->is_system)) {
+            return redirect('customer_group')->with('not_permitted', 'The Welcome to Kigali Members group cannot be deleted.');
+        }
         $lims_customer_group_data->is_active = false;
         $lims_customer_group_data->save();
         return redirect('customer_group')->with('not_permitted', 'Data deleted successfully');

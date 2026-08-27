@@ -15,7 +15,7 @@ class SiteContentController extends Controller
     /** Restrict Site Content management to Admin / Owner roles. */
     protected function authorizeAdmin()
     {
-        if (! Auth::check() || ! in_array((int) Auth::user()->role_id, [1, 2], true)) {
+        if (! \App\Support\StaffAccess::canManageSite()) {
             abort(403, 'You are not allowed to manage site content.');
         }
     }

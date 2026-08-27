@@ -57,6 +57,7 @@ Route::post('/contracts/sign/{token}/decline', 'ContractSignController@decline')
 Route::get('/', 'BeyondController@home')->name('beyond.home');
 Route::get('/about', 'BeyondController@about')->name('beyond.about');
 Route::get('/menu', 'BeyondController@menu')->name('beyond.menu');
+Route::get('/lang/{locale}', 'LanguageController@switchLanguage')->name('lang.switch');
 Route::get('/api/public/menu', 'BeyondController@menuData');
 Route::get('/services', 'BeyondController@services')->name('beyond.services');
 Route::get('/projects', 'BeyondController@projects')->name('beyond.projects');
@@ -67,10 +68,18 @@ Route::get('/events/{slug}', 'PublicEventController@show')->name('beyond.event.d
 Route::get('/api/public/events', 'PublicEventController@apiList');
 Route::get('/api/public/events/{slug}', 'PublicEventController@apiShow');
 Route::get('/trainings', 'TrainingController@trainings')->name('beyond.trainings');
-Route::get('/register-now', 'TrainingController@registerNow')->name('beyond.register');
-Route::post('/register-now', 'TrainingController@storeRegistration')->name('training.register');
+Route::get('/membership/apply', 'MembershipPublicController@apply')->name('membership.apply');
+Route::post('/membership/apply', 'MembershipPublicController@store')->name('membership.apply.store');
+Route::get('/membership/confirmation/{reference}', 'MembershipPublicController@confirmation')->name('membership.confirmation');
+Route::get('/membership/verify/{token}', 'MembershipPublicController@verify')->name('membership.verify');
+Route::get('/membership/renew/{token}', 'MembershipPublicController@renew')->name('membership.renew');
+Route::post('/membership/renew/{token}', 'MembershipPublicController@startPayment')->name('membership.renew.pay');
+Route::get('/membership/payment/check', 'MembershipPublicController@paymentCheck')->name('membership.payment.check');
+Route::get('/membership/paid', 'MembershipPublicController@paid')->name('membership.paid');
+Route::get('/register-now', 'MembershipPublicController@apply')->name('beyond.register');
+Route::post('/register-now', 'MembershipPublicController@store')->name('training.register');
 Route::get('/registration-confirmation/{reference}', 'TrainingController@registered')->name('training.registered');
-Route::redirect('/registration', '/register-now');
+Route::redirect('/registration', '/membership/apply');
 
 // Legacy upload URLs (missing /public/) → correct static path
 Route::get('/uploads/applications/{file}', function ($file) {
@@ -99,6 +108,8 @@ Route::middleware(['beyond.auth', 'beyond.otp'])->group(function () {
     Route::get('/student/dashboard', 'StudentDashboardController@dashboard')->name('student.dashboard');
     Route::get('/student/progress', 'StudentDashboardController@progress')->name('student.progress');
     Route::post('/student/feedback', 'StudentDashboardController@submitFeedback')->name('student.feedback');
+    Route::get('/membership/account', 'MembershipPublicController@account')->name('membership.account');
+    Route::get('/membership/pdf/{membership}', 'MembershipPublicController@pdf')->name('membership.pdf');
 });
 
 // Job board / Apply Now (public)
@@ -278,7 +289,9 @@ Route::get('/beyond/login', function () {
     return redirect('/login');
 })->name('beyond.login');
 
-Route::post('/signup', 'BeyondAuthController@register')->name('beyond.signup');
+Route::match(['get', 'post'], '/signup', function () {
+    return redirect('/login');
+})->name('beyond.signup');
 // Portal logout must NOT share POST /logout with Auth::routes (admin POS logout).
 Route::post('/portal/logout', 'BeyondAuthController@logout')->name('beyond.logout');
 
@@ -449,6 +462,35 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
     Route::post('/admin/course-progress/{id}', 'CourseManagerController@updateProgress')->name('courses.progress.update');
     Route::get('/admin/course-feedback', 'CourseManagerController@feedback')->name('courses.feedback');
     Route::post('/admin/course-feedback/{id}/delete', 'CourseManagerController@destroyFeedback')->name('courses.feedback.destroy');
+
+    Route::get('/admin/membership', 'MembershipAdminController@dashboard')->name('membership.admin.dashboard');
+    Route::get('/admin/membership/applications', 'MembershipAdminController@applications')->name('membership.admin.applications');
+    Route::get('/admin/membership/applications/{id}', 'MembershipAdminController@showApplication')->name('membership.admin.applications.show');
+    Route::post('/admin/membership/applications/{id}/approve', 'MembershipAdminController@approve')->name('membership.admin.applications.approve');
+    Route::post('/admin/membership/applications/{id}/reject', 'MembershipAdminController@reject')->name('membership.admin.applications.reject');
+    Route::post('/admin/membership/applications/{id}/more', 'MembershipAdminController@moreInfo')->name('membership.admin.applications.more');
+    Route::get('/admin/membership/members', 'MembershipAdminController@members')->name('membership.admin.members');
+    Route::get('/admin/membership/members/{id}', 'MembershipAdminController@showMember')->name('membership.admin.members.show');
+    Route::post('/admin/membership/members/{id}/suspend', 'MembershipAdminController@suspend')->name('membership.admin.members.suspend');
+    Route::post('/admin/membership/members/{id}/unsuspend', 'MembershipAdminController@unsuspend')->name('membership.admin.members.unsuspend');
+    Route::post('/admin/membership/members/{id}/cancel', 'MembershipAdminController@cancel')->name('membership.admin.members.cancel');
+    Route::get('/admin/membership/plans', 'MembershipAdminController@plans')->name('membership.admin.plans');
+    Route::post('/admin/membership/plans', 'MembershipAdminController@storePlan')->name('membership.admin.plans.store');
+    Route::post('/admin/membership/plans/{id}', 'MembershipAdminController@updatePlan')->name('membership.admin.plans.update');
+    Route::get('/admin/membership/promotions', 'MembershipAdminController@promotions')->name('membership.admin.promotions');
+    Route::post('/admin/membership/promotions', 'MembershipAdminController@storePromotion')->name('membership.admin.promotions.store');
+    Route::post('/admin/membership/promotions/{id}', 'MembershipAdminController@updatePromotion')->name('membership.admin.promotions.update');
+    Route::get('/admin/membership/benefits', 'MembershipAdminController@benefits')->name('membership.admin.benefits');
+    Route::post('/admin/membership/benefits', 'MembershipAdminController@storeBenefit')->name('membership.admin.benefits.store');
+    Route::get('/admin/membership/payments', 'MembershipAdminController@payments')->name('membership.admin.payments');
+    Route::get('/admin/membership/agreements', 'MembershipAdminController@agreements')->name('membership.admin.agreements');
+    Route::post('/admin/membership/agreements', 'MembershipAdminController@storeAgreement')->name('membership.admin.agreements.store');
+    Route::get('/admin/membership/documents', 'MembershipAdminController@documents')->name('membership.admin.documents');
+    Route::get('/admin/membership/notifications', 'MembershipAdminController@notifications')->name('membership.admin.notifications');
+    Route::get('/admin/membership/reports', 'MembershipAdminController@reports')->name('membership.admin.reports');
+    Route::get('/admin/membership/audit', 'MembershipAdminController@audit')->name('membership.admin.audit');
+    Route::get('/admin/membership/settings', 'MembershipAdminController@settings')->name('membership.admin.settings');
+    Route::post('/admin/membership/settings', 'MembershipAdminController@updateSettings')->name('membership.admin.settings.update');
 
     // Timesheet — Employee
     Route::get('/admin/timesheet/activities', 'TimesheetEmployeeController@activities')->name('timesheet.activities');
@@ -705,6 +747,8 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
 	Route::get('sales/lims_product_search', 'SaleController@limsProductSearch')->name('product_sale.search');
 	Route::get('sales/pos_product_suggest', 'SaleController@posProductSuggest')->name('sale.pos.product.suggest');
 	Route::get('sales/getcustomergroup/{id}', 'SaleController@getCustomerGroup')->name('sale.getcustomergroup');
+	Route::get('sales/membership-scan', 'MembershipPosController@scan')->name('sale.membership.scan');
+	Route::get('sales/membership-benefit/{customerId}/{productId}', 'MembershipPosController@benefit')->name('sale.membership.benefit');
 	Route::get('sales/getproduct/{id}', 'SaleController@getProduct')->name('sale.getproduct');
 	Route::get('sales/searchAllProducts', 'SaleController@searchAllProducts')->name('sale.search.all.products');
 	Route::get('sales/searchQuickProducts', 'SaleController@searchQuickProducts')->name('sale.search.quick.products');

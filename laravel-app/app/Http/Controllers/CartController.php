@@ -19,6 +19,7 @@ use App\Unit;
 use App\User;
 use App\Variant;
 use App\Warehouse;
+use App\Support\CafeOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -28,8 +29,16 @@ use Psy\Command\WhereamiCommand;
 class CartController extends Controller
 {
     public function cart(){
-        $best_selling = Product::where('is_active', true)->where('type', '!=', 'donation')->orderByDesc('qty')->take(4)->get();
-        return view('frontend.cart', compact('best_selling'));
+        $cart = session('cart', []);
+        $total = 0;
+        $count = 0;
+        foreach ($cart as $row) {
+            $qty = (int) ($row['quantity'] ?? 0);
+            $total += ((float) ($row['price'] ?? 0)) * $qty;
+            $count += $qty;
+        }
+
+        return view('beyond.cart', compact('cart', 'total', 'count'));
     }
 
     public function rentCart(){
@@ -38,8 +47,22 @@ class CartController extends Controller
     }
 
     public function checkout(){
-        $best_selling = Product::where('is_active', true)->where('type', '!=', 'donation')->orderByDesc('qty')->take(5)->get();
-        return view('frontend.checkout', compact('best_selling'));
+        $cart = session('cart', []);
+        if (! $cart) {
+            return redirect('/menu');
+        }
+
+        $total = 0;
+        $count = 0;
+        foreach ($cart as $row) {
+            $qty = (int) ($row['quantity'] ?? 0);
+            $total += ((float) ($row['price'] ?? 0)) * $qty;
+            $count += $qty;
+        }
+
+        $takeawayFee = CafeOrder::TAKEAWAY_FEE;
+
+        return view('beyond.checkout', compact('cart', 'total', 'count', 'takeawayFee'));
     }
 
     public function rentCheckout(){
@@ -142,102 +165,62 @@ class CartController extends Controller
 
     public function addToCart(Request $request)
     {
-        $quantity = $request->quantity ?? 1;
+        $quantity = (int) ($request->quantity ?? 1);
+        if ($quantity < 1) {
+            $quantity = 1;
+        }
+
         $id = $request->id;
+        $option = trim((string) $request->get('option', ''));
+        $option = preg_replace("/[^A-Za-z0-9 \\-']/", '', $option);
+        $option = substr($option, 0, 40);
 
         $product = Product::where('id', $id)->first();
+        if (! $product) {
+            return response()->json(['error' => 'Item not found'], 404);
+        }
 
         $product_price = $product->price;
+        $product_image = '';
+        if (! empty($product->image)) {
+            $parts = explode(',', $product->image);
+            $product_image = htmlspecialchars($parts[0]);
+        }
 
-        $product_image = explode(",", $product->image);
-        $product_image = htmlspecialchars($product_image[0]);
+        $cartKey = $option !== '' ? $id.'::'.\Illuminate\Support\Str::slug($option) : (string) $id;
+        $displayName = $option !== '' ? $product->name.' — '.$option : $product->name;
 
-        $cart = Session::get('cart');
-
-        if (!$cart) {
-
-            $cart = [
-                $id => [
-                    "name" => $product->name,
-                    "quantity" => $quantity,
-                    "price" => $product_price,
-                    "image" => $product_image,
-                    "products_id" => $id,
-                    "product_name" => $product->name,
-                    "vendor_id" => $product->vendor_id,
-                    "o_id" => '',
-
-                ]
+        $cart = Session::get('cart') ?: [];
+        if (isset($cart[$cartKey])) {
+            $cart[$cartKey]['quantity'] += $quantity;
+        } else {
+            $cart[$cartKey] = [
+                'name' => $displayName,
+                'quantity' => $quantity,
+                'price' => $product_price,
+                'image' => $product_image,
+                'products_id' => $id,
+                'product_name' => $displayName,
+                'vendor_id' => $product->vendor_id,
+                'o_id' => '',
+                'option' => $option,
             ];
-            Session::put('cart', $cart);
-            if (Session::has('cart')) {
-                foreach (session('cart') as $id => $detail) {
-
-                    @$number += $detail['quantity'];
-                    @$prices += $detail['price'] * $detail['quantity'];
-                }
-            }
-            $response = array(
-                "number" => $number,
-                "price" => $prices,
-            );
-            return (json_encode($response));
-            // return ('frontEnd.layouts.newheader');
         }
-        // if cart not empty then check if this product exist then increment quantity
-
-        if (isset($cart[$id])) {
-            $cart[$id]['quantity'] += $quantity;
-            Session::put('cart', $cart);
-            if (Session::has('cart')) {
-
-                foreach (session('cart') as $id => $detail) {
-
-                    @$number += $detail['quantity'];
-                    @$prices += $detail['price'] * $detail['quantity'];
-
-                }
-            }
-            $response = array(
-                "number" => $number,
-                "price" => $prices,
-            );
-
-
-            // return view('frontEnd.layouts.newheader');
-            return (json_encode($response));
-        }
-        // if item not exist in cart then add to cart with quantity = 1
-
-
-        $cart[$id] = [
-            "name" => $product->name,
-            "quantity" => $quantity,
-            "price" => $product_price,
-            "image" => $product_image,
-            "products_id" => $id,
-            "product_name" => $product->name,
-            "vendor_id" => $product->vendor_id,
-            "o_id" => '',
-
-        ];
 
         Session::put('cart', $cart);
 
-        if (Session::has('cart')) {
-            foreach (session('cart') as $id => $detail) {
-
-                @$number += $detail['quantity'];
-                @$prices += $detail['price'] * $detail['quantity'];
-
-            }
+        $number = 0;
+        $prices = 0;
+        foreach ($cart as $detail) {
+            $number += (int) ($detail['quantity'] ?? 0);
+            $prices += ((float) ($detail['price'] ?? 0)) * ((int) ($detail['quantity'] ?? 0));
         }
-        $response = array(
-            "number" => $number,
-            "price" => $prices,
-        );
 
-        return (json_encode($response));
+        return response()->json([
+            'number' => $number,
+            'price' => $prices,
+            'name' => $displayName,
+        ]);
     }
 
     public function addToRentCart(Request $request)
@@ -478,6 +461,9 @@ class CartController extends Controller
         $data = $request->all();
         $grand_total = 0;
         $order_array = [];
+        $data['address'] = CafeOrder::service($request->input('address', $request->input('service')));
+        $takeawayFee = CafeOrder::takeawayFee($data['address']);
+        $data['shipping_charges'] = $takeawayFee;
         if(!Auth::user()) {
 //            $data['phone'] = '+923'.$data['phone'];
             $data['phone'] = '+237'.$data['phone'];
@@ -502,8 +488,12 @@ class CartController extends Controller
             $multimple_carts[$item['vendor_id']][] = $item;
             $grand_total += $item['price'] * $item['quantity'];
         }
+        $grand_total += $takeawayFee;
+        $feeApplied = false;
         foreach($multimple_carts as $key => $cart) {
             $data['vendor_id'] = $key;
+            $data['shipping_charges'] = $feeApplied ? 0 : $takeawayFee;
+            $feeApplied = true;
             $order = $this->placeOrder($data, $cart, $user);
             if($order == false) {
                 return back()->with('not_permitted', 'Something went wrong.....!');
@@ -1102,6 +1092,7 @@ class CartController extends Controller
 
     private function placeOrder($user_data, $cart, $user) {
         $data = $user_data;
+        unset($data['_token'], $data['service']);
         $data['user_id'] = $user->id;
         $grand_total = 0;
         $total_qty = 0;
@@ -1110,7 +1101,10 @@ class CartController extends Controller
             $total_qty += $item['quantity'];
 
         }
-        $data['grand_total'] = $grand_total;
+        $takeawayFee = (int) ($data['shipping_charges'] ?? CafeOrder::takeawayFee($data['address'] ?? ''));
+        $data['address'] = CafeOrder::service($data['address'] ?? '');
+        $data['shipping_charges'] = $takeawayFee;
+        $data['grand_total'] = $grand_total + $takeawayFee;
         if ($data['payment_method'] != 'COD') {
             $data['payment_status'] = 2;
         } else {
@@ -1128,8 +1122,8 @@ class CartController extends Controller
         $mail_data['order_tax'] = 0;
         $mail_data['order_tax_rate'] = 'nill';
         $mail_data['order_discount'] = 0;
-        $mail_data['shipping_cost'] = 0;
-        $mail_data['grand_total'] = $grand_total;
+        $mail_data['shipping_cost'] = $takeawayFee;
+        $mail_data['grand_total'] = $grand_total + $takeawayFee;
         $mail_data['paid_amount'] = 0;
 
 

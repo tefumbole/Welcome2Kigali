@@ -1717,7 +1717,7 @@ $('.selectpicker').selectpicker('refresh');
 
 var id = $('select[name="customer_id"]').val();
 $.get('../getcustomergroup/' + id, function(data) {
-    customer_group_rate = (data / 100);
+    customer_group_rate = (function(d){ var p = (d && typeof d === 'object' && d.percentage !== undefined) ? d.percentage : d; var m = (d && typeof d === 'object' && d.discount_mode) ? d.discount_mode : 'markup'; var s = (parseFloat(p)||0)/100; return m==='discount' ? -Math.abs(s) : s; })(data);
 });
 
 var id = $('select[name="warehouse_id"]').val();
@@ -1934,7 +1934,7 @@ $('#featured-filter').on('click', function(){
 $('select[name="customer_id"]').on('change', function() {
     var id = $(this).val();
     $.get('../getcustomergroup/' + id, function(data) {
-        customer_group_rate = (data / 100);
+        customer_group_rate = (function(d){ var p = (d && typeof d === 'object' && d.percentage !== undefined) ? d.percentage : d; var m = (d && typeof d === 'object' && d.discount_mode) ? d.discount_mode : 'markup'; var s = (parseFloat(p)||0)/100; return m==='discount' ? -Math.abs(s) : s; })(data);
     });
 });
 

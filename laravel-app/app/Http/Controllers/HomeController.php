@@ -367,8 +367,13 @@ echo $response;
     {
         $this->manageBooking();
         $role = Role::find(Auth::user()->role_id);
-        $role->revokePermissionTo('search_all_products');
-        if (! \App\Support\LocalDevAuth::skipStaffOtp() && $role->hasPermissionTo('one_time_otp')) {
+        if ($role) {
+            $searchAll = \Spatie\Permission\Models\Permission::where('name', 'search_all_products')->first();
+            if ($searchAll && $role->hasPermissionTo($searchAll)) {
+                $role->revokePermissionTo($searchAll);
+            }
+        }
+        if ($role && ! \App\Support\LocalDevAuth::skipStaffOtp() && \Spatie\Permission\Models\Permission::where('name', 'one_time_otp')->exists() && $role->hasPermissionTo('one_time_otp')) {
             if (Auth::user()->otp_verify == 0) {
                 return redirect()->route('check.otp');
             }
@@ -398,7 +403,7 @@ echo $response;
         $yearly_sale_amount = [];
 
         $general_setting = DB::table('general_settings')->latest()->first();
-        if(Auth::user()->role_id > 2 && $general_setting->staff_access == 'own') {
+        if(Auth::user()->role_id > 2 && optional($general_setting)->staff_access == 'own') {
             $product_sale_data = Sale::join('product_sales', 'sales.id','=', 'product_sales.sale_id')
                 ->select(DB::raw('product_sales.product_id, product_sales.product_batch_id, sum(product_sales.qty) as sold_qty, sum(product_sales.total) as sold_amount'))
                 ->where('sales.user_id', Auth::id())
@@ -510,7 +515,7 @@ echo $response;
             $start_date = date("Y-m", $start).'-'.'01';
             $end_date = date("Y-m", $start).'-'.date('t', mktime(0, 0, 0, date("m", $start), 1, date("Y", $start)));
 
-            if(Auth::user()->role_id > 2 && $general_setting->staff_access == 'own') {
+            if(Auth::user()->role_id > 2 && optional($general_setting)->staff_access == 'own') {
                 $recieved_amount = DB::table('payments')->whereNotNull('sale_id')->whereDate('created_at', '>=' , $start_date)->whereDate('created_at', '<=' , $end_date)->where('user_id', Auth::id())->sum('amount');
                 $sent_amount = DB::table('payments')->whereNotNull('purchase_id')->whereDate('created_at', '>=' , $start_date)->whereDate('created_at', '<=' , $end_date)->where('user_id', Auth::id())->sum('amount');
                 $return_amount = Returns::whereDate('created_at', '>=' , $start_date)->whereDate('created_at', '<=' , $end_date)->where('user_id', Auth::id())->sum('grand_total');
@@ -540,7 +545,7 @@ echo $response;
         {
             $start_date = date("Y").'-'.date('m', $start).'-'.'01';
             $end_date = date("Y").'-'.date('m', $start).'-'.date('t', mktime(0, 0, 0, date("m", $start), 1, date("Y", $start)));
-            if(Auth::user()->role_id > 2 && $general_setting->staff_access == 'own') {
+            if(Auth::user()->role_id > 2 && optional($general_setting)->staff_access == 'own') {
                 $sale_amount = Sale::whereDate('created_at', '>=' , $start_date)->whereDate('created_at', '<=' , $end_date)->where('user_id', Auth::id())->sum('grand_total');
                 $purchase_amount = Purchase::whereDate('created_at', '>=' , $start_date)->whereDate('created_at', '<=' , $end_date)->where('user_id', Auth::id())->sum('grand_total');
             }
@@ -558,7 +563,7 @@ echo $response;
     public function dashboardFilter($start_date, $end_date)
     {
         $general_setting = DB::table('general_settings')->latest()->first();
-        if(Auth::user()->role_id > 2 && $general_setting->staff_access == 'own') {
+        if(Auth::user()->role_id > 2 && optional($general_setting)->staff_access == 'own') {
             $product_sale_data = Sale::join('product_sales', 'sales.id','=', 'product_sales.sale_id')
                 ->select(DB::raw('product_sales.product_id, product_sales.product_batch_id, sum(product_sales.qty) as sold_qty, sum(product_sales.total) as sold_amount'))
                 ->where('sales.user_id', Auth::id())

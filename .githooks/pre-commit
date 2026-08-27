@@ -2,9 +2,9 @@
 # Auto-increment the app version on every commit.
 # Source of truth: laravel-app/VERSION (semver x.y.z), read by App\Support\AppVersion.
 #
-# Scheme:
-#   patch 0–9, then roll to next minor (2.3.9 → 2.4.0)
-#   minor 0–9, then roll to next major (2.9.9 → 3.0.0)
+# Scheme (W2K_V_x.y.z):
+#   1.1.9 → 1.1.10 → 1.2.1
+#   after 1.10.10 → 2.2.1
 #
 # Skip once with:  SKIP_VERSION_BUMP=1 git commit ...
 set -euo pipefail
@@ -27,12 +27,12 @@ minor="${rest%%.*}"
 patch="${rest#*.}"
 
 patch=$((patch + 1))
-if [ "$patch" -ge 10 ]; then
-  patch=0
+if [ "$patch" -gt 10 ]; then
+  patch=1
   minor=$((minor + 1))
 fi
-if [ "$minor" -ge 10 ]; then
-  minor=0
+if [ "$minor" -gt 10 ]; then
+  minor=2
   major=$((major + 1))
 fi
 

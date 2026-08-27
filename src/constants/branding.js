@@ -27,7 +27,7 @@ export const WEBSITE_HOST =
   import.meta.env.VITE_WEBSITE_HOST || 'www.welcome2kigali.com';
 
 export const CONTACT_EMAIL =
-  import.meta.env.VITE_CONTACT_EMAIL || 'hello@welcome2kigali.com';
+  import.meta.env.VITE_CONTACT_EMAIL || 'info@welcome2kigali.net';
 
 export const DEFAULT_LOGO_URL =
   import.meta.env.VITE_LOGO_URL || '/branding/w2k-logo.png';
@@ -45,9 +45,9 @@ export const BRAND_CREAM = '#F7F1E8';
 /** Software developer credit — shown in footer/login. Phone links to WhatsApp. */
 export const DEVELOPER = {
   name: 'Sr. Engr. Tefu R. Mbole',
-  phone: '+237675321739',
-  waMe: '237675321739',
-  whatsAppUrl: 'https://wa.me/237675321739',
+  phone: '+250 793 761 617',
+  waMe: '250793761617',
+  whatsAppUrl: 'https://wa.me/250793761617',
 };
 
 export function whatsAppUrl(message) {

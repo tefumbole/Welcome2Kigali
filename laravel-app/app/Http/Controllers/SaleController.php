@@ -700,6 +700,19 @@ class SaleController extends Controller
             $product_sale['total'] = $mail_data['total'][$i] = $total[$i];
             $this->stockDurationSave($lims_product_data->id, $lims_product_data->qty);
             Product_Sale::create($product_sale);
+            if (! empty($data['membership_benefit'][$i])) {
+                $membershipService = app(\App\Services\MembershipService::class);
+                $membership = $membershipService->activeMembershipForCustomer($data['customer_id']);
+                if ($membership) {
+                    $membershipService->recordRedemption(
+                        $membership,
+                        $id,
+                        $lims_sale_data->id,
+                        $qty[$i],
+                        $data['membership_benefit_value'][$i] ?? $total[$i]
+                    );
+                }
+            }
         }
         if($data['sale_status'] == 3)
             $message = 'Sale successfully added to draft';
@@ -1806,9 +1819,7 @@ class SaleController extends Controller
 
     public function getCustomerGroup($id)
     {
-         $lims_customer_data = Customer::find($id);
-         $lims_customer_group_data = CustomerGroup::find($lims_customer_data->customer_group_id);
-         return $lims_customer_group_data->percentage;
+         return response()->json(app(\App\Services\MembershipService::class)->posPayloadForCustomer($id));
     }
 
     public function getBatchProduct($id) {

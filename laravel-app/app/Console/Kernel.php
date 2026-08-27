@@ -50,6 +50,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('internship:timesheet-reminders')->hourly()->withoutOverlapping();
         $schedule->command('internship:review-sla')->hourly()->withoutOverlapping();
         $schedule->command('online-invitations:send-reminders')->everyMinute();
+        $schedule->command('memberships:process')->hourly()->withoutOverlapping();
     }
 
     /**
