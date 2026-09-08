@@ -90,6 +90,27 @@ class BeyondController extends Controller
         ]);
     }
 
+    public function menuQr()
+    {
+        return view('beyond.menu-qr', [
+            'qr' => \App\Support\CafeMenuQr::dataUri(720),
+            'menuUrl' => \App\Support\CafeMenuQr::menuUrl(),
+        ]);
+    }
+
+    public function menuQrPng()
+    {
+        $png = \App\Support\CafeMenuQr::pngBinary(720);
+        if ($png === '') {
+            abort(500, 'Could not build menu QR.');
+        }
+
+        return response($png, 200)
+            ->header('Content-Type', 'image/png')
+            ->header('Content-Disposition', 'inline; filename="w2k-menu-qr.png"')
+            ->header('Cache-Control', 'public, max-age=3600');
+    }
+
     public function menuData()
     {
         return response()->json(['groups' => $this->menuGroups()]);

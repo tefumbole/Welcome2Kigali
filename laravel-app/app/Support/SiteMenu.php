@@ -103,6 +103,8 @@ class SiteMenu
     public static function settingsItems()
     {
         return [
+            'side-bars'          => 'Side Bars',
+            'frontend'           => 'Frontend',
             'role'               => 'Role Permission',
             'notification'       => 'Send Notification',
             'warehouse'          => 'Warehouse',
@@ -172,6 +174,8 @@ class SiteMenu
     public static function settingsLiKeyMap()
     {
         return [
+            'side-bars-menu'          => 'side-bars',
+            'frontend-menu'           => 'frontend',
             'role-menu'               => 'role',
             'notification-menu'         => 'notification',
             'warehouse-menu'          => 'warehouse',

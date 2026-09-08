@@ -201,7 +201,7 @@ class CartController extends Controller
                 'image' => $product_image,
                 'products_id' => $id,
                 'product_name' => $displayName,
-                'vendor_id' => $product->vendor_id,
+                'vendor_id' => $product->vendor_id ?: 1,
                 'o_id' => '',
                 'option' => $option,
             ];
@@ -465,13 +465,12 @@ class CartController extends Controller
         $takeawayFee = CafeOrder::takeawayFee($data['address']);
         $data['shipping_charges'] = $takeawayFee;
         if(!Auth::user()) {
-//            $data['phone'] = '+923'.$data['phone'];
-            $data['phone'] = '+237'.$data['phone'];
+            $data['phone'] = \App\Support\MomoNetwork::normalize($data['phone']);
         }
         $data['email'] = $data['email'] ? $data['email'] : 'guest@gmail.com';
         $data['city'] = $data['city'] ? $data['city'] : 'guest city';
         $data['state'] = $data['state'] ? $data['state'] : 'guest state';
-        $data['mtn_phone'] = $data['mtn_phone'] ? '+237'.$data['mtn_phone'] : $data['phone'];
+        $data['mtn_phone'] = \App\Support\MomoNetwork::normalize(! empty($data['mtn_phone']) ? $data['mtn_phone'] : $data['phone']);
 
         if(Auth::user()) {
             $user = Auth::user();
@@ -485,13 +484,14 @@ class CartController extends Controller
         $cart = Session::get('cart');
 
         foreach ($cart as $item) {
-            $multimple_carts[$item['vendor_id']][] = $item;
+            $vendorKey = ! empty($item['vendor_id']) ? $item['vendor_id'] : 1;
+            $multimple_carts[$vendorKey][] = $item;
             $grand_total += $item['price'] * $item['quantity'];
         }
         $grand_total += $takeawayFee;
         $feeApplied = false;
         foreach($multimple_carts as $key => $cart) {
-            $data['vendor_id'] = $key;
+            $data['vendor_id'] = (int) $key ?: 1;
             $data['shipping_charges'] = $feeApplied ? 0 : $takeawayFee;
             $feeApplied = true;
             $order = $this->placeOrder($data, $cart, $user);
@@ -500,7 +500,51 @@ class CartController extends Controller
             }
             $order_array[] = $order->id;
         }
-        if($data['payment_method'] == 'MTN') {
+        if($data['payment_method'] == 'VISA' || $data['payment_method'] == 'STRIPE') {
+                $stripe = app(\App\Services\StripePaymentService::class);
+                if (! $stripe->isConfigured()) {
+                    return back()->with('not_permitted', 'Visa / card payments are not configured.');
+                }
+                $result = $stripe->start(
+                    'order',
+                    $order_array[0],
+                    $grand_total,
+                    'W2K Cafe',
+                    url('/checkout'),
+                    ['ids' => $order_array, 'email' => $data['email'] !== 'guest@gmail.com' ? $data['email'] : null]
+                );
+                if (empty($result['ok'])) {
+                    return back()->with('not_permitted', $result['message'] ?? 'Could not start Visa payment.');
+                }
+                Session::forget('cart');
+                Session::forget('user_data');
+                Session::forget('otp');
+
+                return redirect()->away($result['url']);
+        }
+        if($data['payment_method'] == 'MTN' || $data['payment_method'] == 'AIRTEL') {
+                $pawapay = app(\App\Services\PawaPayPaymentService::class);
+                $hint = $data['payment_method'] == 'AIRTEL' ? 'airtel' : 'mtn';
+                if ($pawapay->isConfigured()) {
+                    $result = $pawapay->start(
+                        'order',
+                        $order_array[0],
+                        $grand_total,
+                        $data['mtn_phone'] ?: $data['phone'],
+                        $hint,
+                        'W2K Cafe',
+                        url('/menu'),
+                        ['ids' => $order_array]
+                    );
+                    if (empty($result['ok'])) {
+                        return back()->with('not_permitted', $result['message'] ?? 'Could not start Mobile Money payment.');
+                    }
+                    Session::forget('cart');
+                    Session::forget('user_data');
+                    Session::forget('otp');
+
+                    return redirect()->route('pawapay.wait', $result['deposit']->deposit_id);
+                }
                 $token = getenv("MOMO_TOKEN");
                 $route = route('order.payment.check');
                 $failure_route = url()->previous();
@@ -1108,9 +1152,28 @@ class CartController extends Controller
         if ($data['payment_method'] != 'COD') {
             $data['payment_status'] = 2;
         } else {
-            $data['is_approve'] = 0;
+            $data['payment_status'] = $data['payment_status'] ?? 1;
         }
-        $lims_sale_data = Order::create($data);
+        $vendorId = (int) ($data['vendor_id'] ?? 1);
+        if ($vendorId < 1) {
+            $vendorId = 1;
+        }
+        $lims_sale_data = Order::create([
+            'user_id' => $user->id,
+            'vendor_id' => $vendorId,
+            'name' => $data['name'],
+            'phone' => $data['phone'],
+            'email' => $data['email'] ?? null,
+            'address' => $data['address'] ?? null,
+            'city' => $data['city'] ?? null,
+            'state' => $data['state'] ?? null,
+            'payment_method' => $data['payment_method'],
+            'shipping_charges' => $data['shipping_charges'] ?? 0,
+            'mtn_phone' => $data['mtn_phone'] ?? null,
+            'grand_total' => $data['grand_total'],
+            'payment_status' => $data['payment_status'],
+            'order_status' => 0,
+        ]);
 
         //collecting male data
         $mail_data['email'] = $data['email'];

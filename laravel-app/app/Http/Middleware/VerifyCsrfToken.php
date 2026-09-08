@@ -19,6 +19,9 @@ class VerifyCsrfToken extends Middleware
      * @var array
      */
     protected $except = [
-        //
+        'api/payments/pawapay/*',
+        'payments/pawapay/*',
+        'api/payments/stripe/*',
+        'payments/stripe/webhook',
     ];
 }

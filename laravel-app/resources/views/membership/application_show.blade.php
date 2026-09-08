@@ -16,6 +16,9 @@
                     <p><strong>Phone:</strong> {{ $application->phone }}</p>
                     <p><strong>Company:</strong> {{ $application->company_name ?: '—' }}</p>
                     <p><strong>ID type:</strong> {{ $application->id_type }}</p>
+                    <p><strong>Document number:</strong> {{ $application->id_number ?: '—' }}</p>
+                    <p><strong>Nationality:</strong> {{ $application->nationality ?: '—' }}</p>
+                    <p><strong>ID expiry:</strong> {{ optional($application->id_expires_on)->toDateString() ?: '—' }}</p>
                     <p><strong>Plan:</strong> {{ optional($application->plan)->name }}</p>
                     <p><strong>Status:</strong> {{ $application->status }}</p>
                     <p><strong>Agreement:</strong> {{ $application->signed_agreement_version }} @ {{ optional($application->signed_at)->toDayDateTimeString() }}</p>
@@ -26,7 +29,13 @@
                     <h5 class="mt-3">Documents</h5>
                     <ul>
                         @foreach($application->documents as $doc)
-                            <li><a href="{{ asset($doc->path) }}" target="_blank">{{ $doc->doc_type }} — {{ $doc->original_name }}</a></li>
+                            @php $docUrl = url('public/'.ltrim($doc->path, '/')); @endphp
+                            <li class="mb-2">
+                                <a href="{{ $docUrl }}" target="_blank">{{ $doc->doc_type }} — {{ $doc->original_name }}</a>
+                                @if(preg_match('/\.(jpe?g|png|webp|gif)$/i', $doc->path))
+                                    <div class="mt-1"><img src="{{ $docUrl }}" alt="{{ $doc->doc_type }}" style="max-width:220px;border:1px solid #ddd;"></div>
+                                @endif
+                            </li>
                         @endforeach
                     </ul>
                     @if($application->membership)

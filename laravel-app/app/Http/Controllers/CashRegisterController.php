@@ -8,6 +8,7 @@ use App\Sale;
 use App\Payment;
 use App\Returns;
 use App\Expense;
+use App\Warehouse;
 use Auth;
 
 class CashRegisterController extends Controller
@@ -23,10 +24,21 @@ class CashRegisterController extends Controller
 	}
 	public function store(Request $request)
 	{
-		$data = $request->all();
-		$data['status'] = true;
-		$data['user_id'] = Auth::id();
-		CashRegister::create($data);
+		$warehouseId = $request->input('warehouse_id') ?: Auth::user()->warehouse_id;
+		if (! $warehouseId) {
+			$warehouseId = optional(Warehouse::where('is_active', true)->orderBy('id')->first())->id;
+		}
+		if (! $warehouseId) {
+			return redirect()->back()->with('not_permitted', 'Please select a warehouse before opening the cash register.');
+		}
+
+		CashRegister::create([
+			'cash_in_hand' => $request->input('cash_in_hand', 0),
+			'user_id' => Auth::id(),
+			'warehouse_id' => $warehouseId,
+			'status' => true,
+		]);
+
 		return redirect()->back()->with('message', 'Cash register created successfully');
 	}
 

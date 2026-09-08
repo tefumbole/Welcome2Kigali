@@ -21,7 +21,11 @@ class Letterhead
      */
     public static function viewVars()
     {
-        $letterhead = self::ensureSynced();
+        try {
+            $letterhead = self::ensureSynced();
+        } catch (\Throwable $e) {
+            $letterhead = self::resolve(null);
+        }
 
         return [
             'letterhead' => $letterhead,
@@ -241,6 +245,9 @@ class Letterhead
 
         foreach (['header' => self::BEYOND_HEADER, 'footer' => self::BEYOND_FOOTER] as $kind => $beyondName) {
             $field = $kind === 'header' ? 'email_header' : 'email_footer';
+            if (! \Illuminate\Support\Facades\Schema::hasColumn('general_settings', $field)) {
+                continue;
+            }
             $current = (string) ($settings->{$field} ?? '');
             $needsBeyond = $current === ''
                 || self::isForeignLetterhead($current)
@@ -262,12 +269,13 @@ class Letterhead
         }
 
         // Watermark: prefer Beyond site logo when configured mark file is missing
-        if (! self::locate($settings->email_water_mark ?? null) && ! empty($settings->site_logo) && self::locate($settings->site_logo)) {
+        if (! self::locate($settings->email_water_mark ?? null) && ! empty($settings->site_logo) && self::locate($settings->site_logo)
+            && \Illuminate\Support\Facades\Schema::hasColumn('general_settings', 'email_water_mark')) {
             $settings->email_water_mark = $settings->site_logo;
             $changed = true;
         }
 
-        if ($changed) {
+        if ($changed && \Illuminate\Support\Facades\Schema::hasColumn('general_settings', 'email_header')) {
             $settings->save();
         }
 

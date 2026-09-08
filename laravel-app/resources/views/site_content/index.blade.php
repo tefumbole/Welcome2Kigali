@@ -52,7 +52,7 @@
                 @php
                     $menuTabs = [
                         'landing-menu'  => ['label' => 'Landing Menu', 'tone' => 'tone-blue', 'icon' => 'dripicons-home'],
-                        'side-menu'     => ['label' => 'Side Menu', 'tone' => 'tone-purple', 'icon' => 'dripicons-view-list'],
+                        'side-menu'     => ['label' => 'Side Bars', 'tone' => 'tone-purple', 'icon' => 'dripicons-view-list'],
                         'people-menu'   => ['label' => 'People', 'tone' => 'tone-pink', 'icon' => 'dripicons-user'],
                         'settings-menu' => ['label' => 'Settings', 'tone' => 'tone-orange', 'icon' => 'dripicons-gear'],
                         'content-tabs'  => ['label' => 'Content Tabs', 'tone' => 'tone-teal', 'icon' => 'dripicons-toggles'],
@@ -92,7 +92,7 @@
                             $items = $side;
                             $order = $sideOrder;
                             $action = route('site-content.side-menu');
-                            $heading = 'Side Menu — Order';
+                            $heading = 'Side Bars — Order';
                             $hint = 'Drag items to reorder the admin sidebar (or use arrows). Click Save when done.';
                         } elseif ($tab == 'people-menu') {
                             $items = $people;
@@ -159,6 +159,14 @@
                     </div>
                     @if($tab === 'contact')
                         <p class="text-info" style="font-size:13px;"><i class="dripicons-information"></i> Contact details and the message form now appear on the <strong>About Us</strong> page (<code>#contact</code> section). Edit the fields below to update that section.</p>
+                    @elseif($tab === 'about')
+                        <div class="alert alert-info" style="font-size:13px;">
+                            <strong>Photos on About Us</strong>
+                            <ul class="mb-0 mt-2 pl-3">
+                                <li><strong>Vision photo</strong> and <strong>Mission photo</strong> — choose a file below (or click the dashed box and paste). Then press Save. They appear beside the Vision and Mission text on <a href="{{ url('/about') }}" target="_blank">/about</a>.</li>
+                                <li><strong>Leadership photos</strong> — use the sidebar item <a href="{{ url('/admin/leaders') }}">About Us Leaders</a>. Add a leader, upload their photo, and it shows in the Leadership section.</li>
+                            </ul>
+                        </div>
                     @else
                         <p class="text-muted" style="font-size:13px;">Edit the content shown on this page. Leave a field as-is to keep the current text.</p>
                     @endif

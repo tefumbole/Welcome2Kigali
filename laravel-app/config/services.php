@@ -72,4 +72,28 @@ return [
         'clickatell_api_key' => env('CLICKATELL_API_KEY'),
     ],
 
+    'stripe' => [
+        'mode' => env('STRIPE_MODE', 'test'),
+        'key' => env('STRIPE_KEY'),
+        'secret' => env('STRIPE_SECRET'),
+        'live_key' => env('STRIPE_LIVE_KEY'),
+        'live_secret' => env('STRIPE_LIVE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        'currency' => env('STRIPE_CURRENCY', 'rwf'),
+    ],
+
+    'pawapay' => [
+        'api_token' => env('PAWAPAY_API_TOKEN'),
+        'token_id' => env('PAWAPAY_API_TOKEN_ID'),
+        'environment' => env('PAWAPAY_ENVIRONMENT', 'production'),
+        'base_url' => env('PAWAPAY_LIVE_BASE_URL', env('PAWAPAY_BASE_URL', 'https://api.pawapay.io')),
+        'sandbox_base_url' => env('PAWAPAY_SANDBOX_BASE_URL', 'https://api.sandbox.pawapay.io'),
+        'timeout' => (int) env('PAWAPAY_REQUEST_TIMEOUT', 30),
+        'connect_timeout' => (int) env('PAWAPAY_CONNECT_TIMEOUT', 10),
+        'deposit_callback_url' => env('PAWAPAY_DEPOSIT_CALLBACK_URL'),
+        'checkout_callback_url' => env('PAWAPAY_CHECKOUT_CALLBACK_URL'),
+        'payout_callback_url' => env('PAWAPAY_PAYOUT_CALLBACK_URL'),
+        'refund_callback_url' => env('PAWAPAY_REFUND_CALLBACK_URL'),
+    ],
+
 ];

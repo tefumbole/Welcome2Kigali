@@ -431,7 +431,7 @@ class BeyondAuthController extends Controller
         }
         $request->session()->forget(['beyond_otp_verified', 'beyond_masked_phone', 'password_reset_phone']);
 
-        return redirect('/login');
+        return redirect()->route('beyond.home');
     }
 
     public function showForgotPassword(Request $request)

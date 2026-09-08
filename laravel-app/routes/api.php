@@ -16,3 +16,10 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::post('payments/pawapay/deposits/callback', 'PawaPayCallbackController@handle');
+Route::post('payments/pawapay/checkouts/callback', 'PawaPayCallbackController@handle');
+Route::post('payments/pawapay/payouts/callback', 'PawaPayCallbackController@handle');
+Route::post('payments/pawapay/refunds/callback', 'PawaPayCallbackController@handle');
+Route::post('payments/pawapay/callback', 'PawaPayCallbackController@handle');
+Route::post('payments/stripe/webhook', 'StripePaymentController@webhook');

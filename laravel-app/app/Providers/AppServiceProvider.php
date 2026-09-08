@@ -45,7 +45,7 @@ class AppServiceProvider extends ServiceProvider
         // Guard against boot before the database is installed/migrated (fresh install, CLI, migrations).
         if (! $this->settingsAvailable()) {
             View::share('general_setting', null);
-            View::share('currency', '');
+            View::share('currency', $this->fallbackCurrency());
             View::share('alert_product', 0);
             return;
         }
@@ -56,7 +56,7 @@ class AppServiceProvider extends ServiceProvider
         if ($general_setting) {
             $general_setting->app_version = \App\Support\AppVersion::erp();
         }
-        $currency = $general_setting ? (\App\Currency::find($general_setting->currency) ?? '') : '';
+        $currency = $this->resolveCurrency($general_setting);
         View::share('general_setting', $general_setting);
         View::share('currency', $currency);
         if ($general_setting) {
@@ -90,5 +90,40 @@ class AppServiceProvider extends ServiceProvider
         } catch (\Throwable $e) {
             return false;
         }
+    }
+
+    /**
+     * Always return a currency object so Blade `$currency->code` never 500s.
+     */
+    private function resolveCurrency($general_setting)
+    {
+        try {
+            if (! Schema::hasTable('currencies')) {
+                return $this->fallbackCurrency();
+            }
+            $id = $general_setting && ! empty($general_setting->currency) ? $general_setting->currency : null;
+            if ($id) {
+                $found = \App\Currency::find($id);
+                if ($found) {
+                    return $found;
+                }
+            }
+            $found = \App\Currency::where('code', 'RWF')->first() ?: \App\Currency::orderBy('id')->first();
+
+            return $found ?: $this->fallbackCurrency();
+        } catch (\Throwable $e) {
+            return $this->fallbackCurrency();
+        }
+    }
+
+    private function fallbackCurrency()
+    {
+        $currency = new \App\Currency();
+        $currency->id = 0;
+        $currency->name = 'Rwandan Franc';
+        $currency->code = 'RWF';
+        $currency->exchange_rate = 1;
+
+        return $currency;
     }
 }

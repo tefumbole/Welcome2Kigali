@@ -4,30 +4,64 @@
 @section('meta_description', __('site.about.hero_sub'))
 
 @section('content')
+@php
+    $visionHeading = \App\Support\SiteContent::text('about.vision_heading', __('site.about.vision'));
+    $visionText = \App\Support\SiteContent::text('about.vision_text', __('site.about.vision_text'));
+    $visionImage = \App\Support\SiteContent::image('about.vision_image');
+    $missionHeading = \App\Support\SiteContent::text('about.mission_heading', __('site.about.mission'));
+    $missionText = \App\Support\SiteContent::text('about.mission_text', __('site.about.mission_text'));
+    $missionImage = \App\Support\SiteContent::image('about.about_image');
+@endphp
 
 <section class="py-16 bg-brand-cream">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div>
-            <h2 class="font-serif text-3xl font-bold text-black mb-6">{{ \App\Support\SiteContent::text('about.mission_heading', __('site.about.mission')) }}</h2>
-            <p class="text-lg text-gray-600 mb-8 leading-relaxed max-w-3xl">
-                {{ \App\Support\SiteContent::text('about.mission_text', __('site.about.mission_text')) }}
-            </p>
-            <div class="grid grid-cols-2 gap-6 max-w-2xl">
-                <div class="flex items-start gap-3">
-                    <div class="bg-black p-2 rounded-lg"><i data-lucide="heart" class="w-6 h-6 text-brand-gold"></i></div>
-                    <div>
-                        <h3 class="font-semibold text-gray-900">{{ __('site.about.hospitality') }}</h3>
-                        <p class="text-sm text-gray-500">{{ __('site.about.hospitality_sub') }}</p>
+        <div class="grid {{ $visionImage ? 'lg:grid-cols-2' : '' }} gap-10 lg:gap-16 items-center">
+            @if($visionImage)
+                <div class="order-1">
+                    <div class="rounded-2xl overflow-hidden shadow-lg border border-black/5 bg-black aspect-[4/3]">
+                        <img src="{{ $visionImage }}" alt="{{ $visionHeading }}" class="w-full h-full object-cover">
                     </div>
                 </div>
-                <div class="flex items-start gap-3">
-                    <div class="bg-black p-2 rounded-lg"><i data-lucide="globe-2" class="w-6 h-6 text-brand-gold"></i></div>
-                    <div>
-                        <h3 class="font-semibold text-gray-900">{{ __('site.about.community') }}</h3>
-                        <p class="text-sm text-gray-500">{{ __('site.about.community_sub') }}</p>
+            @endif
+            <div class="{{ $visionImage ? 'order-2' : '' }}">
+                <p class="text-xs font-semibold tracking-[0.28em] uppercase text-brand-gold mb-3">Welcome 2 Kigali</p>
+                <h2 class="font-serif text-3xl sm:text-4xl font-bold text-black mb-6">{{ $visionHeading }}</h2>
+                <p class="text-lg text-gray-600 leading-relaxed">{{ $visionText }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid {{ $missionImage ? 'lg:grid-cols-2' : '' }} gap-10 lg:gap-16 items-center">
+            <div class="{{ $missionImage ? 'order-2 lg:order-1' : '' }}">
+                <h2 class="font-serif text-3xl sm:text-4xl font-bold text-black mb-6">{{ $missionHeading }}</h2>
+                <p class="text-lg text-gray-600 leading-relaxed mb-8">{{ $missionText }}</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl">
+                    <div class="flex items-start gap-3">
+                        <div class="bg-black p-2 rounded-lg"><i data-lucide="heart" class="w-6 h-6 text-brand-gold"></i></div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">{{ __('site.about.hospitality') }}</h3>
+                            <p class="text-sm text-gray-500">{{ __('site.about.hospitality_sub') }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="bg-black p-2 rounded-lg"><i data-lucide="globe-2" class="w-6 h-6 text-brand-gold"></i></div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">{{ __('site.about.community') }}</h3>
+                            <p class="text-sm text-gray-500">{{ __('site.about.community_sub') }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
+            @if($missionImage)
+                <div class="order-1 lg:order-2">
+                    <div class="rounded-2xl overflow-hidden shadow-lg border border-black/5 bg-black aspect-[4/3]">
+                        <img src="{{ $missionImage }}" alt="{{ $missionHeading }}" class="w-full h-full object-cover">
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 </section>
@@ -90,23 +124,6 @@
                     <p class="text-gray-600 text-sm">{{ $desc }}</p>
                 </div>
             @endforeach
-        </div>
-    </div>
-</section>
-
-<section class="py-16 bg-black text-white text-center">
-    <div class="max-w-4xl mx-auto px-4">
-        <h2 class="font-serif text-3xl font-bold mb-6">{{ \App\Support\SiteContent::text('about.cta_heading', __('site.about.ready')) }}</h2>
-        <p class="text-xl mb-8 text-gray-300">{{ \App\Support\SiteContent::text('about.cta_text', __('site.about.ready_sub')) }}</p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="{{ url('/register-now') }}"
-               class="inline-flex items-center gap-2 bg-brand-gold text-black font-bold text-lg px-8 py-4 rounded-full hover:scale-105 transition-all">
-                {{ __('site.nav.register') }}
-            </a>
-            <a href="{{ url('/menu') }}"
-               class="inline-flex items-center gap-2 border border-brand-gold text-brand-gold font-bold text-lg px-8 py-4 rounded-full hover:bg-white/5 transition-all">
-                {{ __('site.home.view_menu') }}
-            </a>
         </div>
     </div>
 </section>

@@ -92,7 +92,7 @@
                             ['role_id', $role->id] ])->first();
                     $index_permission = DB::table('permissions')->where('name', 'products-index')->first();
                     $index_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $index_permission->id],
+                        ['permission_id', optional($index_permission)->id],
                         ['role_id', $role->id]
                     ])->first();
 
@@ -125,7 +125,7 @@
                                         <?php
                                         $add_permission = DB::table('permissions')->where('name', 'products-add')->first();
                                         $add_permission_active = DB::table('role_has_permissions')->where([
-                                            ['permission_id', $add_permission->id],
+                                            ['permission_id', optional($add_permission)->id],
                                             ['role_id', $role->id]
                                         ])->first();
                                         ?>
@@ -149,7 +149,7 @@
                     <?php
                     $index_permission = DB::table('permissions')->where('name', 'purchases-index')->first();
                     $index_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $index_permission->id],
+                        ['permission_id', optional($index_permission)->id],
                         ['role_id', $role->id]
                     ])->first();
                     ?>
@@ -160,7 +160,7 @@
                                     <?php
                                     $add_permission = DB::table('permissions')->where('name', 'purchases-add')->first();
                                     $add_permission_active = DB::table('role_has_permissions')->where([
-                                        ['permission_id', $add_permission->id],
+                                        ['permission_id', optional($add_permission)->id],
                                         ['role_id', $role->id]
                                     ])->first();
                                     ?>
@@ -174,19 +174,19 @@
                     <?php
                     $sale_index_permission = DB::table('permissions')->where('name', 'sales-index')->first();
                     $sale_index_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $sale_index_permission->id],
+                        ['permission_id', optional($sale_index_permission)->id],
                         ['role_id', $role->id]
                     ])->first();
 
                     $gift_card_permission = DB::table('permissions')->where('name', 'gift_card')->first();
                     $gift_card_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $gift_card_permission->id],
+                        ['permission_id', optional($gift_card_permission)->id],
                         ['role_id', $role->id]
                     ])->first();
 
                     $coupon_permission = DB::table('permissions')->where('name', 'coupon')->first();
                     $coupon_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $coupon_permission->id],
+                        ['permission_id', optional($coupon_permission)->id],
                         ['role_id', $role->id]
                     ])->first();
 
@@ -198,7 +198,7 @@
 
                     $sale_add_permission = DB::table('permissions')->where('name', 'sales-add')->first();
                     $sale_add_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $sale_add_permission->id],
+                        ['permission_id', optional($sale_add_permission)->id],
                         ['role_id', $role->id]
                     ])->first();
                     ?>
@@ -427,7 +427,7 @@
                     <?php
                     $index_permission = DB::table('permissions')->where('name', 'expenses-index')->first();
                     $index_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $index_permission->id],
+                        ['permission_id', optional($index_permission)->id],
                         ['role_id', $role->id]
                     ])->first();
                     ?>
@@ -441,7 +441,7 @@
                                     <?php
                                     $add_permission = DB::table('permissions')->where('name', 'expenses-add')->first();
                                     $add_permission_active = DB::table('role_has_permissions')->where([
-                                        ['permission_id', $add_permission->id],
+                                        ['permission_id', optional($add_permission)->id],
                                         ['role_id', $role->id]
                                     ])->first();
                                     ?>
@@ -454,7 +454,7 @@
                     <?php
                     $index_permission = DB::table('permissions')->where('name', 'quotes-index')->first();
                     $index_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $index_permission->id],
+                        ['permission_id', optional($index_permission)->id],
                         ['role_id', $role->id]
                     ])->first();
                     ?>
@@ -465,7 +465,7 @@
                                     <?php
                                     $add_permission = DB::table('permissions')->where('name', 'quotes-add')->first();
                                     $add_permission_active = DB::table('role_has_permissions')->where([
-                                        ['permission_id', $add_permission->id],
+                                        ['permission_id', optional($add_permission)->id],
                                         ['role_id', $role->id]
                                     ])->first();
                                     ?>
@@ -479,7 +479,7 @@
                     <?php
                     $index_permission = DB::table('permissions')->where('name', 'fixed_assets')->first();
                     $index_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $index_permission->id],
+                        ['permission_id', optional($index_permission)->id],
                         ['role_id', $role->id]
                     ])->first();
                     $index_permission_report = DB::table('permissions')->where('name', 'fixed_assets_report')->first();
@@ -578,7 +578,7 @@
                     <?php
                     $index_permission = DB::table('permissions')->where('name', 'transfers-index')->first();
                     $index_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $index_permission->id],
+                        ['permission_id', optional($index_permission)->id],
                         ['role_id', $role->id]
                     ])->first();
                     ?>
@@ -589,7 +589,7 @@
                                     <?php
                                     $add_permission = DB::table('permissions')->where('name', 'transfers-add')->first();
                                     $add_permission_active = DB::table('role_has_permissions')->where([
-                                        ['permission_id', $add_permission->id],
+                                        ['permission_id', optional($add_permission)->id],
                                         ['role_id', $role->id]
                                     ])->first();
                                     ?>
@@ -605,14 +605,14 @@
                     $sale_return_index_permission = DB::table('permissions')->where('name', 'returns-index')->first();
 
                     $sale_return_index_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $sale_return_index_permission->id],
+                        ['permission_id', optional($sale_return_index_permission)->id],
                         ['role_id', $role->id]
                     ])->first();
 
                     $purchase_return_index_permission = DB::table('permissions')->where('name', 'purchase-return-index')->first();
 
                     $purchase_return_index_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $purchase_return_index_permission->id],
+                        ['permission_id', optional($purchase_return_index_permission)->id],
                         ['role_id', $role->id]
                     ])->first();
                     ?>
@@ -636,25 +636,25 @@
                     ])->first();
                     $index_permission = DB::table('permissions')->where('name', 'account-index')->first();
                     $index_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $index_permission->id],
+                        ['permission_id', optional($index_permission)->id],
                         ['role_id', $role->id]
                     ])->first();
 
                     $money_transfer_permission = DB::table('permissions')->where('name', 'money-transfer')->first();
                     $money_transfer_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $money_transfer_permission->id],
+                        ['permission_id', optional($money_transfer_permission)->id],
                         ['role_id', $role->id]
                     ])->first();
 
                     $balance_sheet_permission = DB::table('permissions')->where('name', 'balance-sheet')->first();
                     $balance_sheet_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $balance_sheet_permission->id],
+                        ['permission_id', optional($balance_sheet_permission)->id],
                         ['role_id', $role->id]
                     ])->first();
 
                     $account_statement_permission = DB::table('permissions')->where('name', 'account-statement')->first();
                     $account_statement_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $account_statement_permission->id],
+                        ['permission_id', optional($account_statement_permission)->id],
                         ['role_id', $role->id]
                     ])->first();
                     $JE_active = DB::table('permissions')
@@ -744,21 +744,21 @@
                     $customer_index_permission = DB::table('permissions')->where('name', 'customers-index')->first();
 
                     $customer_index_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $customer_index_permission->id],
+                        ['permission_id', optional($customer_index_permission)->id],
                         ['role_id', $role->id]
                     ])->first();
 
                     $biller_index_permission = DB::table('permissions')->where('name', 'billers-index')->first();
 
                     $biller_index_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $biller_index_permission->id],
+                        ['permission_id', optional($biller_index_permission)->id],
                         ['role_id', $role->id]
                     ])->first();
 
                     $supplier_index_permission = DB::table('permissions')->where('name', 'suppliers-index')->first();
 
                     $supplier_index_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $supplier_index_permission->id],
+                        ['permission_id', optional($supplier_index_permission)->id],
                         ['role_id', $role->id]
                     ])->first();
                     ?>
@@ -784,7 +784,7 @@
                                         <?php
                                         $customer_add_permission = DB::table('permissions')->where('name', 'customers-add')->first();
                                         $customer_add_permission_active = DB::table('role_has_permissions')->where([
-                                            ['permission_id', $customer_add_permission->id],
+                                            ['permission_id', optional($customer_add_permission)->id],
                                             ['role_id', $role->id]
                                         ])->first();
                                         ?>
@@ -798,7 +798,7 @@
                                         <?php
                                         $biller_add_permission = DB::table('permissions')->where('name', 'billers-add')->first();
                                         $biller_add_permission_active = DB::table('role_has_permissions')->where([
-                                            ['permission_id', $biller_add_permission->id],
+                                            ['permission_id', optional($biller_add_permission)->id],
                                             ['role_id', $role->id]
                                         ])->first();
                                         ?>
@@ -812,7 +812,7 @@
                                         <?php
                                         $supplier_add_permission = DB::table('permissions')->where('name', 'suppliers-add')->first();
                                         $supplier_add_permission_active = DB::table('role_has_permissions')->where([
-                                            ['permission_id', $supplier_add_permission->id],
+                                            ['permission_id', optional($supplier_add_permission)->id],
                                             ['role_id', $role->id]
                                         ])->first();
                                         ?>
@@ -1061,91 +1061,91 @@
                             <?php
                             $send_notification_permission = DB::table('permissions')->where('name', 'send_notification')->first();
                             $send_notification_permission_active = DB::table('role_has_permissions')->where([
-                                ['permission_id', $send_notification_permission->id],
+                                ['permission_id', optional($send_notification_permission)->id],
                                 ['role_id', $role->id]
                             ])->first();
 
                             $warehouse_permission = DB::table('permissions')->where('name', 'warehouse')->first();
                             $warehouse_permission_active = DB::table('role_has_permissions')->where([
-                                ['permission_id', $warehouse_permission->id],
+                                ['permission_id', optional($warehouse_permission)->id],
                                 ['role_id', $role->id]
                             ])->first();
 
                             $customer_group_permission = DB::table('permissions')->where('name', 'customer_group')->first();
                             $customer_group_permission_active = DB::table('role_has_permissions')->where([
-                                ['permission_id', $customer_group_permission->id],
+                                ['permission_id', optional($customer_group_permission)->id],
                                 ['role_id', $role->id]
                             ])->first();
 
                             $brand_permission = DB::table('permissions')->where('name', 'brand')->first();
                             $brand_permission_active = DB::table('role_has_permissions')->where([
-                                ['permission_id', $brand_permission->id],
+                                ['permission_id', optional($brand_permission)->id],
                                 ['role_id', $role->id]
                             ])->first();
 
                             $unit_permission = DB::table('permissions')->where('name', 'unit')->first();
                             $unit_permission_active = DB::table('role_has_permissions')->where([
-                                ['permission_id', $unit_permission->id],
+                                ['permission_id', optional($unit_permission)->id],
                                 ['role_id', $role->id]
                             ])->first();
 
                             $currency_permission = DB::table('permissions')->where('name', 'currency')->first();
                             $currency_permission_active = DB::table('role_has_permissions')->where([
-                                ['permission_id', $currency_permission->id],
+                                ['permission_id', optional($currency_permission)->id],
                                 ['role_id', $role->id]
                             ])->first();
 
                             $tax_permission = DB::table('permissions')->where('name', 'tax')->first();
                             $tax_permission_active = DB::table('role_has_permissions')->where([
-                                ['permission_id', $tax_permission->id],
+                                ['permission_id', optional($tax_permission)->id],
                                 ['role_id', $role->id]
                             ])->first();
 
                             $general_setting_permission = DB::table('permissions')->where('name', 'general_setting')->first();
                             $general_setting_permission_active = DB::table('role_has_permissions')->where([
-                                ['permission_id', $general_setting_permission->id],
+                                ['permission_id', optional($general_setting_permission)->id],
                                 ['role_id', $role->id]
                             ])->first();
 
                             $backup_database_permission = DB::table('permissions')->where('name', 'backup_database')->first();
                             $backup_database_permission_active = DB::table('role_has_permissions')->where([
-                                ['permission_id', $backup_database_permission->id],
+                                ['permission_id', optional($backup_database_permission)->id],
                                 ['role_id', $role->id]
                             ])->first();
 
                             $mail_setting_permission = DB::table('permissions')->where('name', 'mail_setting')->first();
                             $mail_setting_permission_active = DB::table('role_has_permissions')->where([
-                                ['permission_id', $mail_setting_permission->id],
+                                ['permission_id', optional($mail_setting_permission)->id],
                                 ['role_id', $role->id]
                             ])->first();
 
                             $sms_setting_permission = DB::table('permissions')->where('name', 'sms_setting')->first();
                             $sms_setting_permission_active = DB::table('role_has_permissions')->where([
-                                ['permission_id', $sms_setting_permission->id],
+                                ['permission_id', optional($sms_setting_permission)->id],
                                 ['role_id', $role->id]
                             ])->first();
 
                             $create_sms_permission = DB::table('permissions')->where('name', 'create_sms')->first();
                             $create_sms_permission_active = DB::table('role_has_permissions')->where([
-                                ['permission_id', $create_sms_permission->id],
+                                ['permission_id', optional($create_sms_permission)->id],
                                 ['role_id', $role->id]
                             ])->first();
 
                             $pos_setting_permission = DB::table('permissions')->where('name', 'pos_setting')->first();
                             $pos_setting_permission_active = DB::table('role_has_permissions')->where([
-                                ['permission_id', $pos_setting_permission->id],
+                                ['permission_id', optional($pos_setting_permission)->id],
                                 ['role_id', $role->id]
                             ])->first();
 
                             $hrm_setting_permission = DB::table('permissions')->where('name', 'hrm_setting')->first();
                             $hrm_setting_permission_active = DB::table('role_has_permissions')->where([
-                                ['permission_id', $hrm_setting_permission->id],
+                                ['permission_id', optional($hrm_setting_permission)->id],
                                 ['role_id', $role->id]
                             ])->first();
 
                             $reward_point_setting_permission = DB::table('permissions')->where('name', 'reward_point_setting')->first();
                             $reward_point_setting_permission_active = DB::table('role_has_permissions')->where([
-                                ['permission_id', $reward_point_setting_permission->id],
+                                ['permission_id', optional($reward_point_setting_permission)->id],
                                 ['role_id', $role->id]
                             ])->first();
                             ?>
@@ -1452,6 +1452,9 @@
                                                 <button style="background-color: #00cec9" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="cash-btn"><i class="fa fa-money"></i> Cash</button>
                                             </div>
                                             <div class="column-5">
+                                                <button style="background-color: #635BFF" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="visa-btn"><i class="fa fa-credit-card"></i> Visa</button>
+                                            </div>
+                                            <div class="column-5">
                                                 <button style="background-color: #5f27cd" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="credit-btn"><i class="fa fa-credit-card-alt"></i> Credit</button>
                                             </div>
                                             <div class="column-5">
@@ -1459,10 +1462,10 @@
                                             </div>
                                             <div class="column-5">
                                                 {{--                                <button style="background-color: #e28d02" type="button" class="btn btn-custom" data-toggle="modal" data-target="#add-payment" id="><i class="dripicons-flag"></i> </button>--}}
-                                                <button style="background-color: #da7828" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="orange-btn"><i class="dripicons-flag"></i> Orange Money</button>
+                                                <button style="background-color: #da7828" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="orange-btn"><i class="dripicons-flag"></i> Airtel Money</button>
                                             </div>
                                             <div class="column-5">
-                                                <button style="background-color: #fd7272" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="momo-btn"><i class="fa fa-money"></i> MTN momo</button>
+                                                <button style="background-color: #fd7272" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="momo-btn"><i class="fa fa-money"></i> MTN MoMo</button>
                                             </div>
                                             {{--                            <div class="column-5">--}}
                                             {{--                                <button style="background-color: #5f27cd" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="gift-card-btn"><i class="fa fa-credit-card-alt"></i> GiftCard</button>--}}
@@ -1513,7 +1516,8 @@
                                                             <label>{{trans('file.Paid By')}}</label>
                                                             <select name="paid_by_id_select" class="form-control selectpicker">
                                                                 <option value="1">Cash</option>
-                                                                <option value="8">Momo/Orange</option>
+                                                                <option value="12">Visa / Card</option>
+                                                                <option value="8">MTN MoMo / Airtel</option>
                                                                 <option value="9">Send to Payment</option>
                                                                 <option value="10">Credit</option>
                                                                 <option value="11">Group Credit</option>
@@ -1556,6 +1560,18 @@
                                                         <div class="form-group col-md-12 cheque">
                                                             <label>{{trans('file.Cheque Number')}} *</label>
                                                             <input type="text" name="cheque_no" class="form-control">
+                                                        </div>
+                                                        <div class="form-group col-md-12 momo-phone-section" style="display:none;">
+                                                            <input type="hidden" name="momo_network" value="mtn">
+                                                            <label>MoMo number *</label>
+                                                            <input type="text" name="momo_phone" class="form-control" placeholder="0793… or 2507…">
+                                                            <small class="text-muted">Customer approves the PawaPay request on this phone.</small>
+                                                        </div>
+                                                        <div class="form-group col-md-12 stripe-hint" style="display:none;">
+                                                            <p class="mb-0">Customer will be redirected to Stripe to pay by Visa.</p>
+                                                            @if(strtolower((string) config('services.stripe.mode', 'test')) !== 'live')
+                                                                <small class="text-muted">Test card: 4242 4242 4242 4242 · any CVC · any future date.</small>
+                                                            @endif
                                                         </div>
                                                         <div class="form-group col-md-12">
                                                             <label>{{trans('file.Description')}}</label>
@@ -1683,14 +1699,14 @@
                                                                 <?php
                                                                 $general_setting_permission = DB::table('permissions')->where('name', 'general_setting')->first();
                                                                 $general_setting_permission_active = DB::table('role_has_permissions')->where([
-                                                                    ['permission_id', $general_setting_permission->id],
+                                                                    ['permission_id', optional($general_setting_permission)->id],
                                                                     ['role_id', Auth::user()->role_id]
                                                                 ])->first();
 
                                                                 $pos_setting_permission = DB::table('permissions')->where('name', 'pos_setting')->first();
 
                                                                 $pos_setting_permission_active = DB::table('role_has_permissions')->where([
-                                                                    ['permission_id', $pos_setting_permission->id],
+                                                                    ['permission_id', optional($pos_setting_permission)->id],
                                                                     ['role_id', Auth::user()->role_id]
                                                                 ])->first();
                                                                 ?>
@@ -1706,13 +1722,13 @@
                                                                 <?php
                                                                 $today_sale_permission = DB::table('permissions')->where('name', 'today_sale')->first();
                                                                 $today_sale_permission_active = DB::table('role_has_permissions')->where([
-                                                                    ['permission_id', $today_sale_permission->id],
+                                                                    ['permission_id', optional($today_sale_permission)->id],
                                                                     ['role_id', Auth::user()->role_id]
                                                                 ])->first();
 
                                                                 $today_profit_permission = DB::table('permissions')->where('name', 'today_profit')->first();
                                                                 $today_profit_permission_active = DB::table('role_has_permissions')->where([
-                                                                    ['permission_id', $today_profit_permission->id],
+                                                                    ['permission_id', optional($today_profit_permission)->id],
                                                                     ['role_id', Auth::user()->role_id]
                                                                 ])->first();
                                                                 ?>
@@ -2161,25 +2177,29 @@
                             <div id="cash-register-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
                                 <div role="document" class="modal-dialog">
                                     <div class="modal-content">
-                                        {!! Form::open(['route' => 'cashRegister.store', 'method' => 'post']) !!}
+                                        {!! Form::open(['route' => 'cashRegister.store', 'method' => 'post', 'id' => 'cash-register-form']) !!}
                                         <div class="modal-header">
                                             <h5 id="exampleModalLabel" class="modal-title">{{trans('file.Add Cash Register')}}</h5>
                                             <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true"><i class="dripicons-cross"></i></span></button>
                                         </div>
                                         <div class="modal-body">
                                             <p class="italic"><small>{{trans('file.The field labels marked with * are required input fields')}}.</small></p>
+                                            <input type="hidden" name="warehouse_id" id="cash-register-warehouse-id" value="{{ optional($lims_pos_setting_data)->warehouse_id ?: optional($lims_warehouse_list->first())->id }}">
                                             <div class="row">
                                                 <div class="col-md-6 form-group warehouse-section">
                                                     <label>{{trans('file.Warehouse')}} *</strong> </label>
-                                                    <select required name="warehouse_id" class="selectpicker form-control" data-live-search="true"   title="Select warehouse...">
+                                                    <select id="cash-register-warehouse-select" class="selectpicker form-control" data-live-search="true" title="Select warehouse...">
                                                         @foreach($lims_warehouse_list as $warehouse)
-                                                            <option value="{{$warehouse->id}}">{{$warehouse->name}}</option>
+                                                            <option value="{{$warehouse->id}}" @if(optional($lims_pos_setting_data)->warehouse_id == $warehouse->id) selected @endif>{{$warehouse->name}}</option>
                                                         @endforeach
                                                     </select>
                                                 </div>
                                                 <div class="col-md-6 form-group">
                                                     <label>{{trans('file.Cash in Hand')}} *</strong> </label>
-                                                    <input type="number" name="cash_in_hand" required class="form-control">
+                                                    <input type="number" name="cash_in_hand" required min="0" step="any" value="0" class="form-control">
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <p id="cash-register-error" class="text-danger d-none"></p>
                                                 </div>
                                                 <div class="col-md-12 form-group">
                                                     <button type="submit" class="btn btn-primary">{{trans('file.submit')}}</button>
@@ -2981,21 +3001,56 @@
             isCashRegisterAvailable(id);
         }
 
-        function isCashRegisterAvailable(warehouse_id) {
+        function syncCashRegisterWarehouse(id) {
+            if (!id) {
+                id = (typeof posWarehouseId === 'function' ? posWarehouseId() : '') || warehouse_id || $('#cash-register-warehouse-id').val();
+            }
+            if (!id) return;
+            $('#cash-register-warehouse-id').val(id);
+            var $sel = $('#cash-register-warehouse-select');
+            if ($sel.length) {
+                $sel.val(String(id));
+                if ($sel.data('selectpicker')) {
+                    $sel.selectpicker('refresh');
+                }
+            }
+        }
+        $('#cash-register-warehouse-select').on('changed.bs.select change', function () {
+            var v = $(this).val();
+            if (v) $('#cash-register-warehouse-id').val(v);
+        });
+        $('#cash-register-form').on('submit', function (e) {
+            var wh = $('#cash-register-warehouse-id').val()
+                || (typeof posWarehouseId === 'function' ? posWarehouseId() : '')
+                || warehouse_id
+                || $('#cash-register-warehouse-select').val();
+            if (!wh) {
+                e.preventDefault();
+                $('#cash-register-error').removeClass('d-none').text('Please select a warehouse.');
+                $("#cash-register-modal .warehouse-section").removeClass('d-none');
+                return false;
+            }
+            $('#cash-register-warehouse-id').val(wh);
+            $('#cash-register-error').addClass('d-none');
+        });
+        function isCashRegisterAvailable(checkWarehouseId) {
+            if (!checkWarehouseId) {
+                checkWarehouseId = (typeof posWarehouseId === 'function' ? posWarehouseId() : '') || warehouse_id;
+            }
+            if (!checkWarehouseId) {
+                $("#register-details-btn").addClass('d-none');
+                $("#cash-register-modal .warehouse-section").removeClass('d-none');
+                $("#cash-register-modal").modal('show');
+                return;
+            }
             $.ajax({
-                url: '/cash-register/check-availability/'+warehouse_id,
+                url: '/cash-register/check-availability/'+checkWarehouseId,
                 type: "GET",
                 success:function(data) {
                     if(data == 'false') {
                         $("#register-details-btn").addClass('d-none');
-                        $('#cash-register-modal select[name=warehouse_id]').val(warehouse_id);
-
-                        if(role_id <= 2)
-                            $("#cash-register-modal .warehouse-section").removeClass('d-none');
-                        else
-                            $("#cash-register-modal .warehouse-section").addClass('d-none');
-
-                        $('.selectpicker').selectpicker('refresh');
+                        syncCashRegisterWarehouse(checkWarehouseId);
+                        $("#cash-register-modal .warehouse-section").removeClass('d-none');
                         $("#cash-register-modal").modal('show');
                     }
                     else
@@ -3584,6 +3639,8 @@
 
         $("#orange-btn").on("click",function() {
             $('select[name="paid_by_id_select"]').val(8);
+            $('input[name="momo_network"]').val('airtel');
+            $('.momo-phone-section').show();
             $('input[name="paid_amount"]').prop('readonly', false);
             $('input[name="paying_amount"]').prop('readonly', false);
             $('.selectpicker').selectpicker('refresh');
@@ -3595,6 +3652,8 @@
 
         $("#momo-btn").on("click",function() {
             $('select[name="paid_by_id_select"]').val(8);
+            $('input[name="momo_network"]').val('mtn');
+            $('.momo-phone-section').show();
             $('input[name="paid_amount"]').prop('readonly', false);
             $('input[name="paying_amount"]').prop('readonly', false);
             $('.selectpicker').selectpicker('refresh');
@@ -3612,6 +3671,20 @@
             $('div.debit').hide();
             $('div.credit').show();
             hide();
+        });
+
+        $("#visa-btn").on("click",function() {
+            $('select[name="paid_by_id_select"]').val(12);
+            $('.momo-phone-section').hide();
+            $('.stripe-hint').show();
+            $('input[name="paid_amount"]').prop('readonly', false);
+            $('input[name="paying_amount"]').prop('readonly', false);
+            $('.selectpicker').selectpicker('refresh');
+            $('div.qc').show();
+            $('div.debit').hide();
+            $('div.credit').show();
+            hide();
+            $('.stripe-hint').show();
         });
 
         $("#pay-later-btn").on("click",function() {
@@ -4336,6 +4409,14 @@
             $(".cheque").hide();
             $(".gift-card").hide();
             $('input[name="cheque_no"]').attr('required', false);
+            if ($('select[name="paid_by_id_select"]').val() != '8') {
+                $('.momo-phone-section').hide();
+            }
+            if ($('select[name="paid_by_id_select"]').val() != '12') {
+                $('.stripe-hint').hide();
+            } else {
+                $('.stripe-hint').show();
+            }
         }
 
         function giftCard() {
@@ -4441,6 +4522,19 @@
             $('input[name="debit"]').val($('select[name="debit_select"]').val());
             $('input[name="credit"]').val($('select[name="credit_select"]').val());
             $('input[name="order_tax_rate"]').val($('#order-tax-rate-value').val());
+            if ($('select[name="paid_by_id_select"]').val() == '8') {
+                if (!$('input[name="momo_phone"]').val()) {
+                    var label = $('#customer_id option:selected').text() || '';
+                    var m = label.match(/(\+?\d[\d\s]{7,})/);
+                    if (m) {
+                        $('input[name="momo_phone"]').val(m[1].replace(/\s/g, ''));
+                    }
+                }
+                if (!$('input[name="momo_phone"]').val()) {
+                    alert('Enter the MoMo / Airtel phone number');
+                    e.preventDefault();
+                }
+            }
 
         });
 

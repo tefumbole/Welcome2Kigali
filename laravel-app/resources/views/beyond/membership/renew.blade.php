@@ -22,10 +22,43 @@
                         <span class="font-bold">{{ number_format($plan->fee) }} FRW</span>
                     </label>
                 @endforeach
+                <div class="pt-2 space-y-3">
+                    <label class="text-sm font-semibold">{{ __('site.checkout.payment') }}</label>
+                    <div class="flex flex-col gap-2 text-sm">
+                        <label><input type="radio" name="pay_with" value="momo" checked> {{ __('site.checkout.momo') }} / {{ __('site.checkout.airtel') }}</label>
+                        <label><input type="radio" name="pay_with" value="visa"> {{ __('site.checkout.visa') }}</label>
+                    </div>
+                    <div class="momo-fields">
+                        <div class="mt-2 flex gap-4 text-sm">
+                            <label><input type="radio" name="momo_network" value="mtn" checked> MTN MoMo</label>
+                            <label><input type="radio" name="momo_network" value="airtel"> Airtel Money</label>
+                        </div>
+                        <input type="text" name="momo_phone" class="mt-2 w-full border rounded px-3 py-2" placeholder="0793… or 2507…" value="{{ optional($membership->customer)->phone_number }}">
+                    </div>
+                    @if(strtolower((string) config('services.stripe.mode', 'test')) !== 'live')
+                        <p class="text-xs text-gray-500 visa-hint hidden">{{ __('site.checkout.visa_test') }}</p>
+                    @endif
+                </div>
                 <p class="text-xs text-gray-500">{{ __('site.membership.pay_note') }}</p>
-                <button class="w-full bg-brand-blue text-white font-bold py-3 rounded-md">{{ __('site.membership.pay_campay') }}</button>
+                <button class="w-full bg-brand-blue text-white font-bold py-3 rounded-md">{{ __('site.membership.pay_now') }}</button>
             </form>
         </div>
     </div>
 </div>
+<script>
+(function () {
+    function syncPayWith() {
+        var visa = document.querySelector('input[name="pay_with"][value="visa"]');
+        var momoFields = document.querySelector('.momo-fields');
+        var hint = document.querySelector('.visa-hint');
+        var isVisa = visa && visa.checked;
+        if (momoFields) momoFields.style.display = isVisa ? 'none' : '';
+        if (hint) hint.classList.toggle('hidden', !isVisa);
+    }
+    document.querySelectorAll('input[name="pay_with"]').forEach(function (el) {
+        el.addEventListener('change', syncPayWith);
+    });
+    syncPayWith();
+})();
+</script>
 @endsection

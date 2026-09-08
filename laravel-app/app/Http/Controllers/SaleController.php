@@ -421,7 +421,7 @@ class SaleController extends Controller
             $balance = $data['grand_total'] - $data['paid_amount'];
             $data['payment_status'] = $this->paymentStatusForBalance($data['paid_amount'], $balance);
 
-            if($data['paid_by_id'] == 8 || $data['paid_by_id'] == 9) {
+            if($data['paid_by_id'] == 8 || $data['paid_by_id'] == 9 || $data['paid_by_id'] == 12) {
                 $data['payment_status'] = 1;
                 $data['paid_amount'] = 0;
                 if($data['paid_by_id'] == 9) {
@@ -752,23 +752,59 @@ class SaleController extends Controller
             elseif ($data['paid_by_id'] == 8) {
 
                 $biller = Biller::find($request->biller_id);
-                $this->sendWhatsappMsg($lims_customer_data, $lims_sale_data, $mail_data, $biller, 'Momo/Orange', $net_unit_price);
-
                 $data['status'] = 0;
+
+                $mtn_number = $request->input('momo_phone') ?: $lims_customer_data->phone_number;
+                $networkHint = $request->input('momo_network', 'mtn');
+                $amount = $lims_sale_data->grand_total;
+                $pawapay = app(\App\Services\PawaPayPaymentService::class);
+                if ($pawapay->isConfigured()) {
+                    $result = $pawapay->start(
+                        'sale',
+                        $lims_sale_data->id,
+                        $amount,
+                        $mtn_number,
+                        $networkHint,
+                        'W2K POS',
+                        url('/pos')
+                    );
+                    if (empty($result['ok'])) {
+                        return back()->with('not_permitted', $result['message'] ?? 'Could not start Mobile Money payment.');
+                    }
+
+                    return redirect()->route('pawapay.wait', $result['deposit']->deposit_id);
+                }
 
                 $token = getenv("MOMO_TOKEN");
                 $route = route('pos.payment_check');
-                $mtn_number = $lims_customer_data->phone_number;
-                $amount = $lims_sale_data->grand_total;
                 $link = $this->mobileMoneyRequestLink($token, $amount, $route, $lims_sale_data->id, $mtn_number);
                 if ($link == false) {
                     $message = 'Phone Number is incorrect or There is any other issue in payment method';
                     return back()->with('not_permitted', $message);
                 }
+                $this->sendWhatsappMsg($lims_customer_data, $lims_sale_data, $mail_data, $biller, 'Momo/Orange', $net_unit_price);
                 Session::put('data', $data);
 
                 header("Location: $link");
                 die();
+            }
+            elseif ($data['paid_by_id'] == 12) {
+                $stripe = app(\App\Services\StripePaymentService::class);
+                if (! $stripe->isConfigured()) {
+                    return back()->with('not_permitted', 'Visa / card payments are not configured.');
+                }
+                $result = $stripe->start(
+                    'sale',
+                    $lims_sale_data->id,
+                    $lims_sale_data->grand_total,
+                    'W2K POS',
+                    url('/pos')
+                );
+                if (empty($result['ok'])) {
+                    return back()->with('not_permitted', $result['message'] ?? 'Could not start Visa payment.');
+                }
+
+                return redirect()->away($result['url']);
             }
             elseif ($data['paid_by_id'] == 3) {
                 $paying_method = 'JE method';
@@ -948,6 +984,8 @@ class SaleController extends Controller
             $paying_method = 'Points';
         elseif($data['paid_by_id'] == 8)
             $paying_method = 'Momo/Orange';
+        elseif($data['paid_by_id'] == 12)
+            $paying_method = 'Visa';
         elseif($data['paid_by_id'] == 9)
             $paying_method = 'Pay Later';
         elseif($data['paid_by_id'] == 10)

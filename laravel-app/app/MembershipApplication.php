@@ -8,11 +8,12 @@ class MembershipApplication extends Model
 {
     protected $fillable = [
         'reference', 'plan_id', 'agreement_id', 'promotion_id', 'customer_id', 'beyond_user_id',
-        'full_name', 'email', 'phone', 'company_name', 'id_type', 'status', 'admin_note',
+        'full_name', 'email', 'phone', 'company_name', 'id_type', 'id_number',
+        'date_of_birth', 'id_expires_on', 'nationality', 'status', 'admin_note',
         'signature_image', 'signed_at', 'signed_agreement_version', 'submitted_ip',
     ];
 
-    protected $dates = ['signed_at'];
+    protected $dates = ['signed_at', 'date_of_birth', 'id_expires_on'];
 
     public function plan()
     {

@@ -80,6 +80,6 @@ class LoginController extends Controller
         }
         $request->session()->forget(['beyond_otp_verified', 'beyond_masked_phone', 'password_reset_phone']);
 
-        return redirect()->route('login');
+        return redirect()->route('beyond.home');
     }
 }

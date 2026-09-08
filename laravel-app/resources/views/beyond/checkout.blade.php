@@ -8,6 +8,7 @@
 <section class="bg-black text-white min-h-[70vh] py-12"
          x-data="{
             service: 'Dine in',
+            pay: '',
             takeawayFee: {{ (int) $takeawayFee }},
             subtotal: {{ (float) $total }},
             get fee() { return this.service === 'Take away' ? this.takeawayFee : 0; },
@@ -71,11 +72,26 @@
                 <div>
                     <p class="text-[11px] tracking-[0.2em] uppercase text-brand-gold mb-2">{{ __('site.checkout.payment') }}</p>
                     <label class="flex items-center gap-2 mb-2">
-                        <input type="radio" name="payment_method" value="COD" required> {{ __('site.checkout.cash') }}
+                        <input type="radio" name="payment_method" value="COD" required x-model="pay"> {{ __('site.checkout.cash') }}
+                    </label>
+                    <label class="flex items-center gap-2 mb-2">
+                        <input type="radio" name="payment_method" value="MTN" x-model="pay"> {{ __('site.checkout.momo') }}
+                    </label>
+                    <label class="flex items-center gap-2 mb-2">
+                        <input type="radio" name="payment_method" value="AIRTEL" x-model="pay"> {{ __('site.checkout.airtel') }}
                     </label>
                     <label class="flex items-center gap-2">
-                        <input type="radio" name="payment_method" value="MTN"> {{ __('site.checkout.momo') }}
+                        <input type="radio" name="payment_method" value="VISA" x-model="pay"> {{ __('site.checkout.visa') }}
                     </label>
+                    <div class="mt-3" x-show="pay === 'MTN' || pay === 'AIRTEL'" x-cloak>
+                        <label class="block text-[11px] tracking-[0.2em] uppercase text-brand-gold mb-2">{{ __('site.checkout.momo_phone') }}</label>
+                        <input name="mtn_phone" type="text" placeholder="2507..."
+                               class="w-full bg-black border border-brand-gold/40 text-white px-4 py-3 focus:outline-none focus:border-brand-gold">
+                        <p class="mt-2 text-xs text-white/50">{{ __('site.checkout.momo_hint') }}</p>
+                    </div>
+                    @if(strtolower((string) config('services.stripe.mode', 'test')) !== 'live')
+                        <p class="mt-2 text-xs text-white/50">{{ __('site.checkout.visa_test') }}</p>
+                    @endif
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3 pt-4">
                     <a href="{{ url('/cart') }}" class="text-center border border-brand-gold text-brand-gold px-6 py-3 text-sm tracking-[0.2em] uppercase">{{ __('site.checkout.return') }}</a>

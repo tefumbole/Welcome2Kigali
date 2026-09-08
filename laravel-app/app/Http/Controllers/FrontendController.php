@@ -387,7 +387,7 @@ class FrontendController extends Controller
         if($products_pick > $products_count) {
             $products_pick = $products_count;
         }
-        $products = $products->paginate($products_pick);
+        $products = $products->paginate($this->safePerPage($products_pick));
 
 
         return view('frontend.shop', compact('products', 'products_pick', 'products_count', 'categories', 'next_categories', 'brands', 'next_brands'));
@@ -421,7 +421,7 @@ class FrontendController extends Controller
         if($products_pick > $products_count) {
             $products_pick = $products_count;
         }
-        $products = $products->paginate($products_pick);
+        $products = $products->paginate($this->safePerPage($products_pick));
 
 
         return view('frontend.donation', compact('products', 'products_pick', 'products_count', 'categories', 'next_categories', 'brands', 'next_brands'));
@@ -435,7 +435,7 @@ class FrontendController extends Controller
         if($vendors_pick > $vendors_count) {
             $vendors_pick = $vendors_count;
         }
-        $vendors = $vendors->paginate($vendors_pick);
+        $vendors = $vendors->paginate($this->safePerPage($vendors_pick));
 
 
         return view('frontend.vendor', compact('vendors', 'vendors_pick', 'vendors_count'));
@@ -459,7 +459,7 @@ class FrontendController extends Controller
         if($vendors_pick > $vendors_count) {
             $vendors_pick = $vendors_count;
         }
-        $vendors = $vendors->paginate($vendors_pick);
+        $vendors = $vendors->paginate($this->safePerPage($vendors_pick));
 
 
         return view('frontend.vendor', compact('vendors', 'vendors_pick', 'vendors_count'));
@@ -485,7 +485,7 @@ class FrontendController extends Controller
         if($products_pick > $products_count) {
             $products_pick = $products_count;
         }
-        $products = $products->paginate($products_pick);
+        $products = $products->paginate($this->safePerPage($products_pick));
 
 
         return view('frontend.shop-rent', compact('products', 'products_pick', 'products_count', 'categories', 'next_categories', 'brands', 'next_brands'));
@@ -504,7 +504,7 @@ class FrontendController extends Controller
             ->orderByDesc('id');
 
         $products_count = $products->count();
-        $products = $products->paginate($products_pick);
+        $products = $products->paginate($this->safePerPage($products_pick));
 
         $varientProducts = Product::where('is_active', true)
             ->where('type' , 'service')
@@ -600,7 +600,7 @@ class FrontendController extends Controller
         if($request->search != null) {
             $products = $products->where('name', 'LIKE', "%{$request->search}%") ;
         }
-        $products =  $products->orderByDesc('id')->paginate($products_pick);
+        $products =  $products->orderByDesc('id')->paginate($this->safePerPage($products_pick));
 
         $products_count = $products->count();
 
@@ -621,7 +621,7 @@ class FrontendController extends Controller
         if($request->search != null) {
             $products = $products->where('name', 'LIKE', "%{$request->search}%") ;
         }
-        $products =  $products->orderByDesc('id')->paginate($products_pick);
+        $products =  $products->orderByDesc('id')->paginate($this->safePerPage($products_pick));
 
         $products_count = $products->count();
 
@@ -662,7 +662,7 @@ class FrontendController extends Controller
                                 ['rent_price_per_hour', '>', 0],
                             ]);
 
-        $products =  $products->orderByDesc('id')->paginate($products_pick);
+        $products =  $products->orderByDesc('id')->paginate($this->safePerPage($products_pick));
 
         $products_count = $products->count();
 
@@ -674,5 +674,14 @@ class FrontendController extends Controller
 
     }
 
+    /**
+     * LengthAwarePaginator rejects per-page 0 ("A non-numeric value encountered").
+     */
+    private function safePerPage($value)
+    {
+        $n = (int) $value;
+
+        return $n > 0 ? $n : 12;
+    }
 
 }

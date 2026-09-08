@@ -9,7 +9,7 @@
         <div class="d-flex justify-content-between align-items-start flex-wrap mb-4" style="gap:12px;">
             <div>
                 <h3 class="mb-1" style="color:#0b3f90;font-weight:800;">About Us — Leaders</h3>
-                <p class="text-muted mb-0">Upload leadership photos and profiles shown on the public About Us page.</p>
+                <p class="text-muted mb-0">Upload leadership photos and profiles shown on the public About Us page. Vision and Mission photos are uploaded under <a href="{{ url('/admin/site-content?tab=about') }}">Site Content → About</a>.</p>
             </div>
             <a href="{{ url('/about') }}#leadership" target="_blank" class="btn btn-outline-primary btn-sm">
                 <i class="dripicons-preview"></i> View on website
