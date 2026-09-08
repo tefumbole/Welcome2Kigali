@@ -263,6 +263,18 @@ return [
         'staff_instead' => 'Connexion personnel',
         'same_email' => 'Le même e-mail qu’un compte client ?',
     ],
+    'workspace' => [
+        'title' => 'Choisir un espace',
+        'subtitle' => 'Ce compte peut ouvrir plusieurs espaces du club.',
+        'member' => 'Membre',
+        'member_desc' => 'Commandes, adhésion et compte club',
+        'admin' => 'Admin',
+        'admin_desc' => 'Tableau de bord, caisse et opérations',
+        'student' => 'Étudiant',
+        'student_desc' => 'Stage et formations',
+        'switch' => 'Changer d’espace',
+        'unavailable' => 'Cet espace n’est pas disponible sur ce compte.',
+    ],
     'register' => [
         'title' => 'Inscription',
         'heading' => 'Inscription',

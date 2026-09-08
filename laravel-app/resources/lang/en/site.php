@@ -263,6 +263,18 @@ return [
         'staff_instead' => 'Use staff login instead',
         'same_email' => 'Same email as a customer account?',
     ],
+    'workspace' => [
+        'title' => 'Choose a workspace',
+        'subtitle' => 'This account can open more than one area of the club.',
+        'member' => 'Member',
+        'member_desc' => 'Orders, membership, and your club account',
+        'admin' => 'Admin',
+        'admin_desc' => 'Staff dashboard, POS, and club operations',
+        'student' => 'Student',
+        'student_desc' => 'Internship and training',
+        'switch' => 'Switch workspace',
+        'unavailable' => 'That workspace is not available on this account.',
+    ],
     'register' => [
         'title' => 'Register Now',
         'heading' => 'Register Now',

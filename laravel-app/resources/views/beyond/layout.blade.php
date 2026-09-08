@@ -11,11 +11,14 @@
         $headerUser = $webUser ?: $beyondUser;
         $isAdminSession = (bool) $webUser;
         $headerName = $headerUser ? $headerUser->name : '';
-        $headerRole = $isAdminSession
+        $headerWorkspace = \App\Support\UserWorkspaces::current($webUser);
+        $wsLabel = $headerWorkspace ? (__('site.workspace.'.$headerWorkspace) ?: $headerWorkspace) : null;
+        $headerRole = $wsLabel
+            ?: ($isAdminSession
             ? __('site.nav.administrator')
             : (optional($beyondUser)->role
                 ? strtoupper(str_replace('_', ' ', $beyondUser->role))
-                : __('site.nav.user'));
+                : __('site.nav.user')));
         $headerInitial = $headerName !== '' ? mb_strtoupper(mb_substr($headerName, 0, 1)) : 'U';
         $shortName = \Illuminate\Support\Str::limit($headerName, 18, '…');
     @endphp
@@ -310,6 +313,7 @@
                          class="absolute right-0 mt-2 w-56 rounded-lg bg-white shadow-xl border border-gray-100 py-1 z-50">
                         <div class="px-4 py-2.5 text-sm font-bold text-gray-800">{{ __('site.nav.my_account') }}</div>
                         <div class="border-t border-gray-100"></div>
+                        @include('beyond.partials.workspace_switcher')
                         @if ($isAdminSession)
                             <a href="{{ url('/admin') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50">
                                 <i data-lucide="layout-grid" class="w-4 h-4 text-gray-700"></i> {{ __('site.nav.admin') }}
@@ -377,6 +381,9 @@
                             <div class="text-white font-semibold text-sm">{{ $headerName }}</div>
                             <div class="text-brand-gold text-xs font-bold uppercase">{{ $headerRole }}</div>
                         </div>
+                    </div>
+                    <div class="rounded-lg bg-white/5 py-1">
+                        @include('beyond.partials.workspace_switcher')
                     </div>
                     @if ($isAdminSession)
                         <a href="{{ url('/admin') }}" class="flex items-center justify-center gap-2 w-full py-2 rounded bg-brand-gold text-black font-bold">{{ __('site.nav.admin') }}</a>

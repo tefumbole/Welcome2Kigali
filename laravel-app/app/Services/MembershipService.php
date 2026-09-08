@@ -231,6 +231,14 @@ class MembershipService
             }
             $customer->save();
         }
+        if (empty($customer->user_id)) {
+            $erp = \App\Support\UserWorkspaces::findExistingByPhoneOrEmail($application->phone, $application->email);
+            if ($erp) {
+                $customer->user_id = $erp->id;
+                $customer->save();
+            }
+        }
+
         $application->customer_id = $customer->id;
         $application->save();
 

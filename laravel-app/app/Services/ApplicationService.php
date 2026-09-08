@@ -1324,18 +1324,7 @@ class ApplicationService
         }
         $tail = substr($digits, -9);
 
-        return \App\User::where('is_deleted', false)
-            ->where('is_active', 1)
-            ->where(function ($q) use ($formatted, $digits, $tail) {
-                $q->where('phone', $formatted)
-                    ->orWhere('phone', $digits)
-                    ->orWhere('phone', '+'.$digits)
-                    ->orWhereRaw(
-                        "RIGHT(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(phone,''), '+', ''), ' ', ''), '-', ''), '(', ''), 9) = ?",
-                        [$tail]
-                    );
-            })
-            ->first();
+        return \App\Support\UserWorkspaces::findExistingByPhoneOrEmail($formatted ?: $phone, null);
     }
 
     /**
@@ -1457,9 +1446,10 @@ class ApplicationService
             return null;
         }
 
-        $user = \App\User::where('is_deleted', false)
-            ->whereRaw('LOWER(email) = ?', [$email])
-            ->first();
+        $user = \App\Support\UserWorkspaces::findExistingByPhoneOrEmail(
+            $application->whatsapp_number ?: $application->phone,
+            $email
+        );
 
         $internRole = \App\Roles::where('is_active', true)->where('name', 'Intern')->first()
             ?: \Spatie\Permission\Models\Role::where('name', 'Intern')->where('guard_name', 'web')->first();
@@ -1469,8 +1459,9 @@ class ApplicationService
 
         if ($user) {
             if ($internRole && (int) $user->role_id !== (int) $internRole->id) {
-                // Only promote applicant/customer-style users; don't demote admins.
-                if ((int) $user->role_id >= 4 || ! $user->role_id) {
+                // Keep Admin/Owner; attach intern enrolment instead of demoting.
+                if (! \App\Support\StaffAccess::canManageSite($user)
+                    && ((int) $user->role_id >= 4 || ! $user->role_id)) {
                     $user->role_id = $internRole->id;
                 }
             }

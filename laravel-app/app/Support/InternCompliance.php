@@ -268,6 +268,10 @@ class InternCompliance
 
     public static function postLoginRedirect(User $user)
     {
+        if (! UserWorkspaces::is(UserWorkspaces::STUDENT, $user)) {
+            return null;
+        }
+
         if (! self::appliesTo($user)) {
             return null;
         }

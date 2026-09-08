@@ -15,6 +15,12 @@ class EnsureInternCompliance
         }
 
         $user = Auth::guard('web')->user();
+        if ($request->is('workspace') || $request->is('workspace/*')) {
+            return $next($request);
+        }
+        if (! \App\Support\UserWorkspaces::is(\App\Support\UserWorkspaces::STUDENT, $user)) {
+            return $next($request);
+        }
         if (! InternCompliance::appliesTo($user)) {
             return $next($request);
         }

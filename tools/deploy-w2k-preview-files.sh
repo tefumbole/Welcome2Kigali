@@ -66,6 +66,16 @@ FILES=(
   app/Http/Controllers/FrontendController.php
   app/Http/Controllers/HomeController.php
   app/Support/Letterhead.php
+  app/Support/UserWorkspaces.php
+  app/Support/InternCompliance.php
+  app/Http/Controllers/WorkspaceController.php
+  app/Http/Controllers/StaffPhoneAuthController.php
+  app/Http/Middleware/EnsureInternCompliance.php
+  app/Services/ApplicationService.php
+  app/Services/PeopleDirectoryService.php
+  app/Console/Commands/MergePhoneDuplicateUsers.php
+  resources/views/beyond/auth/workspace.blade.php
+  resources/views/beyond/partials/workspace_switcher.blade.php
   database/migrations/2026_09_08_100000_ensure_w2k_currency_and_letterhead.php
   resources/views/frontend/layout/main.blade.php
   app/Support/SiteI18n.php

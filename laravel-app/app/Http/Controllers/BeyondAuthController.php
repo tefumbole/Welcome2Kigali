@@ -53,22 +53,14 @@ class BeyondAuthController extends Controller
                 return redirect()->route('otp_screen');
             }
 
-            $internRedirect = \App\Support\InternCompliance::postLoginRedirect($webUser);
-            if ($internRedirect) {
-                return redirect($internRedirect);
-            }
-
-            $supervisorRedirect = \App\Support\InternCompliance::supervisorPostLoginRedirect($webUser);
-            if ($supervisorRedirect) {
-                return redirect($supervisorRedirect);
-            }
-
             $intended = $request->session()->pull('beyond_intended');
             if ($intended && strpos($intended, '/') === 0 && strpos($intended, '//') !== 0) {
                 return redirect($intended);
             }
 
-            return redirect('/admin');
+            \App\Support\UserWorkspaces::bridgeBeyond($webUser);
+
+            return redirect(\App\Support\UserWorkspaces::afterLoginRedirect($webUser, Auth::guard('beyond')->user()));
         }
 
         if (Auth::guard('beyond')->check() && $request->session()->get('beyond_otp_verified')) {
@@ -113,50 +105,21 @@ class BeyondAuthController extends Controller
      */
     protected function loginRedirect(Request $request, $user, $profile)
     {
-        if ($this->bridgePosAdmin($user)) {
-            $intended = $request->session()->pull('beyond_intended');
-            if ($intended && strpos($intended, '/') === 0) {
-                return $intended;
-            }
-
-            $webUser = Auth::guard('web')->user();
-            if ($webUser) {
-                $supervisorRedirect = \App\Support\InternCompliance::supervisorPostLoginRedirect($webUser);
-                if ($supervisorRedirect) {
-                    return $supervisorRedirect;
-                }
-            }
-
-            return '/admin';
+        $erp = \App\Support\UserWorkspaces::bridgeErp($user);
+        $intended = $request->session()->pull('beyond_intended');
+        if ($intended && strpos($intended, '/') === 0 && strpos($intended, '//') !== 0) {
+            return $intended;
         }
 
-        return $this->postLoginRedirect($request, $user, $profile);
+        return \App\Support\UserWorkspaces::afterLoginRedirect($erp, $user);
     }
 
     /**
-     * Single sign-on bridge: if the Beyond user has an admin role and a matching
-     * active POS account (by email) exists, authenticate the web guard too.
+     * Single sign-on bridge: matching ERP user (any role) for the Beyond account.
      */
     protected function bridgePosAdmin($user)
     {
-        $adminRoles = ['admin', 'super_admin', 'director', 'manager'];
-        if (! in_array(strtolower((string) $user->role), $adminRoles, true)) {
-            return false;
-        }
-
-        $posUser = \App\User::where('email', $user->email)
-            ->where('is_active', 1)
-            ->where('is_deleted', 0)
-            ->first();
-        if (! $posUser) {
-            return false;
-        }
-
-        $posUser->otp_verify = 1;
-        $posUser->save();
-        Auth::guard('web')->login($posUser, true);
-
-        return true;
+        return (bool) \App\Support\UserWorkspaces::bridgeErp($user);
     }
 
     public function login(Request $request)
@@ -222,18 +185,13 @@ class BeyondAuthController extends Controller
      */
     protected function attemptStaffLogin(Request $request, $identifier, $password)
     {
-        $staff = $this->findStaffUser($identifier);
-        if (! $staff) {
+        $matches = \App\Support\UserWorkspaces::findMatchingUsers($identifier);
+        if ($matches->isEmpty()) {
             return null;
         }
 
-        $fieldType = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
-        $loginValue = $fieldType === 'email' ? $staff->email : $staff->name;
-        if (! Auth::guard('web')->attempt([
-            $fieldType => $loginValue,
-            'password' => $password,
-            'is_active' => 1,
-        ])) {
+        $staff = \App\Support\UserWorkspaces::pickUserForPassword($matches, $password);
+        if (! $staff) {
             \App\Services\ActivityLogService::log([
                 'action' => 'failed_login',
                 'entity' => 'auth',
@@ -246,13 +204,16 @@ class BeyondAuthController extends Controller
             return back()->withInput()->withErrors(['identifier' => 'Invalid email/username or password.']);
         }
 
-        if (Auth::guard('beyond')->check()) {
-            Auth::guard('beyond')->logout();
-        }
-        $request->session()->forget(['beyond_otp_verified', 'beyond_masked_phone']);
+        Auth::guard('web')->login($staff, true);
+
+        $beyond = \App\Support\UserWorkspaces::bridgeBeyond($staff);
+        $request->session()->forget(['beyond_masked_phone']);
 
         $role = Role::find(Auth::user()->role_id);
-        if ($role && (int) $role->id !== 5) {
+        $hasAdmin = \App\Support\UserWorkspaces::hasAdmin(Auth::user(), $beyond);
+        $memberOnly = ! $hasAdmin && ! \App\Support\UserWorkspaces::hasStudent(Auth::user(), $beyond);
+
+        if ($role && ((int) $role->id !== 5 || $hasAdmin)) {
             $needsOtp = false;
             if (! \App\Support\LocalDevAuth::skipStaffOtp()) {
                 try {
@@ -279,8 +240,8 @@ class BeyondAuthController extends Controller
                 'action' => 'login',
                 'entity' => 'auth',
                 'summary' => \App\Support\LocalDevAuth::skipStaffOtp()
-                    ? 'Logged in to admin (local OTP skipped)'
-                    : 'Logged in to admin',
+                    ? 'Logged in (local OTP skipped)'
+                    : 'Logged in',
                 'method' => 'POST',
                 'path' => '/login',
             ], $request);
@@ -292,22 +253,18 @@ class BeyondAuthController extends Controller
                 return redirect('/staff-set-password');
             }
 
-            $internRedirect = \App\Support\InternCompliance::postLoginRedirect(Auth::user());
-            if ($internRedirect) {
-                return redirect($internRedirect);
-            }
-
-            $supervisorRedirect = \App\Support\InternCompliance::supervisorPostLoginRedirect(Auth::user());
-            if ($supervisorRedirect) {
-                return redirect($supervisorRedirect);
-            }
-
             $intended = $request->session()->pull('beyond_intended');
             if ($intended && strpos($intended, '/') === 0 && strpos($intended, '//') !== 0) {
                 return redirect($intended);
             }
 
-            return redirect('/admin');
+            return redirect(\App\Support\UserWorkspaces::afterLoginRedirect(Auth::user(), $beyond));
+        }
+
+        if (! $memberOnly) {
+            Auth::user()->update(['otp_verify' => 1, 'otp' => null, 'otp_time' => null]);
+
+            return redirect(\App\Support\UserWorkspaces::afterLoginRedirect(Auth::user(), $beyond));
         }
 
         // ERP shop-customer role (legacy POS customer login)
@@ -328,42 +285,9 @@ class BeyondAuthController extends Controller
 
     protected function findStaffUser($identifier)
     {
-        $id = trim((string) $identifier);
-        if ($id === '') {
-            return null;
-        }
-
-        $query = User::query()
-            ->where('is_active', 1)
-            ->where(function ($q) {
-                $q->where('is_deleted', 0)
-                    ->orWhere('is_deleted', false)
-                    ->orWhereNull('is_deleted');
-            });
-
-        if (filter_var($id, FILTER_VALIDATE_EMAIL)) {
-            return (clone $query)->whereRaw('LOWER(email) = ?', [strtolower($id)])->first();
-        }
-
-        // Phone (digits) — admission letters tell interns to use WhatsApp number as username.
-        $digits = preg_replace('/\D+/', '', $id);
-        if (strlen($digits) >= 8) {
-            $tail = substr($digits, -9);
-            $byPhone = (clone $query)->where(function ($q) use ($id, $digits, $tail) {
-                $q->where('phone', $id)
-                    ->orWhere('phone', $digits)
-                    ->orWhere('phone', '+'.$digits)
-                    ->orWhereRaw(
-                        "RIGHT(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(phone,''), '+', ''), ' ', ''), '-', ''), '(', ''), 9) = ?",
-                        [$tail]
-                    );
-            })->first();
-            if ($byPhone) {
-                return $byPhone;
-            }
-        }
-
-        return (clone $query)->whereRaw('LOWER(name) = ?', [strtolower($id)])->first();
+        return \App\Support\UserWorkspaces::preferStaff(
+            \App\Support\UserWorkspaces::findMatchingUsers($identifier)
+        );
     }
 
     public function showOtp(Request $request)
@@ -373,8 +297,9 @@ class BeyondAuthController extends Controller
         }
         if ($request->session()->get('beyond_otp_verified')) {
             $user = Auth::guard('beyond')->user();
+            $profile = BeyondProfile::find($user->id);
 
-            return redirect($this->auth->redirectPath($user->role, BeyondProfile::find($user->id)));
+            return redirect($this->loginRedirect($request, $user, $profile));
         }
 
         return view('beyond.auth.otp', [
@@ -429,7 +354,7 @@ class BeyondAuthController extends Controller
         if (Auth::guard('web')->check()) {
             Auth::guard('web')->logout();
         }
-        $request->session()->forget(['beyond_otp_verified', 'beyond_masked_phone', 'password_reset_phone']);
+        $request->session()->forget(['beyond_otp_verified', 'beyond_masked_phone', 'password_reset_phone', \App\Support\UserWorkspaces::SESSION_KEY]);
 
         return redirect()->route('beyond.home');
     }

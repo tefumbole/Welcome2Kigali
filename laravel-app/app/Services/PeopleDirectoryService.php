@@ -387,6 +387,14 @@ class PeopleDirectoryService
             $created = true;
         }
 
+        if (empty($customer->user_id)) {
+            $erp = \App\Support\UserWorkspaces::findExistingByPhoneOrEmail($phone, $email);
+            if ($erp) {
+                $customer->user_id = $erp->id;
+                $customer->save();
+            }
+        }
+
         try {
             $this->ensureBeyondFromCustomer($customer);
         } catch (\Throwable $e) {

@@ -138,22 +138,14 @@ class HomeController extends Controller
 
     protected function redirectAfterStaffOtp($user)
     {
-        $internRedirect = \App\Support\InternCompliance::postLoginRedirect($user);
-        if ($internRedirect) {
-            return redirect($internRedirect);
-        }
-
-        $supervisorRedirect = \App\Support\InternCompliance::supervisorPostLoginRedirect($user);
-        if ($supervisorRedirect) {
-            return redirect($supervisorRedirect);
-        }
-
         $intended = session()->pull('beyond_intended');
         if ($intended && strpos($intended, '/') === 0 && strpos($intended, '//') !== 0) {
             return redirect($intended);
         }
 
-        return redirect('/admin');
+        \App\Support\UserWorkspaces::bridgeBeyond($user);
+
+        return redirect(\App\Support\UserWorkspaces::afterLoginRedirect($user, \Illuminate\Support\Facades\Auth::guard('beyond')->user()));
     }
 
     protected function otpResendSecondsRemaining($user)
@@ -379,11 +371,26 @@ echo $response;
             }
         }
 
-        if(Auth::user()->role_id == 7) {
+        $workspace = \App\Support\UserWorkspaces::current(Auth::user());
+        if (! $workspace) {
+            $wsKeys = \App\Support\UserWorkspaces::keys(Auth::user());
+            if (count($wsKeys) > 1) {
+                return redirect()->route('workspace.choose');
+            }
+            $workspace = isset($wsKeys[0]) ? $wsKeys[0] : 'admin';
+        }
+        if ($workspace === \App\Support\UserWorkspaces::STUDENT) {
+            return redirect(\App\Support\UserWorkspaces::urlFor(Auth::user(), $workspace));
+        }
+        if(Auth::user()->role_id == 7 && $workspace === \App\Support\UserWorkspaces::ADMIN) {
             return redirect()->route('asset.dashboard');
         }
-        if(Auth::user()->role_id == 5) {
+        if($workspace === \App\Support\UserWorkspaces::MEMBER) {
             $customer = Customer::select('id', 'points')->where('user_id', Auth::id())->first();
+            if (! $customer) {
+                \App\Support\UserWorkspaces::ensureCustomer(Auth::user());
+                $customer = Customer::select('id', 'points')->where('user_id', Auth::id())->first();
+            }
             $points = $customer ? $customer->points : 0;
             $customerId = $customer ? $customer->id : 0;
             $lims_sale_data = Sale::with('warehouse')->where('customer_id', $customerId)->orderBy('created_at', 'desc')->get();

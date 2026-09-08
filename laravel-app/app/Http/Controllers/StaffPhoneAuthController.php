@@ -251,29 +251,7 @@ class StaffPhoneAuthController extends Controller
 
     protected function findStaffByPhone($phone)
     {
-        try {
-            $formatted = $this->whatsapp->formatPhone($phone);
-        } catch (\Throwable $e) {
-            $formatted = preg_replace('/\D/', '', (string) $phone);
-        }
-        $digits = preg_replace('/\D/', '', (string) $formatted);
-        if (strlen($digits) < 8) {
-            return null;
-        }
-        $tail = substr($digits, -9);
-
-        return User::where('is_deleted', false)
-            ->where('is_active', 1)
-            ->where(function ($q) use ($formatted, $digits, $tail) {
-                $q->where('phone', $formatted)
-                    ->orWhere('phone', $digits)
-                    ->orWhere('phone', '+'.$digits)
-                    ->orWhereRaw(
-                        "RIGHT(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(phone,''), '+', ''), ' ', ''), '-', ''), '(', ''), 9) = ?",
-                        [$tail]
-                    );
-            })
-            ->first();
+        return \App\Support\UserWorkspaces::findExistingByPhoneOrEmail($phone, null);
     }
 
     protected function userMustSetPassword(User $user)
@@ -287,16 +265,8 @@ class StaffPhoneAuthController extends Controller
 
     protected function redirectAfterStaffLogin(User $user)
     {
-        $internRedirect = \App\Support\InternCompliance::postLoginRedirect($user);
-        if ($internRedirect) {
-            return redirect($internRedirect);
-        }
+        \App\Support\UserWorkspaces::bridgeBeyond($user);
 
-        $supervisorRedirect = \App\Support\InternCompliance::supervisorPostLoginRedirect($user);
-        if ($supervisorRedirect) {
-            return redirect($supervisorRedirect);
-        }
-
-        return redirect('/admin');
+        return redirect(\App\Support\UserWorkspaces::afterLoginRedirect($user, \Illuminate\Support\Facades\Auth::guard('beyond')->user()));
     }
 }

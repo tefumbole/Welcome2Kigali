@@ -300,14 +300,17 @@ class FrontendController extends Controller
         $data['is_deleted'] = false;
         $data['role_id'] = 5;
         $data['password'] = bcrypt($password);
-        $user = User::create($data);
+        $user = \App\Support\UserWorkspaces::findExistingByPhoneOrEmail($data['phone'], $data['email'] ?? null);
+        if (! $user) {
+            $user = User::create($data);
+        }
 
         if ($user) {
             $data['user_id'] = $user->id;
             $data['customer_group_id'] = 1;
             $data['phone_number'] = $data['phone'];
             $data['is_active'] = true;
-            Customer::create($data);
+            \App\Support\UserWorkspaces::ensureCustomer($user, $data);
             $this->sendWhatsappMsgForAccount($user, $password);
         }
 
@@ -348,14 +351,17 @@ class FrontendController extends Controller
         $data['is_deleted'] = false;
         $data['role_id'] = 12;
         $data['password'] = bcrypt($password);
-        $user = User::create($data);
+        $user = \App\Support\UserWorkspaces::findExistingByPhoneOrEmail($data['phone'], $data['email'] ?? null);
+        if (! $user) {
+            $user = User::create($data);
+        }
 
         if ($user) {
             $data['user_id'] = $user->id;
             $data['customer_group_id'] = 1;
             $data['phone_number'] = $data['phone'];
             $data['is_active'] = true;
-            Customer::create($data);
+            \App\Support\UserWorkspaces::ensureCustomer($user, $data);
             $this->sendWhatsappMsgForVendorAccount($user, $password);
             $this->sendWhatsappMsgForVendorAccountToAdmin($user, $password);
         }

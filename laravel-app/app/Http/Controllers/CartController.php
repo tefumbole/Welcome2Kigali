@@ -349,7 +349,10 @@ class CartController extends Controller
         $data['role_id'] = 5;
         $data['password'] = bcrypt($password);
         $data['phone'] = $data['phone'];
-        $user = User::create($data);
+        $user = \App\Support\UserWorkspaces::findExistingByPhoneOrEmail($data['phone'] ?? null, $data['email'] ?? null);
+        if (! $user) {
+            $user = User::create($data);
+        }
 
         if ($user) {
             $data['user_id'] = $user->id;
@@ -357,7 +360,7 @@ class CartController extends Controller
             $data['name'] = $data['name'];
             $data['phone_number'] = $data['phone'];
             $data['is_active'] = true;
-            Customer::create($data);
+            \App\Support\UserWorkspaces::ensureCustomer($user, $data);
             $this->sendWhatsappMsgForAccount($user, $password);
         }
         return $user;

@@ -293,6 +293,10 @@ Route::post('/admin/login', function (\Illuminate\Http\Request $request) {
     return app(\App\Http\Controllers\BeyondAuthController::class)->login($request);
 });
 
+Route::get('/workspace', 'WorkspaceController@choose')->name('workspace.choose');
+Route::post('/workspace/{workspace}', 'WorkspaceController@switchWorkspace')->name('workspace.switch')
+    ->where('workspace', 'member|admin|student');
+
 // GET/POST /login stay on Auth::routes → LoginController (delegates to BeyondAuthController).
 // Do not re-register /login under another name — that removed route('login') and caused 500s.
 Route::get('/beyond/login', function () {

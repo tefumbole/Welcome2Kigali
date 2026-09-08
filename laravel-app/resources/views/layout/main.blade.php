@@ -2738,6 +2738,23 @@
                             <span class="sidebar-user-role">{{ ucfirst($role->name ?? 'User') }}</span>
                         </div>
                     </div>
+                    @php
+                        $erpWsKeys = \App\Support\UserWorkspaces::keys(Auth::user());
+                        $erpWsCurrent = \App\Support\UserWorkspaces::current(Auth::user());
+                        $erpWsLabels = \App\Support\UserWorkspaces::labels();
+                    @endphp
+                    @if (count($erpWsKeys) > 1)
+                        <div class="sidebar-user-link" style="opacity:.7;cursor:default;">{{ __('site.workspace.switch') }}</div>
+                        @foreach ($erpWsKeys as $erpWsKey)
+                            <form method="POST" action="{{ route('workspace.switch', ['workspace' => $erpWsKey]) }}">
+                                @csrf
+                                <button type="submit" class="sidebar-user-link" style="width:100%;text-align:left;background:none;border:0;{{ $erpWsCurrent === $erpWsKey ? 'font-weight:700;' : '' }}">
+                                    {{ $erpWsLabels[$erpWsKey]['title'] ?? ucfirst($erpWsKey) }}
+                                    @if ($erpWsCurrent === $erpWsKey) ✓ @endif
+                                </button>
+                            </form>
+                        @endforeach
+                    @endif
                     <a href="{{route('user.profile', ['id' => Auth::id()])}}" class="sidebar-user-link">
                         <i class="dripicons-user"></i> My Profile
                     </a>
