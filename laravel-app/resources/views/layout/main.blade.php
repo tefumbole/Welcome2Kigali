@@ -32,7 +32,7 @@
         <!-- Custom Scrollbar-->
         <link rel="stylesheet" href="<?php echo asset('public/vendor/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.css') ?>" type="text/css">
 
-        @if(Route::current()->getName() != '/')
+        @if(optional(Route::current())->getName() != '/')
         <!-- date range stylesheet-->
         <link rel="stylesheet" href="<?php echo asset('public/vendor/daterange/css/daterangepicker.min.css') ?>" type="text/css">
         <!-- table sorter stylesheet-->
@@ -66,7 +66,7 @@
 
         <script type="text/javascript" src="<?php echo asset('public/js/front.js') ?>"></script>
 
-        @if(Route::current()->getName() != '/')
+        @if(optional(Route::current())->getName() != '/')
         <script type="text/javascript" src="<?php echo asset('public/vendor/daterange/js/moment.min.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/daterange/js/knockout-3.4.2.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/daterange/js/daterangepicker.min.js') ?>"></script>

@@ -62,6 +62,7 @@ FILES=(
   app/Http/Middleware/EncryptCookies.php
   app/Http/Middleware/VerifyCsrfToken.php
   app/Providers/AppServiceProvider.php
+  app/Providers/RouteServiceProvider.php
   app/Http/Controllers/FrontendController.php
   app/Http/Controllers/HomeController.php
   app/Support/Letterhead.php
