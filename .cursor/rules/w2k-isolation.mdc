@@ -1,0 +1,22 @@
+---
+description: Keep Welcome 2 Kigali isolated from BeyondTechWorld
+alwaysApply: true
+---
+
+# Welcome 2 Kigali isolation
+
+This repo is **Welcome 2 Kigali** only.
+
+## Never
+
+- `git push beyond` or any push to `github.com/tefumbole/BeyondTechWorld.git`
+- Deploy, rsync, or `git pull` into `/var/www/beyondtechworld`
+- Point this app at `beyondtechworld_laravel` or any Beyond database
+- Run `tools/deploy-beyondtechworld-*.sh` from this tree
+
+## Always
+
+- GitHub remote for this project: `origin` → `Welcome2Kigali.git`
+- Production path: `/var/www/welcome2kigali-app/laravel-app`
+- Production database: `welcome2kigali`
+- Deploy with `W2K_SSH_HOST=myvps W2K_REMOTE=/var/www/welcome2kigali-app/laravel-app bash tools/deploy-w2k-preview-files.sh`

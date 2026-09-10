@@ -47,8 +47,15 @@ class HomeController extends Controller
         if (\App\Support\LocalDevAuth::skipStaffOtp() && Auth::user()->otp_verify == 0) {
             Auth::user()->update(['otp_verify' => 1, 'otp' => null, 'otp_time' => null]);
         }
-        $role = Role::find(Auth::user()->role_id);
-        return view('home');
+        if (! Auth::user()->isActive()) {
+            Auth::logout();
+
+            return redirect('/login')->withErrors([
+                'identifier' => 'This account is not active. Sign in with your admin login.',
+            ]);
+        }
+
+        return redirect(\App\Support\UserWorkspaces::afterLoginRedirect(Auth::user()));
     }
 
     public function logout() {

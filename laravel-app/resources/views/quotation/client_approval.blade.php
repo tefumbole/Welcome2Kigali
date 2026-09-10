@@ -67,7 +67,7 @@
 <div class="wrap">
     <div class="hero">
         <h1>Quotation for Approval</h1>
-        <p>{{ $general_setting->site_title ?? 'Beyond Enterprise' }} · Ref {{ $quotation->reference_no }}</p>
+        <p>{{ $general_setting->site_title ?? 'Welcome 2 Kigali Expats Club' }} · Ref {{ $quotation->reference_no }}</p>
     </div>
 
     @if(session('not_permitted'))

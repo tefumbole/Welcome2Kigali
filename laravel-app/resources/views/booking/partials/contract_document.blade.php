@@ -20,7 +20,7 @@
             @if(!empty($general_setting->site_logo))
                 <img src="{{ url('public/logo', $general_setting->site_logo) }}" alt="Logo" style="height:56px;margin-bottom:8px;">
             @endif
-            <h2 style="color:#0b3f90;margin:0;">{{ optional($booking->biller)->company_name ?? ($general_setting->site_title ?? 'Beyond Enterprise') }}</h2>
+            <h2 style="color:#0b3f90;margin:0;">{{ optional($booking->biller)->company_name ?? ($general_setting->site_title ?? 'Welcome 2 Kigali Expats Club') }}</h2>
             <p class="text-muted mb-0">{{ optional($booking->biller)->address }} · {{ optional($booking->biller)->phone_number }}</p>
         </div>
     @endif

@@ -46,7 +46,7 @@
                                     <div class="form-group">
                                         <label>{{trans('file.Product Code')}} *</strong> </label>
                                         <div class="input-group">
-                                            <input type="text" name="code" class="form-control" id="code" aria-describedby="code" required>
+                                            <input type="text" name="code" class="form-control" id="code" aria-describedby="code" required value="{{ $generatedCode ?? '' }}">
                                             <div class="input-group-append">
                                                 <button id="genbutton" type="button" class="btn btn-sm btn-default" title="{{trans('file.Generate')}}"><i class="fa fa-refresh"></i></button>
                                             </div>
@@ -245,6 +245,7 @@
                                 <div class="col-md-12">
                                     <div class="form-group">
                                         <label>{{trans('file.Product Image')}}</strong> </label> <i class="dripicons-question" data-toggle="tooltip" title="{{trans('file.You can upload multiple image. Only .jpeg, .jpg, .png, .gif file can be uploaded. First image will be base image.')}}"></i>
+                                        <p class="text-muted small mb-1">Click or drop images here, or paste with Ctrl+V / ⌘V.</p>
                                         <div id="imageUpload" class="dropzone"></div>
                                         <span class="validation-msg" id="image-error"></span>
                                     </div>
@@ -409,11 +410,19 @@
         }
     });
 
-    $('#genbutton').on("click", function(){
-      $.get('gencode', function(data){
-        $("input[name='code']").val(data);
+    function fillGeneratedCode() {
+      $.get('{{ url('products/gencode') }}', function(data){
+        if (data) {
+          $("input[name='code']").val(data);
+        }
       });
+    }
+    $('#genbutton').on("click", function(){
+      fillGeneratedCode();
     });
+    if (!$.trim($("input[name='code']").val())) {
+      fillGeneratedCode();
+    }
 
 
 
@@ -861,13 +870,19 @@
             var time = dt.getTime();
             return time + file.name;
         },
-        acceptedFiles: ".jpeg,.jpg,.png,.gif",
+        acceptedFiles: "image/jpeg,image/jpg,image/png,image/gif,image/webp,.jpeg,.jpg,.png,.gif,.webp",
+        dictDefaultMessage: "Drop images here or click — you can also paste (Ctrl+V / ⌘V)",
         init: function () {
             var myDropzone = this;
             $('#submit-btn').on("click", function (e) {
                 e.preventDefault();
+                $("#image-error").text('');
+                $("#name-error").text('');
+                $("#code-error").text('');
+                if (window.tinyMCE && tinyMCE.triggerSave) {
+                    try { tinyMCE.triggerSave(); } catch (err) {}
+                }
                 if ( $("#product-form").valid() && validate() ) {
-                    tinyMCE.triggerSave();
                     if(myDropzone.getAcceptedFiles().length) {
                         myDropzone.processQueue();
                     }
@@ -877,18 +892,17 @@
                             url:'{{route('products.store')}}',
                             data: $("#product-form").serialize(),
                             success:function(response){
-                                //console.log(response);
-                                location.href = '../products';
+                                location.href = '{{ route('products.index') }}';
                             },
                             error:function(response) {
-                              if(response.responseJSON.errors.name) {
-                                  $("#name-error").text(response.responseJSON.errors.name);
-                              }
-                              else if(response.responseJSON.errors.code) {
-                                  $("#code-error").text(response.responseJSON.errors.code);
-                              }
+                              showProductSaveError(response);
                             },
                         });
+                    }
+                } else {
+                    var $err = $("#product-form .has-error:visible:first");
+                    if ($err.length) {
+                        $('html, body').animate({ scrollTop: $err.offset().top - 100 }, 200);
                     }
                 }
             });
@@ -902,44 +916,30 @@
             });
         },
         error: function (file, response) {
-            console.log(response);
-            if(response.errors.name) {
-              $("#name-error").text(response.errors.name);
+            var parsed = response;
+            if (typeof response === 'string') {
+                try { parsed = JSON.parse(response); } catch (err) { parsed = { message: response }; }
+            }
+            if (parsed && parsed.errors && parsed.errors.name) {
+              $("#name-error").text(parsed.errors.name);
               this.removeAllFiles(true);
             }
-            else if(response.errors.code) {
-              $("#code-error").text(response.errors.code);
+            else if (parsed && parsed.errors && parsed.errors.code) {
+              $("#code-error").text(parsed.errors.code);
               this.removeAllFiles(true);
             }
-            else {
-              try {
-                  var res = JSON.parse(response);
-                  if (typeof res.message !== 'undefined' && !$modal.hasClass('in')) {
-                      $("#success-icon").attr("class", "fas fa-thumbs-down");
-                      $("#success-text").html(res.message);
-                      $modal.modal("show");
-                  } else {
-                      if ($.type(response) === "string")
-                          var message = response; //dropzone sends it's own error messages in string
-                      else
-                          var message = response.message;
-                      file.previewElement.classList.add("dz-error");
-                      _ref = file.previewElement.querySelectorAll("[data-dz-errormessage]");
-                      _results = [];
-                      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-                          node = _ref[_i];
-                          _results.push(node.textContent = message);
-                      }
-                      return _results;
-                  }
-              } catch (error) {
-                  console.log(error);
-              }
+            var message = (parsed && parsed.message) ? parsed.message : (typeof response === 'string' ? response : 'Could not save the product.');
+            $("#image-error").text(message);
+            if (file && file.previewElement) {
+                file.previewElement.classList.add("dz-error");
+                var nodes = file.previewElement.querySelectorAll("[data-dz-errormessage]");
+                for (var i = 0; i < nodes.length; i++) {
+                    nodes[i].textContent = message;
+                }
             }
         },
         successmultiple: function (file, response) {
-            location.href = '../products';
-            //console.log(file, response);
+            location.href = '{{ route('products.index') }}';
         },
         completemultiple: function (file, response) {
             console.log(file, response, "completemultiple");
@@ -949,6 +949,59 @@
             this.removeAllFiles(true);
         }
     });
+
+    function addPastedImageToDropzone(blob) {
+        if (!blob || !blob.type || blob.type.indexOf('image') === -1 || typeof myDropzone === 'undefined') {
+            return;
+        }
+        var ext = 'png';
+        if (blob.type.indexOf('jpeg') !== -1 || blob.type.indexOf('jpg') !== -1) ext = 'jpg';
+        else if (blob.type.indexOf('gif') !== -1) ext = 'gif';
+        else if (blob.type.indexOf('webp') !== -1) ext = 'webp';
+        var pasteFile = new File([blob], 'pasted-' + Date.now() + '.' + ext, { type: blob.type });
+        myDropzone.addFile(pasteFile);
+    }
+
+    $(document).on('paste', function(e) {
+        var clip = e.clipboardData || (e.originalEvent && e.originalEvent.clipboardData);
+        if (!clip || !clip.items) {
+            return;
+        }
+        for (var i = 0; i < clip.items.length; i++) {
+            var item = clip.items[i];
+            if (item.kind === 'file') {
+                var blob = item.getAsFile();
+                if (blob && blob.type && blob.type.indexOf('image') !== -1) {
+                    e.preventDefault();
+                    addPastedImageToDropzone(blob);
+                }
+            }
+        }
+    });
+
+    function showProductSaveError(xhr) {
+        var msg = 'Could not save the product.';
+        var json = xhr && xhr.responseJSON;
+        if (json) {
+            if (json.message) {
+                msg = json.message;
+            }
+            if (json.errors) {
+                if (json.errors.name) {
+                    $("#name-error").text(json.errors.name);
+                }
+                if (json.errors.code) {
+                    $("#code-error").text(json.errors.code);
+                }
+                var first = json.errors.name || json.errors.code;
+                if (first) {
+                    msg = $.isArray(first) ? first[0] : first;
+                }
+            }
+        }
+        $("#image-error").text(msg);
+        alert(msg);
+    }
 
 </script>
 @endsection

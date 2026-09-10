@@ -41,7 +41,7 @@
                 <p>Dear <strong>{{ $application->full_name }}</strong>,</p>
                 <p>
                     You have been selected for the internship
-                    <strong>{{ optional($job)->title }}</strong> at Beyond Enterprise.
+                    <strong>{{ optional($job)->title }}</strong> at Welcome 2 Kigali Expats Club.
                 </p>
                 <h2 class="text-lg font-bold text-brand-blue">Internship terms</h2>
                 <ul class="list-disc pl-5 space-y-2">
@@ -67,7 +67,7 @@
         @elseif($step === 2)
             <div class="p-6 space-y-4">
                 <h2 class="text-lg font-bold text-brand-blue m-0">Create your account password</h2>
-                <p class="text-sm text-gray-600 m-0">Use this email and password to sign in to the Beyond Enterprise portal.</p>
+                <p class="text-sm text-gray-600 m-0">Use this email and password to sign in to the Welcome 2 Kigali Expats Club portal.</p>
                 <form method="POST" action="{{ route('apply.agreement.sign', $application->agreement_token) }}" class="space-y-4">
                     @csrf
                     <input type="hidden" name="step" value="2">

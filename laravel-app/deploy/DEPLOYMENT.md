@@ -1,7 +1,7 @@
-# Beyond Enterprise — Deployment & Setup Guide
+# Welcome 2 Kigali — Deployment & Setup Guide
 
-Deployment-prep reference for the Beyond Enterprise Laravel application (the merged
-Beyond public site + admin/POS backend).
+This tree is **Welcome 2 Kigali** (`welcome2kigali.net`). It is not BeyondTechWorld.
+Do not deploy these files into `/var/www/beyondtechworld` or use the `beyondtechworld_laravel` database.
 
 > **Note:** This guide is instructions only. Nothing here runs against a live
 > server automatically — run each server step yourself when you have VPS access.

@@ -6,9 +6,9 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="msapplication-TileColor" content="#0E0E0E">
     <meta name="template-color" content="#0E0E0E">
-    <meta name="description" content="Beyond Enterprise — IT consultancy, networking, CCTV security, and professional audio-visual solutions.">
-    <meta name="keywords" content="Beyond Enterprise, IT, networking, CCTV, security, audio visual, Kigali, Rwanda">
-    <meta name="author" content="Beyond Enterprise">
+    <meta name="description" content="{{ \App\Support\SiteBrand::siteTitle() }} — a destination, a community, an experience in Kigali.">
+    <meta name="keywords" content="Welcome 2 Kigali, Expats Club, Kigali, Rwanda">
+    <meta name="author" content="{{ \App\Support\SiteBrand::siteTitle() }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
@@ -299,9 +299,9 @@
             <div class="row">
                 <div class="col-lg-3 width-25 mb-30">
                     <h4 class="mb-30 color-gray-1000">Contact</h4>
-                    <div class="font-md mb-20 color-gray-900"><strong class="font-md-bold">Address:</strong> Beyond Enterprise, Kigali, Rwanda</div>
-                    <div class="font-md mb-20 color-gray-900"><strong class="font-md-bold">Phone:</strong> <a href="tel:+237675321739">+237675321739</a></div>
-                    <div class="font-md mb-20 color-gray-900"><strong class="font-md-bold">E-mail:</strong> info@beyondtechworld.com</div>
+                    <div class="font-md mb-20 color-gray-900"><strong class="font-md-bold">Address:</strong> {{ \App\Support\SiteBrand::address() }}</div>
+                    <div class="font-md mb-20 color-gray-900"><strong class="font-md-bold">Phone:</strong> <a href="tel:{{ \App\Support\SiteBrand::phoneWhatsAppDigits() }}">{{ \App\Support\SiteBrand::phone() }}</a></div>
+                    <div class="font-md mb-20 color-gray-900"><strong class="font-md-bold">E-mail:</strong> {{ \App\Support\SiteBrand::email() }}</div>
                     <div class="font-md mb-20 color-gray-900"><strong class="font-md-bold">Hours:</strong> 8:00 - 17:00, Mon - Sat</div>
                     <div class="mt-30"><a class="icon-socials icon-facebook" href="#"></a><a class="icon-socials icon-instagram" href="#"></a><a class="icon-socials icon-twitter" href="#"></a><a class="icon-socials icon-linkedin" href="#"></a></div>
                 </div>

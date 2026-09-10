@@ -1,0 +1,11 @@
+Welcome 2 Kigali Expats Club
+
+This repository is ONLY for welcome2kigali.net.
+
+Do not push to github.com/tefumbole/BeyondTechWorld.git
+Do not deploy into /var/www/beyondtechworld
+Do not use the beyondtechworld_laravel database
+
+Production app:  /var/www/welcome2kigali-app/laravel-app
+Production DB:   welcome2kigali
+GitHub:          github.com/tefumbole/Welcome2Kigali.git

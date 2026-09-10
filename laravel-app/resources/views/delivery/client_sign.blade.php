@@ -39,7 +39,7 @@
 <div class="wrap">
     <div class="hero">
         <h1>Confirm Goods Received</h1>
-        <p>{{ $general_setting->site_title ?? 'Beyond Enterprise' }} · {{ $delivery->reference_no }}</p>
+        <p>{{ $general_setting->site_title ?? 'Welcome 2 Kigali Expats Club' }} · {{ $delivery->reference_no }}</p>
     </div>
 
     @if(session('not_permitted'))

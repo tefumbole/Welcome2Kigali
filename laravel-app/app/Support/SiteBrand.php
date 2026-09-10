@@ -60,10 +60,19 @@ class SiteBrand
     public static function siteTitle($generalSetting = null)
     {
         $setting = $generalSetting ?: GeneralSetting::latest()->first();
-
-        return ($setting && ! empty($setting->site_title))
+        $title = ($setting && ! empty($setting->site_title))
             ? $setting->site_title
             : 'Welcome 2 Kigali Expats Club';
+        if (stripos($title, 'beyond') !== false) {
+            return 'Welcome 2 Kigali Expats Club';
+        }
+
+        return $title;
+    }
+
+    public static function companyName($generalSetting = null)
+    {
+        return self::siteTitle($generalSetting);
     }
 
     public static function email()

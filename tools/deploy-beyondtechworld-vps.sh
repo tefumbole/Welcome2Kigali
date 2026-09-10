@@ -2,8 +2,16 @@
 # Deploy Beyond Enterprise to beyondtechworld.com — port 3004 (Alpha Bridge uses 3003)
 # Usage: bash tools/deploy-beyondtechworld-vps.sh
 set -euo pipefail
+# shellcheck source=/dev/null
+source "$(cd "$(dirname "$0")" && pwd)/lib/refuse-beyond-from-w2k.sh"
 
 ROOT="${1:-/var/www/beyondtechworld}"
+case "$ROOT" in
+  /var/www/welcome2kigali|/var/www/welcome2kigali-app|/var/www/welcome2kigali-app/*|/var/www/welcome2kigali-preview|/var/www/welcome2kigali-preview/*)
+    echo "REFUSING: will not deploy Beyond into Welcome 2 Kigali."
+    exit 1
+    ;;
+esac
 cd "$ROOT"
 
 echo "==> 1. Ensure nginx owns port 80"

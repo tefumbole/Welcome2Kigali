@@ -127,7 +127,7 @@ class TaskNotificationService extends Controller
                 $msg .= "\n{$desc}\n";
             }
             $msg .= "\nYou will receive progress updates on this task.\n\n";
-            $msg .= "👉 View tasks:\n" . url('/user/tasks') . "\n\n_Beyond Enterprise_";
+            $msg .= "👉 View tasks:\n" . url('/user/tasks') . "\n\n_Welcome 2 Kigali Expats Club_";
 
             if ($this->sendPhone($user->phone, $msg)) {
                 $sent++;
@@ -151,7 +151,7 @@ class TaskNotificationService extends Controller
         // Admin / creator
         $admin = $task->created_by_admin_id ? User::find($task->created_by_admin_id) : null;
         if ($admin && ! empty($admin->phone)) {
-            $this->sendPhone($admin->phone, "📊 *TASK ACCEPTED*\n━━━━━━━━━━━━━━━\n\n*{$assigneeName}* has accepted the task:\n\n▪️ *Task:* {$task->title}\n\n_Beyond Enterprise_");
+            $this->sendPhone($admin->phone, "📊 *TASK ACCEPTED*\n━━━━━━━━━━━━━━━\n\n*{$assigneeName}* has accepted the task:\n\n▪️ *Task:* {$task->title}\n\n_Welcome 2 Kigali Expats Club_");
         }
 
         // CC recipients
@@ -162,7 +162,7 @@ class TaskNotificationService extends Controller
             }
             $this->sendPhone(
                 $user->phone,
-                "📊 *TASK CC — ACCEPTED*\n━━━━━━━━━━━━━━━\n\nHello *" . ($user->name ?: 'CC') . "*,\n\n*{$assigneeName}* has accepted the task you are CC'd on:\n\n▪️ *Task:* {$task->title}\n\n_Beyond Enterprise_"
+                "📊 *TASK CC — ACCEPTED*\n━━━━━━━━━━━━━━━\n\nHello *" . ($user->name ?: 'CC') . "*,\n\n*{$assigneeName}* has accepted the task you are CC'd on:\n\n▪️ *Task:* {$task->title}\n\n_Welcome 2 Kigali Expats Club_"
             );
         }
     }
@@ -181,7 +181,7 @@ class TaskNotificationService extends Controller
         if ($status === 'Completed') {
             $admin = $task->created_by_admin_id ? User::find($task->created_by_admin_id) : null;
             if ($admin && ! empty($admin->phone)) {
-                $this->sendPhone($admin->phone, "✅ *TASK COMPLETED*\n━━━━━━━━━━━━━━━\n\n*{$assigneeName}* completed:\n\n▪️ *Task:* {$task->title}\n\n_Beyond Enterprise_");
+                $this->sendPhone($admin->phone, "✅ *TASK COMPLETED*\n━━━━━━━━━━━━━━━\n\n*{$assigneeName}* completed:\n\n▪️ *Task:* {$task->title}\n\n_Welcome 2 Kigali Expats Club_");
             }
             foreach (TaskCc::where('task_id', $task->id)->get() as $cc) {
                 $user = BeyondUser::find($cc->user_id);
@@ -190,7 +190,7 @@ class TaskNotificationService extends Controller
                 }
                 $this->sendPhone(
                     $user->phone,
-                    "✅ *TASK CC — COMPLETED*\n━━━━━━━━━━━━━━━\n\nHello *" . ($user->name ?: 'CC') . "*,\n\n*{$assigneeName}* completed the task you are CC'd on:\n\n▪️ *Task:* {$task->title}\n\n_Beyond Enterprise_"
+                    "✅ *TASK CC — COMPLETED*\n━━━━━━━━━━━━━━━\n\nHello *" . ($user->name ?: 'CC') . "*,\n\n*{$assigneeName}* completed the task you are CC'd on:\n\n▪️ *Task:* {$task->title}\n\n_Welcome 2 Kigali Expats Club_"
                 );
             }
 
@@ -204,7 +204,7 @@ class TaskNotificationService extends Controller
             }
             $this->sendPhone(
                 $user->phone,
-                "📋 *TASK CC — PROGRESS UPDATE*\n━━━━━━━━━━━━━━━\n\nHello *" . ($user->name ?: 'CC') . "*,\n\nYou are CC on a task assigned to *{$assigneeName}*:\n\n▪️ *Task:* {$task->title}\n▪️ *Realization:* {$progress}%\n▪️ *Status:* {$status}{$commentBlock}\n\n_Beyond Enterprise_"
+                "📋 *TASK CC — PROGRESS UPDATE*\n━━━━━━━━━━━━━━━\n\nHello *" . ($user->name ?: 'CC') . "*,\n\nYou are CC on a task assigned to *{$assigneeName}*:\n\n▪️ *Task:* {$task->title}\n▪️ *Realization:* {$progress}%\n▪️ *Status:* {$status}{$commentBlock}\n\n_Welcome 2 Kigali Expats Club_"
             );
         }
     }
@@ -225,7 +225,7 @@ class TaskNotificationService extends Controller
                 : '—';
             $this->sendPhone(
                 $user->phone,
-                "⏰ *TASK REMINDER*\n━━━━━━━━━━━━━━━\n\nHello *" . ($user->name ?: 'Team Member') . "*,\n\nReminder for your task:\n\n▪️ *Task:* {$task->title}\n▪️ *Deadline:* {$deadline}\n\n👉 Update progress:\n" . url('/user/tasks') . "\n\n_Beyond Enterprise_"
+                "⏰ *TASK REMINDER*\n━━━━━━━━━━━━━━━\n\nHello *" . ($user->name ?: 'Team Member') . "*,\n\nReminder for your task:\n\n▪️ *Task:* {$task->title}\n▪️ *Deadline:* {$deadline}\n\n👉 Update progress:\n" . url('/user/tasks') . "\n\n_Welcome 2 Kigali Expats Club_"
             );
         }
     }

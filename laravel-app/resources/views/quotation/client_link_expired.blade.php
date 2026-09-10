@@ -18,7 +18,7 @@
     <div class="card">
         <div class="badge">Link expired</div>
         <h1>This quotation link is no longer valid</h1>
-        <p>The approval link has expired or has already been used. If you still need to review or sign this quotation, please contact Beyond Enterprise for a new link.</p>
+        <p>The approval link has expired or has already been used. If you still need to review or sign this quotation, please contact Welcome 2 Kigali Expats Club for a new link.</p>
     </div>
 </div>
 </body>

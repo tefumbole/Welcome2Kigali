@@ -1,7 +1,7 @@
 @extends('beyond.layout')
 
 @section('title', 'Apply Now — Jobs & Internships')
-@section('meta_description', 'Apply for jobs and internships published on the Beyond Enterprise Job Board.')
+@section('meta_description', 'Apply for jobs and internships published on the Welcome 2 Kigali Expats Club Job Board.')
 
 @section('content')
 @php

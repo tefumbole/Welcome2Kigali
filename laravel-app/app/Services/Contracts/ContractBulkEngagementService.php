@@ -33,7 +33,7 @@ class ContractBulkEngagementService
             throw new \RuntimeException('Active Engineer Engagement template (ENG-EVENT) not found.');
         }
 
-        $companyName = ContractSetting::getValue('company_legal_name', 'Beyond Enterprise');
+        $companyName = ContractSetting::getValue('company_legal_name', \App\Support\SiteBrand::companyName());
         $companyAddress = ContractSetting::getValue('company_address', '');
 
         $created = [];

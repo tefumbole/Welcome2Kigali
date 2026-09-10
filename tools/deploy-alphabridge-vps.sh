@@ -3,6 +3,8 @@
 # Usage: bash tools/deploy-alphabridge-vps.sh
 set -euo pipefail
 
+source "$(cd "$(dirname "$0")" && pwd)/lib/refuse-beyond-from-w2k.sh"
+
 ROOT="${1:-/var/www/beyondtechworld}"
 cd "$ROOT"
 

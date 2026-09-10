@@ -1,49 +1,28 @@
-# Beyond Enterprise
+# Welcome 2 Kigali Expats Club
 
-The Beyond Enterprise web platform — a single Laravel 6 application that serves
-both the **public Beyond Enterprise website** (Blade + Tailwind/Alpine) and the
-**admin / POS backend**, merged from the legacy mainmarket system and rebranded.
+Laravel app for **https://welcome2kigali.net**.
 
-## What's inside
+This tree is not BeyondTechWorld. Do not push to `BeyondTechWorld.git` or deploy into `/var/www/beyondtechworld`.
 
-**Public site & portals** (`resources/views/beyond/`):
+| | Welcome 2 Kigali | BeyondTechWorld |
+|---|---|---|
+| GitHub | `tefumbole/Welcome2Kigali` | `tefumbole/BeyondTechWorld` |
+| Production path | `/var/www/welcome2kigali-app/laravel-app` | `/var/www/beyondtechworld` |
+| Database | `welcome2kigali` | `beyondtechworld_laravel` |
 
-- Marketing pages — Home, About, Services, Projects, Contact, Events
-- Public auth — login, WhatsApp OTP, forgot password, profile
-- **Training** — courses, registration, student dashboard + progress/feedback
-- **Apply Now** — job board, applications with CV upload, applicant dashboard
-- **Shareholders** — terms, registration with e-signature, agreement verification
-- **Tasks** — assignments, invites, signature-based acceptance, progress
-- **Payslip verification** — `/verify/payslip/{code}`
-- **Staff timesheet** — self-service hour logging + monthly summary
+## Deploy
 
-**Admin / POS** (`/admin`, legacy controllers) — products, sales, purchases,
-HR/payroll, bookings, letters, announcements, and the storefront at `/store`.
+```bash
+W2K_SKIP_VERSION_BUMP=1 W2K_SSH_HOST=myvps \
+  W2K_REMOTE=/var/www/welcome2kigali-app/laravel-app \
+  bash tools/deploy-w2k-preview-files.sh
+```
 
-## Tech stack
-
-- Laravel 6 · PHP 7.4 · MySQL
-- Tailwind CSS + Alpine.js + Lucide (via CDN — no front-end build step)
-- WhatsApp messaging via WasenderAPI
-
-## Quick start
+## Local
 
 ```bash
 cd laravel-app
-composer install
 cp .env.example .env
-php artisan key:generate
-# configure DB_* in .env, then:
-mysql -u <user> -p <db> < db-import/mainmarket.sql
+# DB_DATABASE=welcome2kigali  (never beyondtechworld_laravel)
 php artisan migrate
-php -S 127.0.0.1:8817 -t . server.php   # http://127.0.0.1:8817
 ```
-
-Test portal account (local): `portal@beyondtechworld.com` / `beyond123`.
-Set `BEYOND_SKIP_OTP=true` in `.env` to bypass OTP during local testing.
-
-## Deployment
-
-See **[`deploy/DEPLOYMENT.md`](deploy/DEPLOYMENT.md)** for the full setup,
-web-server (nginx sample in `deploy/nginx.conf.example`), cron, and production
-hardening guide.

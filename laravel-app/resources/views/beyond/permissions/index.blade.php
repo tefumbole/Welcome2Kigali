@@ -1,7 +1,7 @@
 @extends('beyond.layout')
 
 @section('title', 'Apply for Permission')
-@section('meta_description', 'Request time-off permission from Beyond Enterprise.')
+@section('meta_description', 'Request time-off permission from Welcome 2 Kigali Expats Club.')
 
 @section('content')
 <div class="min-h-screen bg-gray-50 pb-20" x-data="permissionApply()">

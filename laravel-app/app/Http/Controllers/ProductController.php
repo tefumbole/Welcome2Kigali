@@ -531,7 +531,8 @@ class ProductController extends Controller
             $lims_unit_list = Unit::where('is_active', true)->get();
             $lims_tax_list = Tax::where('is_active', true)->get();
             $lims_warehouse_list = Warehouse::where('is_active', true)->get();
-            return view('product.create',compact('lims_product_list', 'lims_brand_list', 'lims_category_list', 'lims_unit_list', 'lims_tax_list', 'lims_warehouse_list', 'role'));
+            $generatedCode = $this->uniqueProductCode();
+            return view('product.create',compact('lims_product_list', 'lims_brand_list', 'lims_category_list', 'lims_unit_list', 'lims_tax_list', 'lims_warehouse_list', 'role', 'generatedCode'));
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
@@ -539,6 +540,10 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        if (! trim((string) $request->input('code'))) {
+            $request->merge(['code' => $this->uniqueProductCode()]);
+        }
+
         $this->validate($request, [
             'code' => [
                 'max:255',
@@ -557,52 +562,56 @@ class ProductController extends Controller
         if (Auth::user()->role_id == 12) {
             $data['vendor_id'] =  Auth::user()->id;
         }
-        $data['name'] = htmlspecialchars(trim($data['name']));
-        if($data['type'] == 'combo'){
-            $data['product_list'] = implode(",", $data['product_id']);
-            $data['qty_list'] = implode(",", $data['product_qty']);
-            $data['price_list'] = implode(",", $data['unit_price']);
+        $data['name'] = htmlspecialchars(trim($data['name'] ?? ''));
+        if(($data['type'] ?? '') == 'combo'){
+            $data['product_list'] = implode(",", $data['product_id'] ?? []);
+            $data['qty_list'] = implode(",", $data['product_qty'] ?? []);
+            $data['price_list'] = implode(",", $data['unit_price'] ?? []);
             $data['cost'] = $data['unit_id'] = $data['purchase_unit_id'] = $data['sale_unit_id'] = 0;
         }
-        elseif($data['type'] == 'donation') {
+        elseif(($data['type'] ?? '') == 'donation') {
             $donation_unit = Unit::where('unit_code', 'donation')->first();
             $donation_category = Category::where('name', 'donation')->first();
+            if (! $donation_unit || ! $donation_category) {
+                return response()->json(['message' => 'Donation unit or category is missing. Add a unit coded “donation” and a category named “donation”.'], 422);
+            }
             $data['unit_id'] = $donation_unit->id;
             $data['sale_unit_id'] = $donation_unit->id;
             $data['purchase_unit_id'] = $donation_unit->id;
             $data['category_id'] = $donation_category->id;
         }
-        elseif($data['type'] == 'service') {
+        elseif(($data['type'] ?? '') == 'service') {
             $service_unit = Unit::where('unit_code', 'service')->first();
             $service_category = Category::where('name', 'SERVICES')->first();
+            if (! $service_unit || ! $service_category) {
+                return response()->json(['message' => 'Service unit or category is missing. Add a unit coded “service” and a category named “SERVICES”.'], 422);
+            }
             $data['unit_id'] = $service_unit->id;
             $data['sale_unit_id'] = $service_unit->id;
             $data['purchase_unit_id'] = $service_unit->id;
             $data['category_id'] = $service_category->id;
         }
-        elseif($data['type'] == 'digital')
+        elseif(($data['type'] ?? '') == 'digital')
             $data['cost'] = $data['unit_id'] = $data['purchase_unit_id'] = $data['sale_unit_id'] = 0;
 
-        $data['product_details'] = str_replace('"', '@', $data['product_details']);
-
-        $data['rent_price_per_hour'] = $data['rent_price_per_hour'] ?? 0;
-        $data['rent_price_per_day'] =  $data['rent_price_per_day'] ?? 0;
-        $data['rent_price_per_month'] =  $data['rent_price_per_month'] ?? 0;
-
-        if($data['starting_date'])
-            $data['starting_date'] = date('Y-m-d', strtotime($data['starting_date']));
-        if($data['last_date'])
-            $data['last_date'] = date('Y-m-d', strtotime($data['last_date']));
+        $data = $this->normalizeProductPayload($data);
         $data['is_active'] = true;
         $images = $request->image;
         $image_names = [];
         if($images) {
+            $imageDir = public_path('images/product');
+            if (! is_dir($imageDir)) {
+                @mkdir($imageDir, 0755, true);
+            }
             foreach ($images as $key => $image) {
+                if (! $image || ! method_exists($image, 'getClientOriginalName')) {
+                    continue;
+                }
                 $imageName = $image->getClientOriginalName();
-                $image->move('public/images/product', $imageName);
+                $image->move($imageDir, $imageName);
                 $image_names[] = $imageName;
             }
-            $data['image'] = implode(",", $image_names);
+            $data['image'] = $image_names ? implode(",", $image_names) : 'zummXD2dvAtI.png';
         }
         else {
             $data['image'] = 'zummXD2dvAtI.png';
@@ -616,7 +625,13 @@ class ProductController extends Controller
             $data['file'] = $fileName;
         }
         $data['location'] = $request->product_location;
-        $lims_product_data = Product::create($data);
+        try {
+            $lims_product_data = Product::create($data);
+        } catch (\Throwable $e) {
+            \Log::error('Product create failed: '.$e->getMessage());
+
+            return response()->json(['message' => 'Could not save the product. '.$e->getMessage()], 500);
+        }
         try {
             app(\App\Services\MembershipService::class)->syncProductBenefit($lims_product_data->id, $request->all());
         } catch (\Throwable $e) {
@@ -636,15 +651,17 @@ class ProductController extends Controller
 
 
         $warehouse = Warehouse::where('is_active', true)->first();
-        $check_warehouse = Product_Warehouse::where('product_id', $lims_product_data->id)->where('warehouse_id', $warehouse->id)->first();
-        if(!$check_warehouse) {
-            Product_Warehouse::create([
-                "product_id" => $lims_product_data->id,
-                "warehouse_id" => $warehouse->id,
-                "qty" => $data['qty'],
-            ]);
-        } else {
-            $check_warehouse->update(['qty' => $data['qty']]);
+        if ($warehouse) {
+            $check_warehouse = Product_Warehouse::where('product_id', $lims_product_data->id)->where('warehouse_id', $warehouse->id)->first();
+            if(!$check_warehouse) {
+                Product_Warehouse::create([
+                    "product_id" => $lims_product_data->id,
+                    "warehouse_id" => $warehouse->id,
+                    "qty" => $data['qty'] ?? 0,
+                ]);
+            } else {
+                $check_warehouse->update(['qty' => $data['qty'] ?? 0]);
+            }
         }
 
         if(isset($data['is_diffPrice'])) {
@@ -660,6 +677,8 @@ class ProductController extends Controller
             }
         }
         \Session::flash('create_message', 'Product created successfully');
+
+        return response()->json(['success' => true, 'message' => 'Product created successfully']);
     }
 
     public function edit($id)
@@ -722,13 +741,8 @@ class ProductController extends Controller
         if(!isset($data['is_batch']))
             $data['is_batch'] = null;
 
-        $data['product_details'] = str_replace('"', '@', $data['product_details']);
-        $data['product_details'] = $data['product_details'];
+        $data = $this->normalizeProductPayload($data);
         $data['location'] = $request->product_location;
-        if($data['starting_date'])
-            $data['starting_date'] = date('Y-m-d', strtotime($data['starting_date']));
-        if($data['last_date'])
-            $data['last_date'] = date('Y-m-d', strtotime($data['last_date']));
 
         //dealing with previous images
         if($request->prev_img) {
@@ -841,25 +855,36 @@ class ProductController extends Controller
         }
 
         $warehouse = Warehouse::where('is_active', true)->first();
-        $check_warehouse = Product_Warehouse::where('product_id', $lims_product_data->id)->where('warehouse_id', $warehouse->id)->first();
-        if(!$check_warehouse) {
-            Product_Warehouse::create([
-                "product_id" => $lims_product_data->id,
-                "warehouse_id" => $warehouse->id,
-                "qty" => $data['qty'],
-            ]);
-        } else {
-            $check_warehouse->update(['qty' => $data['qty']]);
+        if ($warehouse) {
+            $check_warehouse = Product_Warehouse::where('product_id', $lims_product_data->id)->where('warehouse_id', $warehouse->id)->first();
+            if(!$check_warehouse) {
+                Product_Warehouse::create([
+                    "product_id" => $lims_product_data->id,
+                    "warehouse_id" => $warehouse->id,
+                    "qty" => $data['qty'] ?? 0,
+                ]);
+            } else {
+                $check_warehouse->update(['qty' => $data['qty'] ?? 0]);
+            }
         }
 
         \Session::flash('edit_message', 'Product updated successfully');
 
+        return response()->json(['success' => true, 'message' => 'Product updated successfully']);
     }
 
     public function generateCode()
     {
-        $id = Keygen::numeric(8)->generate();
-        return $id;
+        return $this->uniqueProductCode();
+    }
+
+    private function uniqueProductCode()
+    {
+        do {
+            $code = (string) Keygen::numeric(8)->generate();
+        } while (Product::where('code', $code)->where('is_active', 1)->exists());
+
+        return $code;
     }
 
     public function search(Request $request)
@@ -1373,5 +1398,57 @@ class ProductController extends Controller
         }*/
         $lims_product_data->delete();
         return redirect('products')->with('message', 'Product deleted successfully');
+    }
+
+    /**
+     * Empty date / integer fields from the product form must be null, not "".
+     * MySQL strict mode rejects '' for DATE and INT columns and the AJAX submit looks like it did nothing.
+     */
+    private function normalizeProductPayload(array $data)
+    {
+        $data['product_details'] = str_replace('"', '@', $data['product_details'] ?? '');
+
+        foreach (['starting_date', 'last_date'] as $dateField) {
+            if (! empty($data[$dateField])) {
+                $data[$dateField] = date('Y-m-d', strtotime($data[$dateField]));
+            } else {
+                $data[$dateField] = null;
+            }
+        }
+
+        foreach (['brand_id', 'tax_id', 'alert_quantity', 'promotion_price'] as $nullable) {
+            if (! isset($data[$nullable]) || $data[$nullable] === '') {
+                $data[$nullable] = null;
+            }
+        }
+
+        if (empty($data['sale_unit_id']) && ! empty($data['unit_id'])) {
+            $data['sale_unit_id'] = $data['unit_id'];
+        }
+        if (empty($data['purchase_unit_id']) && ! empty($data['unit_id'])) {
+            $data['purchase_unit_id'] = $data['unit_id'];
+        }
+
+        foreach (['unit_id', 'sale_unit_id', 'purchase_unit_id', 'category_id'] as $intField) {
+            if (! isset($data[$intField]) || $data[$intField] === '') {
+                $data[$intField] = 0;
+            }
+        }
+
+        $data['rent_price_per_hour'] = $data['rent_price_per_hour'] ?? 0;
+        $data['rent_price_per_day'] = $data['rent_price_per_day'] ?? 0;
+        $data['rent_price_per_month'] = $data['rent_price_per_month'] ?? 0;
+        $data['qty'] = $data['qty'] ?? 0;
+        if (empty($data['barcode_symbology'])) {
+            $data['barcode_symbology'] = 'C128';
+        }
+        if (! isset($data['cost']) || $data['cost'] === '') {
+            $data['cost'] = 0;
+        }
+        if (! isset($data['price']) || $data['price'] === '') {
+            $data['price'] = 0;
+        }
+
+        return $data;
     }
 }

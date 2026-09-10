@@ -1,7 +1,7 @@
 @extends('beyond.layout')
 
 @section('title', 'Delivery Verification')
-@section('meta_description', 'Verify a Beyond Enterprise delivery note.')
+@section('meta_description', 'Verify a Welcome 2 Kigali Expats Club delivery note.')
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-4 py-16">
@@ -36,7 +36,7 @@
                     <div class="flex justify-between border-t py-2.5"><span class="text-gray-500">Signed at</span><span>{{ $data['signed_at'] }}</span></div>
                 @endif
             @endif
-            <p class="text-center text-xs text-gray-400 pt-4 mt-4 border-t">Beyond Enterprise · Delivery Verification</p>
+            <p class="text-center text-xs text-gray-400 pt-4 mt-4 border-t">Welcome 2 Kigali Expats Club · Delivery Verification</p>
         </div>
     </div>
 </div>

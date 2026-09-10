@@ -84,7 +84,7 @@ class UserSignatureController extends Controller
 
         $link = url('/user-sign/'.$token);
         $label = self::TYPES[$type];
-        $company = optional(GeneralSetting::first())->site_title ?: 'Beyond Enterprise';
+        $company = optional(GeneralSetting::first())->site_title ?: \App\Support\SiteBrand::companyName();
         $msg = "{$company}: Please add your {$label} using this secure link:\n{$link}\n\nThis link expires in 3 days.";
 
         usleep(1200000);

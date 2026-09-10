@@ -327,7 +327,7 @@
             id: 'company:beyond',
             subject_type: 'company',
             subject_id: 'beyond',
-            name: @json($company['name'] ?? 'Beyond Enterprise'),
+            name: @json($company['name'] ?? 'Welcome 2 Kigali Expats Club'),
             address: @json($company['address'] ?? ''),
             source: 'Company default'
         });

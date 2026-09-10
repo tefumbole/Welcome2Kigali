@@ -50,7 +50,7 @@
     </div>
 
     <div class="prose prose-sm max-w-none text-gray-600">
-        <p>This Shareholder Agreement is entered into between <strong>Beyond Enterprise</strong> ("Company") and the undersigned shareholder ("Shareholder").</p>
+        <p>This Shareholder Agreement is entered into between <strong>Welcome 2 Kigali Expats Club</strong> ("Company") and the undersigned shareholder ("Shareholder").</p>
         <ol class="list-decimal pl-5 space-y-2">
             <li><strong>Share Ownership</strong> — The Shareholder agrees to purchase shares at the agreed price per share.</li>
             <li><strong>Rights &amp; Obligations</strong> — Voting rights proportional to ownership; dividends when declared by the Board.</li>

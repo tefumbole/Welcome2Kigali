@@ -13,9 +13,9 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Beyond Enterprise'),
+    'name' => env('APP_NAME', 'Welcome 2 Kigali Expats Club'),
 
-    'version' => env('APP_VERSION', 'BCL V.2.1.4'),
+    'version' => env('APP_VERSION', 'W2K V.1.4.3'),
 
     'version_build' => env('APP_VERSION_BUILD'),
 

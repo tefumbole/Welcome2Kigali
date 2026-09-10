@@ -119,7 +119,7 @@ class BeyondAuthService
         $r = strtolower((string) $role);
         $adminRoles = ['admin', 'super_admin', 'director', 'manager'];
         if (in_array($r, $adminRoles, true)) {
-            return '/dashboard';
+            return '/admin';
         }
         if (in_array($r, ['task_assignee', 'customer'], true)) {
             return '/user/tasks/pending-acceptances';

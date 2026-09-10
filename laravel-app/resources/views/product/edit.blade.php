@@ -272,6 +272,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>{{trans('file.Product Image')}}</strong> </label> <i class="dripicons-question" data-toggle="tooltip" title="{{trans('file.You can upload multiple image. Only .jpeg, .jpg, .png, .gif file can be uploaded. First image will be base image.')}}"></i>
+                                        <p class="text-muted small mb-1">Click or drop images here, or paste with Ctrl+V / ⌘V.</p>
                                         <div id="imageUpload" class="dropzone"></div>
                                         <span class="validation-msg" id="image-error"></span>
                                     </div>
@@ -995,13 +996,17 @@
             var time = dt.getTime();
             return time + file.name;
         },
-        acceptedFiles: ".jpeg,.jpg,.png,.gif",
+        acceptedFiles: "image/jpeg,image/jpg,image/png,image/gif,image/webp,.jpeg,.jpg,.png,.gif,.webp",
+        dictDefaultMessage: "Drop images here or click — you can also paste (Ctrl+V / ⌘V)",
         init: function () {
             var myDropzone = this;
             $('#submit-btn').on("click", function (e) {
                 e.preventDefault();
+                $("#image-error").text('');
+                if (window.tinyMCE && tinyMCE.triggerSave) {
+                    try { tinyMCE.triggerSave(); } catch (err) {}
+                }
                 if ( $("#product-form").valid() && validate() ) {
-                    tinyMCE.triggerSave();
                     if(myDropzone.getAcceptedFiles().length) {
                         myDropzone.processQueue();
                     }
@@ -1011,16 +1016,18 @@
                             url:'../update',
                             data: $("#product-form").serialize(),
                             success:function(response){
-                                //console.log(response);
                                 location.href = '{{ route('products.index') }}';
                             },
                             error:function(response) {
-                                //console.log(response);
-                              if(response.responseJSON.errors.name) {
-                                  $("#name-error").text(response.responseJSON.errors.name);
+                              var json = response.responseJSON || {};
+                              if(json.errors && json.errors.name) {
+                                  $("#name-error").text(json.errors.name);
                               }
-                              else if(response.responseJSON.errors.code) {
-                                  $("#code-error").text(response.responseJSON.errors.code);
+                              else if(json.errors && json.errors.code) {
+                                  $("#code-error").text(json.errors.code);
+                              }
+                              else {
+                                  $("#image-error").text(json.message || 'Could not save the product.');
                               }
                             },
                         });
@@ -1082,6 +1089,27 @@
         reset: function () {
             console.log("resetFiles");
             this.removeAllFiles(true);
+        }
+    });
+
+    $(document).on('paste', function(e) {
+        var clip = e.clipboardData || (e.originalEvent && e.originalEvent.clipboardData);
+        if (!clip || !clip.items || typeof myDropzone === 'undefined') {
+            return;
+        }
+        for (var i = 0; i < clip.items.length; i++) {
+            var item = clip.items[i];
+            if (item.kind === 'file') {
+                var blob = item.getAsFile();
+                if (blob && blob.type && blob.type.indexOf('image') !== -1) {
+                    e.preventDefault();
+                    var ext = 'png';
+                    if (blob.type.indexOf('jpeg') !== -1 || blob.type.indexOf('jpg') !== -1) ext = 'jpg';
+                    else if (blob.type.indexOf('gif') !== -1) ext = 'gif';
+                    else if (blob.type.indexOf('webp') !== -1) ext = 'webp';
+                    myDropzone.addFile(new File([blob], 'pasted-' + Date.now() + '.' + ext, { type: blob.type }));
+                }
+            }
         }
     });
 

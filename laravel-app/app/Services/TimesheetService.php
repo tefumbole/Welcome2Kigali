@@ -372,7 +372,7 @@ class TimesheetService
 
         return TimesheetActivity::create([
             'name' => 'Daily internship work',
-            'description' => 'End-of-day hours for Beyond Enterprise internship tasks',
+            'description' => 'End-of-day hours for Welcome 2 Kigali Expats Club internship tasks',
             'category' => 'Internship',
             'color' => '#0b3f90',
             'is_active' => true,

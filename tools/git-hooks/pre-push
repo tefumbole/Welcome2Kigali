@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Block pushing Welcome 2 Kigali onto the BeyondTechWorld GitHub repo.
+set -euo pipefail
+
+remote_name="${1:-}"
+remote_url="${2:-}"
+
+if echo "$remote_name $remote_url" | grep -qiE 'beyondtechworld|BeyondTechWorld'; then
+  echo "REFUSING: this is Welcome 2 Kigali. Do not push to BeyondTechWorld."
+  echo "Use: git push origin HEAD"
+  exit 1
+fi
+
+exit 0

@@ -1,7 +1,7 @@
 @extends('beyond.layout')
 
 @section('title', 'My Learning Progress')
-@section('meta_description', 'Track your Beyond Enterprise course progress.')
+@section('meta_description', 'Track your Welcome 2 Kigali Expats Club course progress.')
 
 @section('content')
 <div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">

@@ -225,7 +225,7 @@ class ContractInstanceService
     {
         if (empty($party) && $side === 'A') {
             $party = [
-                'name' => ContractSetting::getValue('company_legal_name', 'Beyond Enterprise'),
+                'name' => ContractSetting::getValue('company_legal_name', \App\Support\SiteBrand::companyName()),
                 'address' => ContractSetting::getValue('company_address', ''),
                 'subject_type' => 'company',
                 'subject_id' => 'beyond',

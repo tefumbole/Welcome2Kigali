@@ -19,7 +19,7 @@ class AnnouncementPersonalization
         return $result;
     }
 
-    public static function recipientVars(array $person, $reference = '', $institution = 'Beyond Enterprise')
+    public static function recipientVars(array $person, $reference = '', $institution = 'Welcome 2 Kigali Expats Club')
     {
         return [
             'Name' => $person['name'] ?? '',
@@ -44,7 +44,7 @@ class AnnouncementPersonalization
     {
         $institution = trim((string) ($announcement->header ?: WhatsAppMessage::companyName()));
         $reference = trim((string) ($announcement->reference ?? ''));
-        $vars = self::recipientVars($person, $reference, $institution !== '' ? $institution : 'Beyond Enterprise');
+        $vars = self::recipientVars($person, $reference, $institution !== '' ? $institution : 'Welcome 2 Kigali Expats Club');
 
         $body = trim(self::personalize($announcement->body ?: '', $vars));
         $subject = trim(self::personalize($announcement->subject ?: '', $vars));
@@ -103,7 +103,7 @@ class AnnouncementPersonalization
      */
     public static function buildTwilioBody($announcement, array $person, $isCc = false)
     {
-        $settingsInstitution = $announcement->header ?: 'Beyond Enterprise';
+        $settingsInstitution = $announcement->header ?: 'Welcome 2 Kigali Expats Club';
         $vars = self::recipientVars($person, $announcement->reference ?: '', $settingsInstitution);
         $body = trim(self::personalize($announcement->body ?: '', $vars));
         $footer = trim(self::personalize($announcement->footer ?: '', $vars));

@@ -7,6 +7,11 @@ APP="$ROOT/laravel-app"
 SSH_HOST="${W2K_SSH_HOST:-alphabridge-ts}"
 REMOTE="${W2K_REMOTE:-/var/www/welcome2kigali-preview/laravel-app}"
 
+if [[ "$REMOTE" == *beyondtechworld* ]]; then
+  echo "REFUSING: this script only deploys Welcome 2 Kigali. Never write into Beyond."
+  exit 1
+fi
+
 if [ "${W2K_SKIP_VERSION_BUMP:-0}" != "1" ]; then
   bash "$ROOT/tools/bump-w2k-version.sh"
 fi
@@ -67,6 +72,31 @@ FILES=(
   app/Http/Controllers/HomeController.php
   app/Support/Letterhead.php
   app/Support/UserWorkspaces.php
+  app/Support/SiteBrand.php
+  app/Support/TaskPersonalization.php
+  app/Support/AnnouncementPersonalization.php
+  app/Services/BeyondAuthService.php
+  app/Http/Middleware/Active.php
+  app/Http/Controllers/SettingController.php
+  app/Http/Controllers/ContractSettingsController.php
+  app/Http/Controllers/ContractController.php
+  app/Http/Controllers/ContractTemplateController.php
+  app/Http/Controllers/EventContractController.php
+  app/Http/Controllers/EventContractSigningController.php
+  app/Http/Controllers/EventPaymentController.php
+  app/Http/Controllers/UserSignatureController.php
+  app/Services/TaskNotificationService.php
+  app/Services/AnnouncementService.php
+  app/Services/ApplicationNotifier.php
+  app/Services/TimesheetService.php
+  app/Services/EventContractService.php
+  app/Services/Contracts/ContractInstanceService.php
+  app/Services/Contracts/ContractBulkEngagementService.php
+  app/Services/Contracts/ContractWorkflowService.php
+  app/Console/Commands/SendContractSignatureReminders.php
+  app/Support/WhatsAppPhone.php
+  config/app.php
+  database/migrations/2026_09_08_120000_rebrand_w2k_company_names.php
   app/Support/InternCompliance.php
   app/Http/Controllers/WorkspaceController.php
   app/Http/Controllers/StaffPhoneAuthController.php
@@ -147,7 +177,7 @@ done
 /usr/bin/rsync -az --relative "${EXISTING[@]}" "$SSH_HOST:$REMOTE/"
 /usr/bin/rsync -az --relative \
   resources/views/membership \
-  resources/views/beyond/membership \
+  resources/views/beyond \
   "$SSH_HOST:$REMOTE/"
 
 if [ -f "$APP/app/Support/SiteI18n.php" ]; then
@@ -177,6 +207,7 @@ sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_02_210000_add_id_dates_to_membership_applications.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_02_220000_add_nationality_to_membership_applications.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_08_100000_ensure_w2k_currency_and_letterhead.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_08_120000_rebrand_w2k_company_names.php
 sudo -u www-data php "\$APP/artisan" view:clear
 sudo -u www-data php "\$APP/artisan" cache:clear
 sudo -u www-data php "\$APP/artisan" config:clear

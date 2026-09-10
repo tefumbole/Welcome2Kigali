@@ -1186,7 +1186,7 @@ class ApplicationService
             $email = trim((string) $customer->email);
             $phone = $customer->phone_number;
             if ($email === '') {
-                $email = 'c'.$customer->id.'@customers.beyondtechworld.com';
+                $email = 'c'.$customer->id.'@customers.welcome2kigali.net';
             }
         } elseif (strpos($ref, 'beyond:') === 0) {
             $beyond = \App\BeyondUser::find(substr($ref, 7));

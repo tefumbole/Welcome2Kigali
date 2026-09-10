@@ -101,7 +101,7 @@
                                     <span class="font-semibold ml-2">Mode:</span> {{ $module['deliveryMode'] }}
                                 </div>
                                 <div class="flex flex-col sm:flex-row gap-3">
-                                    <a href="https://wa.me/237675321739?text={{ urlencode('Hello, I would like to inquire about ' . $module['title']) }}"
+                                    <a href="{{ \App\Support\SiteBrand::phoneWhatsAppUrl() }}?text={{ urlencode('Hello, I would like to inquire about ' . $module['title']) }}"
                                        target="_blank" rel="noopener"
                                        class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold">
                                         <i data-lucide="message-circle" class="w-4 h-4"></i> Inquire about {{ $module['title'] }}
@@ -150,12 +150,12 @@
 <section class="py-20 bg-gradient-to-br from-brand-blue via-[#0052A3] to-brand-blue relative overflow-hidden">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
         <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">Ready to Transform Your Career?</h2>
-        <p class="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">Join thousands of professionals who have upgraded their skills with Beyond Enterprise</p>
+        <p class="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">Join thousands of professionals who have upgraded their skills with Welcome 2 Kigali Expats Club</p>
         <a href="{{ url('/register-now') }}" class="inline-block bg-brand-gold text-brand-blue hover:bg-[#C19B2A] px-12 py-6 text-xl font-bold rounded-full shadow-2xl hover:scale-110 transition-transform">
             Enroll Now — Limited Seats Available
         </a>
         <div class="flex flex-col sm:flex-row items-center justify-center gap-6 mt-8 text-blue-200 text-sm">
-            <a href="mailto:info@beyondtechworld.com" class="hover:text-brand-gold">info@beyondtechworld.com</a>
+            <a href="mailto:info@welcome2kigali.net" class="hover:text-brand-gold">info@welcome2kigali.net</a>
             <span class="hidden sm:inline text-blue-400">•</span>
             <a href="tel:+237675321739" class="hover:text-brand-gold">+237 675 321 739</a>
         </div>

@@ -12,8 +12,16 @@
 # From your laptop (after user requests deploy):
 #   ssh myvps 'cd /var/www/beyondtechworld && git pull && bash tools/deploy-beyondtechworld-laravel.sh'
 set -euo pipefail
+# shellcheck source=/dev/null
+source "$(cd "$(dirname "$0")" && pwd)/lib/refuse-beyond-from-w2k.sh"
 
 ROOT="${ROOT:-/var/www/beyondtechworld}"
+case "$ROOT" in
+  /var/www/welcome2kigali|/var/www/welcome2kigali-app|/var/www/welcome2kigali-app/*|/var/www/welcome2kigali-preview|/var/www/welcome2kigali-preview/*)
+    echo "REFUSING: will not deploy Beyond into Welcome 2 Kigali."
+    exit 1
+    ;;
+esac
 APP="$ROOT/laravel-app"
 WEB_USER="${WEB_USER:-www-data}"
 WEB_GROUP="${WEB_GROUP:-www-data}"

@@ -2,6 +2,11 @@
 # Apply all VPS nginx vhosts from repo — run ON the VPS from /var/www/alphabridge
 # Usage: bash tools/vps-apply-nginx.sh
 set -euo pipefail
+if [[ -f "$(cd "$(dirname "$0")/.." && pwd)/WELCOME2KIGALI" ]]; then
+  echo "REFUSING: Welcome 2 Kigali repo cannot rewrite Beyond/AlphaBridge nginx."
+  echo "W2K nginx: tools/nginx/welcome2kigali.conf"
+  exit 1
+fi
 
 ROOT="${1:-/var/www/alphabridge}"
 NGINX_SRC="$ROOT/tools/nginx"

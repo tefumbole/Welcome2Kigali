@@ -6,7 +6,7 @@
 @endphp
 
 @section('title', 'Apply — '.$job->title)
-@section('meta_description', 'Submit your application for '.$job->title.' at Beyond Enterprise.')
+@section('meta_description', 'Submit your application for '.$job->title.' at Welcome 2 Kigali Expats Club.')
 
 @section('content')
 @include('beyond.apply.partials.apply_styles')

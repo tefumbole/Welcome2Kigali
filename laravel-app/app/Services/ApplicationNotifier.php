@@ -218,7 +218,7 @@ class ApplicationNotifier
             return ['success' => false, 'error' => 'No WhatsApp number'];
         }
 
-        $program = $job->title ?: 'Beyond Enterprise';
+        $program = $job->title ?: \App\Support\SiteBrand::companyName();
         $department = $job->department
             ?: ($job->isInternship() ? 'Internship Programme' : 'Employment Programme');
         $year = date('Y').'/'.(date('Y') + 1);

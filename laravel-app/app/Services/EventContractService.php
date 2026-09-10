@@ -18,7 +18,7 @@ class EventContractService
     {
         $profile = $assignment->workerProfile;
         $gs = GeneralSetting::first();
-        $company = $gs->site_title ?? 'Beyond Enterprise';
+        $company = $gs->site_title ?? \App\Support\SiteBrand::companyName();
 
         $replacements = [
             '{{company_name}}' => e($company),

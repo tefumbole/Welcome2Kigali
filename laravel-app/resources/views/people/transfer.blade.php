@@ -5,7 +5,7 @@
     <div class="container-fluid">
         <h3 style="color:#0b3f90;">People Transfer — Export / Import</h3>
         <p class="text-muted">
-            Use these CSVs to move <strong>Users</strong> and <strong>Customers</strong> between Mainmarket and Beyond Enterprise.
+            Use these CSVs to move <strong>Users</strong> and <strong>Customers</strong> between Mainmarket and Welcome 2 Kigali Expats Club.
             Export from the source site, then Import on the destination. Matching is by <strong>phone_number</strong> (customers) and <strong>email</strong> (users).
         </p>
 

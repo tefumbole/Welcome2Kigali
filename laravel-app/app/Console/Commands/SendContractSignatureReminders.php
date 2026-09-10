@@ -50,7 +50,7 @@ class SendContractSignatureReminders extends Command
 
                 $url = url('/admin/contracts/'.$contract->id);
                 // Prefer reusing last portal path message without exposing hash; ask admin to resend for new token
-                $msg = "Reminder: Please sign Beyond Enterprise contract {$contract->number}. If your link expired, contact the sender. Ref: {$contract->title}";
+                $msg = "Reminder: Please sign the Welcome 2 Kigali Expats Club contract {$contract->number}. If your link expired, contact the sender. Ref: {$contract->title}";
                 if ($sig->phone) {
                     try {
                         $notify->sendWhatsAppText($sig->phone, $msg);

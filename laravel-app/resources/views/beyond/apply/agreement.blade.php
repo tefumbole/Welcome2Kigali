@@ -27,7 +27,7 @@
             <p>Dear <strong>{{ $application->full_name }}</strong>,</p>
             <p>
                 You have been selected for the {{ $isInternship ? 'internship' : 'position' }}
-                <strong>{{ optional($job)->title }}</strong> at Beyond Enterprise.
+                <strong>{{ optional($job)->title }}</strong> at Welcome 2 Kigali Expats Club.
             </p>
 
             @if ($isInternship)

@@ -38,6 +38,6 @@ class EventContractSigningController extends Controller
         $contracts->workerSign($contract, $request->signature_image);
 
         return redirect()->route('event.contract.sign', $token)
-            ->with('message', 'Thank you! Your signature has been recorded. Beyond Enterprise will countersign and send the final PDF shortly.');
+            ->with('message', 'Thank you! Your signature has been recorded. Welcome 2 Kigali Expats Club will countersign and send the final PDF shortly.');
     }
 }

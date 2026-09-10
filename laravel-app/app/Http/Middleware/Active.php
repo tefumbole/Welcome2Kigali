@@ -29,7 +29,11 @@ class Active
             return $next($request);
         }
 
-        return redirect('/dashboard');
+        Auth::logout();
+
+        return redirect('/login')->withErrors([
+            'identifier' => 'This account is not active. Sign in with your admin login or contact support.',
+        ]);
         
     }
 }

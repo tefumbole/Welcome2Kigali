@@ -68,7 +68,7 @@ class ContractSettingsController extends Controller
         $map = [
             'number_prefix' => $request->get('number_prefix', 'CNT'),
             'default_validity_days' => (int) $request->get('default_validity_days', 14),
-            'company_legal_name' => $request->get('company_legal_name', 'Beyond Enterprise'),
+            'company_legal_name' => $request->get('company_legal_name', \App\Support\SiteBrand::companyName()),
             'company_address' => $request->get('company_address', ''),
             'default_jurisdiction' => $request->get('default_jurisdiction', 'Republic of Cameroon'),
             'default_admin_signer_user_id' => $request->get('default_admin_signer_user_id'),

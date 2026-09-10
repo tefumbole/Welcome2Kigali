@@ -3,6 +3,8 @@
 # Run ON the VPS. Overwrites all tables in the target database.
 set -euo pipefail
 
+source "$(cd "$(dirname "$0")" && pwd)/lib/refuse-beyond-from-w2k.sh"
+
 STAMP="$(date +%Y%m%d-%H%M%S)"
 DUMP="/tmp/alphabridge-to-beyond-${STAMP}.sql"
 BACKUP_DIR="/var/www/beyondtechworld/backups"

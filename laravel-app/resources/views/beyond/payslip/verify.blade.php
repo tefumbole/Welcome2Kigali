@@ -1,7 +1,7 @@
 @extends('beyond.layout')
 
 @section('title', 'Payslip Verification')
-@section('meta_description', 'Verify the authenticity of a Beyond Enterprise payslip.')
+@section('meta_description', 'Verify the authenticity of a Welcome 2 Kigali Expats Club payslip.')
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-4 py-16">
@@ -12,7 +12,7 @@
                     <i data-lucide="check-circle" class="w-9 h-9 text-green-600"></i>
                 </div>
                 <h1 class="text-xl font-bold text-brand-blue">Verified Payslip</h1>
-                <p class="text-sm text-gray-500 mt-1">This is an authentic Beyond Enterprise payslip.</p>
+                <p class="text-sm text-gray-500 mt-1">This is an authentic Welcome 2 Kigali Expats Club payslip.</p>
             @else
                 <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-3">
                     <i data-lucide="x-circle" class="w-9 h-9 text-red-500"></i>
@@ -37,7 +37,7 @@
                     Verification code: <span class="font-mono">{{ $data['verification_code'] }}</span>
                 </div>
             @endif
-            <p class="text-center text-xs text-gray-400 pt-4 mt-4 border-t">Beyond Enterprise · Human Resources</p>
+            <p class="text-center text-xs text-gray-400 pt-4 mt-4 border-t">Welcome 2 Kigali Expats Club · Human Resources</p>
         </div>
     </div>
 </div>

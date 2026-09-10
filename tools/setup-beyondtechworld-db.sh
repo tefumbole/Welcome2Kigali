@@ -3,6 +3,8 @@
 # Create the database in hPanel first if this script reports access denied.
 set -euo pipefail
 
+source "$(cd "$(dirname "$0")" && pwd)/lib/refuse-beyond-from-w2k.sh"
+
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 

@@ -3,7 +3,7 @@
 namespace App\Support;
 
 /**
- * Canonical WhatsApp phone normalization for Beyond Enterprise.
+ * Canonical WhatsApp phone normalization for Welcome 2 Kigali Expats Club.
  *
  * Storage / send shape: digits with country code, no spaces/dashes/brackets.
  * Wasender E.164: +237681239720

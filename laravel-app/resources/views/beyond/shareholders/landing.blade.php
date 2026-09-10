@@ -1,7 +1,7 @@
 @extends('beyond.layout')
 
 @section('title', 'Shareholders Agreement')
-@section('meta_description', 'Read and accept the Shareholder Agreement to invest in Beyond Enterprise.')
+@section('meta_description', 'Read and accept the Shareholder Agreement to invest in Welcome 2 Kigali Expats Club.')
 
 @section('content')
 <div class="bg-brand-blue text-white flex flex-col -mt-0" style="min-height: calc(100vh - 5rem);">
@@ -28,14 +28,14 @@
             <div class="mb-8 p-6 bg-blue-900/30 rounded-lg border-l-4 border-brand-gold">
                 <h2 class="text-xl font-bold text-white mb-2">Terms &amp; Conditions of Investment</h2>
                 <p class="text-gray-300">
-                    This document serves as a binding understanding between Beyond Enterprise (the "Company") and you (the "Investor").
+                    This document serves as a binding understanding between Welcome 2 Kigali Expats Club (the "Company") and you (the "Investor").
                     By clicking "I Agree" below, you acknowledge that you have read, understood, and accepted these terms.
                 </p>
             </div>
 
             @php
                 $sections = [
-                    ['n' => '1', 'icon' => 'info', 'title' => 'About the Company', 'body' => '<p><strong>Beyond Enterprise</strong> is a private limited company registered in Rwanda. We specialize in IT consultancy, networking, security systems, and AV engineering.</p>'],
+                    ['n' => '1', 'icon' => 'info', 'title' => 'About the Company', 'body' => '<p><strong>Welcome 2 Kigali Expats Club</strong> is a private limited company registered in Rwanda. We specialize in IT consultancy, networking, security systems, and AV engineering.</p>'],
                     ['n' => '2', 'icon' => 'dollar-sign', 'title' => 'Share Price', 'body' => '<p>The value of one (1) share is currently set at <strong class="text-brand-gold">'.$priceLabel.'</strong>. This price is subject to change based on future valuations and board approval.</p>'],
                     ['n' => '3', 'icon' => 'pie-chart', 'title' => 'Share Issuance', 'body' => '<ul class="list-disc pl-5 space-y-2 marker:text-brand-gold"><li>Shares will be officially issued and allocated to the Investor after a vesting period of <strong class="text-white">24 months (2 years)</strong> from the date of investment receipt.</li><li>During this 24-month period, your investment is treated as <em>Convertible Equity</em>—securing your future ownership stake.</li></ul>'],
                     ['n' => '4', 'icon' => 'users', 'title' => 'Share Ownership', 'body' => '<p>Investors who purchase shares become partial owners of the company. Ownership percentage is calculated based on the number of shares held relative to the total authorized shares of the company.</p>'],

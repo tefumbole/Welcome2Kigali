@@ -95,7 +95,7 @@ class EventPaymentController extends Controller
         $phone = $payment->mobile_money_number ?: $profile->telephone ?? optional($profile->customer)->phone_number;
         if ($phone && $payment->receipt_path) {
             try {
-                $msg = 'Beyond Enterprise: Labour payment of ' . number_format($payment->amount) . ' XAF for '
+                $msg = 'Welcome 2 Kigali Expats Club: Labour payment of ' . number_format($payment->amount) . ' RWF for '
                     . $payment->event->name . ' (' . $payment->reference_no . ') has been processed.';
                 $this->sendWhatsAppToPhone($phone, $msg);
                 $this->sendWhatsAppDocumentToPhone(

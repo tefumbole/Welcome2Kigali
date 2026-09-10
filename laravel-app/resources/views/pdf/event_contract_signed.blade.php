@@ -26,7 +26,7 @@ td{padding:8px;vertical-align:top;width:50%}
 <td class="sig">
 <strong>Company signature</strong><br>
 @if($adminSigPath)<img src="{{ $adminSigPath }}">@endif<br>
-{{ optional($contract->adminSigner)->name ?? 'Beyond Enterprise' }}<br>
+{{ optional($contract->adminSigner)->name ?? 'Welcome 2 Kigali Expats Club' }}<br>
 {{ optional($contract->admin_signed_at)->format('d M Y H:i') }}
 </td>
 </tr>

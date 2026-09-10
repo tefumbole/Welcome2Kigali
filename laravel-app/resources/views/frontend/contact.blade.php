@@ -62,7 +62,7 @@
                         </div>
                         <div class="col-lg-3">
                             <div class="mb-30">
-                                <h4>Beyond Enterprise</h4>
+                                <h4>Welcome 2 Kigali Expats Club</h4>
                                 <p class="font-sm color-gray-700">Kigali, <br>Rwanda</p>
                             </div>
                         </div>
@@ -79,7 +79,7 @@
                         <div class="col-lg-3 text-center mb-30">
                             <div class="box-image mb-20"><img src="{{ asset('public/assets/imgs/page/contact/chat.svg') }}" alt="Ecom"></div>
                             <h4 class="mb-5">Chat to sales</h4>
-                            <p class="font-sm color-gray-700 mb-5">Speak to our team.</p><a class="font-sm color-gray-900" href="mailto:info@beyondtechworld.com">info@beyondtechworld.com</a>
+                            <p class="font-sm color-gray-700 mb-5">Speak to our team.</p><a class="font-sm color-gray-900" href="mailto:info@welcome2kigali.net">info@welcome2kigali.net</a>
                         </div>
                         <div class="col-lg-3 text-center mb-30">
                             <div class="box-image mb-20"><img src="{{ asset('public/assets/imgs/page/contact/call.svg') }}" alt="Ecom"></div>

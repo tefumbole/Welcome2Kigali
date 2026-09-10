@@ -27,9 +27,9 @@ class AnnouncementService
         $row = WaAnnouncementSetting::query()->first();
         if (! $row) {
             $row = WaAnnouncementSetting::create([
-                'company_name' => 'Beyond Enterprise',
-                'default_header' => 'Beyond Enterprise',
-                'serial_prefix' => 'BEY/ANN/',
+                'company_name' => 'Welcome 2 Kigali Expats Club',
+                'default_header' => 'Welcome 2 Kigali Expats Club',
+                'serial_prefix' => 'W2K/ANN/',
                 'next_serial' => 1,
                 'serial_padding' => 4,
                 'timezone' => 'Africa/Kigali',

@@ -220,7 +220,7 @@ class ContractController extends Controller
             'shareholders' => $shareholders,
             'customerGroups' => CustomerGroup::orderBy('name')->get(['id', 'name']),
             'company' => [
-                'name' => ContractSetting::getValue('company_legal_name', 'Beyond Enterprise'),
+                'name' => ContractSetting::getValue('company_legal_name', \App\Support\SiteBrand::companyName()),
                 'address' => ContractSetting::getValue('company_address', ''),
             ],
         ];

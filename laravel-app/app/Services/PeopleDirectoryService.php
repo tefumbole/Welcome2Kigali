@@ -215,7 +215,7 @@ class PeopleDirectoryService
     {
         $email = trim((string) $application->email);
         if ($email === '') {
-            $email = 'a' . substr((string) $application->id, 0, 8) . '@applicants.beyondtechworld.com';
+            $email = 'a' . substr((string) $application->id, 0, 8) . '@applicants.welcome2kigali.net';
         }
 
         $existing = BeyondUser::where('email', $email)->first();
@@ -420,7 +420,7 @@ class PeopleDirectoryService
     {
         $email = trim((string) $customer->email);
         if ($email === '') {
-            $email = 'c' . $customer->id . '@customers.beyondtechworld.com';
+            $email = 'c' . $customer->id . '@customers.welcome2kigali.net';
         }
 
         $existing = BeyondUser::where('email', $email)->first();
@@ -449,7 +449,7 @@ class PeopleDirectoryService
     {
         $email = trim((string) $user->email);
         if ($email === '') {
-            $email = 'u' . $user->id . '@users.beyondtechworld.com';
+            $email = 'u' . $user->id . '@users.welcome2kigali.net';
         }
 
         $existing = BeyondUser::where('email', $email)->first();
@@ -685,7 +685,7 @@ class PeopleDirectoryService
             $role = $roleName !== '' ? Role::where('name', $roleName)->first() : $defaultRole;
 
             $user->name = $name ?: ($user->name ?: explode('@', $email)[0]);
-            $user->email = $email ?: ($user->email ?: ('import_' . Str::random(6) . '@beyondtechworld.com'));
+            $user->email = $email ?: ($user->email ?: ('import_' . Str::random(6) . '@welcome2kigali.net'));
             $user->phone = $data['phone'] ?? ($data['phone_number'] ?? ($data['phonenumber'] ?? $user->phone));
             $user->additional_phone = $data['additional_phone'] ?? ($data['additionalphone'] ?? $user->additional_phone);
             $user->company_name = $data['company_name'] ?? ($data['companyname'] ?? $user->company_name);

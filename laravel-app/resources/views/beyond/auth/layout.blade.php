@@ -1,6 +1,6 @@
 @extends('beyond.layout')
 
-@section('title', $title ?? 'Beyond Enterprise')
+@section('title', $title ?? \App\Support\SiteBrand::siteTitle())
 
 @push('head')
 <style>
