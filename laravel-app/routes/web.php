@@ -711,6 +711,7 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
     Route::get('products/editbyselection/page', 'ProductController@editBySelectionPage')->name('product.edit.by.selection.page');
 	Route::post('products/updatebyselection', 'ProductController@updateBySelection')->name('product.update.by.selection');
 	Route::post('products/update', 'ProductController@updateProduct');
+	Route::post('products/quick-update', 'ProductController@quickUpdate')->name('product.quick-update');
 	Route::get('products/store/model', 'SaleController@storeModel')->name('product.store.model');
 	Route::resource('products', 'ProductController');
 

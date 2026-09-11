@@ -1,4 +1,37 @@
 @extends('layout.main') @section('content')
+<style>
+    .w2k-product-list-hint {
+        margin: 12px 0 8px;
+        color: #6b4f2a;
+        font-size: 13px;
+    }
+    #product-data-table td.js-inline {
+        cursor: text;
+        position: relative;
+    }
+    #product-data-table td.js-inline:hover {
+        background: #fff8e8;
+        box-shadow: inset 0 0 0 1px #c5a059;
+    }
+    #product-data-table td.js-inline.is-saving { opacity: .65; }
+    #product-data-table .w2k-inline-input,
+    #product-data-table .w2k-inline-select {
+        width: 100%;
+        min-width: 72px;
+        border: 1px solid #c5a059;
+        border-radius: 8px;
+        padding: 4px 8px;
+        background: #fffdf8;
+        font-size: 13px;
+    }
+    #product-data-table td.js-inline-ok {
+        animation: w2kInlineOk .7s ease;
+    }
+    @keyframes w2kInlineOk {
+        from { background: #e8f8ee; }
+        to { background: transparent; }
+    }
+</style>
 @if(session()->has('create_message'))
     <div class="alert alert-success alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('create_message') }}</div>
 @endif
@@ -20,6 +53,9 @@
         @if(in_array("products-add", $all_permission))
             <a href="{{route('products.create')}}" class="btn btn-info"><i class="dripicons-plus"></i> {{__('file.add_product')}}</a>
             <a href="#" data-toggle="modal" data-target="#importProduct" class="btn btn-primary"><i class="dripicons-copy"></i> {{__('file.import_product')}}</a>
+        @endif
+        @if(!empty($can_inline_edit))
+            <p class="w2k-product-list-hint">Click a name, quantity, price, cost, brand, category, or unit to change it. Press Enter or click away to save.</p>
         @endif
     </div>
     <div class="table-responsive">
@@ -146,6 +182,10 @@
     var user_verified = <?php echo json_encode(env('USER_VERIFIED')) ?>;
     var is_admin_user = <?php echo json_encode(in_array(Auth::user()->role_id, [1, 2])) ?>;
     var can_manage_products = user_verified == '1' || is_admin_user;
+    var can_inline_edit = <?php echo !empty($can_inline_edit) ? 'true' : 'false'; ?>;
+    var brandOptions = @json(($lims_brand_list ?? collect())->map(function ($b) { return ['id' => $b->id, 'label' => $b->title]; })->values());
+    var categoryOptions = @json(($lims_category_list ?? collect())->map(function ($c) { return ['id' => $c->id, 'label' => $c->name]; })->values());
+    var unitOptions = @json(($lims_unit_list ?? collect())->map(function ($u) { return ['id' => $u->id, 'label' => $u->unit_name]; })->values());
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -161,7 +201,8 @@
         }
     });
 
-    $(document).on("click", "tr.product-link td:not(:first-child, :last-child)", function() {
+    $(document).on("click", "tr.product-link td:not(:first-child, :last-child, .js-inline)", function() {
+        if ($(this).find('input, select').length) return;
         productDetails( $(this).parent().data('product'), $(this).parent().data('imagedata') );
     });
 
@@ -323,6 +364,17 @@
                 $(row).addClass('product-link');
                 $(row).attr('data-product', data['product']);
                 $(row).attr('data-imagedata', data['imagedata']);
+                $(row).attr('data-id', data['id']);
+                if (can_inline_edit) {
+                    var $tds = $(row).children('td');
+                    $tds.eq(2).addClass('js-inline').attr({'data-field':'name','data-type':'text'});
+                    $tds.eq(4).addClass('js-inline').attr({'data-field':'brand_id','data-type':'select','data-value': data.brand_id || ''});
+                    $tds.eq(5).addClass('js-inline').attr({'data-field':'category_id','data-type':'select','data-value': data.category_id || ''});
+                    $tds.eq(6).addClass('js-inline').attr({'data-field':'qty','data-type':'number'});
+                    $tds.eq(7).addClass('js-inline').attr({'data-field':'unit_id','data-type':'select','data-value': data.unit_id || ''});
+                    $tds.eq(8).addClass('js-inline').attr({'data-field':'price','data-type':'number'});
+                    $tds.eq(9).addClass('js-inline').attr({'data-field':'cost','data-type':'number'});
+                }
             },
             "columns": [
                 {"data": "key"},
@@ -505,6 +557,80 @@
         } );
 
     } );
+
+    function w2kSelectOptions(field, selected) {
+        var list = field === 'brand_id' ? brandOptions : (field === 'category_id' ? categoryOptions : unitOptions);
+        var html = field === 'brand_id' ? '<option value="">N/A</option>' : '<option value="">Select…</option>';
+        (list || []).forEach(function (opt) {
+            html += '<option value="'+opt.id+'"'+(String(opt.id) === String(selected) ? ' selected' : '')+'>'+opt.label+'</option>';
+        });
+        return html;
+    }
+
+    function w2kSaveInline($td, field, value) {
+        var id = $td.closest('tr').data('id');
+        $td.addClass('is-saving');
+        $.post("{{ route('product.quick-update') }}", { id: id, field: field, value: value })
+            .done(function (res) {
+                var display = res.display || {};
+                var labels = { name: display.name, brand_id: display.brand, category_id: display.category, qty: display.qty, unit_id: display.unit, price: display.price, cost: display.cost };
+                $td.text(labels[field] != null ? labels[field] : value);
+                if (res.ids && $td.data('type') === 'select') {
+                    $td.attr('data-value', res.ids[field] || '');
+                }
+                var $worth = $td.closest('tr').children('td').eq(10);
+                if (display.stock_worth) $worth.text(display.stock_worth);
+                $td.addClass('js-inline-ok');
+                setTimeout(function () { $td.removeClass('js-inline-ok'); }, 700);
+            })
+            .fail(function (xhr) {
+                var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Could not save.';
+                alert(msg);
+                $td.text($td.data('prev') || '');
+            })
+            .always(function () {
+                $td.removeClass('is-saving').removeData('editing');
+            });
+    }
+
+    $(document).on('click', '#product-data-table td.js-inline', function (e) {
+        e.stopPropagation();
+        var $td = $(this);
+        if (!can_inline_edit || $td.data('editing')) return;
+        var field = $td.data('field');
+        var type = $td.data('type');
+        var current = $.trim($td.text());
+        $td.data('prev', current).data('editing', 1).empty();
+        var $input;
+        if (type === 'select') {
+            $input = $('<select class="w2k-inline-select"></select>').html(w2kSelectOptions(field, $td.attr('data-value')));
+        } else {
+            $input = $('<input class="w2k-inline-input">').attr({ type: type === 'number' ? 'number' : 'text', step: type === 'number' ? 'any' : undefined }).val(current === 'N/A' ? '' : current);
+        }
+        $td.append($input);
+        $input.focus().on('click', function (ev) { ev.stopPropagation(); });
+        $input.on('keydown', function (ev) {
+            if (ev.key === 'Enter') { ev.preventDefault(); $input.trigger('w2k-save'); }
+            if (ev.key === 'Escape') { $td.text($td.data('prev')).removeData('editing'); }
+        });
+        $input.on('w2k-save', function () {
+            if (!$td.data('editing')) return;
+            var value = $input.val();
+            if (String(value) === String($td.data('prev')) || (type === 'select' && String(value) === String($td.attr('data-value') || ''))) {
+                $td.text($td.data('prev')).removeData('editing');
+                return;
+            }
+            w2kSaveInline($td, field, value);
+        });
+        if (type === 'select') {
+            $input.on('change', function () { $input.trigger('w2k-save'); });
+            $input.on('blur', function () {
+                if ($td.data('editing')) $td.text($td.data('prev')).removeData('editing');
+            });
+        } else {
+            $input.on('blur', function () { $input.trigger('w2k-save'); });
+        }
+    });
 
     if(all_permission.indexOf("products-delete") == -1)
         $('.buttons-delete').addClass('d-none');

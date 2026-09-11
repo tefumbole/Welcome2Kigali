@@ -164,6 +164,7 @@ FILES=(
   resources/views/booking/edit.blade.php
   resources/views/booking/create_sale.blade.php
   resources/views/product/create.blade.php
+  resources/views/product/index.blade.php
   resources/views/product/edit.blade.php
   public/uploads/membership/.gitkeep
   public/branding/footer-swoosh.svg

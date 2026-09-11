@@ -34,7 +34,11 @@ class ProductController extends Controller
                 $all_permission[] = $permission->name;
             if(empty($all_permission))
                 $all_permission[] = 'dummy text';
-            return view('product.index', compact('all_permission'));
+            $lims_brand_list = Brand::where('is_active', true)->orderBy('title')->get(['id', 'title']);
+            $lims_category_list = Category::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+            $lims_unit_list = Unit::where('is_active', true)->whereNull('base_unit')->orderBy('unit_name')->get(['id', 'unit_name']);
+            $can_inline_edit = in_array('products-edit', $all_permission);
+            return view('product.index', compact('all_permission', 'lims_brand_list', 'lims_category_list', 'lims_unit_list', 'can_inline_edit'));
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
@@ -215,11 +219,14 @@ class ProductController extends Controller
                 $nestedData['image'] = '<img src="'.url('public/images/product', $product_image).'" height="80" width="80">';
                 $nestedData['name'] = $product->name;
                 $nestedData['code'] = $product->code;
+                $nestedData['brand_id'] = $product->brand_id;
+                $nestedData['category_id'] = $product->category_id;
+                $nestedData['unit_id'] = $product->unit_id;
                 if($product->brand_id)
                     $nestedData['brand'] = $product->brand->title;
                 else
                     $nestedData['brand'] = "N/A";
-                $nestedData['category'] = $product->category->name;
+                $nestedData['category'] = $product->category ? $product->category->name : 'N/A';
                 $nestedData['qty'] = $product->qty;
                 if($product->unit_id)
                     $nestedData['unit'] = $product->unit->unit_name;
@@ -454,11 +461,14 @@ class ProductController extends Controller
                 $nestedData['image'] = '<img src="'.url('public/images/product', $product_image).'" height="80" width="80">';
                 $nestedData['name'] = $product->name;
                 $nestedData['code'] = $product->code;
+                $nestedData['brand_id'] = $product->brand_id;
+                $nestedData['category_id'] = $product->category_id;
+                $nestedData['unit_id'] = $product->unit_id;
                 if($product->brand_id)
                     $nestedData['brand'] = $product->brand->title;
                 else
                     $nestedData['brand'] = "N/A";
-                $nestedData['category'] = $product->category->name;
+                $nestedData['category'] = $product->category ? $product->category->name : 'N/A';
                 $nestedData['qty'] = $product->qty;
                 if($product->unit_id)
                     $nestedData['unit'] = $product->unit->unit_name;
@@ -880,6 +890,102 @@ class ProductController extends Controller
         \Session::flash('edit_message', 'Product updated successfully');
 
         return response()->json(['success' => true, 'message' => 'Product updated successfully']);
+    }
+
+    public function quickUpdate(Request $request)
+    {
+        $role = Role::find(Auth::user()->role_id);
+        if (! $role || ! $role->hasPermissionTo('products-edit')) {
+            return response()->json(['message' => 'You are not allowed to edit products.'], 403);
+        }
+
+        $field = $request->input('field');
+        $allowed = ['name', 'qty', 'price', 'cost', 'brand_id', 'category_id', 'unit_id'];
+        if (! in_array($field, $allowed, true)) {
+            return response()->json(['message' => 'That field cannot be edited here.'], 422);
+        }
+
+        $product = Product::findOrFail($request->input('id'));
+        $value = $request->input('value');
+
+        if ($field === 'name') {
+            $value = htmlspecialchars(trim((string) $value));
+            if ($value === '') {
+                return response()->json(['message' => 'Name cannot be empty.'], 422);
+            }
+            $taken = Product::where('name', $value)->where('is_active', 1)->where('id', '!=', $product->id)->exists();
+            if ($taken) {
+                return response()->json(['message' => 'Another product already uses this name.'], 422);
+            }
+            $product->name = $value;
+        } elseif (in_array($field, ['qty', 'price', 'cost'], true)) {
+            if ($value === '' || $value === null || ! is_numeric($value)) {
+                return response()->json(['message' => 'Enter a valid number.'], 422);
+            }
+            $product->{$field} = $value + 0;
+            if ($field === 'qty') {
+                $warehouse = Warehouse::where('is_active', true)->first();
+                if ($warehouse) {
+                    $row = Product_Warehouse::where('product_id', $product->id)->where('warehouse_id', $warehouse->id)->first();
+                    if ($row) {
+                        $row->update(['qty' => $product->qty]);
+                    } else {
+                        Product_Warehouse::create([
+                            'product_id' => $product->id,
+                            'warehouse_id' => $warehouse->id,
+                            'qty' => $product->qty,
+                        ]);
+                    }
+                }
+            }
+        } elseif ($field === 'brand_id') {
+            $product->brand_id = ($value === '' || $value === null) ? null : (int) $value;
+        } elseif ($field === 'category_id') {
+            if ($value === '' || $value === null) {
+                return response()->json(['message' => 'Choose a category.'], 422);
+            }
+            $product->category_id = (int) $value;
+        } elseif ($field === 'unit_id') {
+            $unitId = ($value === '' || $value === null) ? 0 : (int) $value;
+            if ($product->sale_unit_id == $product->unit_id || empty($product->sale_unit_id)) {
+                $product->sale_unit_id = $unitId;
+            }
+            if ($product->purchase_unit_id == $product->unit_id || empty($product->purchase_unit_id)) {
+                $product->purchase_unit_id = $unitId;
+            }
+            $product->unit_id = $unitId;
+        }
+
+        $product->save();
+        $product->load(['category', 'brand', 'unit']);
+
+        $qty = $product->qty;
+        $price = $product->price;
+        $cost = $product->cost;
+        if (config('currency_position') == 'prefix') {
+            $stockWorth = config('currency').' '.($qty * $price).' / '.config('currency').' '.($qty * $cost);
+        } else {
+            $stockWorth = ($qty * $price).' '.config('currency').' / '.($qty * $cost).' '.config('currency');
+        }
+
+        return response()->json([
+            'success' => true,
+            'display' => [
+                'name' => $product->name,
+                'qty' => $product->qty,
+                'price' => $product->price,
+                'cost' => $product->cost,
+                'brand' => $product->brand ? $product->brand->title : 'N/A',
+                'category' => $product->category ? $product->category->name : 'N/A',
+                'unit' => $product->unit ? $product->unit->unit_name : 'N/A',
+                'stock_worth' => $stockWorth,
+            ],
+            'ids' => [
+                'brand_id' => $product->brand_id,
+                'category_id' => $product->category_id,
+                'unit_id' => $product->unit_id,
+            ],
+        ]);
     }
 
     public function generateCode()

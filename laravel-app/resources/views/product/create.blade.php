@@ -1,18 +1,121 @@
 @extends('layout.main')
 
 @section('content')
-<section class="forms">
+<style>
+    .w2k-product-page {
+        background: linear-gradient(180deg, #f7f1e8 0%, #fffdf8 42%, #f3e6cf 100%);
+        border-radius: 20px;
+        padding: 8px 8px 28px;
+    }
+    .w2k-product-hero {
+        padding: 22px 24px 8px;
+    }
+    .w2k-product-hero h4 {
+        margin: 0;
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 28px;
+        color: #1a1a1a;
+        letter-spacing: .01em;
+    }
+    .w2k-product-hero p {
+        margin: 6px 0 0;
+        color: #7a6238;
+        font-size: 14px;
+    }
+    .w2k-product-page .card {
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+    .w2k-product-page .card-body {
+        padding: 8px 16px 16px;
+    }
+    .w2k-product-page .form-group label,
+    .w2k-product-page label {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        color: #5c4630;
+    }
+    .w2k-product-page .form-control,
+    .w2k-product-page .bootstrap-select .dropdown-toggle {
+        border: 1px solid #e4d3b0;
+        border-radius: 12px !important;
+        background: #fffefb;
+        min-height: 42px;
+        box-shadow: none;
+    }
+    .w2k-product-page .form-control:focus {
+        border-color: #c5a059;
+        box-shadow: 0 0 0 3px rgba(197,160,89,.18);
+        background: #fff;
+    }
+    .w2k-pf-section {
+        margin: 8px 0 4px;
+        padding: 14px 4px 0;
+        border-top: 1px solid rgba(197,160,89,.28);
+    }
+    .w2k-pf-section:first-of-type { border-top: 0; padding-top: 0; }
+    .w2k-pf-kicker {
+        display: inline-block;
+        margin-bottom: 10px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: #1a1a1a;
+        color: #c5a059;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+    .w2k-product-page #imageUpload.dropzone {
+        border: 2px dashed #c5a059;
+        border-radius: 16px;
+        background: #fff8ea;
+        min-height: 140px;
+    }
+    .w2k-product-page #submit-btn,
+    .w2k-product-save {
+        background: #1a1a1a;
+        border: 0;
+        color: #c5a059;
+        border-radius: 999px;
+        padding: 12px 28px;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+    .w2k-product-page #submit-btn:hover,
+    .w2k-product-save:hover {
+        background: #c5a059;
+        color: #1a1a1a;
+    }
+    .w2k-product-page .membership-benefit-box,
+    .w2k-product-page #diffPrice-option,
+    .w2k-product-page #batch-option,
+    .w2k-product-page #variant-option,
+    .w2k-product-page .promotion {
+        background: #fffdf8;
+        border: 1px solid #ead9b4;
+        border-radius: 14px;
+        padding: 14px 16px;
+        margin-top: 12px;
+    }
+</style>
+<section class="forms w2k-product-page">
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header d-flex align-items-center">
+                    <div class="w2k-product-hero">
                         <h4>{{trans('file.add_product')}}</h4>
+                        <p>Add a cafe or shop item. Fields with * are required. Image is optional.</p>
                     </div>
                     <div class="card-body">
-                        <p class="italic"><small>{{trans('file.The field labels marked with * are required input fields')}}.</small></p>
                         <form id="product-form">
                             <div class="row">
+                                <div class="col-12 w2k-pf-section"><span class="w2k-pf-kicker">The item</span></div>
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>{{trans('file.Product Type')}} *</strong> </label>
@@ -125,6 +228,7 @@
                                       <span class="validation-msg"></span>
                                     </div>
                                 </div>
+                                <div class="col-12 w2k-pf-section"><span class="w2k-pf-kicker">Units &amp; stock</span></div>
                                 <div id="unit" class="col-md-12">
                                     <div class="row ">
                                         <div class="col-md-4 form-group">
@@ -159,6 +263,7 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="col-12 w2k-pf-section"><span class="w2k-pf-kicker">Price</span></div>
                                 <div id="cost" class="col-md-4">
                                      <div class="form-group">
                                         <label>{{trans('file.Product Cost')}} *</strong> </label>
@@ -242,6 +347,7 @@
                                         <p class="italic">{{trans('file.Featured product will be displayed in POS')}}</p>
                                     </div>
                                 </div>
+                                <div class="col-12 w2k-pf-section"><span class="w2k-pf-kicker">Photo &amp; notes</span></div>
                                 <div class="col-md-12">
                                     <div class="form-group">
                                         <label>{{trans('file.Product Image')}}</strong> </label> <i class="dripicons-question" data-toggle="tooltip" title="{{trans('file.You can upload multiple image. Only .jpeg, .jpg, .png, .gif file can be uploaded. First image will be base image.')}}"></i>
@@ -256,6 +362,7 @@
                                         <textarea name="product_details" class="form-control" rows="3"></textarea>
                                     </div>
                                 </div>
+                                <div class="col-12 w2k-pf-section"><span class="w2k-pf-kicker">More options</span></div>
                                 <div class="col-md-12 mt-2" id="diffPrice-option">
                                     <h5><input name="is_diffPrice" type="checkbox" id="is-diffPrice" value="1">&nbsp; {{trans('file.This product has different price for different warehouse')}}</h5>
                                 </div>
@@ -377,8 +484,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <input type="button" value="{{trans('file.submit')}}" id="submit-btn" class="btn btn-primary">
+                            <div class="form-group mt-4">
+                                <input type="button" value="Save product" id="submit-btn" class="btn w2k-product-save">
                             </div>
                         </form>
                     </div>
