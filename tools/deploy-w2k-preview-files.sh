@@ -165,6 +165,8 @@ FILES=(
   resources/views/booking/create_sale.blade.php
   resources/views/product/create.blade.php
   resources/views/product/index.blade.php
+  app/Http/Controllers/HelpController.php
+  resources/views/help/index.blade.php
   resources/views/product/edit.blade.php
   public/uploads/membership/.gitkeep
   public/branding/footer-swoosh.svg
@@ -189,6 +191,8 @@ done
 /usr/bin/rsync -az --relative \
   resources/views/membership \
   resources/views/beyond \
+  resources/views/help \
+  public/branding/help \
   "$SSH_HOST:$REMOTE/"
 
 if [ -f "$APP/app/Support/SiteI18n.php" ]; then

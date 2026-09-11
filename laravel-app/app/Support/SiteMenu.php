@@ -29,6 +29,7 @@ class SiteMenu
     {
         return [
             'dashboard'    => 'Dashboard',
+            'help'         => 'Help',
             'site-content' => 'Site Content',
             'leaders'      => 'About Us Leaders',
             'invitations'  => 'Digital Invitations',

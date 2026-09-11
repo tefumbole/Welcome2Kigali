@@ -1031,6 +1031,16 @@
                         @if(Auth::user()->role_id != 7)
                             <li><a href="{{ url('/admin') }}"> <i class="dripicons-meter"></i><span>{{ __('file.dashboard') }}</span></a></li>
                         @endif
+                            <li><a href="#help-module" data-nav-key="help" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-question"></i><span>Help</span></a>
+                                <ul id="help-module" class="collapse list-unstyled ">
+                                    <li id="help-guide-menu"><a href="{{ route('help.index') }}">User Guide</a></li>
+                                    <li id="help-website-menu"><a href="{{ route('help.index') }}#website">Public website</a></li>
+                                    <li id="help-products-menu"><a href="{{ route('help.index') }}#products">Products &amp; cafe menu</a></li>
+                                    <li id="help-pos-menu"><a href="{{ route('help.index') }}#pos">POS &amp; sales</a></li>
+                                    <li id="help-content-menu"><a href="{{ route('help.index') }}#content">Site Content</a></li>
+                                    <li id="help-members-menu"><a href="{{ route('help.index') }}#members">Membership</a></li>
+                                </ul>
+                            </li>
                         @if(\App\Support\StaffAccess::canManageSite())
                             <li><a href="{{ url('/admin/site-content') }}" data-nav-key="site-content"> <i class="dripicons-web"></i><span>Site Content</span></a></li>
                             <li><a href="{{ url('/admin/leaders') }}" data-nav-key="leaders"> <i class="dripicons-user-group"></i><span>About Us Leaders</span></a></li>
@@ -2681,6 +2691,7 @@
                                 if (/-module$/.test(anchor)) return anchor.replace(/-module$/, '');
                                 return anchor;
                             }
+                            if (/\/admin\/help/.test(href)) return 'help';
                             if (/\/admin\/site-content/.test(href)) return 'site-content';
                             if (/\/admin\/leaders/.test(href)) return 'leaders';
                             if (/\/admin\/internship/.test(href)) return 'internships';
@@ -2812,6 +2823,18 @@
                     @if($add_permission_active)
                     <li class="nav-item"><a class="dropdown-item btn-pos btn-sm" href="{{route('sale.pos')}}"><i class="dripicons-shopping-bag"></i><span> POS</span></a></li>
                     @endif
+                    <li class="nav-item">
+                        <a rel="nofollow" data-toggle="tooltip" title="Help" class="nav-link dropdown-item"><i class="dripicons-question"></i><span class="d-none d-md-inline"> Help</span></a>
+                        <ul class="right-sidebar">
+                            <li><a href="{{ route('help.index') }}" class="btn btn-link">User Guide</a></li>
+                            <li><a href="{{ route('help.index') }}#website" class="btn btn-link">Public website</a></li>
+                            <li><a href="{{ route('help.index') }}#products" class="btn btn-link">Products &amp; cafe menu</a></li>
+                            <li><a href="{{ route('help.index') }}#catalog" class="btn btn-link">Live cafe catalog</a></li>
+                            <li><a href="{{ route('help.index') }}#pos" class="btn btn-link">POS &amp; sales</a></li>
+                            <li><a href="{{ route('help.index') }}#content" class="btn btn-link">Site Content</a></li>
+                            <li><a href="{{ route('help.index') }}#members" class="btn btn-link">Membership</a></li>
+                        </ul>
+                    </li>
                     <li class="nav-item"><a id="btnFullscreen" data-toggle="tooltip" title="{{trans('file.Full Screen')}}"><i class="dripicons-expand"></i></a></li>
                     @if(\Auth::user()->role_id <= 2)
                       <li class="nav-item"><a href="{{route('cashRegister.index')}}" data-toggle="tooltip" title="{{trans('file.Cash Register List')}}"><i class="dripicons-archive"></i></a></li>

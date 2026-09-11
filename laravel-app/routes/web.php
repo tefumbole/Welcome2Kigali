@@ -320,6 +320,7 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
 	Route::post('/otp/screen/store', 'HomeController@otpCheckStore')->name('check.otp.store');
 	Route::post('/otp/screen/resend', 'HomeController@otpResend')->name('check.otp.resend');
     Route::get('/admin', 'HomeController@index');
+    Route::get('/admin/help', 'HelpController@index')->name('help.index');
 
     // Site Content management (Admin/Owner) — reorder public + side menus
     Route::get('/admin/site-content', 'SiteContentController@index')->name('site-content.index');
