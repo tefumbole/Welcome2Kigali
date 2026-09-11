@@ -1378,7 +1378,7 @@
                                     || in_array($role->id ?? 0, [1, 2]);
                             @endphp
                             @if($oi_cat || $oi_tpl || $oi_evt || $oi_send)
-                            <li><a href="#online_invitation" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-ticket"></i><span>Digital Invitations</span></a>
+                            <li><a href="#online_invitation" data-nav-key="invitations" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-ticket"></i><span>Digital Invitations</span></a>
                                 <ul id="online_invitation" class="collapse list-unstyled ">
                                     @if($oi_cat)
                                         <li id="online-invitation-category-menu"><a href="{{ route('online_invitation.categories.index') }}">Categories</a></li>
@@ -1480,7 +1480,7 @@
                                 );
                             @endphp
                             @if($internship_is_supervisor)
-                                <li><a href="#supervisor-module" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-users"></i><span>Supervisor</span></a>
+                                <li><a href="#supervisor-module" data-nav-key="internships" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-users"></i><span>Supervisor</span></a>
                                     <ul id="supervisor-module" class="collapse list-unstyled ">
                                         <li id="ip-sup-home"><a href="{{ route('internship.supervisor.dashboard') }}">Home</a></li>
                                         <li id="ip-my-students"><a href="{{ route('internship.supervisor.students') }}">My Interns</a></li>
@@ -1489,9 +1489,9 @@
                                     </ul>
                                 </li>
                             @elseif($internship_is_admin)
-                                <li id="ip-hub"><a href="{{ route('internship.dashboard') }}"> <i class="fa fa-graduation-cap"></i><span>Internships</span></a></li>
+                                <li id="ip-hub"><a href="{{ route('internship.dashboard') }}" data-nav-key="internships"> <i class="fa fa-graduation-cap"></i><span>Internships</span></a></li>
                             @else
-                            <li><a href="#internship-module" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-graduation-cap"></i><span>Internships</span></a>
+                            <li><a href="#internship-module" data-nav-key="internships" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-graduation-cap"></i><span>Internships</span></a>
                                 <ul id="internship-module" class="collapse list-unstyled ">
                                     @if($internship_student_active || in_array($role->id, [1,2]))
                                         <li id="ip-student-dash"><a href="{{ route('internship.student.dashboard') }}">My Placement (student)</a></li>
@@ -2668,7 +2668,8 @@
                                 // collapse target ids differ from Site Content reorder keys
                                 if (anchor === 'contracts-module') return 'contracts';
                                 if (anchor === 'events-module') return 'events';
-                                if (anchor === 'invitations-module') return 'invitations';
+                                if (anchor === 'invitations-module' || anchor === 'online_invitation') return 'invitations';
+                                if (anchor === 'internship-module' || anchor === 'supervisor-module') return 'internships';
                                 if (anchor === 'tasks-module') return 'tasks';
                                 if (anchor === 'jobs-module') return 'jobs';
                                 if (anchor === 'announcements-module') return 'announcements';
@@ -2682,6 +2683,8 @@
                             }
                             if (/\/admin\/site-content/.test(href)) return 'site-content';
                             if (/\/admin\/leaders/.test(href)) return 'leaders';
+                            if (/\/admin\/internship/.test(href)) return 'internships';
+                            if (/\/online-invitation/.test(href)) return 'invitations';
                             if (/\/admin\/events/.test(href)) return 'events';
                             if (/\/admin\/contracts/.test(href)) return 'contracts';
                             if (/\/admin\/?$/.test(href) || /\/dashboard\/?$/.test(href)) return 'dashboard';

@@ -92,6 +92,25 @@
                         </a>
                     @endforeach
                 </div>
+                <p class="text-muted mb-1" style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;">Admin modules</p>
+                <div class="site-content-tabs-nav">
+                    <a class="beyond-module-tab tone-teal" href="{{ url('/admin/leaders') }}">
+                        <i class="dripicons-user-group"></i> About Us Leaders
+                    </a>
+                    @if(\Illuminate\Support\Facades\Route::has('online_invitation.invitations.index'))
+                        <a class="beyond-module-tab tone-gold" href="{{ route('online_invitation.invitations.index') }}">
+                            <i class="dripicons-ticket"></i> Digital Invitations
+                        </a>
+                    @endif
+                    @if(\Illuminate\Support\Facades\Route::has('internship.dashboard'))
+                        <a class="beyond-module-tab tone-blue" href="{{ route('internship.dashboard') }}">
+                            <i class="dripicons-user"></i> Internships
+                        </a>
+                    @endif
+                    <a class="beyond-module-tab tone-purple" href="{{ url('/admin/site-content?tab=side-menu') }}">
+                        <i class="dripicons-view-list"></i> Reorder in Side Bars
+                    </a>
+                </div>
 
                 @if(in_array($tab, ['landing-menu', 'side-menu', 'people-menu', 'settings-menu', 'content-tabs'], true))
                     @php
@@ -100,7 +119,7 @@
                             $order = $sideOrder;
                             $action = route('site-content.side-menu');
                             $heading = 'Side Bars';
-                            $hint = 'Show, hide, rename, and reorder admin sidebar items. Site Content and Settings stay visible.';
+                            $hint = 'Show, hide, rename, and reorder admin sidebar items, including About Us Leaders, Digital Invitations, and Internships. Site Content and Settings stay visible.';
                         } elseif ($tab == 'people-menu') {
                             $items = $people;
                             $order = $peopleOrder;
