@@ -3,23 +3,21 @@
 @section('content')
 <style>
     .w2k-product-page {
-        background: linear-gradient(180deg, #f7f1e8 0%, #fffdf8 42%, #f3e6cf 100%);
-        border-radius: 20px;
-        padding: 8px 8px 28px;
+        background: transparent;
+        padding: 0 0 24px;
     }
     .w2k-product-hero {
-        padding: 22px 24px 8px;
+        padding: 8px 4px 12px;
     }
     .w2k-product-hero h4 {
         margin: 0;
-        font-family: Georgia, 'Times New Roman', serif;
-        font-size: 28px;
-        color: #1a1a1a;
-        letter-spacing: .01em;
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--beyond-text, #1f2a44);
     }
     .w2k-product-hero p {
         margin: 6px 0 0;
-        color: #7a6238;
+        color: var(--beyond-muted, #6f7b91);
         font-size: 14px;
     }
     .w2k-product-page .card {
@@ -28,7 +26,7 @@
         box-shadow: none;
     }
     .w2k-product-page .card-body {
-        padding: 8px 16px 16px;
+        padding: 8px 4px 16px;
     }
     .w2k-product-page .form-group label,
     .w2k-product-page label {
@@ -36,50 +34,52 @@
         font-weight: 700;
         letter-spacing: .04em;
         text-transform: uppercase;
-        color: #5c4630;
+        color: var(--beyond-muted, #6f7b91);
     }
     .w2k-product-page .form-control,
     .w2k-product-page .bootstrap-select .dropdown-toggle {
-        border: 1px solid #e4d3b0;
-        border-radius: 12px !important;
-        background: #fffefb;
+        border: 1px solid #d5deea;
+        border-radius: 10px !important;
+        background: #fff;
         min-height: 42px;
         box-shadow: none;
+        color: var(--beyond-text, #1f2a44);
     }
     .w2k-product-page .form-control:focus {
-        border-color: #c5a059;
-        box-shadow: 0 0 0 3px rgba(197,160,89,.18);
+        border-color: var(--beyond-primary, #0b3f90);
+        box-shadow: 0 0 0 3px rgba(11,63,144,.16);
         background: #fff;
     }
     .w2k-pf-section {
         margin: 8px 0 4px;
-        padding: 14px 4px 0;
-        border-top: 1px solid rgba(197,160,89,.28);
+        padding: 16px 4px 0;
+        border-top: 1px solid #e6ecf5;
     }
     .w2k-pf-section:first-of-type { border-top: 0; padding-top: 0; }
     .w2k-pf-kicker {
         display: inline-block;
         margin-bottom: 10px;
-        padding: 4px 10px;
+        padding: 4px 12px;
         border-radius: 999px;
-        background: #1a1a1a;
-        color: #c5a059;
+        background: #fff;
+        border: 1px solid var(--beyond-primary, #0b3f90);
+        color: var(--beyond-primary, #0b3f90);
         font-size: 11px;
         font-weight: 700;
         letter-spacing: .08em;
         text-transform: uppercase;
     }
     .w2k-product-page #imageUpload.dropzone {
-        border: 2px dashed #c5a059;
-        border-radius: 16px;
-        background: #fff8ea;
+        border: 2px dashed #b7c6dc;
+        border-radius: 14px;
+        background: #f3f6fb;
         min-height: 140px;
     }
     .w2k-product-page #submit-btn,
     .w2k-product-save {
-        background: #1a1a1a;
+        background: var(--beyond-primary, #0b3f90);
         border: 0;
-        color: #c5a059;
+        color: #fff;
         border-radius: 999px;
         padding: 12px 28px;
         font-weight: 700;
@@ -88,16 +88,16 @@
     }
     .w2k-product-page #submit-btn:hover,
     .w2k-product-save:hover {
-        background: #c5a059;
-        color: #1a1a1a;
+        background: var(--beyond-primary-dark, #072f6b);
+        color: #fff;
     }
     .w2k-product-page .membership-benefit-box,
     .w2k-product-page #diffPrice-option,
     .w2k-product-page #batch-option,
     .w2k-product-page #variant-option,
     .w2k-product-page .promotion {
-        background: #fffdf8;
-        border: 1px solid #ead9b4;
+        background: #f3f6fb;
+        border: 1px solid #d5deea;
         border-radius: 14px;
         padding: 14px 16px;
         margin-top: 12px;
