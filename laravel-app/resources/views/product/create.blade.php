@@ -3,6 +3,9 @@
 @section('content')
 <style>
     .w2k-product-page {
+        --w2k-blue: #5ba3f5;
+        --w2k-blue-hover: #3d8be8;
+        --w2k-blue-soft: #eef6ff;
         background: transparent;
         padding: 0 0 24px;
     }
@@ -46,8 +49,8 @@
         color: var(--beyond-text, #1f2a44);
     }
     .w2k-product-page .form-control:focus {
-        border-color: var(--beyond-primary, #0b3f90);
-        box-shadow: 0 0 0 3px rgba(11,63,144,.16);
+        border-color: var(--w2k-blue);
+        box-shadow: 0 0 0 3px rgba(91,163,245,.28);
         background: #fff;
     }
     .w2k-pf-section {
@@ -61,23 +64,23 @@
         margin-bottom: 10px;
         padding: 4px 12px;
         border-radius: 999px;
-        background: #fff;
-        border: 1px solid var(--beyond-primary, #0b3f90);
-        color: var(--beyond-primary, #0b3f90);
+        background: var(--w2k-blue-soft);
+        border: 1px solid var(--w2k-blue);
+        color: #2b6cb8;
         font-size: 11px;
         font-weight: 700;
         letter-spacing: .08em;
         text-transform: uppercase;
     }
     .w2k-product-page #imageUpload.dropzone {
-        border: 2px dashed #b7c6dc;
+        border: 2px dashed #9cc7f5;
         border-radius: 14px;
-        background: #f3f6fb;
+        background: var(--w2k-blue-soft);
         min-height: 140px;
     }
     .w2k-product-page #submit-btn,
     .w2k-product-save {
-        background: var(--beyond-primary, #0b3f90);
+        background: var(--w2k-blue);
         border: 0;
         color: #fff;
         border-radius: 999px;
@@ -88,7 +91,7 @@
     }
     .w2k-product-page #submit-btn:hover,
     .w2k-product-save:hover {
-        background: var(--beyond-primary-dark, #072f6b);
+        background: var(--w2k-blue-hover);
         color: #fff;
     }
     .w2k-product-page .membership-benefit-box,
@@ -96,8 +99,8 @@
     .w2k-product-page #batch-option,
     .w2k-product-page #variant-option,
     .w2k-product-page .promotion {
-        background: #f3f6fb;
-        border: 1px solid #d5deea;
+        background: var(--w2k-blue-soft);
+        border: 1px solid #c5ddf8;
         border-radius: 14px;
         padding: 14px 16px;
         margin-top: 12px;
