@@ -5,6 +5,11 @@
 
 @section('content')
 
+@include('beyond.partials.hero', [
+    'title' => \App\Support\SiteContent::html('events.hero_title', 'Club <span class="text-brand-gold">Events</span>'),
+    'subtitle' => \App\Support\SiteContent::text('events.hero_subtitle', 'Gatherings, culture nights, and community moments in Kigali.'),
+])
+
 <section class="py-10 bg-gray-50 min-h-screen">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <form method="GET" action="{{ url('/events') }}" class="mb-8 flex flex-col md:flex-row gap-4 items-stretch md:items-end">

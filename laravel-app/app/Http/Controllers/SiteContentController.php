@@ -24,7 +24,7 @@ class SiteContentController extends Controller
     {
         $this->authorizeAdmin();
 
-        $tab = $request->get('tab', 'landing-menu');
+        $tab = $request->get('tab', 'home');
 
         $data = [
             'tab'          => $tab,
@@ -36,6 +36,10 @@ class SiteContentController extends Controller
             'sideOrder'    => SiteMenu::sideOrder(),
             'settingsOrder' => SiteMenu::settingsOrder(),
             'peopleOrder'  => SiteMenu::peopleOrder(),
+            'landingHidden' => SiteMenu::hiddenKeys('landing_menu_hidden'),
+            'landingLabels' => SiteMenu::itemLabels('landing_menu_labels', SiteMenu::landingItems()),
+            'sideHidden'    => SiteMenu::hiddenKeys('side_menu_hidden'),
+            'sideLabels'    => SiteMenu::itemLabels('side_menu_labels', SiteMenu::sideItems()),
             'schema'       => SiteContent::orderedSchema(),
             'pageSchema'   => SiteContent::pageSchema($tab),
             'galleryItems' => $tab === 'gallery' ? GalleryItem::ordered()->get() : collect(),
@@ -49,16 +53,20 @@ class SiteContentController extends Controller
     {
         $this->authorizeAdmin();
         $this->saveOrder($request, 'landing_menu_order', SiteMenu::landingItems());
+        $this->saveVisibility($request, 'landing_menu_hidden', SiteMenu::landingItems());
+        $this->saveLabels($request, 'landing_menu_labels', SiteMenu::landingItems());
 
-        return redirect('/admin/site-content?tab=landing-menu')->with('message', 'Landing menu order saved.');
+        return redirect('/admin/site-content?tab=landing-menu')->with('message', 'Landing menu saved. Public header updated.');
     }
 
     public function saveSideMenu(Request $request)
     {
         $this->authorizeAdmin();
         $this->saveOrder($request, 'side_menu_order', SiteMenu::sideItems());
+        $this->saveVisibility($request, 'side_menu_hidden', SiteMenu::sideItems(), ['site-content', 'setting']);
+        $this->saveLabels($request, 'side_menu_labels', SiteMenu::sideItems());
 
-        return redirect('/admin/site-content?tab=side-menu')->with('message', 'Side menu order saved.');
+        return redirect('/admin/site-content?tab=side-menu')->with('message', 'Side bar saved. Admin menu updated.');
     }
 
     public function saveSettingsMenu(Request $request)
@@ -239,6 +247,34 @@ class SiteContentController extends Controller
         $order = array_values(array_filter($order, function ($k) use ($valid) {
             return in_array($k, $valid, true);
         }));
-        SiteSetting::setValue($settingKey, $order);
+        SiteSetting::setValue($settingKey, array_values($order));
+    }
+
+    private function saveVisibility(Request $request, $settingKey, array $items, array $alwaysVisible = [])
+    {
+        $visible = (array) $request->input('visible', []);
+        $hidden = [];
+        foreach (array_keys($items) as $key) {
+            if (in_array($key, $alwaysVisible, true)) {
+                continue;
+            }
+            if (! in_array($key, $visible, true)) {
+                $hidden[] = $key;
+            }
+        }
+        SiteSetting::setValue($settingKey, $hidden);
+    }
+
+    private function saveLabels(Request $request, $settingKey, array $items)
+    {
+        $labels = (array) $request->input('labels', []);
+        $saved = [];
+        foreach (array_keys($items) as $key) {
+            $label = isset($labels[$key]) ? trim((string) $labels[$key]) : '';
+            if ($label !== '' && $label !== $items[$key]) {
+                $saved[$key] = $label;
+            }
+        }
+        SiteSetting::setValue($settingKey, $saved);
     }
 }

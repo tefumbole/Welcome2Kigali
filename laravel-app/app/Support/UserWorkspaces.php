@@ -354,7 +354,13 @@ class UserWorkspaces
         if (! $beyond) {
             return null;
         }
-        Auth::guard('beyond')->login($beyond, true);
+        try {
+            Auth::guard('beyond')->login($beyond, false);
+        } catch (\Throwable $e) {
+            \Log::warning('bridgeBeyond login skipped: '.$e->getMessage());
+
+            return null;
+        }
         session(['beyond_otp_verified' => true]);
 
         return $beyond;
@@ -380,7 +386,7 @@ class UserWorkspaces
         }
         $erp->otp_verify = 1;
         $erp->save();
-        Auth::guard('web')->login($erp, true);
+        Auth::guard('web')->login($erp, false);
 
         return $erp;
     }

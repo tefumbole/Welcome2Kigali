@@ -10,9 +10,9 @@
         <div class="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-overlay" style="background-image:url('https://images.unsplash.com/photo-1693045181224-9fc2f954f054');"></div>
         <div class="absolute inset-0 bg-gradient-to-t from-brand-blue via-transparent to-transparent"></div>
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center text-white z-10">
-            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-2">{{ __('site.register.heading') }}</h1>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-2">{{ \App\Support\SiteContent::text('register.hero_title', __('site.register.heading')) }}</h1>
             <p class="text-lg md:text-xl text-blue-100 max-w-2xl">
-                {{ __('site.register.sub') }}
+                {{ \App\Support\SiteContent::text('register.hero_subtitle', __('site.register.sub')) }}
             </p>
         </div>
     </div>

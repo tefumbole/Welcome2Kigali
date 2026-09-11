@@ -89,6 +89,33 @@ class SiteMenu
         return $ordered;
     }
 
+    public static function hiddenKeys($settingKey)
+    {
+        $hidden = SiteSetting::getValue($settingKey, []);
+
+        return is_array($hidden) ? array_values($hidden) : [];
+    }
+
+    public static function isHidden($settingKey, $itemKey)
+    {
+        return in_array($itemKey, self::hiddenKeys($settingKey), true);
+    }
+
+    public static function itemLabels($settingKey, array $defaults)
+    {
+        $saved = SiteSetting::getValue($settingKey, []);
+        if (! is_array($saved)) {
+            $saved = [];
+        }
+        $out = [];
+        foreach ($defaults as $k => $label) {
+            $custom = isset($saved[$k]) ? trim((string) $saved[$k]) : '';
+            $out[$k] = $custom !== '' ? $custom : $label;
+        }
+
+        return $out;
+    }
+
     public static function landingOrder()
     {
         return self::ordered('landing_menu_order', self::landingItems());
@@ -99,25 +126,61 @@ class SiteMenu
         return self::ordered('side_menu_order', self::sideItems());
     }
 
+    /** Horizontal Settings hub tabs (system name, logo, units, …). */
+    public static function settingsHubTabs()
+    {
+        $uid = auth()->id();
+
+        return [
+            ['label' => 'General Setting', 'url' => url('setting/general_setting'), 'match' => 'setting/general_setting'],
+            ['label' => 'Role Permission', 'url' => url('role'), 'match' => 'role'],
+            ['label' => 'Warehouse', 'url' => url('warehouse'), 'match' => 'warehouse'],
+            ['label' => 'Customer Group', 'url' => url('customer_group'), 'match' => 'customer_group'],
+            ['label' => 'Brand', 'url' => url('brand'), 'match' => 'brand'],
+            ['label' => 'Unit', 'url' => url('unit'), 'match' => 'unit'],
+            ['label' => 'Currency', 'url' => url('currency'), 'match' => 'currency'],
+            ['label' => 'Tax', 'url' => url('tax'), 'match' => 'tax'],
+            ['label' => 'User Profile', 'url' => $uid ? url('user/profile/'.$uid) : url('user'), 'match' => 'user/profile'],
+            ['label' => 'Mail Setting', 'url' => url('setting/mail_setting'), 'match' => 'setting/mail_setting'],
+            ['label' => 'Reward Point Setting', 'url' => url('setting/reward-point-setting'), 'match' => 'setting/reward-point-setting'],
+            ['label' => 'POS Settings', 'url' => url('setting/pos_setting'), 'match' => 'setting/pos_setting'],
+            ['label' => 'env Settings', 'url' => url('setting/env_setting'), 'match' => 'setting/env_setting'],
+            ['label' => 'My Transactions', 'url' => url('my-transactions/'.date('Y').'/'.date('m')), 'match' => 'my-transactions'],
+            ['label' => 'Activity Logs', 'url' => url('setting/activity-logs'), 'match' => 'setting/activity-logs'],
+        ];
+    }
+
+    public static function isSettingsHubPath($path = null)
+    {
+        $path = trim($path !== null ? $path : request()->path(), '/');
+        foreach (self::settingsHubTabs() as $tab) {
+            $m = trim($tab['match'], '/');
+            if ($path === $m || strpos($path, $m) === 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /** Settings submenu items inside #setting (key => label). */
     public static function settingsItems()
     {
         return [
-            'side-bars'          => 'Side Bars',
-            'frontend'           => 'Frontend',
-            'role'               => 'Role Permission',
-            'notification'       => 'Send Notification',
-            'warehouse'          => 'Warehouse',
-            'customer-group'     => 'Customer Group',
+            'general-setting'    => 'General Setting',
             'brand'              => 'Brand',
             'unit'               => 'Unit',
+            'category'           => 'Category',
             'currency'           => 'Currency',
             'tax'                => 'Tax',
+            'warehouse'          => 'Warehouse',
+            'customer-group'     => 'Customer Group',
+            'role'               => 'Role Permission',
+            'notification'       => 'Send Notification',
             'user'               => 'User Profile',
             'my-transactions'    => 'My Transactions',
             'backup-database'    => 'Backup Database',
             'empty-database'     => 'Empty Database',
-            'general-setting'    => 'General Setting',
             'activity-logs'      => 'Activity Logs',
             'env-setting'        => '.env Settings',
             'mail-setting'       => 'Mail Setting',
@@ -174,14 +237,13 @@ class SiteMenu
     public static function settingsLiKeyMap()
     {
         return [
-            'side-bars-menu'          => 'side-bars',
-            'frontend-menu'           => 'frontend',
             'role-menu'               => 'role',
             'notification-menu'         => 'notification',
             'warehouse-menu'          => 'warehouse',
             'customer-group-menu'     => 'customer-group',
             'brand-menu'              => 'brand',
             'unit-menu'               => 'unit',
+            'settings-category-menu'  => 'category',
             'currency-menu'           => 'currency',
             'tax-menu'                => 'tax',
             'user-menu'               => 'user',

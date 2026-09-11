@@ -17,6 +17,7 @@
                     <div class="card-body">
                         <p class="italic"><small>{{trans('file.The field labels marked with * are required input fields')}}.</small></p>
                         {!! Form::open(['route' => 'setting.generalStore', 'files' => true, 'method' => 'post']) !!}
+                            <h5 class="mb-3">System name &amp; logo</h5>
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
@@ -50,6 +51,9 @@
                                         <small class="text-muted">Auto-updates as <code>W2K_V_…</code> from <code>VERSION</code> (1.1.9 → 1.1.10 → 1.2.1; after 1.10.10 → 2.2.1). Not editable.</small>
                                     </div>
                                 </div>
+                            </div>
+                            <h5 class="mt-4 mb-3">Letterhead / letter patterns</h5>
+                            <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Email / Invoice Header</label>

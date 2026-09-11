@@ -1045,39 +1045,41 @@
                                 $all_permission[] = $permission->name;
                             }
                         }
-                        $category_permission_active = DB::table('permissions')
+                        $manageSite = \App\Support\StaffAccess::canManageSite();
+                        $roleId = $role ? $role->id : 0;
+                        $category_permission_active = $roleId ? DB::table('permissions')
                             ->join('role_has_permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
                             ->where([
                                 ['permissions.name', 'category'],
-                                ['role_id', $role->id] ])->first();
+                                ['role_id', $roleId] ])->first() : null;
                         $index_permission = DB::table('permissions')->where('name', 'products-index')->first();
-                        $index_permission_active = DB::table('role_has_permissions')->where([
+                        $index_permission_active = $roleId ? DB::table('role_has_permissions')->where([
                             ['permission_id', optional($index_permission)->id],
-                            ['role_id', $role->id]
-                        ])->first();
+                            ['role_id', $roleId]
+                        ])->first() : null;
 
                         $print_barcode = DB::table('permissions')->where('name', 'print_barcode')->first();
-                        $print_barcode_active = DB::table('role_has_permissions')->where([
+                        $print_barcode_active = ($roleId && $print_barcode) ? DB::table('role_has_permissions')->where([
                             ['permission_id', $print_barcode->id],
-                            ['role_id', $role->id]
-                        ])->first();
+                            ['role_id', $roleId]
+                        ])->first() : null;
 
                         $stock_count = DB::table('permissions')->where('name', 'stock_count')->first();
-                        $stock_count_active = DB::table('role_has_permissions')->where([
+                        $stock_count_active = ($roleId && $stock_count) ? DB::table('role_has_permissions')->where([
                             ['permission_id', $stock_count->id],
-                            ['role_id', $role->id]
-                        ])->first();
+                            ['role_id', $roleId]
+                        ])->first() : null;
 
                         $adjustment = DB::table('permissions')->where('name', 'adjustment')->first();
-                        $adjustment_active = DB::table('role_has_permissions')->where([
+                        $adjustment_active = ($roleId && $adjustment) ? DB::table('role_has_permissions')->where([
                             ['permission_id', $adjustment->id],
-                            ['role_id', $role->id]
-                        ])->first();
+                            ['role_id', $roleId]
+                        ])->first() : null;
                         ?>
-                        @if($category_permission_active || $index_permission_active || $print_barcode_active || $stock_count_active || $adjustment_active)
+                        @if($category_permission_active || $index_permission_active || $print_barcode_active || $stock_count_active || $adjustment_active || $manageSite)
                             <li><a href="#product" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-list"></i><span>{{__('file.product')}}</span><span></a>
                                 <ul id="product" class="collapse list-unstyled ">
-                                    @if($category_permission_active)
+                                    @if($category_permission_active || $manageSite)
                                         <li id="category-menu"><a href="{{route('category.index')}}">{{__('file.category')}}</a></li>
                                     @endif
                                     @if($index_permission_active)
@@ -2488,7 +2490,7 @@
                             </li>
                         @endif
 
-                        <li><a href="#setting" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-gear"></i><span>{{trans('file.settings')}}</span></a>
+                        <li><a href="{{ route('setting.general') }}" data-nav-key="setting"> <i class="dripicons-gear"></i><span>{{trans('file.settings')}}</span></a>
                             <ul id="setting" class="collapse list-unstyled ">
                                 <?php
                                 $send_notification_permission = DB::table('permissions')->where('name', 'send_notification')->first();
@@ -2570,12 +2572,15 @@
                                         ['role_id', $role->id]
                                     ])->first()
                                     : null;
+                                $catalogSettingsAccess = $manageSite
+                                    || $general_setting_permission_active
+                                    || $brand_permission_active
+                                    || $unit_permission_active;
                                 ?>
-                                @if(\App\Support\StaffAccess::canManageSite())
-                                    <li id="side-bars-menu"><a href="{{ url('/admin/site-content?tab=side-menu') }}">Side Bars</a></li>
-                                    <li id="frontend-menu"><a href="{{ url('/admin/site-content') }}">Frontend</a></li>
+                                @if($general_setting_permission_active || $catalogSettingsAccess)
+                                    <li id="general-setting-menu"><a href="{{route('setting.general')}}">{{trans('file.General Setting')}}</a></li>
                                 @endif
-                                @if($role->name == 'Admin')
+                                @if($role->name == 'Admin' || $manageSite)
                                     <li id="role-menu"><a href="{{route('role.index')}}">{{trans('file.Role Permission')}}</a></li>
                                 @endif
                                 @if($send_notification_permission_active)
@@ -2589,16 +2594,19 @@
                                 @if($customer_group_permission_active)
                                     <li id="customer-group-menu"><a href="{{route('customer_group.index')}}">{{trans('file.Customer Group')}}</a></li>
                                 @endif
-                                @if($brand_permission_active)
+                                @if($brand_permission_active || $catalogSettingsAccess)
                                     <li id="brand-menu"><a href="{{route('brand.index')}}">{{trans('file.Brand')}}</a></li>
                                 @endif
-                                @if($unit_permission_active)
+                                @if($unit_permission_active || $catalogSettingsAccess)
                                     <li id="unit-menu"><a href="{{route('unit.index')}}">{{trans('file.Unit')}}</a></li>
                                 @endif
-                                @if($currency_permission_active)
+                                @if($category_permission_active || $catalogSettingsAccess)
+                                    <li id="settings-category-menu"><a href="{{route('category.index')}}">{{trans('file.category')}}</a></li>
+                                @endif
+                                @if($currency_permission_active || $catalogSettingsAccess)
                                     <li id="currency-menu"><a href="{{route('currency.index')}}">{{trans('file.Currency')}}</a></li>
                                 @endif
-                                @if($tax_permission_active)
+                                @if($tax_permission_active || $catalogSettingsAccess)
                                     <li id="tax-menu"><a href="{{route('tax.index')}}">{{trans('file.Tax')}}</a></li>
                                 @endif
                                 <li id="user-menu"><a href="{{route('user.profile', ['id' => Auth::id()])}}">{{trans('file.User Profile')}}</a></li>
@@ -2611,12 +2619,11 @@
                                         <a onclick="return confirm('Are you sure want to delete? If you do this all of your data will be lost.')" href="{{route('setting.emptyDatabase')}}">{{trans('file.Empty Database')}}</a>
                                     </li>
                                 @endif
-                                @if($general_setting_permission_active)
-                                    <li id="general-setting-menu"><a href="{{route('setting.general')}}">{{trans('file.General Setting')}}</a></li>
+                                @if($general_setting_permission_active || $catalogSettingsAccess)
                                     <li id="activity-logs-menu"><a href="{{route('activity-logs.index')}}">Activity Logs</a></li>
                                     <li id="env-setting-menu"><a href="{{route('setting.env')}}">.env Settings</a></li>
                                 @endif
-                                @if(!$general_setting_permission_active && in_array((int) Auth::user()->role_id, [1, 2], true))
+                                @if(!($general_setting_permission_active || $catalogSettingsAccess) && in_array((int) Auth::user()->role_id, [1, 2], true))
                                     <li id="activity-logs-menu"><a href="{{route('activity-logs.index')}}">Activity Logs</a></li>
                                 @endif
                                 @if($mail_setting_permission_active)
@@ -2633,6 +2640,8 @@
                     </ul>
                     @php
                         $__sideMenuOrder = \App\Support\SiteMenu::sideOrder();
+                        $__sideMenuHidden = \App\Support\SiteMenu::hiddenKeys('side_menu_hidden');
+                        $__sideMenuLabels = \App\Support\SiteMenu::itemLabels('side_menu_labels', \App\Support\SiteMenu::sideItems());
                         $__settingsMenuOrder = \App\Support\SiteMenu::settingsOrder();
                         $__settingsLiKeyMap = \App\Support\SiteMenu::settingsLiKeyMap();
                         $__peopleMenuOrder = \App\Support\SiteMenu::peopleOrder();
@@ -2641,6 +2650,8 @@
                     <script>
                     (function () {
                         var order = @json($__sideMenuOrder);
+                        var hidden = @json($__sideMenuHidden);
+                        var labels = @json($__sideMenuLabels);
                         var ul = document.getElementById('side-main-menu');
                         if (!ul || !order || !order.length) return;
                         function keyOf(li) {
@@ -2683,6 +2694,15 @@
                         kids.forEach(function (li) {
                             var k = keyOf(li);
                             if (k && !map[k]) map[k] = li;
+                        });
+                        Object.keys(map).forEach(function (k) {
+                            if (hidden.indexOf(k) !== -1 && k !== 'site-content' && k !== 'setting') {
+                                map[k].style.display = 'none';
+                            }
+                            if (labels[k]) {
+                                var span = map[k].querySelector('a > span');
+                                if (span) span.textContent = labels[k];
+                            }
                         });
                         var used = {};
                         // Apply saved order. Matched items move to the end in sequence.
@@ -3255,6 +3275,29 @@
                       <div id="beyond-module-tabs-nav" class="beyond-module-tabs-nav"></div>
                   </div>
               </div>
+              @if(\App\Support\SiteMenu::isSettingsHubPath())
+              <div class="settings-hub">
+                <div class="settings-hub-title">SETTINGS</div>
+                <div class="settings-hub-bar">
+                  @foreach(\App\Support\SiteMenu::settingsHubTabs() as $hubTab)
+                    @php
+                      $hubPath = trim(request()->path(), '/');
+                      $hubMatch = trim($hubTab['match'], '/');
+                      $hubActive = $hubPath === $hubMatch || strpos($hubPath, $hubMatch) === 0;
+                    @endphp
+                    <a class="{{ $hubActive ? 'is-active' : '' }}" href="{{ $hubTab['url'] }}">{{ $hubTab['label'] }}</a>
+                  @endforeach
+                </div>
+              </div>
+              <style>
+                .settings-hub { background:#fff; border-bottom:1px solid #e5e7eb; margin:-8px 0 16px; }
+                .settings-hub-title { font-size:11px; font-weight:700; letter-spacing:.08em; color:#6b7280; padding:12px 20px 0; }
+                .settings-hub-bar { display:flex; flex-wrap:wrap; gap:2px 4px; padding:6px 12px 0; }
+                .settings-hub-bar a { display:inline-block; padding:8px 10px; font-size:13px; color:#6b7280; text-decoration:none; border-bottom:2px solid transparent; }
+                .settings-hub-bar a:hover { color:#111827; }
+                .settings-hub-bar a.is-active { color:#2563eb; font-weight:600; border-bottom-color:#2563eb; }
+              </style>
+              @endif
               @yield('content')
           </div>
 
@@ -3511,6 +3554,7 @@
                   'customer-group-menu': 'dripicons-user-group',
                   'brand-menu': 'dripicons-star',
                   'unit-menu': 'dripicons-scale',
+                  'settings-category-menu': 'dripicons-checklist',
                   'currency-menu': 'dripicons-wallet',
                   'tax-menu': 'dripicons-percent',
                   'user-menu': 'dripicons-user',

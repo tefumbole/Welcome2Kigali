@@ -241,13 +241,18 @@
         'register' => ['label' => __('site.nav.register'), 'url' => url('/register-now')],
     ];
     $navLinks = [];
+    $navLabels = \App\Support\SiteMenu::itemLabels('landing_menu_labels', \App\Support\SiteMenu::landingItems());
     foreach (\App\Support\SiteMenu::landingOrder() as $navKey) {
         // Legacy saved menus may still include "contact" — skip; contact lives on About Us
-        if ($navKey === 'contact') {
+        if ($navKey === 'contact' || \App\Support\SiteMenu::isHidden('landing_menu_hidden', $navKey)) {
             continue;
         }
         if (isset($navDefs[$navKey])) {
-            $navLinks[] = $navDefs[$navKey];
+            $item = $navDefs[$navKey];
+            if (! empty($navLabels[$navKey])) {
+                $item['label'] = $navLabels[$navKey];
+            }
+            $navLinks[] = $item;
         }
     }
     $currentUrl = url()->current();
@@ -434,18 +439,18 @@
                 <div class="min-w-0">
                     <h3 class="site-footer-heading">
                         <i data-lucide="clipboard-check"></i>
-                        {{ __('site.footer.services') }}
+                        {{ \App\Support\SiteContent::text('footer.services_heading', __('site.footer.services')) }}
                     </h3>
                     <nav class="space-y-1.5">
-                        <a href="{{ url('/menu') }}" class="site-footer-item">{{ __('site.footer.service_dining') }}</a>
-                        <a href="{{ url('/about') }}" class="site-footer-item">{{ __('site.footer.service_lounge') }}</a>
+                        <a href="{{ url('/menu') }}" class="site-footer-item">{{ \App\Support\SiteContent::text('footer.service_dining', __('site.footer.service_dining')) }}</a>
+                        <a href="{{ url('/about') }}" class="site-footer-item">{{ \App\Support\SiteContent::text('footer.service_lounge', __('site.footer.service_lounge')) }}</a>
                     </nav>
                 </div>
 
                 <div class="min-w-0">
                     <h3 class="site-footer-heading">
                         <i data-lucide="user"></i>
-                        {{ __('site.footer.contact') }}
+                        {{ \App\Support\SiteContent::text('footer.contact_heading', __('site.footer.contact')) }}
                     </h3>
                     <div class="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-5">
                         <div class="space-y-2 min-w-0">
@@ -464,7 +469,7 @@
         </div>
         <div class="px-4 sm:px-6 pb-2">
             <p class="text-center text-[11px] leading-relaxed text-white/70">
-                © {{ date('Y') }} Welcome 2 Kigali Expats Club. {{ __('site.footer.rights') }}
+                © {{ date('Y') }} Welcome 2 Kigali Expats Club. {{ \App\Support\SiteContent::text('footer.rights', __('site.footer.rights')) }}
                 <span class="text-white/30"> | </span>
                 {{ __('site.footer.developed') }} <span class="text-white font-medium">Sr. Engr. Tefu R. Mbole</span>
                 <span class="text-white/30"> | </span>

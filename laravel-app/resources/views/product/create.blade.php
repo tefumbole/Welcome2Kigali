@@ -106,7 +106,7 @@
                                         <div class="input-group">
                                           <select name="brand_id" class="selectpicker form-control" data-live-search="true"   title="Select Brand...">
                                             @foreach($lims_brand_list as $brand)
-                                                <option value="{{$brand->id}}">{{$brand->title}}</option>
+                                                <option value="{{$brand->id}}" {{ $brand->title === 'WC2K' ? 'selected' : '' }}>{{$brand->title}}</option>
                                             @endforeach
                                           </select>
                                       </div>
@@ -131,10 +131,10 @@
                                                 <label>{{trans('file.Product Unit')}} *</strong> </label>
                                                 <div class="input-group">
                                                   <select required class="form-control selectpicker" name="unit_id">
-                                                    <option value="" disabled selected>Select Product Unit...</option>
+                                                    <option value="" disabled {{ empty($general_setting->unit) ? 'selected' : '' }}>Select Product Unit...</option>
                                                     @foreach($lims_unit_list as $unit)
                                                         @if($unit->base_unit==null)
-                                                            <option value="{{$unit->id}}">{{$unit->unit_name}}</option>
+                                                            <option value="{{$unit->id}}" {{ (int) $general_setting->unit === (int) $unit->id ? 'selected' : '' }}>{{$unit->unit_name}}</option>
                                                         @endif
                                                     @endforeach
                                                   </select>
@@ -561,6 +561,9 @@
             $('select[name="purchase_unit_id"]').empty();
         }
     });
+    if ($('select[name="unit_id"]').val()) {
+        populate_category($('select[name="unit_id"]').val());
+    }
     <?php $productArray = []; ?>
     var lims_product_code = [ @foreach($lims_product_list as $product)
         <?php

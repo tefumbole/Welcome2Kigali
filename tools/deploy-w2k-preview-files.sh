@@ -97,6 +97,13 @@ FILES=(
   app/Support/WhatsAppPhone.php
   config/app.php
   database/migrations/2026_09_08_120000_rebrand_w2k_company_names.php
+  database/migrations/2026_09_11_120000_ensure_w2k_catalog_settings.php
+  database/migrations/2026_09_11_131500_add_remember_token_to_auth_tables.php
+  app/Support/UserWorkspaces.php
+  app/Http/Controllers/BeyondAuthController.php
+  app/Support/SiteMenu.php
+  app/Http/Controllers/UnitController.php
+  app/Http/Controllers/CategoryController.php
   app/Support/InternCompliance.php
   app/Http/Controllers/WorkspaceController.php
   app/Http/Controllers/StaffPhoneAuthController.php
@@ -144,6 +151,9 @@ FILES=(
   resources/views/beyond/partials/contact_section.blade.php
   resources/views/beyond/partials/office_location.blade.php
   resources/views/site_content/index.blade.php
+  resources/views/setting/general_setting.blade.php
+  app/Support/SiteContent.php
+  app/SiteSetting.php
   resources/views/leaders/index.blade.php
   resources/views/sale/pos.blade.php
   resources/views/sale/create.blade.php
@@ -208,6 +218,9 @@ sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_02_220000_add_nationality_to_membership_applications.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_08_100000_ensure_w2k_currency_and_letterhead.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_08_120000_rebrand_w2k_company_names.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_11_120000_ensure_w2k_catalog_settings.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_11_131500_add_remember_token_to_auth_tables.php
+sudo -u www-data php "\$APP/artisan" permission:cache-reset || true
 sudo -u www-data php "\$APP/artisan" view:clear
 sudo -u www-data php "\$APP/artisan" cache:clear
 sudo -u www-data php "\$APP/artisan" config:clear

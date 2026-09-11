@@ -4,6 +4,10 @@
 @section('meta_description', __('site.about.hero_sub'))
 
 @section('content')
+@include('beyond.partials.hero', [
+    'title' => \App\Support\SiteContent::text('about.hero_title', __('site.about.hero')),
+    'subtitle' => \App\Support\SiteContent::text('about.hero_subtitle', __('site.about.hero_sub')),
+])
 @php
     $visionHeading = \App\Support\SiteContent::text('about.vision_heading', __('site.about.vision'));
     $visionText = \App\Support\SiteContent::text('about.vision_text', __('site.about.vision_text'));
@@ -125,6 +129,14 @@
                 </div>
             @endforeach
         </div>
+    </div>
+</section>
+
+<section class="py-16 bg-brand-cream">
+    <div class="max-w-3xl mx-auto px-4 text-center">
+        <h2 class="font-serif text-3xl font-bold text-black mb-3">{{ \App\Support\SiteContent::text('about.cta_heading', 'Ready to belong in Kigali?') }}</h2>
+        <p class="text-gray-600 mb-6">{{ \App\Support\SiteContent::text('about.cta_text', 'Join the club, come to an event, or visit the cafe.') }}</p>
+        <a href="{{ url('/register-now') }}" class="inline-flex items-center px-6 py-3 rounded-full bg-black text-brand-gold font-semibold">{{ \App\Support\SiteContent::text('home.cta_primary', __('site.home.join')) }}</a>
     </div>
 </section>
 

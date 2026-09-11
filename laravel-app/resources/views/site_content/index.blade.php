@@ -54,7 +54,7 @@
                         'landing-menu'  => ['label' => 'Landing Menu', 'tone' => 'tone-blue', 'icon' => 'dripicons-home'],
                         'side-menu'     => ['label' => 'Side Bars', 'tone' => 'tone-purple', 'icon' => 'dripicons-view-list'],
                         'people-menu'   => ['label' => 'People', 'tone' => 'tone-pink', 'icon' => 'dripicons-user'],
-                        'settings-menu' => ['label' => 'Settings', 'tone' => 'tone-orange', 'icon' => 'dripicons-gear'],
+                        'settings-menu' => ['label' => 'Admin settings order', 'tone' => 'tone-orange', 'icon' => 'dripicons-gear'],
                         'content-tabs'  => ['label' => 'Content Tabs', 'tone' => 'tone-teal', 'icon' => 'dripicons-toggles'],
                     ];
                     $pageTones = [
@@ -65,15 +65,13 @@
                         'contact'  => 'tone-pink',
                         'gallery'  => 'tone-red',
                         'menu'     => 'tone-gold',
+                        'events'   => 'tone-blue',
+                        'register' => 'tone-pink',
+                        'footer'   => 'tone-gold',
                     ];
                 @endphp
+                <p class="text-muted mb-1" style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;">Pages</p>
                 <div class="site-content-tabs-nav">
-                    @foreach($menuTabs as $k => $meta)
-                        <a class="beyond-module-tab {{ $meta['tone'] }} {{ $tab == $k ? 'is-active' : '' }}"
-                           href="{{ url('/admin/site-content?tab=' . $k) }}">
-                            <i class="{{ $meta['icon'] }}"></i> {{ $meta['label'] }}
-                        </a>
-                    @endforeach
                     @foreach($schema as $pageKey => $page)
                         @php
                             $tone = $pageTones[$pageKey] ?? 'tone-blue';
@@ -85,6 +83,15 @@
                         </a>
                     @endforeach
                 </div>
+                <p class="text-muted mb-1" style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;">Menus &amp; order</p>
+                <div class="site-content-tabs-nav">
+                    @foreach($menuTabs as $k => $meta)
+                        <a class="beyond-module-tab {{ $meta['tone'] }} {{ $tab == $k ? 'is-active' : '' }}"
+                           href="{{ url('/admin/site-content?tab=' . $k) }}">
+                            <i class="{{ $meta['icon'] }}"></i> {{ $meta['label'] }}
+                        </a>
+                    @endforeach
+                </div>
 
                 @if(in_array($tab, ['landing-menu', 'side-menu', 'people-menu', 'settings-menu', 'content-tabs'], true))
                     @php
@@ -92,8 +99,8 @@
                             $items = $side;
                             $order = $sideOrder;
                             $action = route('site-content.side-menu');
-                            $heading = 'Side Bars — Order';
-                            $hint = 'Drag items to reorder the admin sidebar (or use arrows). Click Save when done.';
+                            $heading = 'Side Bars';
+                            $hint = 'Show, hide, rename, and reorder admin sidebar items. Site Content and Settings stay visible.';
                         } elseif ($tab == 'people-menu') {
                             $items = $people;
                             $order = $peopleOrder;
@@ -116,21 +123,38 @@
                             $items = $landing;
                             $order = $landingOrder;
                             $action = route('site-content.landing-menu');
-                            $heading = 'Landing Menu — Order';
-                            $hint = 'Drag items to reorder the public site header menu (or use arrows). Click Save when done.';
+                            $heading = 'Landing Menu';
+                            $hint = 'Show, hide, rename, and reorder the public site header. Login stays in the header separately.';
                         }
                     @endphp
                     <h5 class="mb-1">{{ $heading }}</h5>
                     <p class="text-muted" style="font-size:13px;">{{ $hint }}</p>
+                    @if(in_array($tab, ['landing-menu', 'side-menu'], true))
+                        <p class="text-info" style="font-size:13px;">Show or hide items, rename the label, and drag to reorder. These changes are website/menu only — they do not change products, members, or other business data.</p>
+                    @endif
                     <form method="POST" action="{{ $action }}">
                         @csrf
-                        <ul class="list-group reorder-list" id="reorder-list" style="max-width:720px;">
+                        <ul class="list-group reorder-list" id="reorder-list" style="max-width:820px;">
                             @foreach($order as $key)
                                 @if(isset($items[$key]))
+                                    @php
+                                        $canEdit = in_array($tab, ['landing-menu', 'side-menu'], true);
+                                        $hiddenList = $tab === 'side-menu' ? ($sideHidden ?? []) : ($landingHidden ?? []);
+                                        $labelList = $tab === 'side-menu' ? ($sideLabels ?? []) : ($landingLabels ?? []);
+                                        $locked = $tab === 'side-menu' && in_array($key, ['site-content', 'setting'], true);
+                                    @endphp
                                     <li class="list-group-item d-flex justify-content-between align-items-center" data-key="{{ $key }}">
-                                        <span class="d-flex align-items-center">
+                                        <span class="d-flex align-items-center flex-grow-1 mr-2">
                                             <span class="reorder-drag-handle" title="Drag to reorder">⋮⋮</span>
-                                            <span>{{ $items[$key] }}</span>
+                                            @if($canEdit)
+                                                <label class="mb-0 mr-2" title="Show on {{ $tab === 'side-menu' ? 'admin sidebar' : 'public header' }}">
+                                                    <input type="checkbox" name="visible[]" value="{{ $key }}" {{ $locked || ! in_array($key, $hiddenList, true) ? 'checked' : '' }} {{ $locked ? 'disabled' : '' }}>
+                                                    @if($locked)<input type="hidden" name="visible[]" value="{{ $key }}">@endif
+                                                </label>
+                                                <input type="text" name="labels[{{ $key }}]" value="{{ $labelList[$key] ?? $items[$key] }}" class="form-control form-control-sm" style="max-width:280px;">
+                                            @else
+                                                <span>{{ $items[$key] }}</span>
+                                            @endif
                                         </span>
                                         <span class="reorder-actions">
                                             <input type="hidden" name="order[]" value="{{ $key }}" class="reorder-order-input">

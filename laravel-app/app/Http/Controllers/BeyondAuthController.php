@@ -204,7 +204,7 @@ class BeyondAuthController extends Controller
             return back()->withInput()->withErrors(['identifier' => 'Invalid email/username or password.']);
         }
 
-        Auth::guard('web')->login($staff, true);
+        Auth::guard('web')->login($staff, false);
 
         $beyond = \App\Support\UserWorkspaces::bridgeBeyond($staff);
         $request->session()->forget(['beyond_masked_phone']);

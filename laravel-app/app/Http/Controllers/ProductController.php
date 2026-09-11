@@ -594,6 +594,7 @@ class ProductController extends Controller
         elseif(($data['type'] ?? '') == 'digital')
             $data['cost'] = $data['unit_id'] = $data['purchase_unit_id'] = $data['sale_unit_id'] = 0;
 
+        $data = $this->applyProductCatalogDefaults($data);
         $data = $this->normalizeProductPayload($data);
         $data['is_active'] = true;
         $images = $request->image;
@@ -624,7 +625,11 @@ class ProductController extends Controller
             $file->move('public/product/files', $fileName);
             $data['file'] = $fileName;
         }
-        $data['location'] = $request->product_location;
+        if (\Schema::hasColumn('products', 'location')) {
+            $data['location'] = $request->product_location;
+        } else {
+            unset($data['location']);
+        }
         try {
             $lims_product_data = Product::create($data);
         } catch (\Throwable $e) {
@@ -742,7 +747,11 @@ class ProductController extends Controller
             $data['is_batch'] = null;
 
         $data = $this->normalizeProductPayload($data);
-        $data['location'] = $request->product_location;
+        if (\Schema::hasColumn('products', 'location')) {
+            $data['location'] = $request->product_location;
+        } else {
+            unset($data['location']);
+        }
 
         //dealing with previous images
         if($request->prev_img) {
@@ -885,6 +894,34 @@ class ProductController extends Controller
         } while (Product::where('code', $code)->where('is_active', 1)->exists());
 
         return $code;
+    }
+
+    private function applyProductCatalogDefaults(array $data)
+    {
+        $type = $data['type'] ?? 'standard';
+        if (! in_array($type, ['standard', 'digital'], true)) {
+            return $data;
+        }
+        if (empty($data['brand_id'])) {
+            $brand = Brand::where('title', 'WC2K')->where('is_active', 1)->first();
+            if ($brand) {
+                $data['brand_id'] = $brand->id;
+            }
+        }
+        if ($type === 'standard' && empty($data['category_id'])) {
+            $food = Category::where('name', 'Food')->where('is_active', 1)->first();
+            if ($food) {
+                $data['category_id'] = $food->id;
+            }
+        }
+        if (empty($data['unit_id'])) {
+            $piece = Unit::where('unit_code', 'PC')->where('is_active', 1)->first();
+            if ($piece) {
+                $data['unit_id'] = $piece->id;
+            }
+        }
+
+        return $data;
     }
 
     public function search(Request $request)

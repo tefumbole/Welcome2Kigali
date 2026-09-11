@@ -16,7 +16,7 @@ class CategoryController extends Controller
     public function index()
     {
         $role = Role::find(Auth::user()->role_id);
-        if($role->hasPermissionTo('category')) {
+        if(\App\Support\StaffAccess::canManageSite() || ($role && $role->hasPermissionTo('category'))) {
             $lims_categories = Category::where('is_active', true)->pluck('name', 'id');
             $lims_category_all = Category::where('is_active', true)->get();
             return view('category.create',compact('lims_categories', 'lims_category_all'));

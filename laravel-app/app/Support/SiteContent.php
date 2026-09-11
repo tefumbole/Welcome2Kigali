@@ -64,7 +64,9 @@ class SiteContent
                     'hero_title'            => ['html', 'Hero title (HTML allowed)', 'A destination. A community. An <span class="text-brand-gold">experience</span>.'],
                     'hero_subtitle'         => ['textarea', 'Hero subtitle', 'Welcome 2 Kigali Expats Club — live, connect, and thrive in Rwanda.'],
                     'hero_image'            => ['image', 'Hero background image', '/branding/w2k-landing.png'],
-                    'cta_primary'           => ['text', 'Hero primary button text', 'Join the Club'],
+                    'cta_primary'           => ['text', 'Join the Club button', 'Join the Club'],
+                    'cta_events'            => ['text', 'Events button', 'Events'],
+                    'cta_cafe'              => ['text', 'Cafe menu button', 'Cafe Menu'],
                     'services_heading'      => ['text', 'Spaces heading', 'Restaurant. Lounge. Events. Cafe.'],
                     'services_subheading'   => ['text', 'Spaces subheading', 'A premium hospitality destination for the international community in Kigali'],
                     'why_heading'           => ['text', 'Why-us heading', 'Live. Connect. Thrive.'],
@@ -146,6 +148,33 @@ class SiteContent
                 'fields' => [
                     'hero_title'    => ['html', 'Hero title (HTML allowed)', 'Cafe & <span class="text-brand-gold">Restaurant</span>'],
                     'hero_subtitle' => ['text', 'Hero subtitle', 'Crafted to perfection. Every beverage is served with our signature complimentary bite. Prices in FRW, tax included.'],
+                ],
+            ],
+            'events' => [
+                'label' => 'Events',
+                'url' => '/events',
+                'fields' => [
+                    'hero_title'    => ['html', 'Hero title (HTML allowed)', 'Club <span class="text-brand-gold">Events</span>'],
+                    'hero_subtitle' => ['text', 'Hero subtitle', 'Gatherings, culture nights, and community moments in Kigali.'],
+                ],
+            ],
+            'register' => [
+                'label' => 'Become a Member',
+                'url' => '/register-now',
+                'fields' => [
+                    'hero_title'    => ['text', 'Page heading', 'Become a Member'],
+                    'hero_subtitle' => ['textarea', 'Page subtitle', 'Join Welcome 2 Kigali Expats Club and belong in Kigali.'],
+                ],
+            ],
+            'footer' => [
+                'label' => 'Footer',
+                'url' => '/',
+                'fields' => [
+                    'services_heading' => ['text', 'Services heading', 'Services'],
+                    'service_dining'   => ['text', 'Dining link label', 'Dining & Cafe'],
+                    'service_lounge'   => ['text', 'Lounge link label', 'Lounge & Community'],
+                    'contact_heading'  => ['text', 'Contact heading', 'Contact'],
+                    'rights'           => ['text', 'Copyright line', 'All rights reserved.'],
                 ],
             ],
         ];
