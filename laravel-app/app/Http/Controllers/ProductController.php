@@ -641,7 +641,7 @@ class ProductController extends Controller
             unset($data['location']);
         }
         try {
-            $lims_product_data = Product::create($data);
+            $lims_product_data = Product::create(\App\Support\SchemaColumns::forTable('products', $data));
         } catch (\Throwable $e) {
             \Log::error('Product create failed: '.$e->getMessage());
 
@@ -1372,28 +1372,34 @@ class ProductController extends Controller
                 }
 
                 $qty = Product_Warehouse::where('product_id', $data)->sum('qty');
-                Product::where('id', $data)->update([
+                $payload = [
                     'name' => $products['name'][$key],
                     'type' => $products['type'][$key],
                     'category_id' => $products['category'][$key],
                     'unit_id' => $products['unit'][$key],
                     'cost' => $products['cost'][$key],
                     'price' => $products['price'][$key],
-                    'location' => $products['product_location'][$key],
                     'is_batch' => $batch,
                     'qty' => $qty
-                ]);
+                ];
+                if (\Schema::hasColumn('products', 'location')) {
+                    $payload['location'] = $products['product_location'][$key] ?? null;
+                }
+                Product::where('id', $data)->update($payload);
             } else {
-                Product::where('id', $data)->update([
+                $payload = [
                     'name' => $products['name'][$key],
                     'type' => $products['type'][$key],
                     'category_id' => $products['category'][$key],
                     'unit_id' => $products['unit'][$key],
                     'cost' => $products['cost'][$key],
                     'price' => $products['price'][$key],
-                    'location' => $products['product_location'][$key],
                     'is_batch' => $batch
-                ]);
+                ];
+                if (\Schema::hasColumn('products', 'location')) {
+                    $payload['location'] = $products['product_location'][$key] ?? null;
+                }
+                Product::where('id', $data)->update($payload);
             }
         }
 

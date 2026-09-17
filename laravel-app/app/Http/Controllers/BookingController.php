@@ -3412,7 +3412,9 @@ class BookingController extends Controller
         }
         elseif ($paying_method == 'Points') {
             $lims_reward_point_setting_data = RewardPointSetting::latest()->first();
-            $used_points = ceil($data['amount'] / $lims_reward_point_setting_data->per_point_amount);
+            $used_points = $lims_reward_point_setting_data && $lims_reward_point_setting_data->per_point_amount
+                ? ceil($data['amount'] / $lims_reward_point_setting_data->per_point_amount)
+                : 0;
 
             $lims_payment_data->used_points = $used_points;
             $lims_payment_data->save();
@@ -3623,7 +3625,9 @@ class BookingController extends Controller
         elseif($data['edit_paid_by_id'] == 7) {
             $lims_payment_data->paying_method = 'Points';
             $lims_reward_point_setting_data = RewardPointSetting::latest()->first();
-            $used_points = ceil($data['edit_amount'] / $lims_reward_point_setting_data->per_point_amount);
+            $used_points = $lims_reward_point_setting_data && $lims_reward_point_setting_data->per_point_amount
+                ? ceil($data['edit_amount'] / $lims_reward_point_setting_data->per_point_amount)
+                : 0;
             $lims_payment_data->used_points = $used_points;
             $lims_customer_data->points -= $used_points;
             $lims_customer_data->save();

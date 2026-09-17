@@ -1031,16 +1031,6 @@
                         @if(Auth::user()->role_id != 7)
                             <li><a href="{{ url('/admin') }}"> <i class="dripicons-meter"></i><span>{{ __('file.dashboard') }}</span></a></li>
                         @endif
-                            <li><a href="#help-module" data-nav-key="help" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-question"></i><span>Help</span></a>
-                                <ul id="help-module" class="collapse list-unstyled ">
-                                    <li id="help-guide-menu"><a href="{{ route('help.index') }}">User Guide</a></li>
-                                    <li id="help-website-menu"><a href="{{ route('help.index') }}#website">Public website</a></li>
-                                    <li id="help-products-menu"><a href="{{ route('help.index') }}#products">Products &amp; cafe menu</a></li>
-                                    <li id="help-pos-menu"><a href="{{ route('help.index') }}#pos">POS &amp; sales</a></li>
-                                    <li id="help-content-menu"><a href="{{ route('help.index') }}#content">Site Content</a></li>
-                                    <li id="help-members-menu"><a href="{{ route('help.index') }}#members">Membership</a></li>
-                                </ul>
-                            </li>
                         @if(\App\Support\StaffAccess::canManageSite())
                             <li><a href="{{ url('/admin/site-content') }}" data-nav-key="site-content"> <i class="dripicons-web"></i><span>Site Content</span></a></li>
                             <li><a href="{{ url('/admin/leaders') }}" data-nav-key="leaders"> <i class="dripicons-user-group"></i><span>About Us Leaders</span></a></li>
@@ -1202,10 +1192,10 @@
                         @endif
                         <?php
                         $index_permission_booking = DB::table('permissions')->where('name', 'booking_module')->first();
-                        $index_permission_booking_active = DB::table('role_has_permissions')->where([
+                        $index_permission_booking_active = ($role && $index_permission_booking) ? DB::table('role_has_permissions')->where([
                             ['permission_id', $index_permission_booking->id],
                             ['role_id', $role->id]
-                        ])->first();
+                        ])->first() : null;
                         ?>
                         @if($index_permission_booking_active)
                             <?php
@@ -1227,15 +1217,15 @@
                                 <ul id="booking" class="collapse list-unstyled ">
                                         <?php
                                         $create_permission_booking = DB::table('permissions')->where('name', 'booking_create')->first();
-                                        $create_permission_booking_active = DB::table('role_has_permissions')->where([
+                                        $create_permission_booking_active = ($role && $create_permission_booking) ? DB::table('role_has_permissions')->where([
                                             ['permission_id', $create_permission_booking->id],
                                             ['role_id', $role->id]
-                                        ])->first();
+                                        ])->first() : null;
                                         $booking_report = DB::table('permissions')->where('name', 'booking_report')->first();
-                                        $booking_report_active = DB::table('role_has_permissions')->where([
+                                        $booking_report_active = ($role && $booking_report) ? DB::table('role_has_permissions')->where([
                                             ['permission_id', $booking_report->id],
                                             ['role_id', $role->id]
-                                        ])->first();
+                                        ])->first() : null;
 
                                         ?>
                                     @if($create_permission_booking_active)
@@ -1243,10 +1233,10 @@
                                     @endif
                                         <?php
                                         $create_permission_booking = DB::table('permissions')->where('name', 'booking_index')->first();
-                                        $create_permission_booking_active = DB::table('role_has_permissions')->where([
+                                        $create_permission_booking_active = ($role && $create_permission_booking) ? DB::table('role_has_permissions')->where([
                                             ['permission_id', $create_permission_booking->id],
                                             ['role_id', $role->id]
-                                        ])->first();
+                                        ])->first() : null;
                                         ?>
                                     @if($create_permission_booking_active)
                                         <li id="booking-index-menu"><a href="{{route('booking.index')}}">Booking List</a></li>
@@ -1651,10 +1641,10 @@
                         @endif
                         <?php
                         $index_permission_letter = DB::table('permissions')->where('name', 'letter_module')->first();
-                        $index_permission_letter_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $index_permission_letter->id],
+                        $index_permission_letter_active = ($role && $index_permission_letter) ? DB::table('role_has_permissions')->where([
+                            ['permission_id', optional($index_permission_letter)->id],
                             ['role_id', $role->id]
-                        ])->first();
+                        ])->first() : null;
 
                         $letter_model = new \App\Letter();
                         $total_letters = $letter_model->where('is_active', true)->count();
@@ -1672,12 +1662,12 @@
                                         <?php
                                         $create_permission_letter = DB::table('permissions')->where('name', 'letter_create')->first();
                                         $create_permission_letter_active = DB::table('role_has_permissions')->where([
-                                            ['permission_id', $create_permission_letter->id],
+                                            ['permission_id', optional($create_permission_letter)->id],
                                             ['role_id', $role->id]
                                         ])->first();
                                         $category_permission_letter = DB::table('permissions')->where('name', 'letter_category')->first();
                                         $category_permission_letter_active = DB::table('role_has_permissions')->where([
-                                            ['permission_id', $category_permission_letter->id],
+                                            ['permission_id', optional($category_permission_letter)->id],
                                             ['role_id', $role->id]
                                         ])->first();
                                         ?>
@@ -1690,7 +1680,7 @@
                                         <?php
                                         $index_permission_letter = DB::table('permissions')->where('name', 'letter_index')->first();
                                         $index_permission_letter_active = DB::table('role_has_permissions')->where([
-                                            ['permission_id', $index_permission_letter->id],
+                                            ['permission_id', optional($index_permission_letter)->id],
                                             ['role_id', $role->id]
                                         ])->first();
                                         ?>
@@ -1707,7 +1697,7 @@
                                         <?php
                                         $index_permission_letter_rejected = DB::table('permissions')->where('name', 'letter_rejected')->first();
                                         $index_permission_letter_rejected_active = DB::table('role_has_permissions')->where([
-                                            ['permission_id', $index_permission_letter_rejected->id],
+                                            ['permission_id', optional($index_permission_letter_rejected)->id],
                                             ['role_id', $role->id]
                                         ])->first();
                                         ?>
@@ -1718,7 +1708,7 @@
                                         <?php
                                         $index_permission_letter = DB::table('permissions')->where('name', 'letter_awaiting_edit')->first();
                                         $index_permission_letter_active = DB::table('role_has_permissions')->where([
-                                            ['permission_id', $index_permission_letter->id],
+                                            ['permission_id', optional($index_permission_letter)->id],
                                             ['role_id', $role->id]
                                         ])->first();
                                         ?>
@@ -1729,7 +1719,7 @@
                                         <?php
                                         $index_permission_letter = DB::table('permissions')->where('name', 'letter_edited_index')->first();
                                         $index_permission_letter_active = DB::table('role_has_permissions')->where([
-                                            ['permission_id', $index_permission_letter->id],
+                                            ['permission_id', optional($index_permission_letter)->id],
                                             ['role_id', $role->id]
                                         ])->first();
                                         ?>
@@ -1748,7 +1738,7 @@
                                         <?php
                                         $index_permission_letter = DB::table('permissions')->where('name', 'letter_approve_index')->first();
                                         $index_permission_letter_active = DB::table('role_has_permissions')->where([
-                                            ['permission_id', $index_permission_letter->id],
+                                            ['permission_id', optional($index_permission_letter)->id],
                                             ['role_id', $role->id]
                                         ])->first();
                                         ?>
@@ -1768,7 +1758,7 @@
                                         <?php
                                         $index_permission_letter = DB::table('permissions')->where('name', 'letter_sign_index')->first();
                                         $index_permission_letter_active = DB::table('role_has_permissions')->where([
-                                            ['permission_id', $index_permission_letter->id],
+                                            ['permission_id', optional($index_permission_letter)->id],
                                             ['role_id', $role->id]
                                         ])->first();
                                         ?>
@@ -1780,7 +1770,7 @@
                                         <?php
                                         $index_permission_letter = DB::table('permissions')->where('name', 'letter_send_index')->first();
                                         $index_permission_letter_active = DB::table('role_has_permissions')->where([
-                                            ['permission_id', $index_permission_letter->id],
+                                            ['permission_id', optional($index_permission_letter)->id],
                                             ['role_id', $role->id]
                                         ])->first();
                                         ?>
@@ -1798,7 +1788,7 @@
                                         <?php
                                         $index_permission_letter = DB::table('permissions')->where('name', 'letter_template')->first();
                                         $index_permission_letter_active = DB::table('role_has_permissions')->where([
-                                            ['permission_id', $index_permission_letter->id],
+                                            ['permission_id', optional($index_permission_letter)->id],
                                             ['role_id', $role->id]
                                         ])->first();
                                         ?>
@@ -1916,73 +1906,73 @@
                         ])->first();
                         $index_permission_report = DB::table('permissions')->where('name', 'fixed_assets_report')->first();
                         $index_permission_report_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $index_permission_report->id],
+                            ['permission_id', optional($index_permission_report)->id],
                             ['role_id', $role->id]
                         ])->first();
 
                         $asset_index = DB::table('permissions')->where('name', 'asset-index')->first();
                         $asset_index_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $asset_index->id],
+                            ['permission_id', optional($asset_index)->id],
                             ['role_id', $role->id]
                         ])->first();
 
                         $asset_add = DB::table('permissions')->where('name', 'asset-add')->first();
                         $asset_add_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $asset_add->id],
+                            ['permission_id', optional($asset_add)->id],
                             ['role_id', $role->id]
                         ])->first();
 
                         $donor_index = DB::table('permissions')->where('name', 'donor-index')->first();
                         $donor_index_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $donor_index->id],
+                            ['permission_id', optional($donor_index)->id],
                             ['role_id', $role->id]
                         ])->first();
 
                         $station_index = DB::table('permissions')->where('name', 'station-index')->first();
                         $station_index_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $station_index->id],
+                            ['permission_id', optional($station_index)->id],
                             ['role_id', $role->id]
                         ])->first();
 
                         $region_index = DB::table('permissions')->where('name', 'region-index')->first();
                         $region_index_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $region_index->id],
+                            ['permission_id', optional($region_index)->id],
                             ['role_id', $role->id]
                         ])->first();
 
                         $asset_type_index = DB::table('permissions')->where('name', 'asset-type-index')->first();
                         $asset_type_index_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $asset_type_index->id],
+                            ['permission_id', optional($asset_type_index)->id],
                             ['role_id', $role->id]
                         ])->first();
 
                         $activity_index = DB::table('permissions')->where('name', 'activity-index')->first();
                         $activity_index_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $activity_index->id],
+                            ['permission_id', optional($activity_index)->id],
                             ['role_id', $role->id]
                         ])->first();
 
                         $asset_expense_index = DB::table('permissions')->where('name', 'asset-expense-index')->first();
                         $asset_expense_index_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $asset_expense_index->id],
+                            ['permission_id', optional($asset_expense_index)->id],
                             ['role_id', $role->id]
                         ])->first();
 
                         $asset_sale = DB::table('permissions')->where('name', 'asset-sale')->first();
                         $asset_sale_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $asset_sale->id],
+                            ['permission_id', optional($asset_sale)->id],
                             ['role_id', $role->id]
                         ])->first();
 
                         $asset_transfer = DB::table('permissions')->where('name', 'asset-transfer')->first();
                         $asset_transfer_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $asset_transfer->id],
+                            ['permission_id', optional($asset_transfer)->id],
                             ['role_id', $role->id]
                         ])->first();
 
                         $asset_disppose = DB::table('permissions')->where('name', 'asset-disppose')->first();
                         $asset_disppose_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $asset_disppose->id],
+                            ['permission_id', optional($asset_disppose)->id],
                             ['role_id', $role->id]
                         ])->first();
                         ?>
@@ -2065,10 +2055,10 @@
                         @endif
                         <?php
                         $department = DB::table('permissions')->where('name', 'department')->first();
-                        $department_active = DB::table('role_has_permissions')->where([
+                        $department_active = ($role && $department) ? DB::table('role_has_permissions')->where([
                             ['permission_id', $department->id],
                             ['role_id', $role->id]
-                        ])->first();
+                        ])->first() : null;
                         $index_permission = DB::table('permissions')->where('name', 'account-index')->first();
                         $index_permission_active = DB::table('role_has_permissions')->where([
                             ['permission_id', optional($index_permission)->id],
@@ -2129,22 +2119,22 @@
                         <?php
                         $index_employee = DB::table('permissions')->where('name', 'employees-index')->first();
                         $index_employee_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $index_employee->id],
+                            ['permission_id', optional($index_employee)->id],
                             ['role_id', $role->id]
                         ])->first();
                         $attendance = DB::table('permissions')->where('name', 'attendance')->first();
                         $attendance_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $attendance->id],
+                            ['permission_id', optional($attendance)->id],
                             ['role_id', $role->id]
                         ])->first();
                         $payroll = DB::table('permissions')->where('name', 'payroll')->first();
                         $payroll_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $payroll->id],
+                            ['permission_id', optional($payroll)->id],
                             ['role_id', $role->id]
                         ])->first();
                         $hrm = DB::table('permissions')->where('name', 'hrm')->first();
                         $hrm_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $hrm->id],
+                            ['permission_id', optional($hrm)->id],
                             ['role_id', $role->id]
                         ])->first();
                         $hrm_setting_permission = DB::table('permissions')->where('name', 'hrm_setting')->first();
@@ -2647,6 +2637,22 @@
                                 @endif
                             </ul>
                         </li>
+                            <li><a href="#help-module" data-nav-key="help" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-question"></i><span>Help</span></a>
+                                <ul id="help-module" class="collapse list-unstyled ">
+                                    <li id="help-guide-menu"><a href="{{ route('help.index') }}">User Guide</a></li>
+                                    <li id="help-website-menu"><a href="{{ route('help.index') }}#website">Public website</a></li>
+                                    <li id="help-products-menu"><a href="{{ route('help.index') }}#products">Products &amp; cafe</a></li>
+                                    <li id="help-pos-menu"><a href="{{ route('help.index') }}#pos">POS &amp; sales</a></li>
+                                    <li id="help-rental-menu"><a href="{{ route('help.index') }}#rental">Rental</a></li>
+                                    <li id="help-quote-menu"><a href="{{ route('help.index') }}#quotations">Quotations</a></li>
+                                    <li id="help-contracts-menu"><a href="{{ route('help.index') }}#contracts">Contracts</a></li>
+                                    <li id="help-members-menu"><a href="{{ route('help.index') }}#members">Membership</a></li>
+                                    <li id="help-expense-menu"><a href="{{ route('help.index') }}#expenses">Expenses</a></li>
+                                    <li id="help-orders-menu"><a href="{{ route('help.index') }}#orders">Online orders</a></li>
+                                    <li id="help-assets-menu"><a href="{{ route('help.index') }}#assets">Fixed assets</a></li>
+                                    <li id="help-content-menu"><a href="{{ route('help.index') }}#content">Site Content</a></li>
+                                </ul>
+                            </li>
                     </ul>
                     @php
                         $__sideMenuOrder = \App\Support\SiteMenu::sideOrder();
@@ -2731,6 +2737,9 @@
                             var k = keyOf(li);
                             if (!k || !used[k]) ul.appendChild(li);
                         });
+                        if (map.help) {
+                            ul.appendChild(map.help);
+                        }
                     })();
                     (function () {
                         var order = @json($__settingsMenuOrder);
@@ -2769,7 +2778,7 @@
                         <div class="sidebar-user-avatar">{{ $userInitial }}</div>
                         <div>
                             <div class="sidebar-user-name">{{ Auth::user()->name }}</div>
-                            <span class="sidebar-user-role">{{ ucfirst($role->name ?? 'User') }}</span>
+                            <span class="sidebar-user-role">{{ ucfirst(optional($role)->name ?? 'User') }}</span>
                         </div>
                     </div>
                     @php
@@ -2829,10 +2838,15 @@
                             <li><a href="{{ route('help.index') }}" class="btn btn-link">User Guide</a></li>
                             <li><a href="{{ route('help.index') }}#website" class="btn btn-link">Public website</a></li>
                             <li><a href="{{ route('help.index') }}#products" class="btn btn-link">Products &amp; cafe menu</a></li>
-                            <li><a href="{{ route('help.index') }}#catalog" class="btn btn-link">Live cafe catalog</a></li>
                             <li><a href="{{ route('help.index') }}#pos" class="btn btn-link">POS &amp; sales</a></li>
-                            <li><a href="{{ route('help.index') }}#content" class="btn btn-link">Site Content</a></li>
+                            <li><a href="{{ route('help.index') }}#rental" class="btn btn-link">Rental</a></li>
+                            <li><a href="{{ route('help.index') }}#quotations" class="btn btn-link">Quotations</a></li>
+                            <li><a href="{{ route('help.index') }}#contracts" class="btn btn-link">Contracts</a></li>
                             <li><a href="{{ route('help.index') }}#members" class="btn btn-link">Membership</a></li>
+                            <li><a href="{{ route('help.index') }}#expenses" class="btn btn-link">Expenses</a></li>
+                            <li><a href="{{ route('help.index') }}#orders" class="btn btn-link">Online orders</a></li>
+                            <li><a href="{{ route('help.index') }}#assets" class="btn btn-link">Fixed assets</a></li>
+                            <li><a href="{{ route('help.index') }}#content" class="btn btn-link">Site Content</a></li>
                         </ul>
                     </li>
                     <li class="nav-item"><a id="btnFullscreen" data-toggle="tooltip" title="{{trans('file.Full Screen')}}"><i class="dripicons-expand"></i></a></li>
@@ -3549,6 +3563,62 @@
           }
 
           (function () {
+              var helpUrl = @json(url('/admin/help'));
+              var helpHashByMenu = {
+                  product: 'products',
+                  purchase: 'purchase',
+                  sale: 'pos',
+                  booking: 'rental',
+                  'events-module': 'events',
+                  events: 'events',
+                  'tasks-module': 'tasks',
+                  'jobs-module': 'jobs',
+                  'contracts-module': 'contracts',
+                  'announcements-module': 'announcements',
+                  'courses-module': 'courses',
+                  membership: 'members',
+                  'timesheets-module': 'timesheets',
+                  'timesheet-admin-module': 'timesheets',
+                  order: 'orders',
+                  letter: 'letters',
+                  expense: 'expenses',
+                  quotation: 'quotations',
+                  assets: 'assets',
+                  transfer: 'transfer',
+                  return: 'returns',
+                  account: 'accounting',
+                  people: 'people',
+                  report: 'reports',
+                  setting: 'settings',
+                  hrm: 'people',
+                  people: 'people',
+                  shop: 'settings',
+                  payments: 'accounting',
+                  online_invitation: 'invitations',
+                  'internship-module': 'internships',
+                  'supervisor-module': 'internships',
+                  'staff-permissions': 'settings'
+              };
+
+              function helpHrefForMenu($submenu) {
+                  var id = $submenu.attr('id') || '';
+                  var hash = helpHashByMenu[id] || id.replace(/-module$/, '') || 'start';
+                  return helpUrl + '#' + hash;
+              }
+
+              function appendHelpLinksToSubmenus() {
+                  $('#side-main-menu ul.collapse').each(function () {
+                      var $ul = $(this);
+                      if ($ul.attr('id') === 'help-module') return;
+                      if ($ul.find('a[data-w2k-help-item]').length) return;
+                      var href = helpHrefForMenu($ul);
+                      $ul.append(
+                          '<li class="w2k-module-help" id="' + ($ul.attr('id') || 'mod') + '-help-tab">' +
+                          '<a data-w2k-help-item href="' + href + '"><i class="dripicons-question"></i> Help</a></li>'
+                      );
+                  });
+              }
+
               var tabIconMap = {
                   'category-menu': 'dripicons-tags',
                   'product-list-menu': 'dripicons-view-list',
@@ -3596,6 +3666,7 @@
                   'messaging-setting-menu': 'dripicons-message',
                   'sms-setting-menu': 'dripicons-message',
                   'pos-setting-menu': 'dripicons-cart',
+                  'w2k-module-help': 'dripicons-question',
                   'hrm-setting-menu': 'dripicons-user-group',
                   'notification-menu': 'dripicons-bell'
               };
@@ -3619,10 +3690,28 @@
                   return 'dripicons-link';
               }
 
+              function appendHelpTab($nav, href, isActive) {
+                  var $tab = $('<a>', {
+                      'class': 'beyond-module-tab tone-gold' + (isActive ? ' is-active' : ''),
+                      'href': href || helpUrl
+                  });
+                  $tab.append($('<i>', { 'class': 'dripicons-question' }));
+                  $tab.append($('<span>').text('Help'));
+                  $nav.append($tab);
+              }
+
               function buildModuleTabs() {
+                  appendHelpLinksToSubmenus();
                   var $activeItem = $('#side-main-menu ul.collapse li.active').first();
+                  var $nav = $('#beyond-module-tabs-nav');
+                  var $tabsWrap = $('#beyond-module-tabs');
+                  var onHelpPage = window.location.pathname.indexOf('/admin/help') !== -1;
+
                   if (!$activeItem.length) {
-                      $('#beyond-module-tabs').removeClass('is-visible');
+                      $('#beyond-module-tabs-label').text('Guide');
+                      $nav.empty();
+                      appendHelpTab($nav, helpUrl, onHelpPage);
+                      $tabsWrap.addClass('is-visible');
                       return;
                   }
 
@@ -3630,8 +3719,6 @@
                   var $parentLink = $submenu.siblings('a').first();
                   var $parentLi = $submenu.closest('li');
                   var parentLabel = $.trim($parentLink.find('span').first().text()) || $.trim($parentLink.text());
-                  var $nav = $('#beyond-module-tabs-nav');
-                  var $tabsWrap = $('#beyond-module-tabs');
 
                   $parentLi.children('a').addClass('menu-parent-active').attr('aria-expanded', 'true');
                   $('#beyond-module-tabs-label').text(parentLabel);
@@ -3676,6 +3763,11 @@
 
                       $nav.append($tab);
                   });
+
+                  var helpAlreadyLast = $nav.children().last().find('span').first().text() === 'Help';
+                  if (!helpAlreadyLast) {
+                      appendHelpTab($nav, helpHrefForMenu($submenu), onHelpPage);
+                  }
 
                   if ($nav.children().length) {
                       $tabsWrap.addClass('is-visible');

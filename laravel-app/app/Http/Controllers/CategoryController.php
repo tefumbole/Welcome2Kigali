@@ -38,12 +38,13 @@ class CategoryController extends Controller
         $totalFiltered = $totalData;
 
         if($request->input('length') != -1)
-            $limit = $request->input('length');
+            $limit = max(1, (int) $request->input('length'));
         else
-            $limit = $totalData;
-        $start = $request->input('start');
-        $order = $columns[$request->input('order.0.column')];
-        $dir = $request->input('order.0.dir');
+            $limit = max(1, (int) $totalData);
+        $start = (int) $request->input('start');
+        $orderCol = $request->input('order.0.column');
+        $order = isset($columns[$orderCol]) ? $columns[$orderCol] : 'id';
+        $dir = $request->input('order.0.dir') === 'desc' ? 'desc' : 'asc';
         if(empty($request->input('search.value')))
             $categories = Category::offset($start)
                         ->where('is_active', true)

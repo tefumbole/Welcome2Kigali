@@ -1297,7 +1297,7 @@
                             </li>
                             @endif
                             <li class="nav-item">
-                                <a class="dropdown-item" href="{{ url('read_me') }}" target="_blank"><i class="dripicons-information"></i> {{trans('file.Help')}}</a>
+                                <a class="dropdown-item" href="{{ route('help.index') }}"><i class="dripicons-information"></i> {{trans('file.Help')}}</a>
                             </li>&nbsp;
                             <li class="nav-item">
                                   <a rel="nofollow" data-target="#" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-item"><i class="dripicons-user"></i> <span>{{ucfirst(Auth::user()->name)}}</span> <i class="fa fa-angle-down"></i>

@@ -493,7 +493,7 @@ class SaleController extends Controller
 
         $lims_reward_point_setting_data = RewardPointSetting::latest()->first();
         //checking if customer gets some points or not
-        if($lims_reward_point_setting_data->is_active &&  $data['grand_total'] >= $lims_reward_point_setting_data->minimum_amount) {
+        if($lims_reward_point_setting_data && $lims_reward_point_setting_data->is_active &&  $data['grand_total'] >= $lims_reward_point_setting_data->minimum_amount) {
             $point = (int)($data['grand_total'] / $lims_reward_point_setting_data->per_point_amount);
             $lims_customer_data->points += $point;
             $lims_customer_data->save();
@@ -2860,7 +2860,9 @@ class SaleController extends Controller
         }
         elseif ($paying_method == 'Points') {
             $lims_reward_point_setting_data = RewardPointSetting::latest()->first();
-            $used_points = ceil($data['amount'] / $lims_reward_point_setting_data->per_point_amount);
+            $used_points = $lims_reward_point_setting_data && $lims_reward_point_setting_data->per_point_amount
+                ? ceil($data['amount'] / $lims_reward_point_setting_data->per_point_amount)
+                : 0;
 
             $lims_payment_data->used_points = $used_points;
             $lims_payment_data->save();
@@ -3097,7 +3099,9 @@ class SaleController extends Controller
         elseif($data['edit_paid_by_id'] == 7) {
             $lims_payment_data->paying_method = 'Points';
             $lims_reward_point_setting_data = RewardPointSetting::latest()->first();
-            $used_points = ceil($data['edit_amount'] / $lims_reward_point_setting_data->per_point_amount);
+            $used_points = $lims_reward_point_setting_data && $lims_reward_point_setting_data->per_point_amount
+                ? ceil($data['edit_amount'] / $lims_reward_point_setting_data->per_point_amount)
+                : 0;
             $lims_payment_data->used_points = $used_points;
             $lims_customer_data->points -= $used_points;
             $lims_customer_data->save();

@@ -222,7 +222,7 @@
                                 <option value="4">Cheque</option>
                                 <option value="5">Paypal</option>
                                 <option value="6">Deposit</option>
-                                @if($lims_reward_point_setting_data->is_active)
+                                @if(optional($lims_reward_point_setting_data)->is_active)
                                     <option value="7">Points</option>
                                 @endif
                             </select>

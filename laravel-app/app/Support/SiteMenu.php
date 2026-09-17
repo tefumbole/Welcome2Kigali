@@ -29,7 +29,6 @@ class SiteMenu
     {
         return [
             'dashboard'    => 'Dashboard',
-            'help'         => 'Help',
             'site-content' => 'Site Content',
             'leaders'      => 'About Us Leaders',
             'invitations'  => 'Digital Invitations',
@@ -62,6 +61,7 @@ class SiteMenu
             'people'       => 'People',
             'report'       => 'Reports',
             'setting'      => 'Settings',
+            'help'         => 'Help',
         ];
     }
 
@@ -149,6 +149,7 @@ class SiteMenu
             ['label' => 'env Settings', 'url' => url('setting/env_setting'), 'match' => 'setting/env_setting'],
             ['label' => 'My Transactions', 'url' => url('my-transactions/'.date('Y').'/'.date('m')), 'match' => 'my-transactions'],
             ['label' => 'Activity Logs', 'url' => url('setting/activity-logs'), 'match' => 'setting/activity-logs'],
+            ['label' => 'Help', 'url' => url('/admin/help').'#settings', 'match' => 'admin/help'],
         ];
     }
 

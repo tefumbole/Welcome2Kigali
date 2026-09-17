@@ -1162,7 +1162,7 @@
                         <div class="column-5">
                             <button style="background-color: #b33771" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="deposit-btn"><i class="fa fa-university"></i> Deposit</button>
                         </div>
-                        @if($lims_reward_point_setting_data->is_active)
+                        @if(optional($lims_reward_point_setting_data)->is_active)
                         <div class="column-5">
                             <button style="background-color: #319398" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="point-btn"><i class="dripicons-rocket"></i> Points</button>
                         </div>
@@ -1213,7 +1213,7 @@
                                                 <option value="4">Cheque</option>
                                                 <option value="5">Paypal</option>
                                                 <option value="6">Deposit</option>
-                                                @if($lims_reward_point_setting_data->is_active)
+                                                @if(optional($lims_reward_point_setting_data)->is_active)
                                                 <option value="7">Points</option>
                                                 @endif
                                             </select>
@@ -1440,7 +1440,7 @@
                             </li>
                             @endif
                             <li class="nav-item">
-                                <a class="dropdown-item" data-toggle="tooltip" title="{{trans('file.Help')}}" href="{{ url('read_me') }}" target="_blank"><i class="dripicons-information"></i></a>
+                                <a class="dropdown-item" data-toggle="tooltip" title="{{trans('file.Help')}}" href="{{ route('help.index') }}"><i class="dripicons-information"></i></a>
                             </li>&nbsp;
                             <li class="nav-item">
                                   <a rel="nofollow" data-target="#" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-item"><i class="dripicons-user"></i> <span>{{ucfirst(Auth::user()->name)}}</span> <i class="fa fa-angle-down"></i>

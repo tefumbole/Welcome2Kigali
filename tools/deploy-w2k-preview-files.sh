@@ -170,7 +170,11 @@ FILES=(
   app/SiteSetting.php
   resources/views/leaders/index.blade.php
   resources/views/sale/pos.blade.php
+  resources/views/sale/index.blade.php
   resources/views/sale/create.blade.php
+  resources/views/booking/index.blade.php
+  resources/views/booking/online-index.blade.php
+  resources/views/setting/reward_point_setting.blade.php
   resources/views/sale/edit.blade.php
   resources/views/sale/create_sale.blade.php
   resources/views/booking/pos.blade.php
