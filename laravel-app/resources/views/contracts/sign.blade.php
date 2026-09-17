@@ -85,10 +85,19 @@
 <body>
 <div class="wrap">
     <div class="hero">
-        <h1>{{ $contract->title }}</h1>
-        <p>Contract {{ $contract->number }} · Signing as <strong>{{ $signatory->display_name ?? 'Signatory' }}</strong></p>
+        <h1>{{ !empty($contract) ? $contract->title : 'Sign contract' }}</h1>
+        <p>
+            @if(!empty($contract))
+                Contract {{ $contract->number }} · Signing as <strong>{{ optional($signatory)->display_name ?? 'Signatory' }}</strong>
+            @else
+                Welcome 2 Kigali Expats Club
+            @endif
+        </p>
     </div>
 
+    @if(! empty($done))
+        <div class="alert" style="background:#ecfdf5;color:#065f46;">{{ $message ?? 'Thank you. Your signature has been recorded.' }}</div>
+    @endif
     @if(! empty($error))
         <div class="alert alert-danger">{{ $error }}</div>
     @endif
@@ -96,6 +105,7 @@
         <div class="alert alert-danger">{{ $errors->first() }}</div>
     @endif
 
+    @if(!empty($contract) && empty($done))
     <div class="card">
         <div class="contract-body">{!! $bodyHtml !!}</div>
     </div>
@@ -107,7 +117,7 @@
 
             <label class="label" for="typed_name">Full legal name *</label>
             <input type="text" name="typed_name" id="typed_name" class="field" required
-                   value="{{ old('typed_name', $signatory->display_name ?? '') }}">
+                   value="{{ old('typed_name', optional($signatory)->display_name ?? '') }}">
 
             <div class="checkbox-row">
                 <input type="checkbox" name="consent" id="consent" value="1" required @if(old('consent')) checked @endif>
@@ -135,12 +145,14 @@
             </form>
         </div>
     </div>
+    @endif
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 <script>
 (function () {
     var canvas = document.getElementById('signature-pad');
+    if (!canvas) return;
     var pad = new SignaturePad(canvas, { backgroundColor: 'rgb(255,255,255)' });
 
     function resizeCanvas() {

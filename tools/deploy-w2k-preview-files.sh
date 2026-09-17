@@ -112,6 +112,7 @@ FILES=(
   app/Http/Controllers/BookingController.php
   app/Http/Controllers/QuotationController.php
   app/Console/Commands/ProcessContractReminders.php
+  resources/views/contracts/sign.blade.php
   app/Support/UserWorkspaces.php
   app/Http/Controllers/BeyondAuthController.php
   app/Support/SiteMenu.php
