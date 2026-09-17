@@ -148,7 +148,7 @@ class MembershipService
         $promo = MembershipPromotion::current();
         $planId = ! empty($data['plan_id']) ? $data['plan_id'] : optional(MembershipPlan::active()->first())->id;
 
-        $application = MembershipApplication::create([
+        $payload = [
             'reference' => $this->nextApplicationReference(),
             'plan_id' => $planId,
             'agreement_id' => $agreement ? $agreement->id : null,
@@ -168,7 +168,8 @@ class MembershipService
             'signed_at' => $signature ? Carbon::now() : null,
             'signed_agreement_version' => $agreement ? $agreement->version : null,
             'submitted_ip' => $data['submitted_ip'] ?? null,
-        ]);
+        ];
+        $application = MembershipApplication::create(\App\Support\SchemaColumns::forTable('membership_applications', $payload));
 
         $this->storeUploads($application, $files);
         $this->audit(null, $application->id, 'application.submitted', ['reference' => $application->reference]);

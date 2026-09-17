@@ -24,6 +24,8 @@ FILES=(
   VERSION
   app/Support/SiteBrand.php
   app/Support/WhatsAppMessage.php
+  app/Support/AppUrl.php
+  app/Support/SchemaColumns.php
   app/Support/SiteMenu.php
   app/Support/SiteContent.php
   app/Support/MembershipQr.php
@@ -99,6 +101,17 @@ FILES=(
   database/migrations/2026_09_08_120000_rebrand_w2k_company_names.php
   database/migrations/2026_09_11_120000_ensure_w2k_catalog_settings.php
   database/migrations/2026_09_11_131500_add_remember_token_to_auth_tables.php
+  database/migrations/2026_09_17_120000_ensure_w2k_module_columns.php
+  app/Quotation.php
+  app/Expense.php
+  app/AssetExpense.php
+  app/Http/Controllers/OrderController.php
+  app/Http/Controllers/ExpenseController.php
+  app/Http/Controllers/ReturnController.php
+  app/Http/Controllers/AssetController.php
+  app/Http/Controllers/BookingController.php
+  app/Http/Controllers/QuotationController.php
+  app/Console/Commands/ProcessContractReminders.php
   app/Support/UserWorkspaces.php
   app/Http/Controllers/BeyondAuthController.php
   app/Support/SiteMenu.php
@@ -225,6 +238,7 @@ sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_08_120000_rebrand_w2k_company_names.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_11_120000_ensure_w2k_catalog_settings.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_11_131500_add_remember_token_to_auth_tables.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_17_120000_ensure_w2k_module_columns.php
 sudo -u www-data php "\$APP/artisan" permission:cache-reset || true
 sudo -u www-data php "\$APP/artisan" view:clear
 sudo -u www-data php "\$APP/artisan" cache:clear

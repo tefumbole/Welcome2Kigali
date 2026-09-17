@@ -35,7 +35,8 @@ class ProcessContractReminders extends Command
             $body = $reminder->message
                 ?: ('Reminder for contract '.$contract->number.': '.$contract->title
                     .($reminder->label ? ' ('.$reminder->label.')' : '')
-                    .'. Status: '.$contract->statusLabel().'. Open: '.url('/admin/contracts/'.$contract->id));
+                    .'. Status: '.$contract->statusLabel().".\n"
+                    .\App\Support\WhatsAppMessage::actionLink('Open', \App\Support\AppUrl::to('/admin/contracts/'.$contract->id)));
 
             $targets = [];
             foreach ($contract->signatories as $sig) {

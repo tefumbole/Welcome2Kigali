@@ -42,6 +42,15 @@ class AppServiceProvider extends ServiceProvider
         }
         Schema::defaultStringLength(191);
 
+        $root = \App\Support\AppUrl::root();
+        if ($root !== '') {
+            URL::forceRootUrl($root);
+            $scheme = parse_url($root, PHP_URL_SCHEME);
+            if ($scheme) {
+                URL::forceScheme($scheme);
+            }
+        }
+
         // Guard against boot before the database is installed/migrated (fresh install, CLI, migrations).
         if (! $this->settingsAvailable()) {
             View::share('general_setting', null);

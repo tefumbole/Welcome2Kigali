@@ -141,7 +141,7 @@ class Quotation extends Model
     {
         $token = $this->ensureApprovalToken();
 
-        return url('quotation-approval/'.$token);
+        return \App\Support\AppUrl::to('/quotation-approval/'.$token);
     }
 
     /**

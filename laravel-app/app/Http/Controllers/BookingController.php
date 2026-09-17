@@ -1095,7 +1095,7 @@ class BookingController extends Controller
         if($cash_register_data)
             $data['cash_register_id'] = $cash_register_data->id;
 
-        if($data['pos']) {
+        if(!empty($data['pos'])) {
             if(!isset($data['reference_no']))
                 $data['reference_no'] = 'pobr-' . date("Ymd") . '-'. date("his");
 
@@ -1111,25 +1111,27 @@ class BookingController extends Controller
                 $data['reference_no'] = 'br-' . date("Ymd") . '-'. date("his");
         }
 
-        if($data['coupon_active']) {
-            $lims_coupon_data = Coupon::find($data['coupon_id']);
-            $lims_coupon_data->used += 1;
-            $lims_coupon_data->save();
+        if(!empty($data['coupon_active'])) {
+            $lims_coupon_data = Coupon::find($data['coupon_id'] ?? null);
+            if ($lims_coupon_data) {
+                $lims_coupon_data->used += 1;
+                $lims_coupon_data->save();
+            }
         }
 
-        $lims_sale_data = Booking::create($data);
+        $lims_sale_data = Booking::create(\App\Support\SchemaColumns::forTable('bookings', $data));
 
-        $lims_customer_data = Customer::find($data['customer_id']);
+        $lims_customer_data = Customer::find($data['customer_id'] ?? null);
         $lims_reward_point_setting_data = RewardPointSetting::latest()->first();
         //checking if customer gets some points or not
-        if($lims_reward_point_setting_data->is_active &&  $data['grand_total'] >= $lims_reward_point_setting_data->minimum_amount) {
+        if($lims_customer_data && $lims_reward_point_setting_data && $lims_reward_point_setting_data->is_active &&  $data['grand_total'] >= $lims_reward_point_setting_data->minimum_amount) {
             $point = (int)($data['grand_total'] / $lims_reward_point_setting_data->per_point_amount);
             $lims_customer_data->points += $point;
             $lims_customer_data->save();
         }
 
         //collecting male data
-        $mail_data['email'] = $lims_customer_data->email;
+        $mail_data['email'] = $lims_customer_data ? $lims_customer_data->email : null;
         $mail_data['reference_no'] = $lims_sale_data->reference_no;
         $mail_data['booking_status'] = $lims_sale_data->booking_status;
         $mail_data['payment_status'] = $lims_sale_data->payment_status;
@@ -1158,6 +1160,9 @@ class BookingController extends Controller
             $product_sale['multi_product_batch_id'] = null;
             $product_sale['multi_product_batch_qty'] = null;
             $lims_product_data = Product::where('id', $id)->first();
+            if (! $lims_product_data) {
+                continue;
+            }
             $product_sale['variant_id'] = null;
             $product_sale['product_batch_id'] = null;
             if($lims_product_data->type == 'combo' && $data['booking_status'] == 1){
@@ -1172,20 +1177,27 @@ class BookingController extends Controller
                         ['warehouse_id', $data['warehouse_id'] ],
                     ])->first();
 
-                    $child_data->qty -= $qty[$i] * $qty_list[$key];
-                    $child_warehouse_data->qty -= $qty[$i] * $qty_list[$key];
-
-                    $child_data->save();
-                    $child_warehouse_data->save();
+                    if ($child_data) {
+                        $child_data->qty -= $qty[$i] * $qty_list[$key];
+                        $child_data->save();
+                    }
+                    if ($child_warehouse_data) {
+                        $child_warehouse_data->qty -= $qty[$i] * $qty_list[$key];
+                        $child_warehouse_data->save();
+                    }
                 }
             }
 
             if($sale_unit[$i] != 'n/a') {
                 $lims_sale_unit_data  = Unit::where('unit_name', $sale_unit[$i])->first();
+                if (! $lims_sale_unit_data) {
+                    $sale_unit_id = 0;
+                    $quantity = $qty[$i];
+                } else {
                 $sale_unit_id = $lims_sale_unit_data->id;
                 if($lims_product_data->is_variant) {
                     $lims_product_variant_data = ProductVariant::select('id', 'variant_id', 'qty')->FindExactProductWithCode($id, $product_code[$i])->first();
-                    $product_sale['variant_id'] = $lims_product_variant_data->variant_id;
+                    $product_sale['variant_id'] = $lims_product_variant_data ? $lims_product_variant_data->variant_id : null;
                 }
 
                 if($data['booking_status'] == 1) {
@@ -1200,9 +1212,11 @@ class BookingController extends Controller
                     //deduct product variant quantity if exist
                     $multi_qty = 1;
                     if($lims_product_data->is_variant) {
-                        $lims_product_variant_data->qty -= $quantity;
-                        $lims_product_variant_data->save();
-                        $lims_product_warehouse_data = Product_Warehouse::FindProductWithVariant($id, $lims_product_variant_data->variant_id, $data['warehouse_id'])->first();
+                        if (! empty($lims_product_variant_data)) {
+                            $lims_product_variant_data->qty -= $quantity;
+                            $lims_product_variant_data->save();
+                            $lims_product_warehouse_data = Product_Warehouse::FindProductWithVariant($id, $lims_product_variant_data->variant_id, $data['warehouse_id'])->first();
+                        }
                     }
                     elseif($product_batch_id[$i]) {
                         $lims_product_warehouse_data = Product_Warehouse::where([
@@ -1211,7 +1225,7 @@ class BookingController extends Controller
                         ])->first();
                         $lims_product_batch_data = ProductBatch::find($product_batch_id[$i]);
 
-                        if ($lims_product_batch_data->qty < $quantity) {
+                        if ($lims_product_batch_data && $lims_product_batch_data->qty < $quantity) {
                             $lims_product_batch_data_multi = ProductBatch::where('product_id', $lims_product_batch_data->product_id)->where('qty', '>', 0)->orderBy('expired_date')->get();
                             $multi_qty = $quantity;
                             $multi_product_batch_id = [];
@@ -1247,7 +1261,7 @@ class BookingController extends Controller
                             }
                             $product_sale['multi_product_batch_id'] = json_encode($multi_product_batch_id);
                             $product_sale['multi_product_batch_qty'] = json_encode($multi_product_batch_qty);
-                        } else {
+                        } elseif ($lims_product_batch_data) {
                             $product_sale['product_batch_id'] = $lims_product_batch_data->id;
                             //deduct product batch quantity
                             $lims_product_batch_data->qty -= $quantity;
@@ -1259,11 +1273,12 @@ class BookingController extends Controller
                         $lims_product_warehouse_data = Product_Warehouse::FindProductWithoutVariant($id, $data['warehouse_id'])->first();
                     }
 
-                    if ($multi_qty == 1) {
+                    if ($multi_qty == 1 && ! empty($lims_product_warehouse_data)) {
                         //deduct quantity from warehouse
                         $lims_product_warehouse_data->qty -= $quantity;
                         $lims_product_warehouse_data->save();
                     }
+                }
                 }
             }
             else
@@ -1299,7 +1314,7 @@ class BookingController extends Controller
             $product_sale['tax'] = $tax[$i];
             $product_sale['total'] = $mail_data['total'][$i] = $total[$i];
             $this->stockDurationSave($lims_product_data->id, $lims_product_data->qty);
-            BookingProduct::create($product_sale);
+            BookingProduct::create(\App\Support\SchemaColumns::forTable('booking_products', $product_sale));
 
         }
         if($data['booking_status'] == 3)
@@ -1318,7 +1333,7 @@ class BookingController extends Controller
             }
         }
 
-        if($data['payment_status'] == 3 || $data['payment_status'] == 4 || ($data['payment_status'] == 2 && $data['pos'] && $data['paid_amount'] > 0)) {
+        if(($data['payment_status'] ?? null) == 3 || ($data['payment_status'] ?? null) == 4 || (($data['payment_status'] ?? null) == 2 && !empty($data['pos']) && ($data['paid_amount'] ?? 0) > 0)) {
 
             $lims_payment_data = new Payment();
             $lims_payment_data->user_id = Auth::id();
@@ -1343,7 +1358,7 @@ class BookingController extends Controller
                 }else{
                     $lims_account_data = Account::where('id', $data['debit'])->first();
                 }
-                $lims_payment_data_debit->account_id = $lims_account_data->id;
+                $lims_payment_data_debit->account_id = $lims_account_data ? $lims_account_data->id : null;
                 $lims_payment_data_debit->debit_booking_id = $lims_sale_data->id;
                 $data['payment_reference'] = 'spr-'.date("Ymd").'-'.date("his");
                 $lims_payment_data_debit->payment_reference = $data['payment_reference'];
@@ -1372,7 +1387,7 @@ class BookingController extends Controller
             }else{
                 $lims_account_data = Account::where('is_default', true)->first();
             }
-            $lims_payment_data->account_id = $lims_account_data->id;
+            $lims_payment_data->account_id = $lims_account_data ? $lims_account_data->id : null;
             $lims_payment_data->booking_id = $lims_sale_data->id;
             $data['payment_reference'] = 'spr-'.date("Ymd").'-'.date("his");
             $lims_payment_data->payment_reference = $data['payment_reference'];

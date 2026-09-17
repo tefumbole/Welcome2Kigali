@@ -56,7 +56,7 @@ class ExpenseController extends Controller
         foreach ($permissions as $permission)
             $all_permission[] = $permission->name;
 
-        $lims_expense_all = AssetExpense::orderBy('id', 'desc')->where('type', 'expense')->get();
+        $lims_expense_all = AssetExpense::ofKind('expense')->orderBy('id', 'desc')->get();
 
         return view('expense.asset', compact('lims_expense_all', 'all_permission'));
     }
@@ -67,7 +67,7 @@ class ExpenseController extends Controller
             foreach ($permissions as $permission)
                 $all_permission[] = $permission->name;
 
-        $lims_expense_all = AssetExpense::orderBy('id', 'desc')->where('type', 'activity')->get();
+        $lims_expense_all = AssetExpense::ofKind('activity')->orderBy('id', 'desc')->get();
 
         return view('fixed_asset.asset.activity', compact('lims_expense_all', 'all_permission'));
     }
@@ -79,36 +79,36 @@ class ExpenseController extends Controller
             foreach ($permissions as $permission)
                 $all_permission[] = $permission->name;
         }
-        $lims_expense_all = AssetExpense::orderBy('id', 'desc')->where('type', 'activity')->where('activity_type', 'Repair')->get();
+        $lims_expense_all = AssetExpense::ofKind('activity')->activity('Repair')->orderBy('id', 'desc')->get();
 
         return view('fixed_asset.asset.activity_repair', compact('lims_expense_all', 'all_permission'));
     }
 
     public function assetStore(Request $request)
     {
-        $data = $request->all();
+        $data = $request->except('_token', '_method');
         $data['reference_no'] = 'er-' . date("Ymd") . '-'. date("his");
         $data['user_id'] = Auth::id();
-        if($data['type'] == 'activity' && $data['activity_type'] == 'milage' && $data['total_km'] == null) {
-            $data['total_km'] = $data['end_km'] - $data['start_km'];
+        if(!empty($data['type']) && $data['type'] == 'activity' && !empty($data['activity_type']) && $data['activity_type'] == 'milage' && empty($data['total_km'])) {
+            $data['total_km'] = ($data['end_km'] ?? 0) - ($data['start_km'] ?? 0);
         }
-        AssetExpense::create($data);
+        AssetExpense::create(\App\Support\SchemaColumns::forTable('asset_expenses', $data));
         return back()->with('message', 'Data inserted successfully');
     }
 
     public function store(Request $request)
     {
-        $data = $request->all();
+        $data = $request->except('_token', '_method');
         $data['reference_no'] = 'er-' . date("Ymd") . '-'. date("his");
         $data['user_id'] = Auth::id();
         $cash_register_data = CashRegister::where([
             ['user_id', $data['user_id']],
-            ['warehouse_id', $data['warehouse_id']],
+            ['warehouse_id', $data['warehouse_id'] ?? null],
             ['status', true]
         ])->first();
         if($cash_register_data)
             $data['cash_register_id'] = $cash_register_data->id;
-        Expense::create($data);
+        Expense::create(\App\Support\SchemaColumns::forTable('expenses', $data));
         return redirect('expenses')->with('message', 'Data inserted successfully');
     }
 
@@ -171,20 +171,24 @@ class ExpenseController extends Controller
 
     public function update(Request $request, $id)
     {
-        $data = $request->all();
-        $lims_expense_data = Expense::find($data['expense_id']);
-        $lims_expense_data->update($data);
+        $data = \App\Support\SchemaColumns::forTable('expenses', $request->except('_token', '_method'));
+        $lims_expense_data = Expense::find($data['expense_id'] ?? $id);
+        if ($lims_expense_data) {
+            $lims_expense_data->update($data);
+        }
         return redirect('expenses')->with('message', 'Data updated successfully');
     }
 
     public function updateAsset(Request $request, $id)
     {
-        $data = $request->all();
+        $data = \App\Support\SchemaColumns::forTable('asset_expenses', $request->except('_token', '_method'));
         if(!isset($data['approved'])){
             $data['approved'] = null;
         }
-        $lims_expense_data = AssetExpense::find($data['id']);
-        $lims_expense_data->update($data);
+        $lims_expense_data = AssetExpense::find($data['id'] ?? $id);
+        if ($lims_expense_data) {
+            $lims_expense_data->update($data);
+        }
         return back()->with('message', 'Data updated successfully');
     }
 

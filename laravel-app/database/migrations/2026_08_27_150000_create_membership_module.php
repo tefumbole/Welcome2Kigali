@@ -78,7 +78,7 @@ class CreateMembershipModule extends Migration
                 $table->unsignedInteger('agreement_id')->nullable();
                 $table->unsignedInteger('promotion_id')->nullable();
                 $table->unsignedInteger('customer_id')->nullable();
-                $table->unsignedInteger('beyond_user_id')->nullable();
+                $table->string('beyond_user_id', 64)->nullable();
                 $table->string('full_name');
                 $table->string('email');
                 $table->string('phone');

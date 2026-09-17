@@ -345,8 +345,9 @@ class ContractWorkflowService
             'attempts' => 1,
         ]);
 
-        $url = url('/contracts/sign/'.$plain);
-        $msg = "Welcome 2 Kigali Expats Club: Please review and sign contract {$contract->number} ({$contract->title}). Open: {$url}";
+        $url = \App\Support\AppUrl::to('/contracts/sign/'.$plain);
+        $msg = "Welcome 2 Kigali Expats Club: Please review and sign contract {$contract->number} ({$contract->title}).\n";
+        $msg .= \App\Support\WhatsAppMessage::actionLink('Open', $url);
 
         if ($sig->phone) {
             try {

@@ -29,10 +29,16 @@ class AssetController extends Controller
 
         $this->middleware(function ($request, $next) {
             $role = Role::find(Auth::user()->role_id);
-            $permissions = Role::findByName($role->name)->permissions;
-
-            foreach ($permissions as $permission) {
-                $all_permission[] = $permission->name;
+            $all_permission = ['dummy text'];
+            if ($role) {
+                try {
+                    $permissions = Role::findByName($role->name)->permissions;
+                    $names = $permissions->pluck('name')->all();
+                    if (! empty($names)) {
+                        $all_permission = $names;
+                    }
+                } catch (\Throwable $e) {
+                }
             }
             View::share ( 'all_permission', $all_permission);
 
@@ -217,10 +223,10 @@ class AssetController extends Controller
         $station_count = Asset::where('station_id', '!=', null)->where('is_active', 1)->count();
         $department_count = Asset::where('department_id', '!=', null)->where('is_active', 1)->count();
 
-        $copy_count = AssetExpense::where('activity_type', 'copy')->count();
-        $automobile_count = AssetExpense::where('activity_type', 'milage')->count();
-        $repair_count = AssetExpense::where('activity_type', 'Repair')->count();
-        $general_count = AssetExpense::where('activity_type', 'General Activity')->count();
+        $copy_count = AssetExpense::activity('copy')->count();
+        $automobile_count = AssetExpense::activity('milage')->count();
+        $repair_count = AssetExpense::activity('Repair')->count();
+        $general_count = AssetExpense::activity('General Activity')->count();
         $dispose_count = Dispose::count();
         $transfer_count = AssetTransfer::count();
 
@@ -385,19 +391,19 @@ class AssetController extends Controller
         }
 
         // Filtered Queries for expenses and asset-related data
-        $copy_sum = AssetExpense::where('activity_type', 'copy')
+        $copy_sum = AssetExpense::activity('copy')
             ->whereBetween('date', [$start_date, $end_date])
             ->sum('amount');
 
-        $automobile_sum = AssetExpense::where('activity_type', 'milage')
+        $automobile_sum = AssetExpense::activity('milage')
             ->whereBetween('date', [$start_date, $end_date])
             ->sum('amount');
 
-        $repair_sum = AssetExpense::where('activity_type', 'Repair')
+        $repair_sum = AssetExpense::activity('Repair')
             ->whereBetween('date', [$start_date, $end_date])
             ->sum('amount');
 
-        $general_sum = AssetExpense::where('activity_type', 'General Activity')
+        $general_sum = AssetExpense::activity('General Activity')
             ->whereBetween('date', [$start_date, $end_date])
             ->sum('amount');
 
@@ -421,8 +427,8 @@ class AssetController extends Controller
 
 
 
-        $expense_sum = AssetExpense::whereBetween('date', [$start_date, $end_date])
-            ->where('type', 'expense')
+        $expense_sum = AssetExpense::ofKind('expense')
+            ->whereBetween('date', [$start_date, $end_date])
             ->sum('amount');
 
         // Return the view with the filtered data
@@ -837,7 +843,11 @@ class AssetController extends Controller
             $data = DB::table('asset_expenses')
                 ->leftJoin('assets', 'assets.id', '=', 'asset_expenses.asset_id')
                 ->where('is_active', true)
-                ->where('activity_type',  'copy')
+                ->when(\App\Support\SchemaColumns::has('asset_expenses', 'activity_type'), function ($q) {
+                    return $q->where('activity_type', 'copy');
+                }, function ($q) {
+                    return $q->whereRaw('0 = 1');
+                })
                 ->whereBetween('asset_expenses.date', [$yesterday, $tomorrow])
                 ->select('asset_id');
 
@@ -913,7 +923,11 @@ class AssetController extends Controller
             $data = DB::table('asset_expenses')
                 ->leftJoin('assets', 'assets.id', '=', 'asset_expenses.asset_id')
                 ->where('is_active', true)
-                ->where('activity_type',  'repair')
+                ->when(\App\Support\SchemaColumns::has('asset_expenses', 'activity_type'), function ($q) {
+                    return $q->where('activity_type', 'repair');
+                }, function ($q) {
+                    return $q->whereRaw('0 = 1');
+                })
                 ->whereBetween('asset_expenses.date', [$yesterday, $tomorrow])
                 ->select('asset_id');
 
@@ -989,7 +1003,11 @@ class AssetController extends Controller
             $data = DB::table('asset_expenses')
                 ->leftJoin('assets', 'assets.id', '=', 'asset_expenses.asset_id')
                 ->where('is_active', true)
-                ->where('activity_type',  'General Activity')
+                ->when(\App\Support\SchemaColumns::has('asset_expenses', 'activity_type'), function ($q) {
+                    return $q->where('activity_type', 'General Activity');
+                }, function ($q) {
+                    return $q->whereRaw('0 = 1');
+                })
                 ->whereBetween('asset_expenses.date', [$yesterday, $tomorrow])
                 ->select('asset_id');
 

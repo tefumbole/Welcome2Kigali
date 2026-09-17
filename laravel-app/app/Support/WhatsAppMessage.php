@@ -42,6 +42,9 @@ class WhatsAppMessage
 
     public static function actionLink($label, $url)
     {
+        $url = AppUrl::absolute($url);
+        // URL alone on its own line with no trailing punctuation. WhatsApp
+        // otherwise autolinks "host.net." and nginx drops the path to Home.
         return "\n*{$label}:*\n{$url}\n";
     }
 

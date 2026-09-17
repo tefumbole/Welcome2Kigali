@@ -14,6 +14,7 @@ use App\Product_Warehouse;
 use App\User;
 use App\Warehouse;
 use Doctrine\DBAL\Schema\AbstractAsset;
+use App\Support\SchemaColumns;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -25,23 +26,33 @@ use Twilio\TwiML\Voice\Pay;
 
 class OrderController extends Controller
 {
+    protected function catalogOrders($vendorId = null)
+    {
+        $query = Order::query();
+        if (SchemaColumns::has('orders', 'is_donation')) {
+            $query->where('is_donation', 0);
+        }
+        if (SchemaColumns::has('orders', 'is_service')) {
+            $query->where('is_service', 0);
+        }
+        if ($vendorId) {
+            $query->where('vendor_id', $vendorId);
+        }
+
+        return $query->orderByDesc('id');
+    }
 
     public function index() {
         $vendor_id = null;
         if (Auth::user()->role_id == 12) {
             $vendor_id =  Auth::user()->id;
         }
-        if ($vendor_id == null) {
-            $data = Order::where('is_donation', 0)->where('is_service', 0)->orderByDesc('id')->get();
-        } else {
-            $data = Order::where('is_donation', 0)->where('is_service', 0)->where('vendor_id', $vendor_id)->orderByDesc('id')->get();
-        }
+        $data = $this->catalogOrders($vendor_id)->get();
         return view('order.index', compact('data'));
     }
 
     public function shopOrders($id) {
-        $vendor_id =  $id;
-        $data = Order::where('is_donation', 0)->where('is_service', 0)->where('vendor_id', $vendor_id)->orderByDesc('id')->get();
+        $data = $this->catalogOrders($id)->get();
         return view('order.index', compact('data'));
     }
 
@@ -107,16 +118,23 @@ class OrderController extends Controller
         if (Auth::user()->role_id == 12) {
             $vendor_id =  Auth::user()->id;
         }
-        if ($vendor_id == null) {
-            $data = Order::where('is_donation', 1)->orderByDesc('id')->get();
-        } else {
-            $data = Order::where('is_donation', 1)->where('vendor_id', $vendor_id)->orderByDesc('id')->get();
+        $query = Order::query();
+        if (SchemaColumns::has('orders', 'is_donation')) {
+            $query->where('is_donation', 1);
         }
+        if ($vendor_id) {
+            $query->where('vendor_id', $vendor_id);
+        }
+        $data = $query->orderByDesc('id')->get();
         return view('order.donation-index', compact('data'));
     }
 
     public function serviceList() {
-        $data = Order::where('is_service', 1)->orderByDesc('id')->get();
+        $query = Order::query();
+        if (SchemaColumns::has('orders', 'is_service')) {
+            $query->where('is_service', 1);
+        }
+        $data = $query->orderByDesc('id')->get();
         return view('order.service-index', compact('data'));
     }
 
@@ -381,7 +399,14 @@ class OrderController extends Controller
 
 
     public function frontendOrderIndex() {
-        $data = Order::where('user_id', Auth::user()->id)->where('is_donation', 0)->where('is_service', 0)->orderByDesc('id')->paginate(5);
+        $query = Order::where('user_id', Auth::user()->id);
+        if (SchemaColumns::has('orders', 'is_donation')) {
+            $query->where('is_donation', 0);
+        }
+        if (SchemaColumns::has('orders', 'is_service')) {
+            $query->where('is_service', 0);
+        }
+        $data = $query->orderByDesc('id')->paginate(5);
         return view('frontend.order_index', compact('data'));
     }
 
@@ -391,12 +416,20 @@ class OrderController extends Controller
     }
 
     public function frontendDonationIndex() {
-        $data = Order::where('user_id', Auth::user()->id)->where('is_donation', 1)->orderByDesc('id')->paginate(5);
+        $query = Order::where('user_id', Auth::user()->id);
+        if (SchemaColumns::has('orders', 'is_donation')) {
+            $query->where('is_donation', 1);
+        }
+        $data = $query->orderByDesc('id')->paginate(5);
         return view('frontend.donation_index', compact('data'));
     }
 
     public function frontendServiceIndex() {
-        $data = Order::where('user_id', Auth::user()->id)->where('is_service', 1)->orderByDesc('id')->paginate(5);
+        $query = Order::where('user_id', Auth::user()->id);
+        if (SchemaColumns::has('orders', 'is_service')) {
+            $query->where('is_service', 1);
+        }
+        $data = $query->orderByDesc('id')->paginate(5);
         return view('frontend.service_index', compact('data'));
     }
 
