@@ -43,7 +43,7 @@
          srcset="{{ \App\Support\SiteBrand::landingUrl('1x') }} 1024w, {{ \App\Support\SiteBrand::landingUrl('2x') }} 2048w"
          sizes="100vw"
          width="2048"
-         height="1024"
+         height="960"
          alt="{{ \App\Support\SiteBrand::siteTitle($general_setting ?? null) }}"
          decoding="async"
          fetchpriority="high">
