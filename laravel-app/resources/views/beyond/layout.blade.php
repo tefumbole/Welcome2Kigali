@@ -249,7 +249,7 @@
         }
         if (isset($navDefs[$navKey])) {
             $item = $navDefs[$navKey];
-            if (! empty($navLabels[$navKey])) {
+            if ($locale === 'en' && ! empty($navLabels[$navKey]) && $navLabels[$navKey] !== \App\Support\SiteMenu::landingItems()[$navKey]) {
                 $item['label'] = $navLabels[$navKey];
             }
             $navLinks[] = $item;
