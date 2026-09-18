@@ -275,8 +275,27 @@
         position: absolute !important;
         width: 1px !important;
         height: 1px !important;
+        min-height: 0 !important;
         opacity: 0 !important;
         pointer-events: none !important;
+        overflow: hidden !important;
+        border: 0 !important;
+        padding: 0 !important;
+        z-index: 0 !important;
+    }
+    .booking-create-page .input-with-action {
+        position: relative;
+    }
+    .booking-create-page .input-with-action > .bootstrap-select {
+        flex: 1 1 auto;
+        min-width: 0;
+        width: auto !important;
+    }
+    .booking-create-page .bootstrap-select > .dropdown-toggle.btn-link {
+        background: #fff !important;
+        color: #1f2a44 !important;
+        text-decoration: none !important;
+        box-shadow: none !important;
     }
     .booking-create-page .bootstrap-select {
         width: 100% !important;

@@ -6,6 +6,49 @@
     padding: 6px;
     border-radius: 10px;
 }
+
+/* Native <select> must not show through bootstrap-select (Customer looks superimposed otherwise). */
+.bootstrap-select {
+    position: relative;
+}
+.bootstrap-select > select,
+.bootstrap-select > select.form-control,
+.bootstrap-select > select.selectpicker {
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 50% !important;
+    display: block !important;
+    width: 0.5px !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    opacity: 0 !important;
+    border: none !important;
+    overflow: hidden !important;
+    z-index: 0 !important;
+    pointer-events: none !important;
+}
+.bootstrap-select > .dropdown-toggle.btn-link {
+    background-color: #fff !important;
+    color: #1f2a44 !important;
+    text-decoration: none !important;
+    border: 1px solid #d7e0ef !important;
+}
+.input-with-action {
+    display: flex;
+    gap: 6px;
+    align-items: stretch;
+    position: relative;
+}
+.input-with-action > .bootstrap-select {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto !important;
+}
+.input-with-action > .btn {
+    flex: 0 0 auto;
+}
 #letter li {
     display: flex;
     justify-content: space-between;

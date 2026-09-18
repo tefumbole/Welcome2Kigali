@@ -63,7 +63,7 @@ class SiteContent
                 'fields' => [
                     'hero_title'            => ['html', 'Hero title (HTML allowed)', 'A destination. A community. An <span class="text-brand-gold">experience</span>.'],
                     'hero_subtitle'         => ['textarea', 'Hero subtitle', 'Welcome 2 Kigali Expats Club — live, connect, and thrive in Rwanda.'],
-                    'hero_image'            => ['image', 'Hero background image', '/branding/w2k-landing.png'],
+                    'hero_image'            => ['image', 'Hero background image', '/branding/w2k-landing.jpg'],
                     'cta_primary'           => ['text', 'Join the Club button', 'Join the Club'],
                     'cta_events'            => ['text', 'Events button', 'Events'],
                     'cta_cafe'              => ['text', 'Cafe menu button', 'Cafe Menu'],

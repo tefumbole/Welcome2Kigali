@@ -14,4 +14,19 @@ class Account extends Model
         return $this->belongsTo('App\Department', 'department_id');
     }
 
+    public function optionLabel()
+    {
+        $parts = array_filter([
+            trim((string) $this->name),
+            trim((string) $this->account_no),
+        ]);
+        $label = implode(' / ', $parts);
+        $code = optional($this->departments)->code;
+        if ($code) {
+            $label .= ' - '.$code;
+        }
+
+        return $label !== '' ? $label : ('Account #'.$this->id);
+    }
+
 }

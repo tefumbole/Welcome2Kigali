@@ -36,11 +36,18 @@ class SiteBrand
         return $fallback;
     }
 
-    public static function landingUrl()
+    public static function landingUrl($density = '1x')
     {
-        $fallback = url('public/branding/w2k-landing.png').'?v=7';
+        $file = $density === '2x' ? 'w2k-landing@2x.jpg' : 'w2k-landing.jpg';
+        $path = base_path('public/branding/'.$file);
+        if (! is_file($path)) {
+            $file = 'w2k-landing.png';
+            $path = base_path('public/branding/'.$file);
+        }
+        $v = is_file($path) ? filemtime($path) : 8;
+        $fallback = url('public/branding/'.$file).'?v='.$v;
         $custom = SiteContent::image('home.hero_image', '');
-        if ($custom === '' || strpos($custom, 'w2k-logo') !== false || strpos($custom, 'beyond-hero') !== false) {
+        if ($custom === '' || strpos($custom, 'w2k-logo') !== false || strpos($custom, 'beyond-hero') !== false || strpos($custom, 'w2k-landing') !== false) {
             return $fallback;
         }
 

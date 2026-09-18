@@ -189,7 +189,7 @@
             justify-content: center;
             gap: .65rem;
             padding: .75rem 1rem 1rem;
-            background: linear-gradient(to top, rgba(10,10,10,.55), transparent);
+            background: linear-gradient(to top, rgba(5,5,5,.28), transparent 70%);
         }
         @media (min-width: 640px) {
             .landing-hero-actions { gap: .85rem; padding-bottom: 1.15rem; }

@@ -1533,7 +1533,7 @@
                                                             <select name="debit_select" class="form-control selectpicker" data-live-search="true">
                                                                 <option value="">{{trans('file.Choose Account')}}</option>
                                                                 @foreach($lims_account_list as $item)
-                                                                    <option value="{{$item->id}}" {{$item->id == $lims_account_default_debit->id ? 'selected' : '' }}>{{@$item->name}} / {{@$item->account_no}} - {{@$item->departments->code }}</option>
+                                                                    <option value="{{$item->id}}" {{ optional($lims_account_default_debit)->id == $item->id ? 'selected' : '' }}>{{ $item->optionLabel() }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </div>
@@ -1543,7 +1543,7 @@
                                                             <select name="credit_select"  class="form-control selectpicker" data-live-search="true">
                                                                 <option value="">{{trans('file.Choose Account')}}</option>
                                                                 @foreach($lims_account_list as $item)
-                                                                    <option value="{{$item->id}}" {{$item->id == $lims_account_default->id ? 'selected' : '' }}>{{$item->name}} / {{@$item->account_no}} - {{@$item->departments->code }}</option>
+                                                                    <option value="{{$item->id}}" {{ optional($lims_account_default)->id == $item->id ? 'selected' : '' }}>{{ $item->optionLabel() }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </div>

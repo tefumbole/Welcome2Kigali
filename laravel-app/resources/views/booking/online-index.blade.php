@@ -260,9 +260,9 @@
                         <select class="form-control selectpicker" name="account_id" data-live-search="true">
                             @foreach($lims_account_list as $account)
                                 @if($account->is_default)
-                                    <option selected value="{{$account->id}}">{{$account->name}} / {{$account->account_no}} - {{$account->departments->code}}</option>
+                                    <option selected value="{{$account->id}}">{{$account->optionLabel()}}</option>
                                 @else
-                                    <option value="{{$account->id}}">{{$account->name}} / {{$account->account_no}} - {{$account->departments->code}}</option>
+                                    <option value="{{$account->id}}">{{$account->optionLabel()}}</option>
                                 @endif
                             @endforeach
                         </select>
@@ -272,9 +272,9 @@
                         <select name="account_id_debit" class="form-control selectpicker" data-live-search="true">
                             @foreach($lims_account_list as $account)
                                 @if($account->is_default_debit)
-                                    <option selected value="{{$account->id}}">{{$account->name}} / {{$account->account_no}} - {{$account->departments->code}}</option>
+                                    <option selected value="{{$account->id}}">{{$account->optionLabel()}}</option>
                                 @else
-                                    <option value="{{$account->id}}">{{$account->name}} / {{$account->account_no}} - {{$account->departments->code}}</option>
+                                    <option value="{{$account->id}}">{{$account->optionLabel()}}</option>
                                 @endif
                             @endforeach
                         </select>

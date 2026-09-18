@@ -8,16 +8,29 @@
 @push('head')
 <style>
     body.home-landing {
-        background-color: #0A0A0A;
+        background-color: #050505;
         height: 100dvh;
         overflow: hidden;
     }
     body.home-landing .landing-hero--fullpage {
-        background-image: url('{{ \App\Support\SiteBrand::landingUrl() }}');
-        background-size: contain;
-        background-position: center center;
-        background-repeat: no-repeat;
-        background-color: #0A0A0A;
+        position: relative;
+        background-color: #050505;
+        background-image: none;
+    }
+    body.home-landing .landing-hero-art {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        z-index: 1;
+        pointer-events: none;
+        user-select: none;
+        -webkit-user-drag: none;
+    }
+    body.home-landing .landing-hero-actions {
+        background: linear-gradient(to top, rgba(5,5,5,.28), transparent 70%);
     }
 </style>
 @endpush
@@ -25,6 +38,15 @@
 @section('content')
 <section class="landing-hero landing-hero--fullpage" aria-label="{{ \App\Support\SiteBrand::siteTitle($general_setting ?? null) }}">
     <h1 class="sr-only">{!! \App\Support\SiteContent::html('home.hero_title', \App\Support\SiteBrand::siteTitle($general_setting ?? null)) !!}</h1>
+    <img class="landing-hero-art"
+         src="{{ \App\Support\SiteBrand::landingUrl('2x') }}"
+         srcset="{{ \App\Support\SiteBrand::landingUrl('1x') }} 1024w, {{ \App\Support\SiteBrand::landingUrl('2x') }} 2048w"
+         sizes="100vw"
+         width="2048"
+         height="1024"
+         alt="{{ \App\Support\SiteBrand::siteTitle($general_setting ?? null) }}"
+         decoding="async"
+         fetchpriority="high">
     <div class="landing-hero-actions">
         <a href="{{ url('/register-now') }}"
            class="bg-brand-gold hover:bg-[#b08d45] text-black h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base font-bold rounded-full hover:scale-105 transition-transform inline-flex items-center justify-center">

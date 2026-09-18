@@ -2311,7 +2311,7 @@ class BookingController extends Controller
                 $all_permission[] = 'dummy text';
 
             $lims_customer_list = Customer::where('is_active', true)->get();
-            $lims_account_list = Account::where('is_active', true)->get();
+            $lims_account_list = Account::with('departments')->where('is_active', true)->get();
             $lims_customer_group_all = CustomerGroup::where('is_active', true)->get();
             $lims_warehouse_list = Warehouse::where('is_active', true)->get();
             $lims_biller_list = Biller::where('is_active', true)->get();

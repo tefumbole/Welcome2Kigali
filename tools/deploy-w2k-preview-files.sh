@@ -206,6 +206,9 @@ FILES=(
   public/branding/footer-swoosh.svg
   public/branding/footer-wave.svg
   public/branding/w2k-landing.png
+  public/branding/w2k-landing.jpg
+  public/branding/w2k-landing@2x.jpg
+  public/css/custom.css
 )
 
 for f in app/Membership*.php; do
