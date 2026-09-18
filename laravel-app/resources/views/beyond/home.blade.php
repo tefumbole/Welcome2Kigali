@@ -3,7 +3,7 @@
 @section('title', __('site.home.title'))
 @section('meta_description', \App\Support\SiteContent::text('home.hero_subtitle', __('site.footer.blurb')))
 @section('body_class', 'bg-black home-landing')
-@section('landing_footer', '1')
+@section('hide_footer', '1')
 
 @push('head')
 <style>
@@ -30,11 +30,7 @@
         -webkit-user-drag: none;
     }
     body.home-landing .landing-hero-actions {
-        background: linear-gradient(to top, rgba(5,5,5,.45), transparent 70%);
-        padding-bottom: 7.5rem;
-    }
-    @media (min-width: 640px) {
-        body.home-landing .landing-hero-actions { padding-bottom: 8.25rem; }
+        background: linear-gradient(to top, rgba(5,5,5,.28), transparent 70%);
     }
 </style>
 @endpush

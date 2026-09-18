@@ -198,50 +198,21 @@
         .site-footer-landing {
             position: relative;
             z-index: 2;
-            background: #0A0A0A;
+            background: transparent;
             color: #F7F1E8;
             margin-top: 0;
-            overflow: hidden;
         }
         .site-footer-landing::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(to top, rgba(10,10,10,.96) 0%, rgba(10,10,10,.82) 70%, rgba(10,10,10,.55) 100%);
+            background: linear-gradient(to top, rgba(10,10,10,.88) 0%, rgba(10,10,10,.45) 55%, transparent 100%);
             pointer-events: none;
             z-index: 0;
         }
         .site-footer-landing .site-footer-inner {
             position: relative;
             z-index: 1;
-        }
-        .site-footer-landing .site-footer-swoosh {
-            position: absolute;
-            right: -0.5rem;
-            bottom: -0.25rem;
-            width: min(16rem, 36vw);
-            max-height: 88%;
-            pointer-events: none;
-            z-index: 0;
-            line-height: 0;
-        }
-        body.home-landing {
-            height: 100dvh;
-            overflow: hidden;
-            position: relative;
-        }
-        body.home-landing .site-footer-landing {
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 20;
-        }
-        body.home-landing .landing-hero-actions {
-            padding-bottom: 7.5rem;
-        }
-        @media (min-width: 640px) {
-            body.home-landing .landing-hero-actions { padding-bottom: 8.25rem; }
         }
     </style>
     @stack('head')
@@ -458,10 +429,12 @@
         <img src="{{ url('public/branding/footer-wave.svg') }}?v=5" alt="" width="1024" height="63">
     </div>
     @endunless
-    <div class="site-footer-body">
+    <div class="{{ $isLandingFooter ? '' : 'site-footer-body' }}">
+        @unless($isLandingFooter)
         <div class="site-footer-swoosh" aria-hidden="true">
             <img src="{{ url('public/branding/footer-swoosh.svg') }}?v=2" alt="" width="420" height="380">
         </div>
+        @endunless
         <div class="site-footer-inner">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 {{ $isLandingFooter ? 'pt-2 pb-2' : 'pt-1 pb-3' }}">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 lg:gap-10">
