@@ -258,6 +258,7 @@
     $currentUrl = url()->current();
 @endphp
 
+@unless(trim($__env->yieldContent('hide_nav')))
 <header class="bg-brand-navy sticky top-0 z-40 shadow-lg border-b border-brand-gold/40" x-data="{ open: false, userMenu: false, cartCount: {{ (int) $headerCartCount }} }" @keydown.escape.window="userMenu = false" @cart-updated.window="cartCount = $event.detail.number">
     <div class="w-full flex items-center justify-between h-[4.75rem] sm:h-[5.75rem] lg:h-[6.25rem] pl-2 pr-3 sm:pl-3 sm:pr-6 lg:pl-4 lg:pr-8">
         <a href="{{ url('/') }}" class="nav-logo-link" aria-label="{{ $siteTitle }} home">
@@ -412,6 +413,7 @@
         </nav>
     </div>
 </header>
+@endunless
 
 <main class="flex-1 min-h-0">
     @yield('content')
@@ -437,7 +439,7 @@
         @endunless
         <div class="site-footer-inner">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 {{ $isLandingFooter ? 'pt-2 pb-2' : 'pt-1 pb-3' }}">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-10 items-start">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 lg:gap-10 items-start">
                 <div class="min-w-0">
                     <h3 class="site-footer-heading">
                         <i data-lucide="clipboard-check"></i>

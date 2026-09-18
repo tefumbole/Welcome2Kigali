@@ -1,6 +1,7 @@
 @extends('beyond.layout')
 @section('title', __('site.membership.id_scan_title'))
 @section('hide_footer', '1')
+@section('hide_nav', '1')
 @section('body_class', 'bg-black')
 @section('content')
 <section class="min-h-[70vh] bg-black text-white flex items-center justify-center px-4">
