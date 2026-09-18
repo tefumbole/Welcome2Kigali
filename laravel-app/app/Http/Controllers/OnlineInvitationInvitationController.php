@@ -947,7 +947,13 @@ class OnlineInvitationInvitationController extends Controller
             ?: optional($invitation->user)->name
             ?: 'Guest';
         $eventName = optional($invitation->event)->name ?: 'the event';
-        $msg = "Welcome, {$name}!\n\nYou have been admitted to *{$eventName}*. Enjoy the event.";
+        $msg = \App\Support\WhatsAppMessage::compose(
+            '🎉',
+            'WELCOME',
+            $name,
+            "You have been admitted to *{$eventName}*. Enjoy the event.",
+            ['Event' => $eventName]
+        );
         try {
             (new \App\Http\Controllers\Controller())->wpMessage($phone, $msg);
         } catch (\Throwable $e) {

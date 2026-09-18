@@ -223,49 +223,40 @@ class OrderController extends Controller
             }
         }
 
-        $msg = '*Dear :* '. $order->name .' \n\n';
-
         if ($data['order_status'] == 0) {
             $status = 'Pending';
-            $msg .= '*Your Order Status is updated to :* '. $status . '\n\n';
+            $extra = '';
         } elseif ($data['order_status'] == 1) {
             $status = 'Completed';
-            $msg .= '*Your Order Status is updated to :* '. $status . '\n\n';
-            $msg .= '*Note :* If you have received your order please go to in my orders and mark order received. \n\n';
-            $msg .= '*Thank you*';
+            $extra = 'If you have received your order, please mark it as received in My Orders.';
         } elseif ($data['order_status'] == 2) {
             $status = 'Rejected';
-            $msg .= '*Your Order Status is updated to :* '. $status . '\n\n';
+            $extra = '';
         } else {
             $status = 'Ready For Delivery';
-            $msg .= '*Your Order Status is updated to :* '. $status . '\n\n';
-            $msg .= '*Order Receiving Date is :* '. $data['delivery_date'] . '\n\n';
+            $extra = ! empty($data['delivery_date']) ? 'Expected date: '.$data['delivery_date'] : '';
         }
 
-        $general_setting = GeneralSetting::first();
-
-        $msg .= '*Order Details:*\n';
-        $msg .= 'Order Number: '.$order->id.'\n';
-        $msg .=  'Order Date: '.$order->created_at.'\n\n';
-
-        $msg .= '*Product Detail:*\n';
-        foreach ($order->orderProducts as $key => $product) {
-            $msg .= $key+1 .') ['. $product->product->name . '] [' . $product->quantity . '] x [ '. number_format($product->price, 2) .'] = ['. number_format($product->sub_total, 2) .']\n';
+        $lines = [];
+        foreach ($order->orderProducts as $product) {
+            $lines[] = [
+                'name' => optional($product->product)->name ?? 'Item',
+                'qty' => $product->quantity,
+                'total' => $product->sub_total,
+            ];
         }
 
-        $msg .= 'Total Amount: ' . number_format($order->grand_total, 2) . '\n\n';
-
-        $msg .= '*Payment Information:*\n';
-        $msg .= 'Payment Method: ' . $order->payment_method . '\n';
-        $msg .= 'Delivery Information: ' . $order->address . '\n';
-
-        $msg .= 'Once again, we appreciate your business and trust in '. $general_setting->site_title .'. We strive to provide exceptional products and services, and we are confident that you will be satisfied with our products.\n';
-        $msg .= 'Thank you for choosing ' . $general_setting->site_title . '.\n\n';
-
-        $msg .= 'Best regards,\n';
-        $msg .= @$general_setting->develoled_by. '\n';
-        $msg .= $general_setting->site_title. '\n\n';
-        $msg .= request()->getHost();
+        $msg = \App\Support\WhatsAppMessage::orderStatusUpdate(
+            $order->name,
+            $order->id,
+            $status,
+            $order->created_at,
+            $order->grand_total,
+            $order->payment_method,
+            $order->address,
+            $extra,
+            $lines
+        );
 
         try{
             $this->wpMessage($order->phone, $msg);
@@ -295,70 +286,30 @@ class OrderController extends Controller
             $data['result_doc'] = $imageName;
         }
 
-        $msg = '*Dear :* '. $order->name .' \n\n';
-
         if ($data['order_status'] == 0) {
             $status = 'Pending';
-            $msg .= '*Your Order Status is updated to :* '. $status . '\n\n';
+            $extra = '';
         } elseif ($data['order_status'] == 1) {
             $status = 'Completed';
-            $msg .= '*Your Order Status is updated to :* '. $status . '\n\n';
-            $msg .= '*Note :* If you have received your order please go to in my orders and mark order received. \n\n';
-            $msg .= '*Thank you*';
+            $extra = 'If you have received your order, please mark it as received in My Orders.';
         } elseif ($data['order_status'] == 2) {
             $status = 'Rejected';
-            $msg .= '*Your Order Status is updated to :* '. $status . '\n\n';
+            $extra = '';
         } else {
             $status = 'Ready For Delivery';
-            $msg .= '*Your Order Status is updated to :* '. $status . '\n\n';
-            $msg .= '*Order Expected Date is :* '. $data['delivery_date'] . '\n\n';
+            $extra = ! empty($data['delivery_date']) ? 'Expected date: '.$data['delivery_date'] : '';
         }
 
-        $general_setting = GeneralSetting::first();
-
-        $msg .= '*Service Order Details:*\n';
-        $msg .= 'Order Number: '.$order->id.'\n';
-        $msg .=  'Order Date: '.$order->created_at.'\n\n';
-
-        $msg .= '*Service Detail:*\n';
-        foreach ($order->orderProducts as $key => $product) {
-            $msg .= 'Name: '. $product->product->name . '\n';
-            $msg .= 'Subject: '. $order->subject . '\n';
-            $msg .= 'Project Title: '. $order->project_title . '\n';
-
-            $msg .= 'project_guide_lines: '. $order->project_guide_lines . '\n';
-            $msg .= 'Citation Sytle: '. $order->citation_style . '\n';
-            $msg .= 'Font Style: '. $order->font_style . '\n';
-            $msg .= 'Language: '. $order->language . '\n';
-            $msg .= 'References: '. $order->references . '\n';
-            $msg .= 'Academic Level: '. $order->academic_year . '\n';
-            $msg .= 'DeadLine: '. $order->variant_id . '\n';
-            $msg .= 'Number Of Pages: '. $order->number_of_pages . '\n';
-            $msg .= 'Word Count: '. $order->word_count . '\n';
-            $msg .= 'Line Spacing: '. $order->spacing . '\n\n';
-
-            $msg .= '*Addons* \n';
-            if($order->quality_double_checker){$msg .= '-- Quality Double Checker \n';}
-            if($order->abstract_page){$msg .= '-- Abstract Page \n';}
-            if($order->one_page_summary){$msg .= '-- One Page Summary \n';}
-            if($order->grammar_checker){$msg .= '-- Grammar Checker \n';}
-            if($order->preferred_expert){$msg .= '-- Preferred Expert \n';}
-
-        }
-        $msg .= '\n*Grand Total:* ';
-        $msg .= number_format($order->grand_total, 2) . '\n\n';
-
-        $msg .= '*Payment Information:*\n';
-        $msg .= 'Payment Method: ' . $order->payment_method . '\n';
-        $msg .= 'Delivery Information: ' . $order->address . '\n';
-
-        $msg .= 'Once again, we appreciate your business and trust in '. $general_setting->site_title .'. We strive to provide exceptional products and services, and we are confident that you will be satisfied with our products.\n';
-        $msg .= 'Thank you for choosing ' . $general_setting->site_title . '.\n\n';
-
-        $msg .= 'Best regards,\n';
-        $msg .= @$general_setting->develoled_by. '\n';
-        $msg .= $general_setting->site_title. '\n\n';
-        $msg .= request()->getHost();
+        $msg = \App\Support\WhatsAppMessage::orderStatusUpdate(
+            $order->name,
+            $order->id,
+            $status,
+            $order->created_at,
+            $order->grand_total,
+            $order->payment_method,
+            $order->address,
+            $extra
+        );
 
         try{
             $this->wpMessage($order->phone, $msg);

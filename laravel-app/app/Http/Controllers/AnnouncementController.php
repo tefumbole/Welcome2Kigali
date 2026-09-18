@@ -370,15 +370,12 @@ class AnnouncementController extends Controller
 
     public function sendAnnouncementMsg($announcement, $lims_customer_data)
     {
-        $msg = strip_tags(html_entity_decode($announcement->header)) . "\r\n\n";
-        $msg .= "Ref: " . $announcement->id . "\r\n";
-        $msg .= "Date: " . $announcement->created_at . "\r\n\n";
-        $msg .= "Subject: " . $announcement->subject . "\r\n\n";
-        $msg .= "Dear: " . $lims_customer_data->name . "\r\n\n";
-        $bodyHtml = html_entity_decode($announcement->body);
-        $bodyHtml = $this->replacePlaceholders($bodyHtml, $lims_customer_data);
-        $msg .= strip_tags($bodyHtml) . "\r\n\n";
-        $msg .= strip_tags(html_entity_decode($announcement->footer)) . "\r\n";
+        $person = [
+            'name' => $lims_customer_data->name ?? '',
+            'phone' => $lims_customer_data->phone_number ?? '',
+            'email' => $lims_customer_data->email ?? '',
+        ];
+        $msg = \App\Support\AnnouncementPersonalization::buildMessage($announcement, $person);
 
         try{
             // Announcements use Twilio status template when WHATSAPP_SERVICE=TWILIO.

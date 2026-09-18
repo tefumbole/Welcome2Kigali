@@ -43,10 +43,14 @@ class SendOnlineInvitationReminders extends Command
                 $url = $inv->token
                     ? rtrim((string) env('APP_URL'), '/').'/online-invitation/invite/'.$inv->token
                     : '';
-                $msg = $custom !== ''
-                    ? $custom
-                    : "Reminder: *{$eventName}*\n\nHi {$name}, this is a reminder about your invitation."
-                        .($url ? "\n\nView invitation:\n{$url}" : '');
+                $msg = \App\Support\WhatsAppMessage::compose(
+                    '🔔',
+                    'INVITATION REMINDER',
+                    $name,
+                    $custom !== '' ? $custom : 'This is a reminder about your invitation.',
+                    ['Event' => $eventName],
+                    $url ? \App\Support\WhatsAppMessage::actionLink('View invitation', $url) : ''
+                );
                 try {
                     $controller->wpMessage($phone, $msg);
                     usleep(5500000);

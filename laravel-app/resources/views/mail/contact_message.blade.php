@@ -27,7 +27,7 @@
                                 Serial No: <strong>{{ $serial }}</strong>
                                 &nbsp;·&nbsp; {{ $sent_at }}
                             </p>
-                            <p>Bonjour Team, / Hello Team,</p>
+                            <p>Bonjour <strong>{{ $name }}</strong>, / Hello <strong>{{ $name }}</strong>,</p>
                             <p>Vous avez reçu un message depuis le site.<br>You have received a message from the website.</p>
                             <table width="100%" cellpadding="6" cellspacing="0" style="margin:16px 0;font-size:14px;">
                                 <tr><td width="120" style="color:#7a6238;">Name</td><td><strong>{{ $name }}</strong></td></tr>

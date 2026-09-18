@@ -97,12 +97,21 @@ class WhatsAppMessage
     /** Wrap a raw body that is missing the institutional envelope. */
     public static function ensureEnvelope($body, $title = 'Official Message', $emoji = '✉️')
     {
-        $body = trim((string) $body);
+        $body = str_replace(["\\r\\n", "\\n"], ["\n", "\n"], (string) $body);
+        $body = trim($body);
         if ($body === '') {
             return $body;
         }
-        if (self::looksLikeSerial($body) || preg_match('/\b[A-Z0-9]{2,8}\/[A-Z0-9._-]{1,12}\/\d{2}\/\d{4,}\b/i', $body)) {
+        if (preg_match('/\b[A-Z0-9]{2,8}\/[A-Z0-9._-]{1,12}\/\d{2}\/\d{4,}\b/i', $body)) {
             return $body;
+        }
+
+        if (preg_match('/^\*?Subject:\*?\s*(.+)$/mi', $body, $m)) {
+            $extracted = trim($m[1]);
+            if ($extracted !== '') {
+                $title = $extracted;
+            }
+            $body = trim(preg_replace('/^\*?Subject:\*?\s*.+$/mi', '', $body, 1));
         }
 
         $msg = self::statusBlock($emoji, $title);
@@ -121,10 +130,41 @@ class WhatsAppMessage
     {
         $name = trim((string) $name);
         if ($name === '') {
-            $name = 'Guest';
+            return "Bonjour, / Hello,\n\n";
         }
 
         return "Bonjour *{$name}*, / Hello *{$name}*,\n\n";
+    }
+
+    /**
+     * Shared Mulema layout: serial header, bilingual greeting, ☐ fields, footer.
+     *
+     * @param  array  $fields  label => value
+     */
+    public static function compose($emoji, $title, $name, $intro = '', array $fields = [], $closing = '', $serial = null)
+    {
+        $msg = self::statusBlock($emoji, $title, $serial);
+        $msg .= self::greeting($name);
+        $intro = trim((string) $intro);
+        if ($intro !== '') {
+            $msg .= $intro."\n\n";
+        }
+        foreach ($fields as $label => $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+            $msg .= self::bullet($label, $value);
+        }
+        $closing = trim((string) $closing);
+        if ($closing !== '') {
+            $msg .= "\n".$closing;
+            if (substr($closing, -1) !== "\n") {
+                $msg .= "\n";
+            }
+        }
+        $msg .= self::footer();
+
+        return $msg;
     }
 
     public static function bullet($label, $value)
@@ -165,7 +205,7 @@ class WhatsAppMessage
         $serial = self::resolveSerial($serial, 'NEW CONTACT MESSAGE');
         $subjectLine = trim((string) $subject) !== '' ? trim((string) $subject) : 'Website enquiry';
         $msg = self::statusBlock('📩', 'NOUVEAU MESSAGE / NEW CONTACT MESSAGE', $serial);
-        $msg .= self::greeting('Team');
+        $msg .= self::greeting($name !== '' ? $name : 'Team');
         $msg .= "Vous avez reçu un message depuis le site.\nYou have received a message from the website.\n\n";
         $msg .= self::field('Nom / Name', $name);
         if (trim((string) $phone) !== '') {
@@ -187,11 +227,13 @@ class WhatsAppMessage
 
     public static function contactVisitorAck($name, $subject, $serial)
     {
-        $msg = self::statusBlock('✅', 'MESSAGE RECEIVED', $serial);
+        $msg = self::statusBlock('✅', 'MESSAGE REÇU / MESSAGE RECEIVED', $serial);
         $msg .= self::greeting($name);
-        $msg .= "Thank you for contacting *".self::companyName()."*. We have received your message and will reply shortly.\n\n";
-        $msg .= self::bullet('Subject', $subject);
-        $msg .= "\nPlease keep this serial number if you follow up with us.";
+        $company = self::companyName();
+        $msg .= "Merci d'avoir contacté *{$company}*. Nous avons bien reçu votre message et vous répondrons sous peu.\n";
+        $msg .= "Thank you for contacting *{$company}*. We have received your message and will reply shortly.\n\n";
+        $msg .= self::bullet('Sujet / Subject', $subject);
+        $msg .= "\nVeuillez conserver ce numéro de série / Please keep this serial number if you follow up with us.";
         $msg .= self::footer();
 
         return $msg;
@@ -659,7 +701,7 @@ class WhatsAppMessage
         $otp = preg_replace('/\D/', '', (string) $otp);
 
         $msg = self::statusBlock('🔐', 'AUTHENTICATION');
-        $msg .= "Dear Guest,\n\n";
+        $msg .= self::greeting('');
         $msg .= "Thank you for choosing *{$company}*.\n\n";
         $msg .= "Your one-time verification code for {$purposeLabel} is:\n\n";
         $msg .= "*{$otp}*\n\n";
@@ -1218,6 +1260,256 @@ class WhatsAppMessage
         }
         $msg .= self::bullet('Expiry', $expires ?: '—');
         $msg .= self::actionLink('Renew membership', $renewUrl);
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function rentalReturnReminder($customerName, $productName, $returnAt, $bookingRef)
+    {
+        $msg = self::statusBlock('⏰', 'RENTAL RETURN REMINDER');
+        $msg .= self::greeting($customerName);
+        $msg .= "This is a reminder from *".self::companyName()."* that your rented equipment must be returned in approximately 5 hours.\n\n";
+        $msg .= self::bullet('Equipment', $productName);
+        $msg .= self::bullet('Return date/time', $returnAt);
+        $msg .= self::bullet('Booking Ref', $bookingRef);
+        $msg .= "\nPlease ensure timely return to avoid late penalties as stated in your rental agreement.";
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function eventContractApproved($workerName, $referenceNo)
+    {
+        return self::compose(
+            '✅',
+            'EVENT CONTRACT APPROVED',
+            $workerName,
+            'Your event contract has been approved. The signed PDF is attached.',
+            ['Reference' => $referenceNo]
+        );
+    }
+
+    public static function accountStatusChanged($name, $activated)
+    {
+        if ($activated) {
+            return self::compose(
+                '✅',
+                'ACCOUNT ACTIVATED',
+                $name,
+                'Your vendor account has been activated. You can now sell products.',
+                ['Account' => $name]
+            );
+        }
+
+        return self::compose(
+            '🚫',
+            'ACCOUNT DISABLED',
+            $name,
+            'Your vendor account has been disabled. Please contact us if you have questions.',
+            ['Account' => $name]
+        );
+    }
+
+    public static function passwordUpdated($name, $password)
+    {
+        return self::compose(
+            '🔐',
+            'PASSWORD UPDATED',
+            $name,
+            'Your password has been updated successfully.',
+            ['New password' => $password],
+            'Please keep this password private.'
+        );
+    }
+
+    public static function letterWorkflowNotice($recipientName, $roleName, $fromName, $subject, $action, $url, $comment = null)
+    {
+        $msg = self::statusBlock('✉️', 'LETTER — '.strtoupper($action));
+        $msg .= self::greeting($recipientName ?: $roleName);
+        $msg .= "A letter is waiting for *{$roleName}* action.\n\n";
+        $msg .= self::bullet('From', $fromName);
+        $msg .= self::bullet('Subject', $subject);
+        $msg .= self::bullet('Action', $action);
+        if ($comment) {
+            $msg .= self::bullet('Comment', $comment);
+        }
+        $msg .= self::actionLink('Open letter', $url);
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function contractReminder($name, $contractNumber, $title, $status, $openUrl, $customMessage = '', $label = '')
+    {
+        $msg = self::statusBlock('⏰', 'CONTRACT REMINDER');
+        $msg .= self::greeting($name);
+        $intro = trim((string) $customMessage);
+        $msg .= ($intro !== '' ? $intro : 'This is a reminder about your contract with *'.self::companyName().'*.')."\n\n";
+        $msg .= self::bullet('Contract', $contractNumber);
+        $msg .= self::bullet('Title', $title);
+        $msg .= self::bullet('Status', $status);
+        if ($label !== '' && $label !== null) {
+            $msg .= self::bullet('Label', $label);
+        }
+        $msg .= self::actionLink('Open contract', $openUrl);
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function eventReminder($name, $eventName, $reference, $when, $venue, $customMessage = '')
+    {
+        $msg = self::statusBlock('🔔', 'EVENT REMINDER');
+        $msg .= self::greeting($name);
+        $intro = trim((string) $customMessage);
+        $msg .= ($intro !== '' ? $intro : 'This is a scheduled reminder for your event.')."\n\n";
+        $msg .= self::bullet('Event', $eventName);
+        $msg .= self::bullet('Reference', $reference);
+        $msg .= self::bullet('When', $when);
+        $msg .= self::bullet('Venue', $venue);
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function orderStatusUpdate($customerName, $orderId, $status, $orderDate, $grandTotal, $paymentMethod, $address, $extraNote = '', array $lines = [])
+    {
+        $msg = self::statusBlock('🧾', 'ORDER UPDATE');
+        $msg .= self::greeting($customerName);
+        $msg .= "Your order status has been updated to *{$status}*.\n\n";
+        $msg .= self::bullet('Order Number', $orderId);
+        $msg .= self::bullet('Order Date', $orderDate);
+        $msg .= self::bullet('Status', $status);
+        if (! empty($lines)) {
+            $msg .= "\n*Items:*\n";
+            foreach ($lines as $index => $line) {
+                $msg .= ($index + 1).') '.($line['name'] ?? 'Item');
+                if (! empty($line['qty'])) {
+                    $msg .= ' × '.$line['qty'];
+                }
+                if (isset($line['total'])) {
+                    $msg .= ' = '.number_format((float) $line['total'], 2);
+                }
+                $msg .= "\n";
+            }
+        }
+        $msg .= "\n";
+        $msg .= self::bullet('Total', number_format((float) $grandTotal, 2));
+        $msg .= self::bullet('Payment', $paymentMethod);
+        $msg .= self::bullet('Delivery', $address);
+        $extraNote = trim((string) $extraNote);
+        if ($extraNote !== '') {
+            $msg .= "\n{$extraNote}\n";
+        }
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function vendorAccountAdminNotice($vendorName, $phone, $password)
+    {
+        return self::compose(
+            '🏪',
+            'NEW VENDOR ACCOUNT',
+            'Team',
+            'A new vendor account is ready for review.',
+            [
+                'Vendor' => $vendorName,
+                'Phone' => $phone,
+                'Password' => $password,
+            ],
+            'Please review and activate this shop so the vendor can sell products.'
+        );
+    }
+
+    public static function donationReceived($name, $amount, $forAdmin = false, $fromName = null)
+    {
+        if ($forAdmin) {
+            return self::compose(
+                '💛',
+                'DONATION RECEIVED',
+                'Team',
+                'A donation has been received.',
+                [
+                    'From' => $fromName ?: $name,
+                    'Amount' => $amount,
+                ]
+            );
+        }
+
+        return self::compose(
+            '💛',
+            'DONATION RECEIVED',
+            $name,
+            'Thank you for your donation to *'.self::companyName().'*.',
+            ['Amount' => $amount]
+        );
+    }
+
+    public static function paymentReceived($name, $amount)
+    {
+        return self::compose(
+            '💳',
+            'PAYMENT RECEIVED',
+            $name,
+            'Thank you. Your payment has been received.',
+            ['Amount' => $amount]
+        );
+    }
+
+    public static function taskAssigned($name, $taskTitle, $priority, $start, $deadline, $description, $acceptUrl)
+    {
+        $msg = self::statusBlock('📋', 'NEW TASK ASSIGNMENT');
+        $msg .= self::greeting($name);
+        $msg .= "You have been assigned a new task.\n\n";
+        $msg .= self::bullet('Task', $taskTitle);
+        $msg .= self::bullet('Priority', $priority ?: 'Medium');
+        $msg .= self::bullet('Start', $start);
+        $msg .= self::bullet('Deadline', $deadline);
+        $description = trim((string) $description);
+        if ($description !== '') {
+            $msg .= "\n{$description}\n";
+        }
+        $msg .= self::actionLink('Accept or reject this task', $acceptUrl);
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function taskCcNotice($name, $assigneeNames, $taskTitle, $priority, $start, $deadline, $description)
+    {
+        $msg = self::statusBlock('📋', 'TASK CC NOTIFICATION');
+        $msg .= self::greeting($name);
+        $msg .= "You have been CC'd on a task assigned to *{$assigneeNames}*.\n\n";
+        $msg .= self::bullet('Task', $taskTitle);
+        $msg .= self::bullet('Priority', $priority ?: 'Medium');
+        $msg .= self::bullet('Start', $start);
+        $msg .= self::bullet('Deadline', $deadline);
+        $description = trim((string) $description);
+        if ($description !== '') {
+            $msg .= "\n{$description}\n";
+        }
+        $msg .= self::actionLink('View tasks', url('/user/tasks'));
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function taskStatusNotice($name, $title, $emoji, $intro, array $fields = [], $link = null)
+    {
+        $msg = self::statusBlock($emoji, $title);
+        $msg .= self::greeting($name);
+        $msg .= trim((string) $intro)."\n\n";
+        foreach ($fields as $label => $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+            $msg .= self::bullet($label, $value);
+        }
+        if ($link) {
+            $msg .= self::actionLink('Open tasks', $link);
+        }
         $msg .= self::footer();
 
         return $msg;

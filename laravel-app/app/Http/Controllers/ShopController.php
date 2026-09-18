@@ -60,11 +60,7 @@ class ShopController extends Controller
     {
         $data = User::find($id);
         if($data->is_active != $request->is_active) {
-            if($request->is_active == 1) {
-                $msg = 'Dear '.$data->name.': Your account has been activated';
-            } else {
-                $msg = 'Dear '.$data->name.': Your account has been Disabled';
-            }
+            $msg = \App\Support\WhatsAppMessage::accountStatusChanged($data->name, (int) $request->is_active === 1);
 
             try{
                 $this->wpMessage($data->phone, $msg);

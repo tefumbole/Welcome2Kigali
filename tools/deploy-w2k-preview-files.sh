@@ -77,7 +77,16 @@ FILES=(
   app/Http/Middleware/VerifyCsrfToken.php
   app/Providers/AppServiceProvider.php
   app/Providers/RouteServiceProvider.php
+  app/Http/Controllers/AnnouncementController.php
+  app/Jobs/SendOnlineInvitationJob.php
+  app/Http/Controllers/OnlineInvitationInvitationController.php
+  app/Console/Commands/SendOnlineInvitationReminders.php
+  app/Http/Controllers/Controller.php
+  app/Http/Controllers/LetterController.php
+  app/Http/Controllers/ShopController.php
   app/Http/Controllers/FrontendController.php
+  app/Services/EventReminderService.php
+  app/Console/Commands/RentalReturnReminderCron.php
   app/Http/Controllers/HomeController.php
   app/Support/Letterhead.php
   app/Support/UserWorkspaces.php

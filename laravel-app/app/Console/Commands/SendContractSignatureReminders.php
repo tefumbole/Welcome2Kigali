@@ -48,9 +48,15 @@ class SendContractSignatureReminders extends Command
                     continue;
                 }
 
-                $url = url('/admin/contracts/'.$contract->id);
-                // Prefer reusing last portal path message without exposing hash; ask admin to resend for new token
-                $msg = "Reminder: Please sign the Welcome 2 Kigali Expats Club contract {$contract->number}. If your link expired, contact the sender. Ref: {$contract->title}";
+                $url = \App\Support\AppUrl::to('/admin/contracts/'.$contract->id);
+                $msg = \App\Support\WhatsAppMessage::contractReminder(
+                    $sig->name,
+                    $contract->number,
+                    $contract->title,
+                    $contract->statusLabel(),
+                    $url,
+                    'Please sign this contract. If your link expired, contact the sender.'
+                );
                 if ($sig->phone) {
                     try {
                         $notify->sendWhatsAppText($sig->phone, $msg);
@@ -59,8 +65,11 @@ class SendContractSignatureReminders extends Command
                 }
                 if ($sig->email) {
                     try {
-                        Mail::raw($msg."\n".$url, function ($m) use ($sig, $contract) {
-                            $m->to($sig->email)->subject('Reminder: sign '.$contract->number);
+                        Mail::raw($msg, function ($m) use ($sig, $contract) {
+                            $m->to($sig->email)->subject(\App\Support\WhatsAppMessage::emailSubject(
+                                'Please sign: '.$contract->title,
+                                \App\Support\WhatsAppMessage::lastSerial() ?: $contract->number
+                            ));
                         });
                     } catch (\Throwable $e) {
                     }

@@ -32,11 +32,15 @@ class ProcessContractReminders extends Command
                 continue;
             }
 
-            $body = $reminder->message
-                ?: ('Reminder for contract '.$contract->number.': '.$contract->title
-                    .($reminder->label ? ' ('.$reminder->label.')' : '')
-                    .'. Status: '.$contract->statusLabel().".\n"
-                    .\App\Support\WhatsAppMessage::actionLink('Open', \App\Support\AppUrl::to('/admin/contracts/'.$contract->id)));
+            $body = \App\Support\WhatsAppMessage::contractReminder(
+                '',
+                $contract->number,
+                $contract->title,
+                $contract->statusLabel(),
+                \App\Support\AppUrl::to('/admin/contracts/'.$contract->id),
+                $reminder->message,
+                $reminder->label
+            );
 
             $targets = [];
             foreach ($contract->signatories as $sig) {
@@ -69,7 +73,10 @@ class ProcessContractReminders extends Command
                 if (! empty($t['email'])) {
                     try {
                         Mail::raw($body, function ($m) use ($t, $contract) {
-                            $m->to($t['email'])->subject('Contract reminder: '.$contract->number);
+                            $m->to($t['email'])->subject(\App\Support\WhatsAppMessage::emailSubject(
+                                'Contract reminder: '.$contract->title,
+                                \App\Support\WhatsAppMessage::lastSerial() ?: $contract->number
+                            ));
                         });
                     } catch (\Throwable $e) {
                         \Log::warning('[contract-reminder] Email: '.$e->getMessage());

@@ -37,13 +37,12 @@ class RentalReturnReminderCron extends Command
             $productName = optional($line->product)->name ?? 'Equipment';
             $returnAt = Carbon::parse($line->end)->format('d M Y, H:i');
 
-            $msg = "*Rental Return Reminder*\n\n";
-            $msg .= "Dear {$customer->name},\n\n";
-            $msg .= "This is a reminder from {$company} that your rented equipment must be returned in approximately 5 hours.\n\n";
-            $msg .= "Equipment: {$productName}\n";
-            $msg .= "Return date/time: {$returnAt}\n";
-            $msg .= "Booking Ref: " . optional($line->booking)->reference_no . "\n\n";
-            $msg .= "Please ensure timely return to avoid late penalties as stated in your rental agreement.";
+            $msg = \App\Support\WhatsAppMessage::rentalReturnReminder(
+                $customer->name,
+                $productName,
+                $returnAt,
+                optional($line->booking)->reference_no
+            );
 
             try {
                 $controller->wpMessage($customer->phone_number, $msg);

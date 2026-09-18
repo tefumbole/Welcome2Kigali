@@ -734,38 +734,29 @@ class Controller extends BaseController
 
     public function sendWhatsappMsgForPlacingOrderToBuyer($order){
 
-        $general_setting = GeneralSetting::first();
-
-        $msg = '*Subject:* Order Confirmation for '. $order->name . '\n\n';
-        $msg .= 'Dear '. $order->name . '\n\n';
-        $msg .= 'Thank you for choosing '.$general_setting->site_title.' as your preferred supplier. We are pleased to confirm the availability of the products requested.\n\n\n';
-
-        $msg .= '*Order Details:*\n';
-        $msg .= 'Order Number: '.$order->id.'\n';
-        $msg .=  'Order Date: '.$order->created_at.'\n\n';
-
-        if ($order->payment_method == 'COD') {
-            $msg .= '*Note:* Your payment status is cash on delivery. Admin will approve order.\n\n';
+        $lines = [];
+        if (! empty($order->orderProducts)) {
+            foreach ($order->orderProducts as $product) {
+                $lines[] = [
+                    'name' => optional($product->product)->name ?? 'Item',
+                    'qty' => $product->quantity,
+                    'unit_price' => $product->price,
+                    'total' => $product->sub_total,
+                ];
+            }
         }
 
-        $msg .= '*Product Detail:*\n';
-        foreach ($order->orderProducts as $key => $product) {
-            $msg .= $key+1 .') ['. $product->product->name . '] [' . $product->quantity . '] x [ '. number_format($product->price, 2) .'] = ['. number_format($product->sub_total, 2) .']\n';
-        }
-
-        $msg .= 'Total Amount: ' . number_format($order->grand_total, 2) . '\n\n';
-
-        $msg .= '*Payment Information:*\n';
-        $msg .= 'Payment Method: ' . $order->payment_method . '\n';
-        $msg .= 'Delivery Information: ' . $order->address . '\n';
-
-        $msg .= 'Once again, we appreciate your business and trust in '. $general_setting->site_title .'. We strive to provide exceptional products and services, and we are confident that you will be satisfied with our products.\n';
-        $msg .= 'Thank you for choosing ' . $general_setting->site_title . '.\n\n';
-
-        $msg .= 'Best regards,\n';
-        $msg .= @$general_setting->develoled_by. '\n';
-        $msg .= $general_setting->site_title. '\n\n';
-        $msg .= request()->getHost();
+        $msg = \App\Support\WhatsAppMessage::saleConfirmation(
+            $order->name,
+            $order->id,
+            $order->created_at,
+            $lines,
+            $order->grand_total,
+            $order->payment_method,
+            '',
+            $order->address,
+            $order->address
+        );
 
         try{
             $this->wpMessage($order->phone, $msg);
@@ -779,59 +770,28 @@ class Controller extends BaseController
 
     public function sendWhatsappMsgForPlacingServiceToBuyer($order){
 
-        $general_setting = GeneralSetting::first();
-
-        $msg = '*Subject:* Service order Confirmation for '. $order->name . '\n\n';
-        $msg .= 'Dear '. $order->name . '\n\n';
-        $msg .= 'Thank you for choosing '.$general_setting->site_title.' as your preferred supplier. We are pleased to confirm the availability of the service requested.\n\n\n';
-
-        $msg .= '*Service Order Details:*\n';
-        $msg .= 'Order Number: '.$order->id.'\n';
-        $msg .=  'Order Date: '.$order->created_at.'\n\n';
-
-        if ($order->payment_method == 'COD') {
-            $msg .= '*Note:* Your payment status is cash on delivery. Admin will approve order.\n\n';
+        $serviceName = '';
+        if (! empty($order->orderProducts) && $order->orderProducts->first() && $order->orderProducts->first()->product) {
+            $serviceName = $order->orderProducts->first()->product->name;
         }
 
-        $msg .= '*Service Detail:*\n';
-        foreach ($order->orderProducts as $key => $product) {
-            $msg .= 'Name: '. $product->product->name . '\n';
-            $msg .= 'Subject: '. $order->subject . '\n';
-            $msg .= 'Project Title: '. $order->project_title . '\n';
-
-            $msg .= 'project_guide_lines: '. $order->project_guide_lines . '\n';
-            $msg .= 'Citation Sytle: '. $order->citation_style . '\n';
-            $msg .= 'Font Style: '. $order->font_style . '\n';
-            $msg .= 'Language: '. $order->language . '\n';
-            $msg .= 'References: '. $order->references . '\n';
-            $msg .= 'Academic Level: '. $order->academic_year . '\n';
-            $msg .= 'DeadLine: '. $order->variant_id . '\n';
-            $msg .= 'Number Of Pages: '. $order->number_of_pages . '\n';
-            $msg .= 'Word Count: '. $order->word_count . '\n';
-            $msg .= 'Line Spacing: '. $order->spacing . '\n\n';
-
-            $msg .= '*Addons* \n';
-            if($order->quality_double_checker){$msg .= '-- Quality Double Checker \n';}
-            if($order->abstract_page){$msg .= '-- Abstract Page \n';}
-            if($order->one_page_summary){$msg .= '-- One Page Summary \n';}
-            if($order->grammar_checker){$msg .= '-- Grammar Checker \n';}
-            if($order->preferred_expert){$msg .= '-- Preferred Expert \n';}
-
-        }
-        $msg .= '\n*Grand Total:* ';
-        $msg .= number_format($order->grand_total, 2) . '\n\n';
-
-        $msg .= '*Payment Information:*\n';
-        $msg .= 'Payment Method: ' . $order->payment_method . '\n';
-        $msg .= 'Delivery Information: ' . $order->address . '\n';
-
-        $msg .= 'Once again, we appreciate your business and trust in '. $general_setting->site_title .'. We strive to provide exceptional products and services, and we are confident that you will be satisfied with our products.\n';
-        $msg .= 'Thank you for choosing ' . $general_setting->site_title . '.\n\n';
-
-        $msg .= 'Best regards,\n';
-        $msg .= @$general_setting->develoled_by. '\n';
-        $msg .= $general_setting->site_title. '\n\n';
-        $msg .= request()->getHost();
+        $msg = \App\Support\WhatsAppMessage::compose(
+            '🧾',
+            'SERVICE ORDER CONFIRMATION',
+            $order->name,
+            'Thank you for your service order with *'.\App\Support\WhatsAppMessage::companyName().'*.',
+            [
+                'Order Number' => $order->id,
+                'Order Date' => $order->created_at,
+                'Service' => $serviceName,
+                'Subject' => $order->subject,
+                'Project' => $order->project_title,
+                'Total' => number_format((float) $order->grand_total, 2),
+                'Payment' => $order->payment_method,
+                'Delivery' => $order->address,
+            ],
+            $order->payment_method == 'COD' ? 'Payment is cash on delivery. Our team will confirm your order.' : ''
+        );
 
         try{
             $this->wpMessage($order->phone, $msg);
@@ -845,58 +805,26 @@ class Controller extends BaseController
 
     public function sendWhatsappMsgForPlacingServiceToSaller($order){
 
-        $general_setting = GeneralSetting::first();
-
-        $msg = '*Subject:* Service order Confirmation for '. $order->name . '\n\n';
-        $msg .= 'A new Service order is placed. \n\n';
-
-        $msg .= '*Service Order Details:*\n';
-        $msg .= 'Order Number: '.$order->id.'\n';
-        $msg .=  'Order Date: '.$order->created_at.'\n\n';
-
-        if ($order->payment_method == 'COD') {
-            $msg .= '*Note:* This service order payment status is cash on delivery. Please have look and approve service order.\n\n';
+        $serviceName = '';
+        if (! empty($order->orderProducts) && $order->orderProducts->first() && $order->orderProducts->first()->product) {
+            $serviceName = $order->orderProducts->first()->product->name;
         }
 
-        $msg .= '*Service Detail:*\n';
-        foreach ($order->orderProducts as $key => $product) {
-            $msg .= 'Name: '. $product->product->name . '\n';
-            $msg .= 'Subject: '. $order->subject . '\n';
-            $msg .= 'Project Title: '. $order->project_title . '\n';
-
-            $msg .= 'project_guide_lines: '. $order->project_guide_lines . '\n';
-            $msg .= 'Citation Sytle: '. $order->citation_style . '\n';
-            $msg .= 'Font Style: '. $order->font_style . '\n';
-            $msg .= 'Language: '. $order->language . '\n';
-            $msg .= 'References: '. $order->references . '\n';
-            $msg .= 'Academic Level: '. $order->academic_year . '\n';
-            $msg .= 'DeadLine: '. $order->variant_id . '\n';
-            $msg .= 'Number Of Pages: '. $order->number_of_pages . '\n';
-            $msg .= 'Word Count: '. $order->word_count . '\n';
-            $msg .= 'Line Spacing: '. $order->spacing . '\n\n';
-
-            $msg .= '*Addons* \n';
-            if($order->quality_double_checker){$msg .= '-- Quality Double Checker \n';}
-            if($order->abstract_page){$msg .= '-- Abstract Page \n';}
-            if($order->one_page_summary){$msg .= '-- One Page Summary \n';}
-            if($order->grammar_checker){$msg .= '-- Grammar Checker \n';}
-            if($order->preferred_expert){$msg .= '-- Preferred Expert \n';}
-
-        }
-        $msg .= '\n*Grand Total:* ';
-        $msg .= number_format($order->grand_total, 2) . '\n\n';
-
-        $msg .= '*Payment Information:*\n';
-        $msg .= 'Payment Method: ' . $order->payment_method . '\n';
-        $msg .= 'Delivery Information: ' . $order->address . '\n';
-
-        $msg .= 'Once again, we appreciate your business and trust in '. $general_setting->site_title .'. We strive to provide exceptional products and services, and we are confident that you will be satisfied with our products.\n';
-        $msg .= 'Thank you for choosing ' . $general_setting->site_title . '.\n\n';
-
-        $msg .= 'Best regards,\n';
-        $msg .= @$general_setting->develoled_by. '\n';
-        $msg .= $general_setting->site_title. '\n\n';
-        $msg .= request()->getHost();
+        $msg = \App\Support\WhatsAppMessage::compose(
+            '🧾',
+            'NEW SERVICE ORDER',
+            'Team',
+            'A new service order has been placed.',
+            [
+                'Client' => $order->name,
+                'Phone' => $order->phone,
+                'Order Number' => $order->id,
+                'Service' => $serviceName,
+                'Subject' => $order->subject,
+                'Total' => number_format((float) $order->grand_total, 2),
+                'Payment' => $order->payment_method,
+            ]
+        );
 
         try{
             $this->wpMessage(getenv('ADMIN_NUMBER'), $msg);
@@ -911,8 +839,7 @@ class Controller extends BaseController
 
     public function sendWhatsappMsgMomoPaymentSuccess($number, $total)
     {
-        $msg = '*Thank you for your Order,*  \n\n';
-        $msg .= 'You have payed ' . $total;
+        $msg = \App\Support\WhatsAppMessage::paymentReceived('', $total);
 
         try{
             $this->wpMessage($number, $msg);
@@ -926,44 +853,33 @@ class Controller extends BaseController
 
     public function sendWhatsappMsgForPlacingOrderToBuyerBooking($order){
 
-        $general_setting = GeneralSetting::first();
         $customer = User::where('id', $order->user_id)->first();
-
-        $msg = '*Subject:* Order Confirmation for '. $customer->name . '\n\n';
-        $msg .= 'Dear '. $customer->name . '\n\n';
-        $msg .= 'Thank you for choosing '.$general_setting->site_title.' as your preferred supplier. We are pleased to confirm the availability of the products requested.\n\n\n';
-
-        $msg .= '*Order Details:*\n';
-        $msg .= 'Order Number: '.$order->id.'\n';
-        $msg .=  'Order Date: '.$order->created_at.'\n\n';
-
-        if ($order->payment_method == 'COD') {
-            $msg .= '*Note:* Your payment status is cash on delivery. Admin will approve order.\n\n';
-        }
-
-        $msg .= '*Product Detail:*\n';
+        $lines = [];
         $bookingProducts = BookingProduct::with('product')->where('booking_id', $order->id)->get();
-        foreach ($bookingProducts as $key => $product) {
-            $msg .= $key+1 .') ['. $product->product->name . '] [' . $product->qty . '] x [' . $product->number_duration . '] x [ '. number_format($product->net_unit_price, 2) .'] = ['. number_format($product->qty * $product->number_duration * $product->net_unit_price, 2) .']\n';
-            $msg .= "*Start* : " . $product->start . " *Return* : " . $product->end . '\n';
+        foreach ($bookingProducts as $product) {
+            $lines[] = [
+                'name' => optional($product->product)->name ?? 'Item',
+                'qty' => $product->qty,
+                'start' => $product->start,
+                'end' => $product->end,
+                'total' => number_format((float) ($product->qty * $product->number_duration * $product->net_unit_price), 2),
+            ];
         }
 
-        $msg .= 'Total Amount: ' . number_format($order->grand_total, 2) . '\n\n';
-
-        $msg .= '*Payment Information:*\n';
-        $msg .= 'Payment Method: ' . $order->payment_method . '\n';
-        $msg .= 'Delivery Information: ' . $order->address . '\n';
-
-        $msg .= 'Once again, we appreciate your business and trust in '. $general_setting->site_title .'. We strive to provide exceptional products and services, and we are confident that you will be satisfied with our products.\n';
-        $msg .= 'Thank you for choosing ' . $general_setting->site_title . '.\n\n';
-
-        $msg .= 'Best regards,\n';
-        $msg .= @$general_setting->develoled_by. '\n';
-        $msg .= $general_setting->site_title. '\n\n';
-        $msg .= request()->getHost();
+        $msg = \App\Support\WhatsAppMessage::bookingConfirmation(
+            $customer ? $customer->name : 'Guest',
+            $order->id,
+            $order->created_at,
+            $lines,
+            number_format((float) $order->grand_total, 2),
+            $order->payment_method,
+            \App\Support\WhatsAppMessage::companyName(),
+            $order->address,
+            $customer ? $customer->phone : $order->phone
+        );
 
         try{
-            $this->wpMessage($customer->phone, $msg);
+            $this->wpMessage($customer ? $customer->phone : $order->phone, $msg);
         }
         catch(\Exception $e){
 
@@ -979,39 +895,22 @@ class Controller extends BaseController
             return true;
         }
 
-        $general_setting = GeneralSetting::first();
         $customer = Customer::where('id', $order->customer_id)->first();
         $customerName = $customer ? $customer->name : 'Client';
 
-        $msg = '*Subject:* Booking copy for '. $customerName . '\n\n';
-        $msg .= 'Dear '. $creator->name . '\n\n';
-        $msg .= 'Here is a copy of the booking you recorded.\n\n\n';
-
-        $msg .= '*Order Details:*\n';
-        $msg .= 'Order Number: '.$order->id.'\n';
-        $msg .=  'Order Date: '.$order->created_at.'\n\n';
-
-        if ($order->payment_method == 'COD') {
-            $msg .= '*Note:* Payment status is cash on delivery.\n\n';
-        }
-
-        $msg .= '*Product Detail:*\n';
-        $bookingProducts = BookingProduct::with('product')->where('booking_id', $order->id)->get();
-        foreach ($bookingProducts as $key => $product) {
-            $msg .= $key+1 .') ['. $product->product->name . '] [' . $product->qty . '] x [' . $product->number_duration . '] x [ '. number_format($product->net_unit_price, 2) .'] = ['. number_format($product->qty * $product->number_duration * $product->net_unit_price, 2) .']\n';
-            $msg .= "*Start* : " . $product->start . " *Return* : " . $product->end . '\n';
-        }
-
-        $msg .= 'Total Amount: ' . number_format($order->grand_total, 2) . '\n\n';
-
-        $msg .= '*Payment Information:*\n';
-        $msg .= 'Payment Method: ' . $order->payment_method . '\n';
-        $msg .= 'Delivery Information: ' . $order->address . '\n';
-
-        $msg .= 'Best regards,\n';
-        $msg .= @$general_setting->develoled_by. '\n';
-        $msg .= $general_setting->site_title. '\n\n';
-        $msg .= request()->getHost();
+        $msg = \App\Support\WhatsAppMessage::compose(
+            '📋',
+            'BOOKING COPY',
+            $creator->name,
+            'Here is a copy of the booking you recorded for *'.$customerName.'*.',
+            [
+                'Order Number' => $order->id,
+                'Order Date' => $order->created_at,
+                'Client' => $customerName,
+                'Total' => number_format((float) $order->grand_total, 2),
+                'Payment' => $order->payment_method,
+            ]
+        );
 
         try{
             $this->wpMessage($creator->phone, $msg);
@@ -1025,39 +924,27 @@ class Controller extends BaseController
 
     public function sendWhatsappMsgForPlacingOrderToSaller($order){
 
-        $general_setting = GeneralSetting::first();
         $vendor = User::where('id', $order->vendor_id)->first();
-
-        $msg = '*Subject:* Order Confirmation for '. $order->name . '\n\n';
-        $msg .= 'Dear Seller \n\n';
-        $msg .= '*Congrats* You have received an order from '. $order->name .'('.$order->phone.') of '. $order->grand_total . ' CFA' .'\n\n';
-
-        $msg .= '*Order Details:*\n';
-        $msg .= 'Order Number: '.$order->id.'\n';
-        $msg .=  'Order Date: '.$order->created_at.'\n\n';
-
-        if ($order->payment_method == 'COD') {
-            $msg .= '*Note:* Payment status is cash on delivery. Please check and verify and approve order.\n\n';
-        }
-
-        $msg .= '*Product Detail:*\n';
-        foreach ($order->orderProducts as $key => $product) {
-            $msg .= $key+1 .') ['. $product->product->name . '] [' . $product->quantity . '] x [ '. number_format($product->price, 2) .'] = ['. number_format($product->sub_total, 2) .']\n';
-        }
-
-        $msg .= 'Total Amount: ' . number_format($order->grand_total, 2) . '\n\n';
-
-        $msg .= '*Payment Information:*\n';
-        $msg .= 'Payment Method: ' . $order->payment_method . '\n';
-        $msg .= 'Delivery Information: ' . $order->address . '\n';
-
-        $msg .= 'Best regards,\n';
-        $msg .= @$general_setting->develoled_by. '\n';
-        $msg .= $general_setting->site_title. '\n\n';
-        $msg .= request()->getHost();
+        $msg = \App\Support\WhatsAppMessage::compose(
+            '🧾',
+            'NEW SALE ORDER',
+            $vendor ? $vendor->name : 'Team',
+            'You have received an order from *'.$order->name.'*.',
+            [
+                'Client' => $order->name,
+                'Phone' => $order->phone,
+                'Order Number' => $order->id,
+                'Order Date' => $order->created_at,
+                'Total' => number_format((float) $order->grand_total, 2),
+                'Payment' => $order->payment_method,
+                'Delivery' => $order->address,
+            ]
+        );
 
         try{
-            $this->wpMessage($vendor->phone, $msg);
+            if ($vendor && $vendor->phone) {
+                $this->wpMessage($vendor->phone, $msg);
+            }
             $this->wpMessage(getenv('ADMIN_NUMBER'), $msg);
         }
         catch(\Exception $e){
@@ -1070,16 +957,7 @@ class Controller extends BaseController
     public function sendWhatsappMsgMomoPaymentSuccessDonation($general_setting, $order, $total)
     {
         $user = User::select('name', 'id', 'phone')->find($order->user_id);
-
-        $msg = '*Subject:* Donation Confirmation for '. $order->name . '\n\n';
-        $msg .= '*Thank you for your Donation,*  \n\n';
-        $msg .= 'You have payed *' . $total . '* CFA' .'\n\n';
-
-        $msg .= 'Best regards,\n';
-        $msg .= @$general_setting->develoled_by. '\n';
-        $msg .= @$general_setting->site_title. '\n\n';
-
-        $msg .= request()->getHost();
+        $msg = \App\Support\WhatsAppMessage::donationReceived($order->name ?: optional($user)->name, $total);
 
         try{
             $this->wpMessage($user->phone, $msg);
@@ -1094,36 +972,19 @@ class Controller extends BaseController
     public function sendWhatsappMsgMomoPaymentSuccessDonationSeller($general_setting, $order)
     {
         $user = User::select('name', 'id', 'phone')->find($order->vendor_id);
+        $amount = number_format((float) $order->grand_total, 2);
 
-        $msg = '*Subject:* Donation Confirmation for '. $order->name . '\n\n';
+        if ($user && $user->phone) {
+            $msg = \App\Support\WhatsAppMessage::donationReceived($user->name, $amount, true, $order->name);
+            try{
+                $this->wpMessage($user->phone, $msg);
+            }
+            catch(\Exception $e){
 
-        $msg .= 'Dear '. $user->name .' \n\n';
-        $msg .= '*Congrats* You have received a donation from '. $order->name .'('.$order->phone.') of *'. $order->grand_total . '* CFA' .'\n\n';
-
-        $msg .= 'Best regards,\n';
-        $msg .= @$general_setting->develoled_by. '\n';
-        $msg .= @$general_setting->site_title. '\n\n';
-
-        $msg .= request()->getHost();
-
-        try{
-            $this->wpMessage($user->phone, $msg);
-        }
-        catch(\Exception $e){
-
+            }
         }
 
-        $msg = '*Subject:* Donation Confirmation for '. $order->name . '\n\n';
-
-        $msg .= 'Dear Admin \n\n';
-        $msg .= '*Congrats* Your Vendor ('. $user->name .') have received a donation from '. $order->name .'('.$order->phone.') of *'. $order->grand_total . '* CFA' .'\n\n';
-
-        $msg .= 'Best regards,\n';
-        $msg .= @$general_setting->develoled_by. '\n';
-        $msg .= @$general_setting->site_title. '\n\n';
-
-        $msg .= request()->getHost();
-
+        $msg = \App\Support\WhatsAppMessage::donationReceived('Team', $amount, true, $order->name);
         try{
             $this->wpMessage(getenv('ADMIN_NUMBER'), $msg);
         }
@@ -1133,8 +994,6 @@ class Controller extends BaseController
 
         return true;
     }
-
-
 
     public function sendOTP($phone) {
         $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -1190,16 +1049,7 @@ class Controller extends BaseController
 
     public function sendWhatsappMsgForVendorAccountToAdmin($user, $password){
 
-        $general_setting = GeneralSetting::first();
-
-        $msg = '*Congrats:* A new account has been created' . '\n\n';
-        $msg .= '*Vendor name:* '. $user->name . '\n\n';
-        $msg .= '*Phone number:* '. $user->phone . '\n\n';
-        $msg .= '*Password:* '. $password . '\n\n';
-        $msg .= '\n\n';
-        $msg .= '*Note:* Please review and active this shop, so vendor can sale his products. \n\n';
-        $msg .= request()->getHost() . '\n\n';
-
+        $msg = \App\Support\WhatsAppMessage::vendorAccountAdminNotice($user->name, $user->phone, $password);
 
         try{
             $this->wpMessage(getenv('ADMIN_NUMBER'), $msg);

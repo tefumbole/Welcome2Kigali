@@ -213,19 +213,19 @@ class SendOnlineInvitationJob implements ShouldQueue
             } catch (\Throwable $e) {
                 $pdfSendError = substr((string) $e->getMessage(), 0, 2000);
                 // If attachment fails, still try sending a minimal fallback text message.
-                $fallback = "*Invitation*\n\n";
-                if ($recipientName) {
-                    $fallback .= "*Name:* " . $recipientName . "\n";
-                }
-                $fallback .= "*Event:* " . $event->name . "\n";
-                $fallback .= "*Date & Time:* " . $eventAtText . "\n";
-                if ($event->location) {
-                    $fallback .= "*Location:* " . $event->location . "\n";
-                }
-                if ($invitation->rsvp) {
-                    $fallback .= "*RSVP:* " . trim((string) $invitation->rsvp) . "\n";
-                }
-                $fallback .= "\nAccept / View:\n" . $acceptUrl . "\n";
+                $fallback = \App\Support\WhatsAppMessage::compose(
+                    '📩',
+                    'INVITATION',
+                    $recipientName,
+                    'Please find your invitation details below. The PDF attachment could not be delivered, so this is the text copy.',
+                    [
+                        'Event' => $event->name,
+                        'Date & Time' => $eventAtText,
+                        'Location' => $event->location,
+                        'RSVP' => $invitation->rsvp ? trim((string) $invitation->rsvp) : '',
+                    ],
+                    $acceptUrl ? \App\Support\WhatsAppMessage::actionLink('Accept / View', $acceptUrl) : ''
+                );
                 $controller->wpMessage($phone, $fallback);
             }
 

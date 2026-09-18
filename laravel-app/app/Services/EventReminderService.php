@@ -84,17 +84,15 @@ class EventReminderService
 
     protected function buildMessage(EventReminder $reminder, Event $event)
     {
-        $base = 'Reminder: ' . $event->name . ' (' . $event->reference_no . ')';
-        if ($event->event_start_at) {
-            $base .= ' — ' . $event->event_start_at->format('d M Y H:i');
-        }
-        if ($event->venue) {
-            $base .= ' at ' . $event->venue;
-        }
-        if ($reminder->message) {
-            $base .= "\n\n" . $reminder->message;
-        }
+        $when = $event->event_start_at ? $event->event_start_at->format('d M Y H:i') : '';
 
-        return $base;
+        return \App\Support\WhatsAppMessage::eventReminder(
+            '',
+            $event->name,
+            $event->reference_no,
+            $when,
+            $event->venue,
+            $reminder->message
+        );
     }
 }

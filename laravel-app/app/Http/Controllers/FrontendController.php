@@ -79,8 +79,7 @@ class FrontendController extends Controller
         ]);
         Session::forget('user');
 
-        $msg = '*Dear* :'. $user->name .' \n\n';
-        $msg .= '*Your new password is:* '. $password . '\n\n';
+        $msg = \App\Support\WhatsAppMessage::passwordUpdated($user->name, $password);
 
         try{
             $this->wpMessage($user->phone, $msg);

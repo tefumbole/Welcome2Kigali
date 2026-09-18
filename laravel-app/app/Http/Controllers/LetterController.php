@@ -734,8 +734,8 @@ class LetterController extends Controller
             return true;
         }
         if ($data->otp_time == null || $data->otp_time < date('Y-m-d H:i:s', strtotime('-1 minutes'))) {
-            $otp = rand(1, 999999);
-            $msg = "Your OTP is: " . $otp . "\n That will be expired after 2 minutes";
+            $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $msg = \App\Support\WhatsAppMessage::otpMessage($otp, 'verify', 2);
             try {
                 $this->wpMessage(Auth::user()->phone, $msg);
                 $data->update(['otp'=>$otp, 'otp_time'=>date('Y-m-d H:i:s')]);
@@ -792,16 +792,22 @@ class LetterController extends Controller
             $action = 'sending';
         }
 
-        $msg = 'Dear '.$role_name.', A new letter from '.@$letter->createdBy->name.', with the subject ('.$letter->subject.') is available for '.$action.'. Here is the comment('.$letter->comment.') attached to the letter.';
-        $msg .= "\n\nPlease click the link below to " . $action . ": ".request()->getSchemeAndHttpHost()."/letters/show/".$letter->id."\n\n";
-        $msg .= request()->getSchemeAndHttpHost();
-
         $users = User::where('role_id', $role_id)->where('is_active', true)->get()->toArray();
 
         if (empty($users)) {
             return true;
         }
+        $url = \App\Support\AppUrl::to('/letters/show/'.$letter->id);
         foreach ($users as $user) {
+            $msg = \App\Support\WhatsAppMessage::letterWorkflowNotice(
+                $user['name'] ?? $role_name,
+                $role_name,
+                optional($letter->createdBy)->name,
+                $letter->subject,
+                $action,
+                $url,
+                $letter->comment
+            );
             try {
                 $this->wpMessage($user['phone'], $msg);
             } catch (\Exception $e) {
@@ -1634,8 +1640,8 @@ class LetterController extends Controller
         $data = Letter::find($id_array[0]);
 
         if ($data->otp_time == null || $data->otp_time < date('Y-m-d H:i:s', strtotime('-30 seconds'))) {
-            $otp = rand(1, 999999);
-            $msg = "Your OTP is: " . $otp . "\n That will be expired after 2 minutes";
+            $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $msg = \App\Support\WhatsAppMessage::otpMessage($otp, 'verify', 2);
             foreach ($id_array as $id) {
                 $letter = Letter::find($id);
                 $letter->update(['otp'=>$otp, 'otp_time'=>date('Y-m-d H:i:s')]);
