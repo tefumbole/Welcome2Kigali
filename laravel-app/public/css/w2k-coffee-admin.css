@@ -1,0 +1,298 @@
+/* Welcome 2 Kigali admin — coffee theme (black, gold, cream, mocha). */
+:root {
+    --beyond-primary: #0A0A0A;
+    --beyond-primary-dark: #16110c;
+    --beyond-accent: #C5A059;
+    --beyond-bg: #F7F1E8;
+    --beyond-card: #ffffff;
+    --beyond-text: #1a120c;
+    --beyond-muted: #6b5e4e;
+    --w2k-espresso: #0A0A0A;
+    --w2k-roast: #3D2914;
+    --w2k-mocha: #6F4E37;
+    --w2k-cocoa: #A0522D;
+    --w2k-gold: #C5A059;
+    --w2k-caramel: #C47A2C;
+    --w2k-olive: #6B6B2A;
+    --w2k-taupe: #8B7355;
+    --w2k-burgundy: #7B3F2A;
+    --w2k-cream: #F7F1E8;
+}
+
+body {
+    background: var(--beyond-bg) !important;
+    color: var(--beyond-text);
+}
+
+.side-navbar {
+    background: #0A0A0A !important;
+    box-shadow: 2px 0 14px rgba(10, 10, 10, 0.35) !important;
+}
+.sidebar-user-panel {
+    background: #16110c !important;
+}
+.side-navbar .side-menu li a {
+    color: #F7F1E8 !important;
+}
+.sidebar-user-link {
+    color: #F7F1E8 !important;
+}
+.sidebar-user-link i {
+    color: #C5A059 !important;
+}
+
+.header .navbar {
+    background: #0A0A0A !important;
+    border-bottom: 1px solid rgba(197, 160, 89, 0.35) !important;
+}
+.header .right-sidebar a {
+    color: #0A0A0A !important;
+}
+
+.page-content,
+.content-inner {
+    background: #F7F1E8 !important;
+}
+
+.btn-primary,
+.btn-info {
+    background: #0A0A0A !important;
+    border-color: #0A0A0A !important;
+    color: #fff !important;
+}
+.btn-primary:hover,
+.btn-info:hover {
+    background: #C5A059 !important;
+    border-color: #C5A059 !important;
+    color: #0A0A0A !important;
+}
+.btn-warning,
+.badge-warning {
+    background: #C5A059 !important;
+    border-color: #C5A059 !important;
+    color: #0A0A0A !important;
+}
+.badge-primary {
+    background: #0A0A0A !important;
+}
+.btn-link,
+a {
+    color: #6F4E37;
+}
+a:hover {
+    color: #C5A059;
+}
+
+.beyond-dashboard-hero h1,
+.beyond-panel-header h4,
+.beyond-chart-panel h5,
+.ip-title,
+.ct-title,
+.jb-title,
+.an-title,
+.tm-title,
+.cm-title {
+    color: #0A0A0A !important;
+}
+
+.beyond-role-badge {
+    background: rgba(197, 160, 89, 0.2) !important;
+    color: #6F4E37 !important;
+}
+
+.beyond-stat-icon.blue { background: rgba(10, 10, 10, 0.1) !important; color: #0A0A0A !important; }
+.beyond-stat-icon.green { background: rgba(107, 107, 42, 0.16) !important; color: #6B6B2A !important; }
+.beyond-stat-icon.gold { background: rgba(197, 160, 89, 0.22) !important; color: #8a701f !important; }
+.beyond-stat-icon.purple { background: rgba(111, 78, 55, 0.16) !important; color: #6F4E37 !important; }
+
+.beyond-attention-badge {
+    background: #0A0A0A !important;
+    border-color: #C5A059 !important;
+    color: #C5A059 !important;
+}
+
+.ip-btn,
+.ip-day-num {
+    background: #0A0A0A !important;
+    border-color: #0A0A0A !important;
+    color: #fff !important;
+}
+.ip-btn-outline {
+    background: #fff !important;
+    color: #0A0A0A !important;
+    border-color: #C5A059 !important;
+}
+.ip-day > summary { color: #0A0A0A !important; }
+.ip-day[open] > summary { background: #F7F1E8 !important; border-bottom-color: #C5A059 !important; }
+
+nav.navbar a.menu-btn:hover {
+    background: #C5A059 !important;
+    color: #0A0A0A !important;
+}
+
+/* Colored coffee tabs — menus stay distinct, all in the roast palette. */
+.beyond-module-tab.tone-blue,
+.ts-nav a.tone-blue, .an-nav a.tone-blue, .cm-nav a.tone-blue,
+.tm-nav a.tone-blue, .jb-nav a.tone-blue, .ct-nav a.tone-blue {
+    border-color: #0A0A0A !important; color: #0A0A0A !important;
+}
+.beyond-module-tab.tone-blue i,
+.ts-nav a.tone-blue i, .an-nav a.tone-blue i, .cm-nav a.tone-blue i,
+.tm-nav a.tone-blue i, .jb-nav a.tone-blue i, .ct-nav a.tone-blue i { color: #0A0A0A !important; }
+.beyond-module-tab.tone-blue.is-active,
+.ts-nav a.tone-blue.is-active, .an-nav a.tone-blue.is-active, .cm-nav a.tone-blue.is-active,
+.tm-nav a.tone-blue.is-active, .jb-nav a.tone-blue.is-active, .ct-nav a.tone-blue.is-active,
+.beyond-module-tab.tone-blue:hover,
+.ts-nav a.tone-blue:hover, .an-nav a.tone-blue:hover, .cm-nav a.tone-blue:hover,
+.tm-nav a.tone-blue:hover, .jb-nav a.tone-blue:hover, .ct-nav a.tone-blue:hover {
+    background: #0A0A0A !important; border-color: #0A0A0A !important; color: #C5A059 !important;
+}
+.beyond-module-tab.tone-blue.is-active i, .beyond-module-tab.tone-blue:hover i,
+.ts-nav a.tone-blue:hover i, .an-nav a.tone-blue:hover i, .cm-nav a.tone-blue:hover i,
+.tm-nav a.tone-blue:hover i, .jb-nav a.tone-blue:hover i, .ct-nav a.tone-blue:hover i,
+.ts-nav a.tone-blue.is-active i, .an-nav a.tone-blue.is-active i { color: #C5A059 !important; }
+
+.beyond-module-tab.tone-gold,
+.ts-nav a.tone-gold, .an-nav a.tone-gold, .cm-nav a.tone-gold,
+.tm-nav a.tone-gold, .jb-nav a.tone-gold, .ct-nav a.tone-gold {
+    border-color: #C5A059 !important; color: #8a701f !important;
+}
+.beyond-module-tab.tone-gold i,
+.ts-nav a.tone-gold i, .an-nav a.tone-gold i, .cm-nav a.tone-gold i,
+.tm-nav a.tone-gold i, .jb-nav a.tone-gold i, .ct-nav a.tone-gold i { color: #8a701f !important; }
+.beyond-module-tab.tone-gold.is-active, .beyond-module-tab.tone-gold:hover,
+.ts-nav a.tone-gold.is-active, .an-nav a.tone-gold.is-active, .cm-nav a.tone-gold.is-active,
+.tm-nav a.tone-gold.is-active, .jb-nav a.tone-gold.is-active, .ct-nav a.tone-gold.is-active,
+.ts-nav a.tone-gold:hover, .an-nav a.tone-gold:hover, .cm-nav a.tone-gold:hover,
+.tm-nav a.tone-gold:hover, .jb-nav a.tone-gold:hover, .ct-nav a.tone-gold:hover {
+    background: #C5A059 !important; border-color: #C5A059 !important; color: #0A0A0A !important;
+}
+.beyond-module-tab.tone-gold.is-active i, .beyond-module-tab.tone-gold:hover i,
+.ts-nav a.tone-gold.is-active i, .an-nav a.tone-gold.is-active i,
+.ts-nav a.tone-gold:hover i, .an-nav a.tone-gold:hover i,
+.cm-nav a.tone-gold.is-active i, .cm-nav a.tone-gold:hover i,
+.tm-nav a.tone-gold.is-active i, .tm-nav a.tone-gold:hover i,
+.jb-nav a.tone-gold.is-active i, .jb-nav a.tone-gold:hover i,
+.ct-nav a.tone-gold.is-active i, .ct-nav a.tone-gold:hover i { color: #0A0A0A !important; }
+
+.beyond-module-tab.tone-purple,
+.ts-nav a.tone-purple, .an-nav a.tone-purple, .cm-nav a.tone-purple,
+.tm-nav a.tone-purple, .jb-nav a.tone-purple, .ct-nav a.tone-purple {
+    border-color: #6F4E37 !important; color: #6F4E37 !important;
+}
+.beyond-module-tab.tone-purple i,
+.ts-nav a.tone-purple i, .an-nav a.tone-purple i, .cm-nav a.tone-purple i,
+.tm-nav a.tone-purple i, .jb-nav a.tone-purple i, .ct-nav a.tone-purple i { color: #6F4E37 !important; }
+.beyond-module-tab.tone-purple.is-active, .beyond-module-tab.tone-purple:hover,
+.ts-nav a.tone-purple.is-active, .an-nav a.tone-purple.is-active, .cm-nav a.tone-purple.is-active,
+.tm-nav a.tone-purple.is-active, .jb-nav a.tone-purple.is-active, .ct-nav a.tone-purple.is-active,
+.ts-nav a.tone-purple:hover, .an-nav a.tone-purple:hover, .cm-nav a.tone-purple:hover,
+.tm-nav a.tone-purple:hover, .jb-nav a.tone-purple:hover, .ct-nav a.tone-purple:hover {
+    background: #6F4E37 !important; border-color: #6F4E37 !important; color: #F7F1E8 !important;
+}
+.beyond-module-tab.tone-purple.is-active i, .beyond-module-tab.tone-purple:hover i,
+.ts-nav a.tone-purple:hover i, .an-nav a.tone-purple:hover i, .cm-nav a.tone-purple:hover i,
+.tm-nav a.tone-purple:hover i, .jb-nav a.tone-purple:hover i, .ct-nav a.tone-purple:hover i { color: #F7F1E8 !important; }
+
+.beyond-module-tab.tone-pink,
+.jb-nav a.tone-pink, .an-nav a.tone-pink, .cm-nav a.tone-pink, .tm-nav a.tone-pink {
+    border-color: #A0522D !important; color: #A0522D !important;
+}
+.beyond-module-tab.tone-pink i,
+.jb-nav a.tone-pink i, .an-nav a.tone-pink i { color: #A0522D !important; }
+.beyond-module-tab.tone-pink.is-active, .beyond-module-tab.tone-pink:hover,
+.jb-nav a.tone-pink.is-active, .jb-nav a.tone-pink:hover,
+.an-nav a.tone-pink.is-active, .an-nav a.tone-pink:hover {
+    background: #A0522D !important; border-color: #A0522D !important; color: #fff !important;
+}
+.beyond-module-tab.tone-pink.is-active i, .beyond-module-tab.tone-pink:hover i,
+.jb-nav a.tone-pink:hover i, .an-nav a.tone-pink:hover i { color: #fff !important; }
+
+.beyond-module-tab.tone-green,
+.ts-nav a.tone-green, .an-nav a.tone-green, .cm-nav a.tone-green,
+.tm-nav a.tone-green, .jb-nav a.tone-green, .ct-nav a.tone-green {
+    border-color: #6B6B2A !important; color: #6B6B2A !important;
+}
+.beyond-module-tab.tone-green i,
+.ts-nav a.tone-green i, .an-nav a.tone-green i, .ct-nav a.tone-green i,
+.jb-nav a.tone-green i { color: #6B6B2A !important; }
+.beyond-module-tab.tone-green.is-active, .beyond-module-tab.tone-green:hover,
+.ts-nav a.tone-green.is-active, .an-nav a.tone-green.is-active, .cm-nav a.tone-green.is-active,
+.tm-nav a.tone-green.is-active, .jb-nav a.tone-green.is-active, .ct-nav a.tone-green.is-active,
+.ts-nav a.tone-green:hover, .an-nav a.tone-green:hover, .cm-nav a.tone-green:hover,
+.tm-nav a.tone-green:hover, .jb-nav a.tone-green:hover, .ct-nav a.tone-green:hover {
+    background: #6B6B2A !important; border-color: #6B6B2A !important; color: #F7F1E8 !important;
+}
+.beyond-module-tab.tone-green.is-active i, .beyond-module-tab.tone-green:hover i,
+.ts-nav a.tone-green:hover i, .an-nav a.tone-green:hover i, .jb-nav a.tone-green:hover i,
+.ct-nav a.tone-green:hover i { color: #F7F1E8 !important; }
+
+.beyond-module-tab.tone-orange,
+.ts-nav a.tone-orange, .an-nav a.tone-orange, .cm-nav a.tone-orange,
+.tm-nav a.tone-orange, .jb-nav a.tone-orange, .ct-nav a.tone-orange {
+    border-color: #C47A2C !important; color: #C47A2C !important;
+}
+.beyond-module-tab.tone-orange i,
+.ts-nav a.tone-orange i, .an-nav a.tone-orange i, .jb-nav a.tone-orange i,
+.ct-nav a.tone-orange i { color: #C47A2C !important; }
+.beyond-module-tab.tone-orange.is-active, .beyond-module-tab.tone-orange:hover,
+.ts-nav a.tone-orange.is-active, .an-nav a.tone-orange.is-active, .cm-nav a.tone-orange.is-active,
+.tm-nav a.tone-orange.is-active, .jb-nav a.tone-orange.is-active, .ct-nav a.tone-orange.is-active,
+.ts-nav a.tone-orange:hover, .an-nav a.tone-orange:hover, .cm-nav a.tone-orange:hover,
+.tm-nav a.tone-orange:hover, .jb-nav a.tone-orange:hover, .ct-nav a.tone-orange:hover {
+    background: #C47A2C !important; border-color: #C47A2C !important; color: #0A0A0A !important;
+}
+.beyond-module-tab.tone-orange.is-active i, .beyond-module-tab.tone-orange:hover i,
+.ts-nav a.tone-orange:hover i, .an-nav a.tone-orange:hover i, .jb-nav a.tone-orange:hover i,
+.ct-nav a.tone-orange:hover i,
+.ts-nav a.tone-orange.is-active i, .ct-nav a.tone-orange.is-active i { color: #0A0A0A !important; }
+
+.beyond-module-tab.tone-teal,
+.ts-nav a.tone-teal, .an-nav a.tone-teal, .cm-nav a.tone-teal,
+.tm-nav a.tone-teal, .jb-nav a.tone-teal, .ct-nav a.tone-teal {
+    border-color: #8B7355 !important; color: #8B7355 !important;
+}
+.beyond-module-tab.tone-teal i,
+.ts-nav a.tone-teal i, .an-nav a.tone-teal i, .jb-nav a.tone-teal i,
+.ct-nav a.tone-teal i { color: #8B7355 !important; }
+.beyond-module-tab.tone-teal.is-active, .beyond-module-tab.tone-teal:hover,
+.ts-nav a.tone-teal.is-active, .an-nav a.tone-teal.is-active, .cm-nav a.tone-teal.is-active,
+.tm-nav a.tone-teal.is-active, .jb-nav a.tone-teal.is-active, .ct-nav a.tone-teal.is-active,
+.ts-nav a.tone-teal:hover, .an-nav a.tone-teal:hover, .cm-nav a.tone-teal:hover,
+.tm-nav a.tone-teal:hover, .jb-nav a.tone-teal:hover, .ct-nav a.tone-teal:hover {
+    background: #8B7355 !important; border-color: #8B7355 !important; color: #F7F1E8 !important;
+}
+.beyond-module-tab.tone-teal.is-active i, .beyond-module-tab.tone-teal:hover i,
+.ts-nav a.tone-teal:hover i, .an-nav a.tone-teal:hover i, .jb-nav a.tone-teal:hover i,
+.ct-nav a.tone-teal:hover i { color: #F7F1E8 !important; }
+
+.beyond-module-tab.tone-red,
+.ts-nav a.tone-red, .an-nav a.tone-red, .cm-nav a.tone-red,
+.tm-nav a.tone-red, .jb-nav a.tone-red, .ct-nav a.tone-red {
+    border-color: #7B3F2A !important; color: #7B3F2A !important;
+}
+.beyond-module-tab.tone-red i,
+.ts-nav a.tone-red i, .an-nav a.tone-red i, .jb-nav a.tone-red i { color: #7B3F2A !important; }
+.beyond-module-tab.tone-red.is-active, .beyond-module-tab.tone-red:hover,
+.ts-nav a.tone-red.is-active, .an-nav a.tone-red.is-active, .cm-nav a.tone-red.is-active,
+.tm-nav a.tone-red.is-active, .jb-nav a.tone-red.is-active, .ct-nav a.tone-red.is-active,
+.ts-nav a.tone-red:hover, .an-nav a.tone-red:hover, .cm-nav a.tone-red:hover,
+.tm-nav a.tone-red:hover, .jb-nav a.tone-red:hover, .ct-nav a.tone-red:hover {
+    background: #7B3F2A !important; border-color: #7B3F2A !important; color: #F7F1E8 !important;
+}
+.beyond-module-tab.tone-red.is-active i, .beyond-module-tab.tone-red:hover i,
+.ts-nav a.tone-red:hover i, .an-nav a.tone-red:hover i, .jb-nav a.tone-red:hover i { color: #F7F1E8 !important; }
+
+.nav-tabs .nav-link.active,
+.nav-pills .nav-link.active {
+    background: #0A0A0A !important;
+    border-color: #C5A059 !important;
+    color: #C5A059 !important;
+}
+.nav-tabs .nav-link {
+    color: #6F4E37;
+}
+.nav-tabs .nav-link:hover {
+    color: #C5A059;
+    border-color: #C5A059;
+}

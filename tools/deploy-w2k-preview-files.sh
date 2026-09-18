@@ -218,6 +218,7 @@ FILES=(
   public/branding/w2k-landing.jpg
   public/branding/w2k-landing@2x.jpg
   public/css/custom.css
+  public/css/w2k-coffee-admin.css
 )
 
 for f in app/Membership*.php; do

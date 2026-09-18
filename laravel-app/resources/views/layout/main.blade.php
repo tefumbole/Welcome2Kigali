@@ -95,13 +95,13 @@
         <link rel="stylesheet" href="<?php echo asset('public/css/custom-'.$general_setting->theme) ?>" type="text/css" id="custom-style">
         <style>
             :root {
-                --beyond-primary: #0b3f90;
-                --beyond-primary-dark: #072f6b;
-                --beyond-accent: #c6ab47;
-                --beyond-bg: #f3f6fb;
+                --beyond-primary: #0A0A0A;
+                --beyond-primary-dark: #16110c;
+                --beyond-accent: #C5A059;
+                --beyond-bg: #F7F1E8;
                 --beyond-card: #ffffff;
-                --beyond-text: #1f2a44;
-                --beyond-muted: #6f7b91;
+                --beyond-text: #1a120c;
+                --beyond-muted: #6b5e4e;
             }
 
             body {
@@ -185,7 +185,7 @@
 
             .sidebar-user-panel {
                 flex-shrink: 0;
-                background: #072f6b;
+                background: #16110c;
                 border-top: 1px solid rgba(255, 255, 255, 0.12);
                 padding: 16px 14px;
             }
@@ -236,7 +236,7 @@
                 gap: 10px;
                 padding: 10px 8px;
                 border-radius: 8px;
-                color: #dce7ff;
+                color: #F7F1E8;
                 text-decoration: none !important;
                 font-size: 14px;
                 font-weight: 600;
@@ -262,7 +262,7 @@
             }
 
             .side-navbar .side-menu li a {
-                color: #eef3ff;
+                color: #F7F1E8;
                 border-radius: 10px;
                 margin: 4px 10px;
                 padding: 13px 14px;
@@ -1008,6 +1008,7 @@
                 color: #fff !important;
             }
         </style>
+        <link rel="stylesheet" href="<?php echo asset('public/css/w2k-coffee-admin.css') ?>" type="text/css">
       </head>
 
       <body onload="myFunction()">
