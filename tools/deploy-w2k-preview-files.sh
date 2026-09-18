@@ -24,6 +24,9 @@ FILES=(
   VERSION
   app/Support/SiteBrand.php
   app/Support/WhatsAppMessage.php
+  app/Support/MessageSerial.php
+  app/Support/AnnouncementPersonalization.php
+  app/Services/AnnouncementNotificationService.php
   app/Support/AppUrl.php
   app/Support/SchemaColumns.php
   app/Support/SiteMenu.php
@@ -102,6 +105,7 @@ FILES=(
   database/migrations/2026_09_11_120000_ensure_w2k_catalog_settings.php
   database/migrations/2026_09_11_131500_add_remember_token_to_auth_tables.php
   database/migrations/2026_09_17_120000_ensure_w2k_module_columns.php
+  database/migrations/2026_09_18_120000_create_wa_message_serials_table.php
   app/Quotation.php
   app/Expense.php
   app/AssetExpense.php
@@ -244,6 +248,7 @@ sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_11_120000_ensure_w2k_catalog_settings.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_11_131500_add_remember_token_to_auth_tables.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_17_120000_ensure_w2k_module_columns.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_18_120000_create_wa_message_serials_table.php
 sudo -u www-data php "\$APP/artisan" permission:cache-reset || true
 sudo -u www-data php "\$APP/artisan" view:clear
 sudo -u www-data php "\$APP/artisan" cache:clear

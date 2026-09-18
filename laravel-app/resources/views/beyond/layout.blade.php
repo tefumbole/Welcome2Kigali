@@ -23,6 +23,7 @@
         $shortName = \Illuminate\Support\Str::limit($headerName, 18, '…');
     @endphp
     <title>@yield('title', $siteTitle) | {{ $siteTitle }}</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="@yield('meta_description', __('site.layout.meta'))">
     <link rel="icon" href="{{ $siteLogoUrl }}">
     <script src="https://cdn.tailwindcss.com"></script>

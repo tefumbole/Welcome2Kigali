@@ -65,21 +65,16 @@ class AnnouncementPersonalization
         $body = preg_replace('/^\s*Dear\s+[^,\n]+,\s*/iu', '', $body);
         $body = trim($body);
 
-        $title = $isCc ? 'Announcement CC' : 'Announcement';
+        $title = $isCc ? 'ANNOUNCEMENT CC / COPIE D’ANNONCE' : 'ANNOUNCEMENT / ANNONCE';
         $emoji = $isCc ? '📨' : '📢';
 
-        $msg = WhatsAppMessage::statusBlock($emoji, $title);
+        $msg = WhatsAppMessage::statusBlock($emoji, $title, $reference !== '' ? $reference : null);
         $msg .= WhatsAppMessage::greeting($name);
         if ($isCc) {
             $msg .= "You have been CC'd on this announcement.\n\n";
         }
         if ($institution !== '') {
             $msg .= WhatsAppMessage::bullet('From', $institution);
-        }
-        if ($reference !== '') {
-            $msg .= WhatsAppMessage::bullet('Reference', $reference);
-        } elseif (! empty($announcement->id)) {
-            $msg .= WhatsAppMessage::bullet('Reference', 'ANN-'.$announcement->id);
         }
         $msg .= WhatsAppMessage::bullet('Date', $dateStr);
         if ($subject !== '') {

@@ -87,10 +87,17 @@
                                            class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 focus:bg-white focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
                                 </div>
                             </div>
-                            <div class="space-y-2">
-                                <label class="text-sm font-semibold text-gray-700">{{ __('site.contact.subject') }} <span class="text-red-500">*</span></label>
-                                <input required name="subject" type="text" placeholder="{{ __('site.contact.subject_ph') }}"
-                                       class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 focus:bg-white focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-2">
+                                    <label class="text-sm font-semibold text-gray-700">{{ __('site.contact.phone') }}</label>
+                                    <input name="phone" type="tel" placeholder="{{ __('site.contact.phone_ph') }}"
+                                           class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 focus:bg-white focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-sm font-semibold text-gray-700">{{ __('site.contact.subject') }} <span class="text-red-500">*</span></label>
+                                    <input required name="subject" type="text" placeholder="{{ __('site.contact.subject_ph') }}"
+                                           class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 focus:bg-white focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
+                                </div>
                             </div>
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-gray-700">{{ __('site.contact.message') }} <span class="text-red-500">*</span></label>
@@ -118,22 +125,45 @@
     </div>
 </section>
 
-@push('scripts')
 <script>
 function submitContact(e) {
     e.preventDefault();
     const f = e.target;
-    const name = f.name.value.trim();
-    const email = f.email.value.trim();
-    const subject = f.subject.value.trim();
-    const message = f.message.value.trim();
-    const text = `*{{ __('site.contact.form_title') }}*\n\n*{{ __('site.contact.form_name') }}:* ${name}\n*{{ __('site.contact.form_email') }}:* ${email}\n*{{ __('site.contact.form_subject') }}:* ${subject}\n\n*{{ __('site.contact.form_message') }}:*\n${message}`;
-    window.open('https://wa.me/{{ $waPhone }}?text=' + encodeURIComponent(text), '_blank');
-    const el = document.getElementById('contact-success');
-    el.textContent = @json(__('site.contact.success'));
-    el.classList.remove('hidden');
-    f.reset();
+    const btn = f.querySelector('button[type=submit]');
+    const fd = new FormData(f);
+    fd.append('_token', @json(csrf_token()));
+    if (btn) { btn.disabled = true; }
+    fetch(@json(route('beyond.contact.compose')), {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': @json(csrf_token())
+        },
+        body: fd
+    }).then(function (r) { return r.json(); }).then(function (data) {
+        if (data && data.wa_url) {
+            window.open(data.wa_url, '_blank');
+        }
+        const el = document.getElementById('contact-success');
+        el.textContent = @json(__('site.contact.success'));
+        el.classList.remove('hidden');
+        f.reset();
+    }).catch(function () {
+        const name = f.name.value.trim();
+        const email = f.email.value.trim();
+        const phone = (f.phone && f.phone.value.trim()) || '';
+        const subject = f.subject.value.trim();
+        const message = f.message.value.trim();
+        const text = '*{{ addslashes(\App\Support\WhatsAppMessage::companyName()) }}*\n\n📩 *NOUVEAU MESSAGE / NEW CONTACT MESSAGE*\n━━━━━━━━━━━━━━━━\n\nBonjour *' + name + '*, / Hello *' + name + '*,\n\nVous avez reçu un message depuis le site.\nYou have received a message from the website.\n\n☐ *Nom / Name:* ' + name + (phone ? '\n☐ *Téléphone / Phone:* ' + phone : '') + '\n☐ *E-mail / Email:* ' + email + '\n☐ *Sujet / Subject:* ' + subject + '\n\n☐ *Message:*\n' + message;
+        window.open('https://wa.me/{{ $waPhone }}?text=' + encodeURIComponent(text), '_blank');
+        const el = document.getElementById('contact-success');
+        el.textContent = @json(__('site.contact.success'));
+        el.classList.remove('hidden');
+        f.reset();
+    }).finally(function () {
+        if (btn) { btn.disabled = false; }
+    });
     return false;
 }
 </script>
-@endpush

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\File;
+use Illuminate\Http\Request;
 
 class BeyondController extends Controller
 {
@@ -74,6 +75,31 @@ class BeyondController extends Controller
     public function contact()
     {
         return redirect(url('/about') . '#contact', 301);
+    }
+
+    public function contactCompose(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:191',
+            'email' => 'required|email|max:191',
+            'phone' => 'nullable|string|max:40',
+            'subject' => 'required|string|max:191',
+            'message' => 'required|string|max:5000',
+        ]);
+
+        $text = \App\Support\WhatsAppMessage::contactWebsiteMessage(
+            $data['name'],
+            $data['phone'] ?? '',
+            $data['email'],
+            $data['subject'],
+            $data['message']
+        );
+
+        return response()->json([
+            'ok' => true,
+            'text' => $text,
+            'wa_url' => \App\Support\SiteBrand::phoneWhatsAppUrl($text),
+        ]);
     }
 
     public function menu()

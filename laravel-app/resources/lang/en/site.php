@@ -233,6 +233,8 @@ return [
         'send_sub' => 'Fill out the form below and we will receive it via WhatsApp.',
         'full_name' => 'Full Name',
         'email' => 'Email Address',
+        'phone' => 'Phone / WhatsApp',
+        'phone_ph' => 'e.g. 0788 000 000',
         'subject' => 'Subject',
         'message' => 'Your Message',
         'send_btn' => 'Send Message',
