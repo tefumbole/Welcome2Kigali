@@ -11,7 +11,7 @@
     $missionText = \App\Support\SiteContent::text('about.mission_text', __('site.about.mission_text'));
 @endphp
 
-<section class="py-10 bg-brand-cream">
+<section class="pt-5 pb-8 bg-brand-cream">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
             <div>
@@ -20,33 +20,18 @@
                 <p class="text-base text-gray-600 leading-relaxed">{{ $visionText }}</p>
             </div>
             <div>
+                <p class="text-xs font-semibold tracking-[0.28em] uppercase text-transparent mb-2 select-none" aria-hidden="true">&nbsp;</p>
                 <h2 class="font-serif text-3xl font-bold text-black mb-3">{{ $missionHeading }}</h2>
-                <p class="text-base text-gray-600 leading-relaxed mb-5">{{ $missionText }}</p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="flex items-start gap-3">
-                        <div class="bg-black p-2 rounded-lg"><i data-lucide="heart" class="w-5 h-5 text-brand-gold"></i></div>
-                        <div>
-                            <h3 class="font-semibold text-gray-900">{{ __('site.about.hospitality') }}</h3>
-                            <p class="text-sm text-gray-500">{{ __('site.about.hospitality_sub') }}</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-3">
-                        <div class="bg-black p-2 rounded-lg"><i data-lucide="globe-2" class="w-5 h-5 text-brand-gold"></i></div>
-                        <div>
-                            <h3 class="font-semibold text-gray-900">{{ __('site.about.community') }}</h3>
-                            <p class="text-sm text-gray-500">{{ __('site.about.community_sub') }}</p>
-                        </div>
-                    </div>
-                </div>
+                <p class="text-base text-gray-600 leading-relaxed">{{ $missionText }}</p>
             </div>
         </div>
     </div>
 </section>
 
 @if(isset($leaders) && $leaders->count())
-<section id="leadership" class="pt-8 pb-12 bg-black">
+<section id="leadership" class="pt-6 pb-10 bg-black">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-8">
+        <div class="text-center mb-6">
             <h2 class="font-serif text-4xl font-bold text-white mb-3">{{ \App\Support\SiteContent::text('about.leadership_heading', __('site.about.leadership')) }}</h2>
             <div class="h-1 w-24 bg-brand-gold mx-auto"></div>
         </div>

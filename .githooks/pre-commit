@@ -40,4 +40,15 @@ next="${major}.${minor}.${patch}"
 
 printf '%s\n' "$next" > "$FILE"
 git add "$FILE"
+
+ERP="W2K_V_${next}"
+for js in "$ROOT/src/constants/appVersion.js" "$ROOT/apps/api/src/constants/appVersion.js"; do
+  [ -f "$js" ] || continue
+  if grep -q "export const APP_VERSION" "$js"; then
+    sed -i '' "s/export const APP_VERSION = 'W2K_V_[^']*';/export const APP_VERSION = '${ERP}';/" "$js" 2>/dev/null \
+      || sed -i "s/export const APP_VERSION = 'W2K_V_[^']*';/export const APP_VERSION = '${ERP}';/" "$js"
+    git add "$js"
+  fi
+done
+
 echo "[pre-commit] version bumped: $current -> $next"

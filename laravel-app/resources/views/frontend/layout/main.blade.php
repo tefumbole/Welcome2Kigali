@@ -360,7 +360,7 @@
         <div class="container">
             <div class="footer-bottom mt-20">
                 <div class="row">
-                    <div class="col-lg-6 col-md-12 text-center text-lg-start"><span class="color-gray-900 font-sm">Copyright &copy; {{ date('Y') }} {{ $general_setting->developed_by }}. All rights reserved.</span></div>
+                    <div class="col-lg-6 col-md-12 text-center text-lg-start"><span class="color-gray-900 font-sm">Copyright &copy; {{ date('Y') }} {{ $general_setting->developed_by }}. All rights reserved. | {{ \App\Support\AppVersion::bcl() }}</span></div>
                     <div class="col-lg-6 col-md-12 text-center text-lg-end">
                         <ul class="menu-bottom">
                             <li><a class="font-sm color-gray-900" href="{{ url('/') }}">Home</a></li>

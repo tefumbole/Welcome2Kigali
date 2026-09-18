@@ -23,12 +23,14 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     changed_files="$(git diff --name-only $range 2>/dev/null || true)"
   fi
 
-  if echo "$changed_files" | grep -q 'appVersion.js'; then
+  # VERSION is already bumped on commit. Do not bump again on push
+  # (that left production footers a version behind).
+  if echo "$changed_files" | grep -qE 'laravel-app/VERSION|appVersion.js'; then
     continue
   fi
 
   NEXT="$(node tools/bump-version.js | awk '{print $3}')"
-  git add src/constants/appVersion.js apps/api/src/constants/appVersion.js
+  git add src/constants/appVersion.js apps/api/src/constants/appVersion.js laravel-app/VERSION 2>/dev/null || true
   git commit -m "chore: bump version to ${NEXT}" --no-verify
 done
 

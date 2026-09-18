@@ -63,6 +63,7 @@
            class="h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base font-bold rounded-full border-2 border-white bg-black/80 text-white hover:bg-white hover:text-black inline-flex items-center justify-center gap-2">
             <i data-lucide="coffee" class="w-4 h-4"></i> {{ \App\Support\SiteContent::text('home.cta_cafe', __('site.home.cafe_menu')) }}
         </a>
+        <span class="w-full text-center text-[11px] tracking-wide text-white/70">{{ \App\Support\AppVersion::bcl() }}</span>
     </div>
 </section>
 @endsection
