@@ -87,18 +87,70 @@ class BeyondController extends Controller
             'message' => 'required|string|max:5000',
         ]);
 
-        $text = \App\Support\WhatsAppMessage::contactWebsiteMessage(
+        $serial = \App\Support\MessageSerial::next('MSG');
+        $company = \App\Support\WhatsAppMessage::companyName();
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('contact_messages')) {
+            \App\ContactMessage::create([
+                'serial' => $serial,
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'] ?? null,
+                'subject' => $data['subject'],
+                'message' => $data['message'],
+                'ip' => substr((string) $request->ip(), 0, 45),
+            ]);
+        }
+
+        $staffText = \App\Support\WhatsAppMessage::contactWebsiteMessage(
             $data['name'],
             $data['phone'] ?? '',
             $data['email'],
             $data['subject'],
-            $data['message']
+            $data['message'],
+            $serial
         );
+
+        $sent = false;
+        try {
+            $result = app(\App\Services\Messaging\NotificationRouter::class)
+                ->sendWhatsAppText(\App\Support\SiteBrand::phoneWhatsAppDigits(), $staffText, [
+                    'title' => $data['subject'],
+                    'name' => 'Team',
+                    'message' => $data['message'],
+                    'reference' => $serial,
+                    'details' => $data['name'],
+                ]);
+            $sent = ! empty($result['success']) && empty($result['skipped']);
+        } catch (\Throwable $e) {
+            \Log::warning('Contact WhatsApp notify failed: '.$e->getMessage());
+        }
+
+        try {
+            \Mail::send('mail.contact_message', [
+                'company' => $company,
+                'serial' => $serial,
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'] ?? '',
+                'subject' => $data['subject'],
+                'body' => $data['message'],
+                'sent_at' => now()->timezone('Africa/Kigali')->format('d M Y, H:i'),
+            ], function ($m) use ($data, $serial) {
+                $m->to(\App\Support\SiteBrand::email())
+                    ->replyTo($data['email'], $data['name'])
+                    ->subject(\App\Support\WhatsAppMessage::emailSubject($data['subject'], $serial));
+            });
+        } catch (\Throwable $e) {
+            \Log::warning('Contact email notify failed: '.$e->getMessage());
+        }
 
         return response()->json([
             'ok' => true,
-            'text' => $text,
-            'wa_url' => \App\Support\SiteBrand::phoneWhatsAppUrl($text),
+            'serial' => $serial,
+            'sent' => $sent,
+            'wa_url' => $sent ? null : \App\Support\SiteBrand::phoneWhatsAppUrl($staffText),
+            'message' => 'Thank you. Your message was received. Serial No: '.$serial,
         ]);
     }
 

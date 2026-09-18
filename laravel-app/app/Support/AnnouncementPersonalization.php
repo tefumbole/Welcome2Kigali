@@ -65,7 +65,7 @@ class AnnouncementPersonalization
         $body = preg_replace('/^\s*Dear\s+[^,\n]+,\s*/iu', '', $body);
         $body = trim($body);
 
-        $title = $isCc ? 'ANNOUNCEMENT CC / COPIE D’ANNONCE' : 'ANNOUNCEMENT / ANNONCE';
+        $title = $isCc ? 'Announcement CC' : 'Announcement';
         $emoji = $isCc ? '📨' : '📢';
 
         $msg = WhatsAppMessage::statusBlock($emoji, $title, $reference !== '' ? $reference : null);

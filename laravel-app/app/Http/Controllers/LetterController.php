@@ -1421,7 +1421,7 @@ class LetterController extends Controller
         $message = 'Letter notification sent successfully';
 
         $ccName = trim((string) ($ccRecipient->name ?? 'Colleague'));
-        $caption = \App\Support\WhatsAppMessage::statusBlock('📄', 'CC Copy')
+        $caption = \App\Support\WhatsAppMessage::statusBlock('📄', 'Letter CC copy', $letter->reference ?? null)
             .\App\Support\WhatsAppMessage::greeting($ccName !== '' ? $ccName : 'Colleague')
             .'You have been *CC\'d* on a letter to *'.$originalName.'*.'
             ."\n\n"

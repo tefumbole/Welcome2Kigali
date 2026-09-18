@@ -101,7 +101,7 @@ class PublicRentalController extends Controller
         ]);
 
         try {
-            $msg = WhatsAppMessage::statusBlock('📦', 'Booking Request')
+            $msg = WhatsAppMessage::statusBlock('📦', 'Booking Request', $booking->reference_no)
                 .WhatsAppMessage::greeting($data['full_name'])
                 ."Your equipment rental request has been received and is pending review.\n\n"
                 .WhatsAppMessage::bullet('Reference', $booking->reference_no)

@@ -346,8 +346,14 @@ class ContractWorkflowService
         ]);
 
         $url = \App\Support\AppUrl::to('/contracts/sign/'.$plain);
-        $msg = "Welcome 2 Kigali Expats Club: Please review and sign contract {$contract->number} ({$contract->title}).\n";
-        $msg .= \App\Support\WhatsAppMessage::actionLink('Open', $url);
+        $serial = $contract->number ?: \App\Support\MessageSerial::next('CNT');
+        $msg = \App\Support\WhatsAppMessage::statusBlock('📝', 'Please sign: '.$contract->title, $serial);
+        $msg .= \App\Support\WhatsAppMessage::greeting($sig->name ?: 'Signatory');
+        $msg .= "Please review and sign this contract from *".\App\Support\WhatsAppMessage::companyName()."*.\n\n";
+        $msg .= \App\Support\WhatsAppMessage::bullet('Contract', $contract->number);
+        $msg .= \App\Support\WhatsAppMessage::bullet('Title', $contract->title);
+        $msg .= \App\Support\WhatsAppMessage::actionLink('Sign contract', $url);
+        $msg .= \App\Support\WhatsAppMessage::footer();
 
         if ($sig->phone) {
             try {
@@ -358,8 +364,8 @@ class ContractWorkflowService
         }
         if ($sig->email) {
             try {
-                Mail::raw($msg, function ($m) use ($sig, $contract) {
-                    $m->to($sig->email)->subject('Sign contract '.$contract->number);
+                Mail::raw($msg, function ($m) use ($sig, $contract, $serial) {
+                    $m->to($sig->email)->subject(\App\Support\WhatsAppMessage::emailSubject('Please sign: '.$contract->title, $serial));
                 });
             } catch (\Throwable $e) {
                 \Log::warning('[contracts] Email notify failed: '.$e->getMessage());

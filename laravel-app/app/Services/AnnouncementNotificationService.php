@@ -167,7 +167,7 @@ class AnnouncementNotificationService extends Controller
                 ? $announcement->scheduled_for->format('d M Y H:i')
                 : 'soon';
             $name = $person['name'] ?: 'Team';
-            $msg = \App\Support\WhatsAppMessage::statusBlock('⏰', 'ANNOUNCEMENT REMINDER / RAPPEL', $announcement->reference ?: null);
+            $msg = \App\Support\WhatsAppMessage::statusBlock('⏰', 'Announcement reminder', $announcement->reference ?: null);
             $msg .= \App\Support\WhatsAppMessage::greeting($name);
             $msg .= "This is a reminder for the following announcement.\n\n";
             if ($announcement->reference) {

@@ -269,6 +269,7 @@
         <img class="w2k-help-shot" src="{{ url('public/branding/help/quotation.png') }}" alt="Quotation list and WhatsApp review link">
         <p class="w2k-help-cap">Send the quotation, then the client taps Review quotation on WhatsApp. Resend old messages after the link fix.</p>
         <div class="w2k-help-tip">Always resend the quotation after this update if a client still has an old WhatsApp message — old links could open the homepage.</div>
+        <p>Every official WhatsApp and email now shows the club name, a subject line with emoji, a <strong>serial number</strong> (for example W2K/MSG/26/0000042), and the date. Quote that serial if you follow up with a client.</p>
     </div>
 
     <div class="w2k-help-card" id="contracts">

@@ -355,7 +355,7 @@ class PublicPermissionController extends Controller
             return;
         }
         try {
-            $msg = WhatsAppMessage::statusBlock('🗓️', 'Permission Request')
+            $msg = WhatsAppMessage::statusBlock('🗓️', 'Permission Request', $permission->reference_number)
                 .WhatsAppMessage::greeting($permission->full_name)
                 ."Your permission request has been submitted and is awaiting approval.\n\n"
                 .WhatsAppMessage::bullet('Reference', $permission->reference_number)

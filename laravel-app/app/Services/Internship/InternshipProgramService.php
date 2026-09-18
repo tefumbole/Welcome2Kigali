@@ -1254,7 +1254,7 @@ class InternshipProgramService
             if ($this->alreadyNotified($key)) {
                 continue;
             }
-            $msg = WhatsAppMessage::statusBlock('📝', 'Internship Submission');
+            $msg = WhatsAppMessage::statusBlock('📝', 'Internship Submission', optional($assignment->task)->title);
             $msg .= WhatsAppMessage::greeting($supervisor->name);
             $msg .= "A student submitted internship work for review.\n\n";
             $msg .= WhatsAppMessage::bullet('Student', optional($enrolment->student)->name);
@@ -1278,7 +1278,7 @@ class InternshipProgramService
             return;
         }
         $url = url('/admin/internship/student/task/'.$assignment->id);
-        $msg = WhatsAppMessage::statusBlock('✏️', 'Revision Required');
+        $msg = WhatsAppMessage::statusBlock('✏️', 'Revision Required', optional($assignment->task)->title);
         $msg .= WhatsAppMessage::greeting($student->name);
         $msg .= "Your supervisor requested a revision on your internship task.\n\n";
         $msg .= WhatsAppMessage::bullet('Task', '#'.$assignment->progression_day.' — '.optional($assignment->task)->title);
@@ -1301,7 +1301,7 @@ class InternshipProgramService
         if ($this->alreadyNotified($key)) {
             return;
         }
-        $msg = WhatsAppMessage::statusBlock('✅', 'Submission Accepted');
+        $msg = WhatsAppMessage::statusBlock('✅', 'Submission Accepted', optional($assignment->task)->title);
         $msg .= WhatsAppMessage::greeting($student->name);
         $msg .= $grade->auto_accepted
             ? "Your task was accepted so your placement keeps moving — your supervisor may still send feedback.\n\n"
@@ -1332,7 +1332,7 @@ class InternshipProgramService
             return;
         }
         $days = $enrolment->plannedDurationDays();
-        $msg = WhatsAppMessage::statusBlock('🎓', 'Internship Completed');
+        $msg = WhatsAppMessage::statusBlock('🎓', 'Internship Completed', optional($enrolment->program)->displayName());
         $msg .= WhatsAppMessage::greeting($student->name);
         $msg .= "Congratulations! You completed your {$days}-day internship program.\n\n";
         $msg .= WhatsAppMessage::bullet('Program', optional($enrolment->program)->displayName());

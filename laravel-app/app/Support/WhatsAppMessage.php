@@ -49,7 +49,7 @@ class WhatsAppMessage
             $name = 'Guest';
         }
 
-        return 'Dear *'.$name."*,\n\n";
+        return "Bonjour *{$name}*, / Hello *{$name}*,\n\n";
     }
 
     public static function bullet($label, $value)
@@ -74,7 +74,7 @@ class WhatsAppMessage
 
     public static function footer()
     {
-        return "\nKind regards,\n*".self::companyName()."*";
+        return "\nCordialement, / Kind regards,\n*".self::companyName()."*";
     }
 
     /**
@@ -83,17 +83,18 @@ class WhatsAppMessage
     public static function contactWebsiteMessage($name, $phone, $email, $subject, $body, $serial = null)
     {
         $serial = $serial ?: MessageSerial::next('MSG');
-        $subject = trim((string) $subject) !== '' ? trim((string) $subject) : 'Website enquiry';
-        $msg = self::statusBlock('📩', $subject, $serial);
-        $msg .= self::greeting('Team');
-        $msg .= "A visitor sent a message from the *".self::companyName()."* website.\n\n";
-        $msg .= self::bullet('Name', $name);
+        $msg = self::statusBlock('📩', 'NOUVEAU MESSAGE / NEW CONTACT MESSAGE', $serial);
+        $msg .= self::greeting($name);
+        $msg .= "Vous avez reçu un message depuis le site.\nYou have received a message from the website.\n\n";
+        $msg .= self::field('Nom / Name', $name);
         if (trim((string) $phone) !== '') {
-            $msg .= self::bullet('Phone', $phone);
+            $msg .= self::field('Téléphone / Phone', $phone);
         }
-        $msg .= self::bullet('Email', $email);
-        $msg .= self::bullet('Subject', $subject);
-        $msg .= "\n*Message:*\n".trim((string) $body)."\n";
+        $msg .= self::field('E-mail / Email', $email);
+        if (trim((string) $subject) !== '') {
+            $msg .= self::field('Sujet / Subject', $subject);
+        }
+        $msg .= "\n☐ *Message:*\n".trim((string) $body)."\n";
         $msg .= self::footer();
 
         return $msg;

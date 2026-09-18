@@ -146,7 +146,7 @@ function submitContact(e) {
             window.open(data.wa_url, '_blank');
         }
         const el = document.getElementById('contact-success');
-        el.textContent = @json(__('site.contact.success'));
+        el.textContent = (data && data.message) ? data.message : @json(__('site.contact.success'));
         el.classList.remove('hidden');
         f.reset();
     }).catch(function () {
@@ -155,7 +155,7 @@ function submitContact(e) {
         const phone = (f.phone && f.phone.value.trim()) || '';
         const subject = f.subject.value.trim();
         const message = f.message.value.trim();
-        const text = '*{{ addslashes(\App\Support\WhatsAppMessage::companyName()) }}*\n\n📩 *NOUVEAU MESSAGE / NEW CONTACT MESSAGE*\n━━━━━━━━━━━━━━━━\n\nBonjour *' + name + '*, / Hello *' + name + '*,\n\nVous avez reçu un message depuis le site.\nYou have received a message from the website.\n\n☐ *Nom / Name:* ' + name + (phone ? '\n☐ *Téléphone / Phone:* ' + phone : '') + '\n☐ *E-mail / Email:* ' + email + '\n☐ *Sujet / Subject:* ' + subject + '\n\n☐ *Message:*\n' + message;
+        const text = '*{{ addslashes(\App\Support\WhatsAppMessage::companyName()) }}*\n📩 *' + subject + '*\n━━━━━━━━━━━━━━━━\n• *Name:* ' + name + (phone ? '\n• *Phone:* ' + phone : '') + '\n• *Email:* ' + email + '\n\n*Message:*\n' + message + '\n\nKind regards,\n*{{ addslashes(\App\Support\WhatsAppMessage::companyName()) }}*';
         window.open('https://wa.me/{{ $waPhone }}?text=' + encodeURIComponent(text), '_blank');
         const el = document.getElementById('contact-success');
         el.textContent = @json(__('site.contact.success'));
