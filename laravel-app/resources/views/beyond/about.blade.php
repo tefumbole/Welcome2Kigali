@@ -68,12 +68,4 @@
 </section>
 @endif
 
-<section class="py-10 bg-brand-cream">
-    <div class="max-w-3xl mx-auto px-4 text-center">
-        <a href="{{ url('/register-now') }}" class="inline-flex items-center px-6 py-3 rounded-full bg-black text-brand-gold font-semibold">{{ \App\Support\SiteContent::text('home.cta_primary', __('site.home.join')) }}</a>
-    </div>
-</section>
-
-@include('beyond.partials.contact_section')
-
 @endsection

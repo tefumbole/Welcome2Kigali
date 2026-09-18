@@ -469,16 +469,22 @@
                 </div>
             </div>
         </div>
-        <div class="px-4 sm:px-6 pb-2">
-            <p class="text-center text-[11px] leading-relaxed text-white/70">
-                © {{ date('Y') }} Welcome 2 Kigali Expats Club. {{ \App\Support\SiteContent::text('footer.rights', __('site.footer.rights')) }}
-                <span class="text-white/30"> | </span>
-                {{ __('site.footer.developed') }} <span class="text-white font-medium">Sr. Engr. Tefu R. Mbole</span>
-                <span class="text-white/30"> | </span>
-                <a href="https://wa.me/{{ $waDigits }}" target="_blank" rel="noopener" class="text-white/80 hover:text-brand-gold">{{ $contactPhone }}</a>
-                <span class="text-white/30"> | </span>
-                {{ \App\Support\AppVersion::bcl() }}
-            </p>
+        <div class="px-4 sm:px-6 pb-3 pr-20">
+            <div class="flex items-center justify-between gap-3">
+                <p class="min-w-0 text-left text-[11px] leading-relaxed text-white/70">
+                    © {{ date('Y') }} Welcome 2 Kigali Expats Club. {{ \App\Support\SiteContent::text('footer.rights', __('site.footer.rights')) }}
+                    <span class="text-white/30"> | </span>
+                    {{ __('site.footer.developed') }} <span class="text-white font-medium">Sr. Engr. Tefu R. Mbole</span>
+                    <span class="text-white/30"> | </span>
+                    <a href="https://wa.me/{{ $waDigits }}" target="_blank" rel="noopener" class="text-white/80 hover:text-brand-gold">{{ $contactPhone }}</a>
+                    <span class="text-white/30"> | </span>
+                    {{ \App\Support\AppVersion::bcl() }}
+                </p>
+                <a href="{{ url('/register-now') }}"
+                   class="shrink-0 inline-flex items-center rounded-full bg-brand-gold hover:bg-[#b08d45] text-black text-xs sm:text-sm font-bold px-4 py-2">
+                    {{ \App\Support\SiteContent::text('home.cta_primary', __('site.home.join')) }}
+                </a>
+            </div>
         </div>
         </div>
     </div>
