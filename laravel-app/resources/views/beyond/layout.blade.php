@@ -437,7 +437,7 @@
         @endunless
         <div class="site-footer-inner">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 {{ $isLandingFooter ? 'pt-2 pb-2' : 'pt-1 pb-3' }}">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 lg:gap-10">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-10 items-start">
                 <div class="min-w-0">
                     <h3 class="site-footer-heading">
                         <i data-lucide="clipboard-check"></i>
@@ -467,24 +467,25 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="min-w-0 flex sm:justify-end lg:justify-end items-start">
+                    <a href="{{ url('/register-now') }}"
+                       class="inline-flex items-center rounded-full bg-brand-gold hover:bg-[#b08d45] text-black text-sm font-bold px-5 py-2.5 shadow-md">
+                        {{ \App\Support\SiteContent::text('home.cta_primary', __('site.home.join')) }}
+                    </a>
+                </div>
             </div>
         </div>
-        <div class="px-4 sm:px-6 pb-3 pr-20">
-            <div class="flex items-center justify-between gap-3">
-                <p class="min-w-0 text-left text-[11px] leading-relaxed text-white/70">
-                    © {{ date('Y') }} Welcome 2 Kigali Expats Club. {{ \App\Support\SiteContent::text('footer.rights', __('site.footer.rights')) }}
-                    <span class="text-white/30"> | </span>
-                    {{ __('site.footer.developed') }} <span class="text-white font-medium">Sr. Engr. Tefu R. Mbole</span>
-                    <span class="text-white/30"> | </span>
-                    <a href="https://wa.me/{{ $waDigits }}" target="_blank" rel="noopener" class="text-white/80 hover:text-brand-gold">{{ $contactPhone }}</a>
-                    <span class="text-white/30"> | </span>
-                    {{ \App\Support\AppVersion::bcl() }}
-                </p>
-                <a href="{{ url('/register-now') }}"
-                   class="shrink-0 inline-flex items-center rounded-full bg-brand-gold hover:bg-[#b08d45] text-black text-xs sm:text-sm font-bold px-4 py-2">
-                    {{ \App\Support\SiteContent::text('home.cta_primary', __('site.home.join')) }}
-                </a>
-            </div>
+        <div class="px-4 sm:px-6 pb-2">
+            <p class="text-center text-[11px] leading-relaxed text-white/70">
+                © {{ date('Y') }} Welcome 2 Kigali Expats Club. {{ \App\Support\SiteContent::text('footer.rights', __('site.footer.rights')) }}
+                <span class="text-white/30"> | </span>
+                {{ __('site.footer.developed') }} <span class="text-white font-medium">Sr. Engr. Tefu R. Mbole</span>
+                <span class="text-white/30"> | </span>
+                <a href="https://wa.me/{{ $waDigits }}" target="_blank" rel="noopener" class="text-white/80 hover:text-brand-gold">{{ $contactPhone }}</a>
+                <span class="text-white/30"> | </span>
+                {{ \App\Support\AppVersion::bcl() }}
+            </p>
         </div>
         </div>
     </div>
