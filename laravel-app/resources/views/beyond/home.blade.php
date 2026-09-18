@@ -30,7 +30,10 @@
         -webkit-user-drag: none;
     }
     body.home-landing .landing-hero-actions {
-        background: linear-gradient(to top, rgba(5,5,5,.28), transparent 70%);
+        background: linear-gradient(to top, rgba(5,5,5,.55), transparent 75%);
+    }
+    body.home-landing .landing-hero-actions a {
+        box-shadow: 0 8px 24px rgba(0,0,0,.45);
     }
 </style>
 @endpush
@@ -53,11 +56,11 @@
             {{ \App\Support\SiteContent::text('home.cta_primary', __('site.home.join')) }} <i data-lucide="arrow-right" class="ml-2 w-4 h-4"></i>
         </a>
         <a href="{{ url('/events') }}"
-           class="h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base font-bold rounded-full border border-brand-gold/80 text-brand-gold hover:bg-white/10 inline-flex items-center justify-center gap-2">
+           class="h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base font-bold rounded-full border-2 border-brand-gold bg-black/80 text-brand-gold hover:bg-brand-gold hover:text-black inline-flex items-center justify-center gap-2">
             <i data-lucide="calendar" class="w-4 h-4"></i> {{ \App\Support\SiteContent::text('home.cta_events', __('site.home.events')) }}
         </a>
         <a href="{{ url('/menu') }}"
-           class="h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base font-bold rounded-full border border-white/30 text-white hover:bg-white/10 inline-flex items-center justify-center gap-2">
+           class="h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base font-bold rounded-full border-2 border-white bg-black/80 text-white hover:bg-white hover:text-black inline-flex items-center justify-center gap-2">
             <i data-lucide="coffee" class="w-4 h-4"></i> {{ \App\Support\SiteContent::text('home.cta_cafe', __('site.home.cafe_menu')) }}
         </a>
     </div>
