@@ -3,6 +3,76 @@
 @section('title', __('site.membership.title'))
 @section('meta_description', __('site.membership.sub'))
 
+@push('head')
+<style>
+    .plan-card {
+        position: relative;
+        text-align: left;
+        overflow: hidden;
+        border-radius: 1rem;
+        border: 2px solid #f3f4f6;
+        background: #fff;
+        padding: 1.25rem;
+        min-height: 210px;
+        display: flex;
+        flex-direction: column;
+        transition: transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+    }
+    .plan-card:hover,
+    .plan-card.is-on {
+        background: #111;
+        border-color: #C5A059;
+        transform: translateY(-2px);
+        box-shadow: 0 18px 36px rgba(0,0,0,.18);
+    }
+    .plan-card .plan-badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        background: #111;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+        padding: .25rem .65rem;
+    }
+    .plan-card:hover .plan-badge,
+    .plan-card.is-on .plan-badge { background: #C5A059; color: #111; }
+    .plan-card .plan-name { color: #111; }
+    .plan-card:hover .plan-name,
+    .plan-card.is-on .plan-name { color: #fff; }
+    .plan-card .plan-price { color: #111; }
+    .plan-card:hover .plan-price,
+    .plan-card.is-on .plan-price { color: #C5A059; }
+    .plan-card .plan-meta { color: #6b7280; }
+    .plan-card:hover .plan-meta,
+    .plan-card.is-on .plan-meta { color: rgba(255,255,255,.72); }
+    .plan-card .plan-hint { color: #C5A059; }
+    .plan-card:hover .plan-hint,
+    .plan-card.is-on .plan-hint { color: rgba(255,255,255,.55); }
+    .plan-card .plan-check {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: 999px;
+        border: 1px solid #e5e7eb;
+        color: transparent;
+    }
+    .plan-card:hover .plan-check,
+    .plan-card.is-on .plan-check {
+        border-color: #C5A059;
+        background: #C5A059;
+        color: #111;
+    }
+    .plan-card .plan-featured { opacity: 0; color: #C5A059; }
+    .plan-card:hover .plan-featured,
+    .plan-card.is-on .plan-featured { opacity: 1; }
+</style>
+@endpush
+
 @section('content')
 @php
     $startStep = old('plan_choice') || $errors->any() ? 2 : 1;
@@ -10,11 +80,10 @@
 @endphp
 <div class="min-h-screen bg-gray-50 flex flex-col"
      x-data="membershipApply({{ (int) $startStep }}, {{ json_encode($oldPlan) }})">
-    <div class="relative h-[220px] md:h-[280px] w-full bg-black overflow-hidden">
+    <div class="relative h-[140px] md:h-[180px] w-full bg-black overflow-hidden">
         <div class="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-overlay" style="background-image:url('https://images.unsplash.com/photo-1693045181224-9fc2f954f054');"></div>
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center text-white z-10">
-            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-2">{{ __('site.membership.heading') }}</h1>
-            <p class="text-lg md:text-xl text-white/80 max-w-2xl">{{ __('site.membership.sub') }}</p>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">{{ __('site.membership.heading') }}</h1>
         </div>
     </div>
 
@@ -50,49 +119,40 @@
                         @if($promo)
                             <button type="button"
                                     @click="selectPlan('promo', {{ json_encode($promo->name) }})"
-                                    class="group relative text-left overflow-hidden rounded-2xl p-[2px] transition-transform duration-200 hover:-translate-y-0.5"
-                                    :class="plan === 'promo' ? 'scale-[1.01]' : ''">
-                                <span class="absolute inset-0 bg-gradient-to-br from-brand-gold via-amber-300 to-[#8a6a2e]"></span>
-                                <span class="relative flex h-full flex-col rounded-[14px] bg-[#111] text-white p-5 min-h-[210px]">
-                                    <span class="flex items-center justify-between gap-2">
-                                        <span class="inline-flex items-center rounded-full bg-brand-gold text-black text-[10px] font-extrabold tracking-[0.18em] uppercase px-2.5 py-1">{{ __('site.membership.free_badge') }}</span>
-                                        <span class="text-[10px] font-bold uppercase tracking-widest text-brand-gold/90">{{ __('site.membership.featured') }}</span>
-                                    </span>
-                                    <span class="font-extrabold text-xl mt-3 leading-tight">{{ $promo->name }}</span>
-                                    <span class="flex items-end gap-2 mt-3">
-                                        <span class="text-4xl font-black text-brand-gold leading-none">0</span>
-                                        <span class="text-sm font-semibold text-white/70 pb-1">FRW · {{ $promo->free_days }} {{ __('site.membership.days') }}</span>
-                                    </span>
-                                    <span class="text-sm text-white/70 mt-3 leading-snug">{{ $promo->description ?: __('site.membership.promo_blurb', ['days' => $promo->free_days]) }}</span>
-                                    <span class="mt-auto pt-4 flex items-center justify-between">
-                                        <span class="text-xs text-white/55">{{ __('site.membership.perk_community') }}</span>
-                                        <span class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-brand-gold text-brand-gold"
-                                              :class="plan === 'promo' ? 'bg-brand-gold text-black border-brand-gold' : ''">
-                                            <i data-lucide="check" class="w-4 h-4"></i>
-                                        </span>
-                                    </span>
+                                    class="plan-card"
+                                    :class="plan === 'promo' ? 'is-on' : ''">
+                                <span class="flex items-center justify-between gap-2">
+                                    <span class="plan-badge">{{ __('site.membership.free_badge') }}</span>
+                                    <span class="plan-featured text-[10px] font-bold uppercase tracking-widest">{{ __('site.membership.featured') }}</span>
+                                </span>
+                                <span class="plan-name font-extrabold text-xl mt-3 leading-tight">{{ $promo->name }}</span>
+                                <span class="flex items-end gap-2 mt-3">
+                                    <span class="plan-price text-4xl font-black leading-none">0</span>
+                                    <span class="plan-meta text-sm font-semibold pb-1">FRW · {{ $promo->free_days }} {{ __('site.membership.days') }}</span>
+                                </span>
+                                <span class="plan-meta text-sm mt-3 leading-snug">{{ $promo->description ?: __('site.membership.promo_blurb', ['days' => $promo->free_days]) }}</span>
+                                <span class="mt-auto pt-4 flex items-center justify-between">
+                                    <span class="plan-hint text-xs">{{ __('site.membership.perk_community') }}</span>
+                                    <span class="plan-check"><i data-lucide="check" class="w-4 h-4"></i></span>
                                 </span>
                             </button>
                         @endif
                         @foreach($plans as $plan)
                             <button type="button"
                                     @click="selectPlan({{ json_encode((string) $plan->id) }}, {{ json_encode($plan->name) }})"
-                                    class="group relative text-left overflow-hidden rounded-2xl border-2 bg-white p-5 min-h-[210px] flex flex-col transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
-                                    :class="plan === {{ json_encode((string) $plan->id) }} ? 'border-brand-gold bg-gradient-to-br from-amber-50 via-white to-white shadow-lg ring-2 ring-brand-gold/30' : 'border-gray-100 hover:border-brand-gold/60'">
+                                    class="plan-card"
+                                    :class="plan === {{ json_encode((string) $plan->id) }} ? 'is-on' : ''">
                                 <span class="flex items-center justify-between gap-2">
-                                    <span class="inline-flex items-center rounded-full bg-black text-white text-[10px] font-bold tracking-[0.16em] uppercase px-2.5 py-1">{{ $plan->duration_months }} {{ __('site.membership.months') }}</span>
-                                    <span class="inline-flex h-7 w-7 items-center justify-center rounded-full border"
-                                          :class="plan === {{ json_encode((string) $plan->id) }} ? 'bg-brand-gold border-brand-gold text-black' : 'border-gray-200 text-transparent'">
-                                        <i data-lucide="check" class="w-4 h-4"></i>
-                                    </span>
+                                    <span class="plan-badge">{{ $plan->duration_months }} {{ __('site.membership.months') }}</span>
+                                    <span class="plan-check"><i data-lucide="check" class="w-4 h-4"></i></span>
                                 </span>
-                                <span class="font-extrabold text-xl text-black mt-3 leading-tight">{{ $plan->name }}</span>
+                                <span class="plan-name font-extrabold text-xl mt-3 leading-tight">{{ $plan->name }}</span>
                                 <span class="flex items-end gap-1.5 mt-3">
-                                    <span class="text-3xl md:text-4xl font-black text-black leading-none tracking-tight">{{ number_format($plan->fee) }}</span>
-                                    <span class="text-sm font-semibold text-gray-500 pb-1">FRW</span>
+                                    <span class="plan-price text-3xl md:text-4xl font-black leading-none tracking-tight">{{ number_format($plan->fee) }}</span>
+                                    <span class="plan-meta text-sm font-semibold pb-1">FRW</span>
                                 </span>
-                                <span class="text-sm text-gray-500 mt-3">{{ __('site.membership.discount_all', ['pct' => $discount]) }}</span>
-                                <span class="mt-auto pt-4 text-xs font-semibold text-brand-gold">{{ __('site.membership.tap_to_select') }}</span>
+                                <span class="plan-meta text-sm mt-3">{{ __('site.membership.discount_all', ['pct' => $discount]) }}</span>
+                                <span class="plan-hint mt-auto pt-4 text-xs font-semibold">{{ __('site.membership.tap_to_select') }}</span>
                             </button>
                         @endforeach
                     </div>
