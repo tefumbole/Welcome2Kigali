@@ -83,18 +83,18 @@ class WhatsAppMessage
     public static function contactWebsiteMessage($name, $phone, $email, $subject, $body, $serial = null)
     {
         $serial = $serial ?: MessageSerial::next('MSG');
+        $subjectLine = trim((string) $subject) !== '' ? trim((string) $subject) : 'Website enquiry';
         $msg = self::statusBlock('📩', 'NOUVEAU MESSAGE / NEW CONTACT MESSAGE', $serial);
-        $msg .= self::greeting($name);
+        $msg .= self::greeting('Team');
         $msg .= "Vous avez reçu un message depuis le site.\nYou have received a message from the website.\n\n";
         $msg .= self::field('Nom / Name', $name);
         if (trim((string) $phone) !== '') {
             $msg .= self::field('Téléphone / Phone', $phone);
         }
         $msg .= self::field('E-mail / Email', $email);
-        if (trim((string) $subject) !== '') {
-            $msg .= self::field('Sujet / Subject', $subject);
-        }
-        $msg .= "\n☐ *Message:*\n".trim((string) $body)."\n";
+        $msg .= self::field('Sujet / Subject', $subjectLine);
+        $body = trim((string) $body);
+        $msg .= "\n*Message:*\n".($body !== '' ? $body : '—')."\n";
         $msg .= self::footer();
 
         return $msg;
