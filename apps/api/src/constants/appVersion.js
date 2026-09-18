@@ -1,1 +1,1 @@
-export const APP_VERSION = 'W2K_V_1.6.5';
+export const APP_VERSION = 'W2K_V_1.6.6';
