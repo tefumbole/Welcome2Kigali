@@ -346,8 +346,10 @@ class ContractWorkflowService
         ]);
 
         $url = \App\Support\AppUrl::to('/contracts/sign/'.$plain);
-        $serial = $contract->number ?: \App\Support\MessageSerial::next('CNT');
-        $msg = \App\Support\WhatsAppMessage::statusBlock('📝', 'Please sign: '.$contract->title, $serial);
+        $serial = \App\Support\WhatsAppMessage::looksLikeSerial($contract->number)
+            ? $contract->number
+            : \App\Support\MessageSerial::next('CTR');
+        $msg = \App\Support\WhatsAppMessage::statusBlock('📝', 'PLEASE SIGN: '.$contract->title, $serial);
         $msg .= \App\Support\WhatsAppMessage::greeting($sig->name ?: 'Signatory');
         $msg .= "Please review and sign this contract from *".\App\Support\WhatsAppMessage::companyName()."*.\n\n";
         $msg .= \App\Support\WhatsAppMessage::bullet('Contract', $contract->number);

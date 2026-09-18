@@ -74,7 +74,8 @@
                         <p class="text-blue-100 mt-1">{{ __('site.contact.send_sub') }}</p>
                     </div>
                     <div class="p-8 md:p-10">
-                        <form id="contact-form" class="space-y-6" onsubmit="return submitContact(event)">
+                        <form id="contact-form" class="space-y-6" method="post" action="{{ route('beyond.contact.store') }}" onsubmit="return submitContact(event)">
+                            @csrf
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="space-y-2">
                                     <label class="text-sm font-semibold text-gray-700">{{ __('site.contact.full_name') }} <span class="text-red-500">*</span></label>
@@ -125,45 +126,40 @@
     </div>
 </section>
 
+@push('scripts')
 <script>
 function submitContact(e) {
     e.preventDefault();
     const f = e.target;
-    const btn = f.querySelector('button[type=submit]');
+    const el = document.getElementById('contact-success');
+    const token = (document.querySelector('meta[name="csrf-token"]') || {}).content
+        || (f.querySelector('input[name="_token"]') || {}).value;
     const fd = new FormData(f);
-    fd.append('_token', @json(csrf_token()));
-    if (btn) { btn.disabled = true; }
-    fetch(@json(route('beyond.contact.compose')), {
+    fetch(f.action, {
         method: 'POST',
         headers: {
-            'Accept': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRF-TOKEN': @json(csrf_token())
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': token || ''
         },
         body: fd
-    }).then(function (r) { return r.json(); }).then(function (data) {
-        if (data && data.wa_url) {
-            window.open(data.wa_url, '_blank');
-        }
-        const el = document.getElementById('contact-success');
-        el.textContent = (data && data.message) ? data.message : @json(__('site.contact.success'));
-        el.classList.remove('hidden');
-        f.reset();
-    }).catch(function () {
-        const name = f.name.value.trim();
-        const email = f.email.value.trim();
-        const phone = (f.phone && f.phone.value.trim()) || '';
-        const subject = f.subject.value.trim();
-        const message = f.message.value.trim();
-        const text = '*{{ addslashes(\App\Support\WhatsAppMessage::companyName()) }}*\n📩 *' + subject + '*\n━━━━━━━━━━━━━━━━\n• *Name:* ' + name + (phone ? '\n• *Phone:* ' + phone : '') + '\n• *Email:* ' + email + '\n\n*Message:*\n' + message + '\n\nKind regards,\n*{{ addslashes(\App\Support\WhatsAppMessage::companyName()) }}*';
-        window.open('https://wa.me/{{ $waPhone }}?text=' + encodeURIComponent(text), '_blank');
-        const el = document.getElementById('contact-success');
-        el.textContent = @json(__('site.contact.success'));
-        el.classList.remove('hidden');
-        f.reset();
-    }).finally(function () {
-        if (btn) { btn.disabled = false; }
-    });
+    }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+          if (res.j && res.j.errors) {
+              var first = Object.values(res.j.errors)[0];
+              throw new Error(Array.isArray(first) ? first[0] : first);
+          }
+          if (!res.ok || !res.j.ok) {
+              throw new Error((res.j && (res.j.message || res.j.error)) || 'Could not send');
+          }
+          el.textContent = res.j.message || @json(__('site.contact.success'));
+          el.classList.remove('hidden');
+          f.reset();
+      }).catch(function () {
+          el.textContent = 'Could not send just now. Please try WhatsApp or email.';
+          el.classList.remove('hidden');
+      });
     return false;
 }
 </script>
+@endpush

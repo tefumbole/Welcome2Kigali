@@ -6,6 +6,9 @@ use App\GeneralSetting;
 
 class WhatsAppMessage
 {
+    /** @var string Serial allocated for the current message (shown in header + footer). */
+    protected static $lastSerial = '';
+
     public static function companyName()
     {
         $fromEnv = trim((string) config('services.whatsapp.company_name', ''));
@@ -18,21 +21,93 @@ class WhatsAppMessage
         return $general->site_title ?? config('app.name', 'Application');
     }
 
-    public static function statusBlock($emoji, $title, $existingSerial = null)
+    public static function lastSerial()
+    {
+        return self::$lastSerial;
+    }
+
+    /**
+     * Mulema-style envelope: institution, serial, emoji subject, divider.
+     * $serial is reused when it already looks institutional (e.g. W2K/ANN/26/0000001).
+     */
+    public static function statusBlock($emoji, $title, $serial = null)
     {
         $company = self::companyName();
         $emoji = trim((string) $emoji);
         $title = trim((string) $title);
-        $serial = is_string($existingSerial) && trim($existingSerial) !== ''
-            ? trim($existingSerial)
-            : MessageSerial::next('MSG');
+        $serial = self::resolveSerial($serial, $title);
+        self::$lastSerial = $serial;
 
-        $msg = "*{$company}*\n";
-        $msg .= ($emoji !== '' ? $emoji.' ' : '')."*{$title}*\n";
-        $msg .= "━━━━━━━━━━━━━━━━\n";
-        $msg .= self::bullet('Serial No', $serial);
-        $msg .= self::bullet('Date', now()->timezone('Africa/Kigali')->format('d M Y, H:i'));
-        $msg .= "━━━━━━━━━━━━━━━━\n\n";
+        $heading = $emoji !== '' ? "{$emoji} *{$title}*" : "*{$title}*";
+
+        return "*{$company}*\n"
+            ."{$serial}\n\n"
+            ."{$heading}\n"
+            ."──────────────\n\n";
+    }
+
+    public static function resolveSerial($serial, $title = 'Official Message')
+    {
+        $serial = trim((string) $serial);
+        if (self::looksLikeSerial($serial)) {
+            return $serial;
+        }
+
+        return MessageSerial::next(self::typeFromTitle($title));
+    }
+
+    public static function looksLikeSerial($value)
+    {
+        $value = trim((string) $value);
+
+        return (bool) preg_match('/\A[A-Z0-9]{2,8}(?:\/[A-Z0-9._-]{1,12})*\/\d{2}\/\d{4,}\z/i', $value);
+    }
+
+    public static function typeFromTitle($title)
+    {
+        $t = strtolower((string) $title);
+        $map = [
+            'otp' => 'OTP', 'auth' => 'OTP', 'verif' => 'OTP', 'code' => 'OTP',
+            'quot' => 'QTE',
+            'book' => 'BKG', 'rental' => 'BKG',
+            'sale' => 'SAL', 'order' => 'SAL', 'pos' => 'SAL',
+            'contract' => 'CTR', 'agreement' => 'CTR', 'sign' => 'CTR',
+            'member' => 'MBR',
+            'announce' => 'ANN',
+            'letter' => 'LTR',
+            'intern' => 'INT',
+            'job' => 'JOB', 'application' => 'JOB',
+            'deliver' => 'DLV', 'goods' => 'DLV',
+            'contact' => 'MSG', 'message' => 'MSG',
+            'permission' => 'PRM',
+            'event' => 'EVT',
+            'task' => 'TSK',
+            'train' => 'TRN',
+            'share' => 'SHR',
+        ];
+        foreach ($map as $needle => $code) {
+            if (strpos($t, $needle) !== false) {
+                return $code;
+            }
+        }
+
+        return 'MSG';
+    }
+
+    /** Wrap a raw body that is missing the institutional envelope. */
+    public static function ensureEnvelope($body, $title = 'Official Message', $emoji = '✉️')
+    {
+        $body = trim((string) $body);
+        if ($body === '') {
+            return $body;
+        }
+        if (self::looksLikeSerial($body) || preg_match('/\b[A-Z0-9]{2,8}\/[A-Z0-9._-]{1,12}\/\d{2}\/\d{4,}\b/i', $body)) {
+            return $body;
+        }
+
+        $msg = self::statusBlock($emoji, $title);
+        $msg .= $body."\n";
+        $msg .= self::footer();
 
         return $msg;
     }
@@ -54,14 +129,14 @@ class WhatsAppMessage
 
     public static function bullet($label, $value)
     {
-        return "• *{$label}:* {$value}\n";
+        $value = trim((string) $value);
+
+        return '☐ *'.$label.':* '.($value !== '' ? $value : '—')."\n";
     }
 
     public static function field($label, $value)
     {
-        $value = trim((string) $value);
-
-        return '☐ *'.$label.':* '.($value !== '' ? $value : '—')."\n";
+        return self::bullet($label, $value);
     }
 
     public static function actionLink($label, $url)
@@ -74,15 +149,20 @@ class WhatsAppMessage
 
     public static function footer()
     {
-        return "\nCordialement, / Kind regards,\n*".self::companyName()."*";
+        $out = "\nCordialement, / Kind regards,\n*".self::companyName()."*";
+        if (self::$lastSerial !== '') {
+            $out .= "\nSerial No: *".self::$lastSerial."*";
+        }
+
+        return $out;
     }
 
     /**
-     * Staff copy of a website contact form (never greets the visitor as the recipient).
+     * Staff copy of a website contact form (Mulema layout, greets the club team).
      */
     public static function contactWebsiteMessage($name, $phone, $email, $subject, $body, $serial = null)
     {
-        $serial = $serial ?: MessageSerial::next('MSG');
+        $serial = self::resolveSerial($serial, 'NEW CONTACT MESSAGE');
         $subjectLine = trim((string) $subject) !== '' ? trim((string) $subject) : 'Website enquiry';
         $msg = self::statusBlock('📩', 'NOUVEAU MESSAGE / NEW CONTACT MESSAGE', $serial);
         $msg .= self::greeting('Team');
@@ -94,19 +174,23 @@ class WhatsAppMessage
         $msg .= self::field('E-mail / Email', $email);
         $msg .= self::field('Sujet / Subject', $subjectLine);
         $body = trim((string) $body);
-        $msg .= "\n*Message:*\n".($body !== '' ? $body : '—')."\n";
+        $msg .= "\n☐ *Message:*\n".($body !== '' ? $body : '—')."\n";
         $msg .= self::footer();
 
         return $msg;
     }
 
+    public static function contactStaffNotice($serial, $name, $email, $phone, $subject, $body)
+    {
+        return self::contactWebsiteMessage($name, $phone, $email, $subject, $body, $serial);
+    }
+
     public static function contactVisitorAck($name, $subject, $serial)
     {
-        $msg = self::statusBlock('✅', 'Message received', $serial);
+        $msg = self::statusBlock('✅', 'MESSAGE RECEIVED', $serial);
         $msg .= self::greeting($name);
         $msg .= "Thank you for contacting *".self::companyName()."*. We have received your message and will reply shortly.\n\n";
         $msg .= self::bullet('Subject', $subject);
-        $msg .= self::bullet('Serial No', $serial);
         $msg .= "\nPlease keep this serial number if you follow up with us.";
         $msg .= self::footer();
 
@@ -130,7 +214,7 @@ class WhatsAppMessage
             $body = "Please review and sign your equipment rental agreement with *{$company}*.\n\n";
         }
 
-        $msg = self::statusBlock('📝', $heading, $bookingRef);
+        $msg = self::statusBlock('📝', $heading);
         $msg .= self::greeting($customerName);
         $msg .= $body;
         $msg .= self::bullet('Booking Ref', $bookingRef);
@@ -143,7 +227,7 @@ class WhatsAppMessage
 
     public static function pendingReviewNotice($adminName, $customerName, $bookingRef, $reviewUrl)
     {
-        $msg = self::statusBlock('⏳', 'Contract Pending Review', $bookingRef);
+        $msg = self::statusBlock('⏳', 'Contract Pending Review');
         $msg .= self::greeting($adminName);
         $msg .= "*{$customerName}* has signed rental agreement *{$bookingRef}*. Please review and countersign.\n\n";
         $msg .= self::bullet('Booking Ref', $bookingRef);
@@ -156,7 +240,7 @@ class WhatsAppMessage
 
     public static function contractApprovedClient($customerName, $bookingRef, $portalUrl, $username = null, $password = null)
     {
-        $msg = self::statusBlock('✅', 'Contract Approved', $bookingRef);
+        $msg = self::statusBlock('✅', 'Contract Approved');
         $msg .= self::greeting($customerName);
         $msg .= "Your signed rental agreement for booking *{$bookingRef}* has been approved.\n\n";
         $msg .= "Signed PDF and QR code are attached.\n";
@@ -174,7 +258,7 @@ class WhatsAppMessage
 
     public static function contractApprovedStaff($staffName, $customerName, $bookingRef, $scanUrl)
     {
-        $msg = self::statusBlock('✅', 'Contract Finalized', $bookingRef);
+        $msg = self::statusBlock('✅', 'Contract Finalized');
         $msg .= self::greeting($staffName);
         $msg .= "Rental agreement *{$bookingRef}* for *{$customerName}* is fully signed.\n\n";
         $msg .= self::bullet('Booking Ref', $bookingRef);
@@ -188,7 +272,7 @@ class WhatsAppMessage
 
     public static function awaitingSignatureNotice($staffName, $customerName, $bookingRef, $awaitingUrl)
     {
-        $msg = self::statusBlock('📨', 'Awaiting Client Signature', $bookingRef);
+        $msg = self::statusBlock('📨', 'Awaiting Client Signature');
         $msg .= self::greeting($staffName);
         $msg .= "Rental agreement *{$bookingRef}* is waiting for *{$customerName}* to sign.\n\n";
         $msg .= self::bullet('Booking Ref', $bookingRef);
@@ -210,7 +294,7 @@ class WhatsAppMessage
      */
     public static function quotationApprovalRequest($customerName, $referenceNo, $grandTotal, $approvalUrl, array $options = [])
     {
-        $msg = self::statusBlock('📋', 'Quotation for Signature', $referenceNo);
+        $msg = self::statusBlock('📋', 'Quotation for Signature');
         $msg .= self::greeting($customerName);
         $msg .= "Please review and sign your quotation from *".self::companyName()."*.\n\n";
         $msg .= self::bullet('Reference', $referenceNo);
@@ -235,7 +319,7 @@ class WhatsAppMessage
         $clientNote = ''
     ) {
         $modeLabel = $mode === 'lines' ? 'Item prices' : 'Overall total';
-        $msg = self::statusBlock('💬', 'Client Quote Submitted', $referenceNo);
+        $msg = self::statusBlock('💬', 'Client Quote Submitted');
         $msg .= self::greeting($recipientName);
         $msg .= "*{$customerName}* submitted a quote on quotation *{$referenceNo}*.\n\n";
         $msg .= self::bullet('Reference', $referenceNo);
@@ -255,7 +339,7 @@ class WhatsAppMessage
 
     public static function quotationSignedPdf($customerName, $referenceNo, $grandTotal)
     {
-        $msg = self::statusBlock('✅', 'Signed Quotation', $referenceNo);
+        $msg = self::statusBlock('✅', 'Signed Quotation');
         $msg .= self::greeting($customerName);
         $msg .= "Thank you for signing. Please find your official quotation PDF from *".self::companyName()."*.\n\n";
         $msg .= self::bullet('Reference', $referenceNo);
@@ -267,7 +351,7 @@ class WhatsAppMessage
 
     public static function quotationNoSignaturePdf($customerName, $referenceNo, $grandTotal)
     {
-        $msg = self::statusBlock('📄', 'Quotation', $referenceNo);
+        $msg = self::statusBlock('📄', 'Quotation');
         $msg .= self::greeting($customerName);
         $msg .= "Please find your quotation PDF from *".self::companyName()."*.\n\n";
         $msg .= self::bullet('Reference', $referenceNo);
@@ -279,7 +363,7 @@ class WhatsAppMessage
 
     public static function deliverySignatureRequest($customerName, $deliveryRef, $saleRef, $signUrl)
     {
-        $msg = self::statusBlock('📦', 'Confirm Delivery Receipt', $deliveryRef);
+        $msg = self::statusBlock('📦', 'Confirm Delivery Receipt');
         $msg .= self::greeting($customerName);
         $msg .= "Please confirm that you have received your goods from *".self::companyName()."*.\n\n";
         $msg .= self::bullet('Delivery Ref', $deliveryRef);
@@ -293,7 +377,7 @@ class WhatsAppMessage
 
     public static function deliverySignedDocument($customerName, $deliveryRef, $saleRef)
     {
-        $msg = self::statusBlock('✅', 'Signed Delivery', $deliveryRef);
+        $msg = self::statusBlock('✅', 'Signed Delivery');
         $msg .= self::greeting($customerName);
         $msg .= "Please find your signed delivery note from *".self::companyName()."*.\n\n";
         $msg .= self::bullet('Delivery Ref', $deliveryRef);
@@ -322,27 +406,27 @@ class WhatsAppMessage
     ) {
         $event = strtolower((string) $event);
         if ($event === 'approved') {
-            $msg = self::statusBlock('✅', 'Quotation Approved', $referenceNo);
+            $msg = self::statusBlock('✅', 'Quotation Approved');
             $msg .= self::greeting($recipientName);
             $msg .= "*{$customerName}* approved quotation *{$referenceNo}*.\n\n";
         } elseif ($event === 'rejected') {
-            $msg = self::statusBlock('❌', 'Quotation Rejected', $referenceNo);
+            $msg = self::statusBlock('❌', 'Quotation Rejected');
             $msg .= self::greeting($recipientName);
             $msg .= "*{$customerName}* rejected quotation *{$referenceNo}*.\n\n";
         } elseif ($event === 'quoted') {
-            $msg = self::statusBlock('💬', 'Client Quote', $referenceNo);
+            $msg = self::statusBlock('💬', 'Client Quote');
             $msg .= self::greeting($recipientName);
             $msg .= "*{$customerName}* submitted a quote on quotation *{$referenceNo}*.\n\n";
         } elseif ($event === 'quote_accepted') {
-            $msg = self::statusBlock('✅', 'Quote Accepted', $referenceNo);
+            $msg = self::statusBlock('✅', 'Quote Accepted');
             $msg .= self::greeting($recipientName);
             $msg .= "Client quote on *{$referenceNo}* was accepted. Updated quotation sent for signature.\n\n";
         } elseif ($event === 'quote_rejected') {
-            $msg = self::statusBlock('❌', 'Quote Rejected', $referenceNo);
+            $msg = self::statusBlock('❌', 'Quote Rejected');
             $msg .= self::greeting($recipientName);
             $msg .= "Client quote on *{$referenceNo}* was rejected. Original amounts kept.\n\n";
         } else {
-            $msg = self::statusBlock('📤', 'Quotation Sent for Approval', $referenceNo);
+            $msg = self::statusBlock('📤', 'Quotation Sent for Approval');
             $msg .= self::greeting($recipientName);
             $msg .= "Quotation *{$referenceNo}* was sent to *{$customerName}* for approval.\n\n";
         }
@@ -430,7 +514,7 @@ class WhatsAppMessage
 
     public static function bookingConfirmation($customerName, $referenceNo, $orderDate, array $lines, $grandTotal, $payingMethod, $facilityName, $facilityAddress, $facilityPhone, $bookingNote = '')
     {
-        $msg = self::statusBlock('✅', 'Booking Confirmed', $referenceNo);
+        $msg = self::statusBlock('✅', 'Booking Confirmed');
         $msg .= self::greeting($customerName);
         $msg .= self::bullet('Order Number', $referenceNo);
         $msg .= self::bullet('Order Date', $orderDate);
@@ -485,7 +569,7 @@ class WhatsAppMessage
             return $currencyCode !== '' ? trim($currencyCode.' '.$formatted) : $formatted;
         };
 
-        $msg = self::statusBlock('🧾', 'Sale Confirmed', $referenceNo);
+        $msg = self::statusBlock('🧾', 'Sale Confirmed');
         $msg .= self::greeting($customerName);
         $msg .= "Thank you for shopping with *{$company}*. Your order is confirmed.\n\n";
         $msg .= self::bullet('Order Number', $referenceNo);
@@ -533,7 +617,7 @@ class WhatsAppMessage
 
     public static function lateReturnNotice($customerName, $company, $productName, $returnAt, $bookingRef, $dailyRate)
     {
-        $msg = self::statusBlock('⚠️', 'Late Equipment Return', $bookingRef);
+        $msg = self::statusBlock('⚠️', 'Late Equipment Return');
         $msg .= self::greeting($customerName);
         $msg .= "Our records show rented equipment from *{$company}* was not returned by the agreed date.\n\n";
         $msg .= self::bullet('Equipment', $productName);
@@ -574,8 +658,8 @@ class WhatsAppMessage
         $minutes = max(1, (int) $expiresMinutes);
         $otp = preg_replace('/\D/', '', (string) $otp);
 
-        $msg = self::statusBlock('🔐', 'Authentication', MessageSerial::next('OTP'));
-        $msg .= self::greeting('Guest');
+        $msg = self::statusBlock('🔐', 'AUTHENTICATION');
+        $msg .= "Dear Guest,\n\n";
         $msg .= "Thank you for choosing *{$company}*.\n\n";
         $msg .= "Your one-time verification code for {$purposeLabel} is:\n\n";
         $msg .= "*{$otp}*\n\n";
@@ -588,7 +672,7 @@ class WhatsAppMessage
 
     public static function accountCreated($name, $phone, $password, $loginUrl = null, $note = null)
     {
-        $msg = self::statusBlock('🎉', 'Account Created', $phone);
+        $msg = self::statusBlock('🎉', 'Account Created');
         $msg .= self::greeting($name);
         $msg .= "Your account on *" . self::companyName() . "* has been created.\n\n";
         $msg .= self::bullet('Name', $name);
@@ -609,7 +693,7 @@ class WhatsAppMessage
     public static function applicationUnderReview($name, $jobTitle, $reference, $isInternship = false)
     {
         $kind = $isInternship ? 'Internship' : 'Job';
-        $msg = self::statusBlock('📩', $kind.' Application', $reference);
+        $msg = self::statusBlock('📩', $kind.' Application');
         $msg .= self::greeting($name);
         $msg .= "Your application for *{$jobTitle}* has been received and is now *under review*.\n\n";
         $msg .= self::bullet('Reference', $reference);
@@ -626,7 +710,7 @@ class WhatsAppMessage
     public static function applicationUnderReviewAdmin($adminName, $applicantName, $jobTitle, $reference, $loginUrl, $isInternship = false, $applicantPhone = null)
     {
         $kind = $isInternship ? 'Internship' : 'Job';
-        $msg = self::statusBlock('📩', $kind.' Application', $reference);
+        $msg = self::statusBlock('📩', $kind.' Application');
         $msg .= self::greeting($adminName ?: 'Admin');
         $msg .= "A new application for *{$jobTitle}* has been received and is now *under review*.\n\n";
         $msg .= self::bullet('Applicant', $applicantName ?: '—');
@@ -645,7 +729,7 @@ class WhatsAppMessage
     public static function applicationSelected($name, $jobTitle, $reference, $agreementUrl, $isInternship = false, $offerPortal = false)
     {
         $kind = $isInternship ? 'Internship' : 'Employment';
-        $msg = self::statusBlock('✅', 'Selected', $reference);
+        $msg = self::statusBlock('✅', 'Selected');
         $msg .= self::greeting($name);
         $msg .= "Congratulations! You have been *selected* for the {$kind} role *{$jobTitle}*.\n\n";
         $msg .= self::bullet('Reference', $reference);
@@ -663,7 +747,7 @@ class WhatsAppMessage
 
     public static function applicationRejected($name, $jobTitle, $reference, $reason = null)
     {
-        $msg = self::statusBlock('❌', 'Application Update', $reference);
+        $msg = self::statusBlock('❌', 'Application Update');
         $msg .= self::greeting($name);
         $msg .= "Thank you for applying for *{$jobTitle}* at *" . self::companyName() . "*.\n\n";
         $msg .= self::bullet('Reference', $reference);
@@ -679,7 +763,7 @@ class WhatsAppMessage
 
     public static function applicationDocumentsUpdateRequested($name, $jobTitle, $reference, $updateUrl, array $missingLabels = [], $note = null)
     {
-        $msg = self::statusBlock('📎', 'Documents Needed', $reference);
+        $msg = self::statusBlock('📎', 'Documents Needed');
         $msg .= self::greeting($name);
         $msg .= "Please upload the missing documents for your application to *{$jobTitle}*.\n\n";
         $msg .= self::bullet('Reference', $reference);
@@ -699,7 +783,7 @@ class WhatsAppMessage
     public static function applicationAgreementSigned($name, $jobTitle, $reference, $isInternship = false)
     {
         $kind = $isInternship ? 'Internship' : 'Employment';
-        $msg = self::statusBlock('📝', $kind.' Agreement Signed', $reference);
+        $msg = self::statusBlock('📝', $kind.' Agreement Signed');
         $msg .= self::greeting($name);
         $msg .= "Your {$kind} agreement for *{$jobTitle}* has been signed and received.\n\n";
         $msg .= self::bullet('Reference', $reference);
@@ -714,7 +798,7 @@ class WhatsAppMessage
 
     public static function shareholderRegistration($name, $reference, $shares, $investmentLabel, $verifyUrl)
     {
-        $msg = self::statusBlock('📈', 'Shareholder Registration', $reference);
+        $msg = self::statusBlock('📈', 'Shareholder Registration');
         $msg .= self::greeting($name);
         $msg .= "Your shareholder registration with *" . self::companyName() . "* has been received.\n\n";
         $msg .= self::bullet('Reference', $reference);
@@ -729,7 +813,7 @@ class WhatsAppMessage
 
     public static function trainingRegistration($name, $reference, $courses)
     {
-        $msg = self::statusBlock('🎓', 'Training Registration', $reference);
+        $msg = self::statusBlock('🎓', 'Training Registration');
         $msg .= self::greeting($name);
         $msg .= "Your training registration with *" . self::companyName() . "* has been received.\n\n";
         $msg .= self::bullet('Reference', $reference);
@@ -742,7 +826,7 @@ class WhatsAppMessage
 
     public static function eventContractSignRequest($workerName, $eventName, $signUrl)
     {
-        $msg = self::statusBlock('📝', 'Event Contract', $eventName);
+        $msg = self::statusBlock('📝', 'Event Contract');
         $msg .= self::greeting($workerName ?: 'Team member');
         $msg .= "Please review and sign your event contract with *" . self::companyName() . "*.\n\n";
         $msg .= self::bullet('Event', $eventName);
@@ -754,7 +838,7 @@ class WhatsAppMessage
 
     public static function clientSignedPendingReview($customerName, $bookingRef, $reviewUrl = null)
     {
-        $msg = self::statusBlock('✅', 'Agreement Signed', $bookingRef);
+        $msg = self::statusBlock('✅', 'Agreement Signed');
         $msg .= self::greeting($customerName);
         $msg .= "Thank you for signing rental agreement *{$bookingRef}*.\n\n";
         $msg .= "Your signed contract PDF is attached. Our team will review and countersign shortly.\n";
@@ -769,7 +853,7 @@ class WhatsAppMessage
 
     public static function bookingQuotationCc($recipientName, $bookingRef, array $lines, $customerName, $bookingNote = '')
     {
-        $msg = self::statusBlock('📋', 'Quotation Copy', $bookingRef);
+        $msg = self::statusBlock('📋', 'Quotation Copy');
         $msg .= self::greeting($recipientName);
         $msg .= "You are copied on equipment quotation *{$bookingRef}* for *{$customerName}*.\n\n";
         $msg .= "*Equipment (no pricing):*\n";
@@ -803,7 +887,7 @@ class WhatsAppMessage
     {
         $isDelivered = $role === 'delivered';
 
-        $msg = self::statusBlock('📦', 'Goods Delivery', $deliveryRef);
+        $msg = self::statusBlock('📦', 'Goods Delivery');
         $msg .= self::greeting($customerName);
 
         if ($isDelivered) {
@@ -837,7 +921,7 @@ class WhatsAppMessage
 
     public static function goodsReceivedSignedClient($customerName, $bookingRef, $deliveryRef)
     {
-        $msg = self::statusBlock('✅', 'Goods Received', $deliveryRef);
+        $msg = self::statusBlock('✅', 'Goods Received');
         $msg .= self::greeting($customerName);
         $msg .= "Thank you for confirming receipt of equipment for booking *{$bookingRef}*.\n\n";
         $msg .= self::bullet('Delivery Note', $deliveryRef);
@@ -850,7 +934,7 @@ class WhatsAppMessage
 
     public static function bookingScheduledReminder($customerName, $referenceNo, $remindAtFormatted, $customMessage = '')
     {
-        $msg = self::statusBlock('🔔', 'Booking Reminder', $referenceNo);
+        $msg = self::statusBlock('🔔', 'Booking Reminder');
         $msg .= self::greeting($customerName);
         $msg .= "This is your scheduled reminder for booking *{$referenceNo}*.\n\n";
         $msg .= self::bullet('Scheduled for', $remindAtFormatted);
@@ -879,7 +963,7 @@ class WhatsAppMessage
         $internList = $names ? implode(', ', $names) : 'an intern';
         $loginUrl = $loginUrl ?: url('/staff-otp-login');
 
-        $msg = self::statusBlock('🎓', 'Internship Supervision Assigned', $program);
+        $msg = self::statusBlock('🎓', 'Internship Supervision Assigned');
         $msg .= self::greeting($supervisorName ?: 'Supervisor');
         $msg .= "You have been assigned to supervise the following intern(s) under the *" . self::companyName() . "* Internship Programme.\n\n";
         $msg .= self::bullet('Intern(s)', $internList);
@@ -902,7 +986,7 @@ class WhatsAppMessage
      */
     public static function internshipDailyTask($studentName, $program, $taskLabel, $workDate, $url, array $instructionSteps = [], $handbookAttached = false)
     {
-        $msg = self::statusBlock('📚', 'Internship Task', $taskLabel);
+        $msg = self::statusBlock('📚', 'Internship Task');
         $msg .= self::greeting($studentName ?: 'Intern');
         $msg .= "Your internship task for today is ready.\n\n";
         $msg .= self::bullet('Program', $program ?: '—');
@@ -943,7 +1027,7 @@ class WhatsAppMessage
      */
     public static function internshipSupervisorTaskCopy($supervisorName, $studentName, $program, $taskLabel, $workDate, $dashboardUrl)
     {
-        $msg = self::statusBlock('📚', 'Intern Task Released', $taskLabel);
+        $msg = self::statusBlock('📚', 'Intern Task Released');
         $msg .= self::greeting($supervisorName ?: 'Supervisor');
         $msg .= "A daily internship task was released to your intern. A copy of the task details and the instruction handbook follow.\n\n";
         $msg .= self::bullet('Intern', $studentName ?: '—');
@@ -961,7 +1045,7 @@ class WhatsAppMessage
      */
     public static function internshipReviewReminder($supervisorName, $studentName, $taskLabel, $submittedAt, $autoAcceptAt, $url)
     {
-        $msg = self::statusBlock('⏳', 'Submission Waiting', $taskLabel);
+        $msg = self::statusBlock('⏳', 'Submission Waiting');
         $msg .= self::greeting($supervisorName ?: 'Supervisor');
         $msg .= "An intern is waiting on your review before their next task can be scheduled.\n\n";
         $msg .= self::bullet('Intern', $studentName ?: '—');
@@ -984,7 +1068,7 @@ class WhatsAppMessage
     {
         $dayLabel = $slaDays.' working day'.((int) $slaDays === 1 ? '' : 's');
 
-        $msg = self::statusBlock('⚠️', 'Auto-Accepted', $taskLabel);
+        $msg = self::statusBlock('⚠️', 'Auto-Accepted');
         $msg .= self::greeting($supervisorName ?: 'Supervisor');
         $msg .= "A submission passed its {$dayLabel} review window, so it was accepted automatically to keep the placement moving.\n\n";
         $msg .= self::bullet('Intern', $studentName ?: '—');
@@ -1006,7 +1090,7 @@ class WhatsAppMessage
     {
         $fillUrl = $fillUrl ?: url('/admin/timesheet/fill');
 
-        $msg = self::statusBlock('⏰', 'Timesheet Missing', $missingDate);
+        $msg = self::statusBlock('⏰', 'Timesheet Missing');
         $msg .= self::greeting($studentName ?: 'Intern');
         $msg .= "Your working day has ended and no hours are logged yet.\n\n";
         $msg .= self::bullet('Date', $missingDate ?: '—');
@@ -1028,7 +1112,7 @@ class WhatsAppMessage
         $loginUrl = $loginUrl ?: url('/login');
         $timesheetUrl = $timesheetUrl ?: url('/admin/timesheet/working-week');
 
-        $msg = self::statusBlock('🔑', 'Internship Login', $username);
+        $msg = self::statusBlock('🔑', 'Internship Login');
         $msg .= self::greeting($name ?: 'Intern');
         $msg .= "Your internship admission letter PDF was sent above. Use these details to sign in and set your Working Week.\n\n";
         $msg .= self::bullet('Username', $username ?: '—');
@@ -1045,7 +1129,7 @@ class WhatsAppMessage
 
     public static function membershipApplicationReceived($name, $reference)
     {
-        $msg = self::statusBlock('📩', 'Membership application', $reference);
+        $msg = self::statusBlock('🪪', 'MEMBERSHIP APPLICATION');
         $msg .= self::greeting($name);
         $msg .= "Thank you for your membership application.\n\n";
         $msg .= "We have received your request and our team will review it shortly. You will receive a WhatsApp message once a decision has been made.\n\n";
@@ -1057,7 +1141,7 @@ class WhatsAppMessage
 
     public static function membershipApplicationAdmin($adminName, $applicantName, $reference, $loginUrl)
     {
-        $msg = self::statusBlock('📩', 'Membership application', $reference);
+        $msg = self::statusBlock('🪪', 'NEW MEMBERSHIP APPLICATION');
         $msg .= self::greeting($adminName ?: 'Team');
         $msg .= "A new membership application is ready for review.\n\n";
         $msg .= self::bullet('Applicant', $applicantName);
@@ -1070,8 +1154,10 @@ class WhatsAppMessage
 
     public static function membershipApproved($name, $number, $status, $expires, $payUrl = null, $verifyUrl = null)
     {
-        $msg = self::statusBlock('✅', 'Membership update', $number);
+        $company = self::companyName();
+        $msg = self::statusBlock('✅', 'MEMBERSHIP UPDATE');
         $msg .= self::greeting($name);
+        $msg .= "Your membership with *{$company}* has been updated.\n\n";
         $msg .= self::bullet('Membership No', $number);
         $msg .= self::bullet('Status', $status);
         if ($expires) {
@@ -1093,7 +1179,7 @@ class WhatsAppMessage
     public static function membershipRejected($name, $reference, $note = null)
     {
         $company = self::companyName();
-        $msg = self::statusBlock('❌', 'Membership application', $reference);
+        $msg = self::statusBlock('❌', 'MEMBERSHIP APPLICATION');
         $msg .= self::greeting($name);
         $msg .= "Thank you for your interest in membership with *{$company}*.\n\n";
         $msg .= "After review, we are unable to approve application *{$reference}* at this time.\n";
@@ -1108,8 +1194,9 @@ class WhatsAppMessage
 
     public static function membershipMoreInfo($name, $reference, $note)
     {
-        $msg = self::statusBlock('ℹ️', 'Membership application', $reference);
+        $msg = self::statusBlock('📎', 'MEMBERSHIP — MORE INFORMATION');
         $msg .= self::greeting($name);
+        $msg .= "Thank you for your membership application *{$reference}*.\n\n";
         $msg .= "We need a little more information before we can complete the review.\n\n";
         $msg .= $note."\n";
         $msg .= "\nPlease reply on this WhatsApp number with the requested details.";
@@ -1121,7 +1208,7 @@ class WhatsAppMessage
     public static function membershipRenewalReminder($name, $number, $expires, $renewUrl, $kind)
     {
         $expired = ($kind === 'expired' || $kind === 'after');
-        $msg = self::statusBlock('⏰', 'Membership renewal', $number);
+        $msg = self::statusBlock('🔔', $expired ? 'MEMBERSHIP EXPIRED' : 'MEMBERSHIP RENEWAL');
         $msg .= self::greeting($name);
         if ($expired) {
             $msg .= "Your membership *{$number}* has expired. Member pricing and benefits are no longer active.\n\n";

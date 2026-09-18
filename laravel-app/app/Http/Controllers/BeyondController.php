@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\File;
-use Illuminate\Http\Request;
 
 class BeyondController extends Controller
 {
@@ -77,81 +76,32 @@ class BeyondController extends Controller
         return redirect(url('/about') . '#contact', 301);
     }
 
-    public function contactCompose(Request $request)
+    public function storeContact(\Illuminate\Http\Request $request)
+    {
+        return $this->contactCompose($request);
+    }
+
+    public function contactCompose(\Illuminate\Http\Request $request)
     {
         $data = $request->validate([
-            'name' => 'required|string|max:191',
-            'email' => 'required|email|max:191',
+            'name' => 'required|string|max:120',
+            'email' => 'required|email|max:190',
             'phone' => 'nullable|string|max:40',
-            'subject' => 'required|string|max:191',
+            'subject' => 'required|string|max:190',
             'message' => 'required|string|max:5000',
         ]);
 
-        $serial = \App\Support\MessageSerial::next('MSG');
-        $company = \App\Support\WhatsAppMessage::companyName();
+        $result = app(\App\Services\ContactInquiryService::class)->submit($data, $request->ip());
 
-        if (\Illuminate\Support\Facades\Schema::hasTable('contact_messages')) {
-            \App\ContactMessage::create([
-                'serial' => $serial,
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'phone' => $data['phone'] ?? null,
-                'subject' => $data['subject'],
-                'message' => $data['message'],
-                'ip' => substr((string) $request->ip(), 0, 45),
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'ok' => true,
+                'serial' => $result['serial'],
+                'message' => 'Thank you. Your message '.$result['serial'].' has been received.',
             ]);
         }
 
-        $staffText = \App\Support\WhatsAppMessage::contactWebsiteMessage(
-            $data['name'],
-            $data['phone'] ?? '',
-            $data['email'],
-            $data['subject'],
-            $data['message'],
-            $serial
-        );
-
-        $sent = false;
-        try {
-            $result = app(\App\Services\Messaging\NotificationRouter::class)
-                ->sendWhatsAppText(\App\Support\SiteBrand::phoneWhatsAppDigits(), $staffText, [
-                    'title' => $data['subject'],
-                    'name' => 'Team',
-                    'message' => $data['message'],
-                    'reference' => $serial,
-                    'details' => $data['name'],
-                ]);
-            $sent = ! empty($result['success']) && empty($result['skipped']);
-        } catch (\Throwable $e) {
-            \Log::warning('Contact WhatsApp notify failed: '.$e->getMessage());
-        }
-
-        try {
-            \Mail::send('mail.contact_message', [
-                'company' => $company,
-                'serial' => $serial,
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'phone' => $data['phone'] ?? '',
-                'subject' => $data['subject'],
-                'body' => $data['message'],
-                'sent_at' => now()->timezone('Africa/Kigali')->format('d M Y, H:i'),
-            ], function ($m) use ($data, $serial) {
-                $m->to(\App\Support\SiteBrand::email())
-                    ->replyTo($data['email'], $data['name'])
-                    ->subject(\App\Support\WhatsAppMessage::emailSubject($data['subject'], $serial));
-            });
-        } catch (\Throwable $e) {
-            \Log::warning('Contact email notify failed: '.$e->getMessage());
-        }
-
-        return response()->json([
-            'ok' => true,
-            'serial' => $serial,
-            'sent' => $sent,
-            'wa_url' => $sent ? null : \App\Support\SiteBrand::phoneWhatsAppUrl($staffText),
-            'message' => 'Thank you. Your message was received. Serial No: '.$serial,
-        ]);
+        return back()->with('message', 'Thank you. Your message '.$result['serial'].' has been received.');
     }
 
     public function menu()

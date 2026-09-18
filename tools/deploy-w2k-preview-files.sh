@@ -26,8 +26,11 @@ FILES=(
   app/Support/WhatsAppMessage.php
   app/Support/MessageSerial.php
   app/ContactMessage.php
-  app/Support/AnnouncementPersonalization.php
-  app/Services/AnnouncementNotificationService.php
+  app/Services/ContactInquiryService.php
+  app/Services/Messaging/NotificationRouter.php
+  database/migrations/2026_09_18_103000_create_institutional_messages.php
+  database/migrations/2026_09_18_120000_create_wa_message_serials_table.php
+  resources/views/mail/contact_message.blade.php
   app/Support/AppUrl.php
   app/Support/SchemaColumns.php
   app/Support/SiteMenu.php
@@ -70,11 +73,6 @@ FILES=(
   app/Http/Controllers/PawaPayCallbackController.php
   app/Http/Controllers/StripePaymentController.php
   app/Http/Controllers/BeyondController.php
-  app/Http/Controllers/Controller.php
-  app/Http/Controllers/LetterController.php
-  app/Http/Controllers/PublicRentalController.php
-  app/Http/Controllers/PublicPermissionController.php
-  app/Services/Internship/InternshipProgramService.php
   app/Http/Middleware/EncryptCookies.php
   app/Http/Middleware/VerifyCsrfToken.php
   app/Providers/AppServiceProvider.php
@@ -111,9 +109,6 @@ FILES=(
   database/migrations/2026_09_11_120000_ensure_w2k_catalog_settings.php
   database/migrations/2026_09_11_131500_add_remember_token_to_auth_tables.php
   database/migrations/2026_09_17_120000_ensure_w2k_module_columns.php
-  database/migrations/2026_09_18_103000_create_institutional_messages.php
-  resources/views/mail/contact_message.blade.php
-  database/migrations/2026_09_18_120000_create_wa_message_serials_table.php
   app/Quotation.php
   app/Expense.php
   app/AssetExpense.php

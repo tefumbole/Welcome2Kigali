@@ -684,7 +684,7 @@ class Controller extends BaseController
             $customerName = $lims_customer_data->name ?? 'Customer';
             $caption = $captionOverride !== null && $captionOverride !== ''
                 ? $captionOverride
-                : (\App\Support\WhatsAppMessage::statusBlock('📄', 'Document attached', $filename)
+                : (\App\Support\WhatsAppMessage::statusBlock('📄', 'DOCUMENT ATTACHED')
                     . \App\Support\WhatsAppMessage::greeting($customerName)
                     . 'Please find your *' . $filename . '* attached.'
                     . \App\Support\WhatsAppMessage::footer());

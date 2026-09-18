@@ -579,15 +579,26 @@ class FrontendController extends Controller
     }
 
     public function contactMessage(Request $request) {
-        $msg = $request->message;
-        $phone = $request->phone;
+        $data = $request->validate([
+            'name' => 'nullable|string|max:120',
+            'email' => 'nullable|email|max:190',
+            'phone' => 'nullable|string|max:40',
+            'subject' => 'nullable|string|max:190',
+            'message' => 'required|string|max:5000',
+        ]);
+        if (empty($data['name'])) {
+            $data['name'] = 'Guest';
+        }
+        if (empty($data['subject'])) {
+            $data['subject'] = 'Website enquiry';
+        }
         try {
-            $this->wpMessage($phone, $msg);
+            $result = app(\App\Services\ContactInquiryService::class)->submit($data, $request->ip());
         } catch (\Exception $e) {
             return back()->with('not_permitted', 'Something went wrong...!');
         }
-        return back()->with('message', 'We Received your valuable message, we will get back to you shortly...!');
 
+        return back()->with('message', 'We received your message '.$result['serial'].'. We will get back to you shortly.');
     }
 
     public function productSearch(Request $request) {

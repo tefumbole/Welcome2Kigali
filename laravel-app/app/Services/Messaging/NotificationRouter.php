@@ -57,6 +57,7 @@ class NotificationRouter
             }
         }
 
+        $body = WhatsAppMessage::ensureEnvelope($body, $statusVars['title'] ?? 'Official Message');
         $result = $this->wasender->sendTextRaw($phone, $body);
         $result['provider'] = 'wasender';
 
@@ -133,7 +134,12 @@ class NotificationRouter
             return ['success' => true, 'skipped' => true, 'provider' => 'none'];
         }
 
-        $result = $this->wasender->sendDocument($phone, $localPath, $fileName, $caption);
+        $result = $this->wasender->sendDocument(
+            $phone,
+            $localPath,
+            $fileName,
+            $caption ? WhatsAppMessage::ensureEnvelope($caption, $fileName ?: 'Document') : $caption
+        );
         $result['provider'] = 'wasender';
 
         return $result;
@@ -166,6 +172,7 @@ class NotificationRouter
             }
         }
 
+        $body = WhatsAppMessage::ensureEnvelope($body, $statusVars['title'] ?? 'Announcement', '📢');
         $result = $this->wasender->sendTextRaw($phone, $body);
         $result['provider'] = 'wasender';
 
@@ -205,11 +212,14 @@ class NotificationRouter
             }
         }
 
-        $wasenderBody = "Dear Client\n\nCongratulations!\n\n"
-            ."Your application to *{$programName}* has been successful received. "
-            ."You have been admitted to the *{$departmentName}* programme for the *{$yearName}* academic year.\n\n"
-            .'Your admission letter is attached to this message.'."\n\n"
-            ."Welcome to our institution!\n\n_{$company}_";
+        $wasenderBody = WhatsAppMessage::statusBlock('🎓', 'ADMISSION LETTER')
+            .WhatsAppMessage::greeting('Client')
+            ."Congratulations! Your application to *{$programName}* has been received.\n\n"
+            .WhatsAppMessage::bullet('Programme', $departmentName ?: '—')
+            .WhatsAppMessage::bullet('Year', $yearName ?: '—')
+            ."\nYour admission letter is attached to this message.\n"
+            ."Welcome to our institution!"
+            .WhatsAppMessage::footer();
 
         $result = $this->wasender->sendTextRaw($phone, $wasenderBody);
         $result['provider'] = 'wasender';

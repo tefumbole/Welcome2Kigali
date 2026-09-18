@@ -65,7 +65,7 @@ class AnnouncementPersonalization
         $body = preg_replace('/^\s*Dear\s+[^,\n]+,\s*/iu', '', $body);
         $body = trim($body);
 
-        $title = $isCc ? 'Announcement CC' : 'Announcement';
+        $title = $subject !== '' ? $subject : ($isCc ? 'Announcement CC' : 'Announcement');
         $emoji = $isCc ? '📨' : '📢';
 
         $msg = WhatsAppMessage::statusBlock($emoji, $title, $reference !== '' ? $reference : null);
@@ -76,11 +76,11 @@ class AnnouncementPersonalization
         if ($institution !== '') {
             $msg .= WhatsAppMessage::bullet('From', $institution);
         }
-        $msg .= WhatsAppMessage::bullet('Date', $dateStr);
-        if ($subject !== '') {
-            $msg .= WhatsAppMessage::bullet('Subject', $subject);
+        if ($reference !== '' && $reference !== $title) {
+            $msg .= WhatsAppMessage::bullet('Reference', $reference);
         }
-        $msg .= "━━━━━━━━━━━━━━━━\n\n";
+        $msg .= WhatsAppMessage::bullet('Date', $dateStr);
+        $msg .= "──────────────\n\n";
         if ($body !== '') {
             $msg .= $body."\n";
         }
