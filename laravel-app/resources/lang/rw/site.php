@@ -110,6 +110,7 @@ return [
     'menu' => [
         'title' => 'Menu y’ikawa n’icyayi',
         'meta' => 'Menu ya cafe ya Welcome 2 Kigali. Ikawa, icyayi, umutobe, na smoothie. Kanda ikintu urebe mu gatebo.',
+        'hero_sub' => 'Kanda ikintu kugira ngo wongere mu gitebo.',
         'empty' => 'Menu izagaragara hano nyuma yo gushyiraho ibicuruzwa bya cafe.',
         'food_empty' => 'Ibiryo bizagaragazwa hano iyo byongewe mu buyobozi → Ibicuruzwa.',
         'prices' => 'Ibiciro biri muri FRW | Umusoro urimo',

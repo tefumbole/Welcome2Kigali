@@ -147,7 +147,7 @@ class SiteContent
                 'url' => '/menu',
                 'fields' => [
                     'hero_title'    => ['html', 'Hero title (HTML allowed)', 'Cafe & <span class="text-brand-gold">Restaurant</span>'],
-                    'hero_subtitle' => ['text', 'Hero subtitle', 'Crafted to perfection. Every beverage is served with our signature complimentary bite. Prices in FRW, tax included.'],
+                    'hero_subtitle' => ['text', 'Hero subtitle', 'Click an item to add it to your cart.'],
                 ],
             ],
             'events' => [

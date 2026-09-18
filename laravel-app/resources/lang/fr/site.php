@@ -110,6 +110,7 @@ return [
     'menu' => [
         'title' => 'Menu café & thé',
         'meta' => 'Menu du café Welcome 2 Kigali. Café, thé, jus et smoothies. Cliquez pour ajouter au panier.',
+        'hero_sub' => 'Cliquez un article pour l’ajouter au panier.',
         'empty' => 'Le menu apparaîtra ici après l’ajout des produits.',
         'food_empty' => 'Les plats apparaîtront ici dès qu’ils seront ajoutés.',
         'prices' => 'Prix en FRW | Taxes comprises',
