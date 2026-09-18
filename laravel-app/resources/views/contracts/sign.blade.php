@@ -85,7 +85,7 @@
 <body>
 <div class="wrap">
     <div class="hero">
-        <h1>{{ !empty($contract) ? $contract->title : 'Sign contract' }}</h1>
+        <h1>{{ optional($contract)->title ?: 'Sign contract' }}</h1>
         <p>
             @if(!empty($contract))
                 Contract {{ $contract->number }} · Signing as <strong>{{ optional($signatory)->display_name ?? 'Signatory' }}</strong>

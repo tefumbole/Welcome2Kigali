@@ -1064,6 +1064,10 @@ class Controller extends BaseController
     }
 
     public function stockDurationSave($id, $qty) {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('stock_durations')) {
+            return;
+        }
+
         $stockDuration = StockDuration::where([
             'product_id' => $id,
             'restock' => null

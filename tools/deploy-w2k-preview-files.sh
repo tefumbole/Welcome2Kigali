@@ -33,6 +33,7 @@ FILES=(
   app/Services/Messaging/NotificationRouter.php
   database/migrations/2026_09_18_103000_create_institutional_messages.php
   database/migrations/2026_09_18_120000_create_wa_message_serials_table.php
+  database/migrations/2026_09_18_203000_create_stock_durations_table.php
   resources/views/mail/contact_message.blade.php
   app/Support/AppUrl.php
   app/Support/SchemaColumns.php
@@ -69,6 +70,7 @@ FILES=(
   app/Http/Controllers/ProductController.php
   app/Http/Controllers/CustomerGroupController.php
   app/Http/Controllers/CartController.php
+  app/Http/Controllers/PurchaseController.php
   app/Http/Controllers/HomeController.php
   app/Http/Controllers/LanguageController.php
   app/Http/Controllers/BeyondAuthController.php
@@ -219,6 +221,9 @@ FILES=(
   public/branding/w2k-landing@2x.jpg
   public/css/custom.css
   public/css/w2k-coffee-admin.css
+  public/css/w2k-mobile.css
+  resources/views/report/average_report.blade.php
+  resources/views/events/contracts/sign.blade.php
 )
 
 for f in app/Membership*.php; do
@@ -276,6 +281,7 @@ sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_18_103000_create_institutional_messages.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_18_120000_create_wa_message_serials_table.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_18_180000_add_preferred_locale_to_visitor_records.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_18_203000_create_stock_durations_table.php
 sudo -u www-data php "\$APP/artisan" permission:cache-reset || true
 sudo -u www-data php "\$APP/artisan" view:clear
 sudo -u www-data php "\$APP/artisan" cache:clear

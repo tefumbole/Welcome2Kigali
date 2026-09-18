@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\StockDuration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Redirect;
@@ -3510,22 +3509,7 @@ class SaleController extends Controller
     }
 
     public function stockDurationSave($id, $qty) {
-        $stockDuration = StockDuration::where([
-            'product_id' => $id,
-            'restock' => null
-        ])->first();
-        if ($qty == 0.0) {
-            if(!$stockDuration) {
-                StockDuration::create([
-                    'product_id' => $id,
-                    'out_of_stock' => date('Y-m-d')
-                ]);
-            }
-        } else {
-            if ($stockDuration) {
-                $stockDuration->update(['restock' => date('Y-m-d')]);
-            }
-        }
+        parent::stockDurationSave($id, $qty);
     }
 
     public function addCategoryIdInSale() {

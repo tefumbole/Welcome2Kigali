@@ -77,7 +77,9 @@
                     <tbody>
                     @foreach($data as $item)
                         @php
-                            $out_of_stock = App\StockDuration::where('product_id', $item->product_id)->whereBetween('out_of_stock', [$start_date, $end_date])->get();
+                            $out_of_stock = \Illuminate\Support\Facades\Schema::hasTable('stock_durations')
+                                ? App\StockDuration::where('product_id', $item->product_id)->whereBetween('out_of_stock', [$start_date, $end_date])->get()
+                                : collect();
                             $product_data = App\Product::where('id', $item->product_id)->first();
                             $out = 0;
                             if(@$product_data->type != 'digital') {

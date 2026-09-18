@@ -2,7 +2,7 @@
 <html lang="{{ app()->getLocale() }}">
 <head>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     @php
         $siteLogoUrl = \App\Support\SiteBrand::logoUrl($general_setting ?? null);
         $siteTitle = \App\Support\SiteBrand::siteTitle($general_setting ?? null);
@@ -43,6 +43,7 @@
         };
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Great+Vibes&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url('public/css/w2k-mobile.css') }}">
     <style>
         body { font-family: 'Montserrat', ui-sans-serif, system-ui, sans-serif; }
         @keyframes floaty { 0%,100% { transform: translateY(0); opacity:.4 } 50% { transform: translateY(-20px); opacity:.9 } }
@@ -352,7 +353,8 @@
             </div>
         </div>
 
-        <button @click="open = !open" class="lg:hidden text-white hover:text-brand-gold transition-colors">
+        <button @click="open = !open" type="button" aria-label="Menu"
+                class="lg:hidden text-white hover:text-brand-gold transition-colors min-w-[44px] min-h-[44px] inline-flex items-center justify-center">
             <i data-lucide="menu" class="w-6 h-6" x-show="!open"></i>
             <i data-lucide="x" class="w-6 h-6" x-show="open" x-cloak></i>
         </button>
@@ -361,7 +363,7 @@
     <div x-show="open" x-cloak class="lg:hidden pb-4 px-4 bg-black border-t border-brand-gold/30">
         <nav class="flex flex-col space-y-3 pt-4">
             @foreach ($navLinks as $link)
-                <a href="{{ $link['url'] }}" class="text-[1.46rem] font-medium {{ !empty($link['special']) ? 'text-brand-gold' : 'text-white hover:text-brand-gold' }}">{{ $link['label'] }}</a>
+                <a href="{{ $link['url'] }}" class="text-lg font-medium py-2 {{ !empty($link['special']) ? 'text-brand-gold' : 'text-white hover:text-brand-gold' }}">{{ $link['label'] }}</a>
             @endforeach
             <div class="flex items-center gap-2 pt-1">
                 @if ($contactPhone)
@@ -470,7 +472,7 @@
                     </div>
                 </div>
 
-                <div class="min-w-0 flex sm:justify-end lg:justify-end items-start">
+                <div class="min-w-0 flex sm:justify-end items-start w2k-footer-join">
                     <a href="{{ url('/register-now') }}"
                        class="inline-flex items-center rounded-full bg-brand-gold hover:bg-[#b08d45] text-black text-sm font-bold px-5 py-2.5 shadow-md">
                         {{ \App\Support\SiteContent::text('home.cta_primary', __('site.home.join')) }}
@@ -478,7 +480,7 @@
                 </div>
             </div>
         </div>
-        <div class="px-4 sm:px-6 pb-2">
+        <div class="px-4 sm:px-6 pb-2 w2k-footer-copy">
             <p class="text-center text-[11px] leading-relaxed text-white/70">
                 © {{ date('Y') }} Welcome 2 Kigali Expats Club. {{ \App\Support\SiteContent::text('footer.rights', __('site.footer.rights')) }}
                 <span class="text-white/30"> | </span>
@@ -496,7 +498,7 @@
 
 @unless(trim($__env->yieldContent('hide_footer')))
 <a href="{{ \App\Support\SiteBrand::phoneWhatsAppUrl() }}" target="_blank" rel="noopener"
-   class="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#1EBE57] text-white rounded-full p-4 shadow-xl hover:shadow-2xl transition-all flex items-center justify-center"
+   class="w2k-wa-fab fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#1EBE57] text-white rounded-full p-4 shadow-xl hover:shadow-2xl transition-all flex items-center justify-center"
    title="Chat on WhatsApp">
     <i data-lucide="message-circle" class="w-6 h-6"></i>
 </a>

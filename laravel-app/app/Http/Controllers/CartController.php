@@ -14,7 +14,6 @@ use App\Product;
 use App\Product_Warehouse;
 use App\ProductBatch;
 use App\ProductVariant;
-use App\StockDuration;
 use App\Unit;
 use App\User;
 use App\Variant;
@@ -709,22 +708,7 @@ class CartController extends Controller
     }
 
     public function stockDurationSave($id, $qty) {
-        $stockDuration = StockDuration::where([
-            'product_id' => $id,
-            'restock' => null
-        ])->first();
-        if ($qty == 0.0) {
-            if(!$stockDuration) {
-                StockDuration::create([
-                    'product_id' => $id,
-                    'out_of_stock' => date('Y-m-d')
-                ]);
-            }
-        } else {
-            if ($stockDuration) {
-                $stockDuration->update(['restock' => date('Y-m-d')]);
-            }
-        }
+        parent::stockDurationSave($id, $qty);
     }
 
     public function orderRceived($id) {

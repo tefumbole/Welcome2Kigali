@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\StockDuration;
 use Illuminate\Http\Request;
 use App\Warehouse;
 use App\Supplier;
@@ -1241,21 +1240,6 @@ class PurchaseController extends Controller
     }
 
     public function stockDurationSave($id, $qty) {
-        $stockDuration = StockDuration::where([
-            'product_id' => $id,
-            'restock' => null
-        ]);
-        if ($qty == 0.0) {
-            if(!$stockDuration) {
-                StockDuration::create([
-                    'product_id' => $id,
-                    'out_of_stock' => date('Y-m-d')
-                ]);
-            }
-        } else {
-            if ($stockDuration) {
-                $stockDuration->update(['restock' => date('Y-m-d')]);
-            }
-        }
+        parent::stockDurationSave($id, $qty);
     }
 }

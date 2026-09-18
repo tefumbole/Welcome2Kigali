@@ -3,15 +3,15 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sign Contract — {{ $contract->reference_no }}</title>
+    <title>Sign Contract — {{ optional($contract)->reference_no }}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <style>body{background:#f4f6fb}.contract-doc{background:#fff;padding:24px;border-radius:8px;max-height:50vh;overflow-y:auto}</style>
 </head>
 <body>
 <div class="container py-4" style="max-width:800px">
     @if(session('message'))<div class="alert alert-success">{{ session('message') }}</div>@endif
-    <h4 class="mb-1">{{ $contract->title }}</h4>
-    <p class="text-muted">{{ $contract->event->name }} · {{ $contract->reference_no }}</p>
+    <h4 class="mb-1">{{ optional($contract)->title ?: 'Sign contract' }}</h4>
+    <p class="text-muted">{{ optional(optional($contract)->event)->name }} · {{ optional($contract)->reference_no }}</p>
 
     <div class="contract-doc border mb-3">{!! $contract->rendered_body !!}</div>
 
