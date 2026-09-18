@@ -9,11 +9,11 @@
         position: relative;
         text-align: left;
         overflow: hidden;
-        border-radius: 1rem;
-        border: 2px solid #f3f4f6;
+        border-radius: .85rem;
+        border: 1px solid #ececec;
         background: #fff;
-        padding: 1.25rem;
-        min-height: 210px;
+        padding: .85rem .95rem;
+        min-height: 0;
         display: flex;
         flex-direction: column;
         transition: transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
@@ -23,7 +23,7 @@
         background: #111;
         border-color: #C5A059;
         transform: translateY(-2px);
-        box-shadow: 0 18px 36px rgba(0,0,0,.18);
+        box-shadow: 0 10px 22px rgba(0,0,0,.14);
     }
     .plan-card .plan-badge {
         display: inline-flex;
@@ -31,11 +31,11 @@
         border-radius: 999px;
         background: #111;
         color: #fff;
-        font-size: 10px;
+        font-size: 9px;
         font-weight: 800;
-        letter-spacing: .16em;
+        letter-spacing: .14em;
         text-transform: uppercase;
-        padding: .25rem .65rem;
+        padding: .2rem .5rem;
     }
     .plan-card:hover .plan-badge,
     .plan-card.is-on .plan-badge { background: #C5A059; color: #111; }
@@ -55,11 +55,12 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 1.75rem;
-        height: 1.75rem;
+        width: 1.35rem;
+        height: 1.35rem;
         border-radius: 999px;
         border: 1px solid #e5e7eb;
         color: transparent;
+        flex-shrink: 0;
     }
     .plan-card:hover .plan-check,
     .plan-card.is-on .plan-check {
@@ -78,17 +79,16 @@
     $startStep = old('plan_choice') || $errors->any() ? 2 : 1;
     $oldPlan = old('plan_choice', '');
 @endphp
-<div class="min-h-screen bg-gray-50 flex flex-col"
+<div class="bg-gray-50 flex flex-col"
      x-data="membershipApply({{ (int) $startStep }}, {{ json_encode($oldPlan) }})">
-    <div class="relative h-[140px] md:h-[180px] w-full bg-black overflow-hidden">
-        <div class="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-overlay" style="background-image:url('https://images.unsplash.com/photo-1693045181224-9fc2f954f054');"></div>
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center text-white z-10">
-            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">{{ __('site.membership.heading') }}</h1>
+    <div class="relative py-6 md:py-7 w-full bg-black">
+        <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-white">
+            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">{{ __('site.membership.heading') }}</h1>
         </div>
     </div>
 
-    <main class="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 z-20 pb-16 w-full">
-        <div class="bg-white rounded-xl shadow-xl border p-6 md:p-8">
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-5 z-20 pb-8 w-full">
+        <div class="bg-white rounded-xl shadow-lg border p-4 md:p-5">
             @if ($errors->any())
                 <div class="mb-6 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
                     <ul class="list-disc pl-5 space-y-1">
@@ -99,23 +99,23 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('membership.apply.store') }}" enctype="multipart/form-data" id="membership-apply-form" class="space-y-6">
+            <form method="POST" action="{{ route('membership.apply.store') }}" enctype="multipart/form-data" id="membership-apply-form" class="space-y-4">
                 @csrf
                 <input type="hidden" name="plan_choice" x-model="plan">
                 <input type="hidden" name="selfie_data" id="selfie-data">
                 <input type="hidden" name="signature" id="membership-signature">
 
                 <div x-show="step === 1">
-                    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+                    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-1">
                         <div>
-                            <p class="text-xs font-bold tracking-[0.2em] uppercase text-brand-gold m-0">{{ __('site.membership.plans_eyebrow') }}</p>
-                            <h2 class="text-2xl md:text-3xl font-extrabold text-black mt-1 mb-0">{{ __('site.membership.choose_plan') }}</h2>
+                            <p class="text-[10px] font-bold tracking-[0.2em] uppercase text-brand-gold m-0">{{ __('site.membership.plans_eyebrow') }}</p>
+                            <h2 class="text-lg md:text-xl font-extrabold text-black mt-0.5 mb-0">{{ __('site.membership.choose_plan') }}</h2>
                         </div>
-                        <p class="text-sm font-semibold text-brand-gold m-0">{{ __('site.membership.discount_all', ['pct' => $discount]) }}</p>
+                        <p class="text-xs font-semibold text-brand-gold m-0">{{ __('site.membership.discount_all', ['pct' => $discount]) }}</p>
                     </div>
-                    <p class="text-sm text-gray-500 mt-2 mb-0">{{ __('site.membership.pick_then_details') }}</p>
+                    <p class="text-xs text-gray-500 mt-1 mb-0">{{ __('site.membership.pick_then_details') }}</p>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mt-4">
                         @if($promo)
                             <button type="button"
                                     @click="selectPlan('promo', {{ json_encode($promo->name) }})"
@@ -123,18 +123,14 @@
                                     :class="plan === 'promo' ? 'is-on' : ''">
                                 <span class="flex items-center justify-between gap-2">
                                     <span class="plan-badge">{{ __('site.membership.free_badge') }}</span>
-                                    <span class="plan-featured text-[10px] font-bold uppercase tracking-widest">{{ __('site.membership.featured') }}</span>
+                                    <span class="plan-check"><i data-lucide="check" class="w-3.5 h-3.5"></i></span>
                                 </span>
-                                <span class="plan-name font-extrabold text-xl mt-3 leading-tight">{{ $promo->name }}</span>
-                                <span class="flex items-end gap-2 mt-3">
-                                    <span class="plan-price text-4xl font-black leading-none">0</span>
-                                    <span class="plan-meta text-sm font-semibold pb-1">FRW · {{ $promo->free_days }} {{ __('site.membership.days') }}</span>
+                                <span class="plan-name font-extrabold text-base mt-2 leading-tight">{{ $promo->name }}</span>
+                                <span class="flex items-end gap-1.5 mt-2">
+                                    <span class="plan-price text-2xl font-black leading-none">0</span>
+                                    <span class="plan-meta text-xs font-semibold pb-0.5">FRW · {{ $promo->free_days }} {{ __('site.membership.days') }}</span>
                                 </span>
-                                <span class="plan-meta text-sm mt-3 leading-snug">{{ $promo->description ?: __('site.membership.promo_blurb', ['days' => $promo->free_days]) }}</span>
-                                <span class="mt-auto pt-4 flex items-center justify-between">
-                                    <span class="plan-hint text-xs">{{ __('site.membership.perk_community') }}</span>
-                                    <span class="plan-check"><i data-lucide="check" class="w-4 h-4"></i></span>
-                                </span>
+                                <span class="plan-hint mt-auto pt-2 text-[11px] font-semibold">{{ __('site.membership.tap_to_select') }}</span>
                             </button>
                         @endif
                         @foreach($plans as $plan)
@@ -144,15 +140,14 @@
                                     :class="plan === {{ json_encode((string) $plan->id) }} ? 'is-on' : ''">
                                 <span class="flex items-center justify-between gap-2">
                                     <span class="plan-badge">{{ $plan->duration_months }} {{ __('site.membership.months') }}</span>
-                                    <span class="plan-check"><i data-lucide="check" class="w-4 h-4"></i></span>
+                                    <span class="plan-check"><i data-lucide="check" class="w-3.5 h-3.5"></i></span>
                                 </span>
-                                <span class="plan-name font-extrabold text-xl mt-3 leading-tight">{{ $plan->name }}</span>
-                                <span class="flex items-end gap-1.5 mt-3">
-                                    <span class="plan-price text-3xl md:text-4xl font-black leading-none tracking-tight">{{ number_format($plan->fee) }}</span>
-                                    <span class="plan-meta text-sm font-semibold pb-1">FRW</span>
+                                <span class="plan-name font-extrabold text-base mt-2 leading-tight">{{ $plan->name }}</span>
+                                <span class="flex items-end gap-1 mt-2">
+                                    <span class="plan-price text-2xl font-black leading-none tracking-tight">{{ number_format($plan->fee) }}</span>
+                                    <span class="plan-meta text-xs font-semibold pb-0.5">FRW</span>
                                 </span>
-                                <span class="plan-meta text-sm mt-3">{{ __('site.membership.discount_all', ['pct' => $discount]) }}</span>
-                                <span class="plan-hint mt-auto pt-4 text-xs font-semibold">{{ __('site.membership.tap_to_select') }}</span>
+                                <span class="plan-hint mt-auto pt-2 text-[11px] font-semibold">{{ __('site.membership.tap_to_select') }}</span>
                             </button>
                         @endforeach
                     </div>
