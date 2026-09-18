@@ -33,11 +33,11 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }*/
         $locale = 'en';
-        if (! empty($_COOKIE['language']) && in_array($_COOKIE['language'], ['en', 'fr'], true)) {
+        if (! empty($_COOKIE['language']) && in_array($_COOKIE['language'], ['en', 'fr', 'rw'], true)) {
             $locale = $_COOKIE['language'];
         }
         \App::setLocale($locale);
-        if (class_exists(\Carbon\Carbon::class)) {
+        if (class_exists(\Carbon\Carbon::class) && $locale !== 'rw') {
             \Carbon\Carbon::setLocale($locale);
         }
         Schema::defaultStringLength(191);

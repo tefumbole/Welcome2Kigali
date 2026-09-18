@@ -154,7 +154,7 @@ class SiteContent
                 'label' => 'Events',
                 'url' => '/events',
                 'fields' => [
-                    'hero_title'    => ['html', 'Hero title (HTML allowed)', 'Club <span class="text-brand-gold">Events</span>'],
+                    'hero_title'    => ['html', 'Hero title (HTML allowed)', 'Club Events'],
                     'hero_subtitle' => ['text', 'Hero subtitle', 'Gatherings, culture nights, and community moments in Kigali.'],
                 ],
             ],

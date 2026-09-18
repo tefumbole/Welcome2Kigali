@@ -1161,7 +1161,7 @@ class CartController extends Controller
         if ($vendorId < 1) {
             $vendorId = 1;
         }
-        $lims_sale_data = Order::create([
+        $lims_sale_data = Order::create(\App\Support\SchemaColumns::forTable('orders', [
             'user_id' => $user->id,
             'vendor_id' => $vendorId,
             'name' => $data['name'],
@@ -1176,7 +1176,8 @@ class CartController extends Controller
             'grand_total' => $data['grand_total'],
             'payment_status' => $data['payment_status'],
             'order_status' => 0,
-        ]);
+            'preferred_locale' => \App\Support\VisitorLocale::current(),
+        ]));
 
         //collecting male data
         $mail_data['email'] = $data['email'];

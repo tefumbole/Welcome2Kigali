@@ -1209,18 +1209,22 @@ class SaleController extends Controller
             $orderDate = $orderDate->format('D, M d, Y H:i');
         }
 
-        $msg = \App\Support\WhatsAppMessage::saleConfirmation(
-            $lims_customer_data->name,
-            $lims_sale_data->reference_no,
-            (string) $orderDate,
-            $lines,
-            $mail_data['grand_total'] ?? $lims_sale_data->grand_total,
-            $paying_method,
-            @$biller->name ?: @$biller->company_name,
-            @$biller->address,
-            @$lims_customer_data->address,
-            $currencyCode
-        );
+        $msg = \App\Support\WhatsAppMessage::withLocale(\App\Support\VisitorLocale::from($lims_customer_data), function () use (
+            $lims_customer_data, $lims_sale_data, $orderDate, $lines, $mail_data, $paying_method, $biller, $currencyCode
+        ) {
+            return \App\Support\WhatsAppMessage::saleConfirmation(
+                $lims_customer_data->name,
+                $lims_sale_data->reference_no,
+                (string) $orderDate,
+                $lines,
+                $mail_data['grand_total'] ?? $lims_sale_data->grand_total,
+                $paying_method,
+                @$biller->name ?: @$biller->company_name,
+                @$biller->address,
+                @$lims_customer_data->address,
+                $currencyCode
+            );
+        });
 
         $message = 'Sale created successfully';
         try{

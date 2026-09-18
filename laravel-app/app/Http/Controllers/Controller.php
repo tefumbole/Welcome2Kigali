@@ -746,17 +746,19 @@ class Controller extends BaseController
             }
         }
 
-        $msg = \App\Support\WhatsAppMessage::saleConfirmation(
-            $order->name,
-            $order->id,
-            $order->created_at,
-            $lines,
-            $order->grand_total,
-            $order->payment_method,
-            '',
-            $order->address,
-            $order->address
-        );
+        $msg = \App\Support\WhatsAppMessage::withLocale(\App\Support\VisitorLocale::from($order), function () use ($order, $lines) {
+            return \App\Support\WhatsAppMessage::saleConfirmation(
+                $order->name,
+                $order->id,
+                $order->created_at,
+                $lines,
+                $order->grand_total,
+                $order->payment_method,
+                '',
+                $order->address,
+                $order->address
+            );
+        });
 
         try{
             $this->wpMessage($order->phone, $msg);

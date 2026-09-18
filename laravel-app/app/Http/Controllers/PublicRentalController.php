@@ -8,6 +8,7 @@ use App\CashRegister;
 use App\Customer;
 use App\CustomerGroup;
 use App\Services\BeyondWasenderService;
+use App\Support\VisitorLocale;
 use App\Support\WhatsAppMessage;
 use App\User;
 use App\Warehouse;
@@ -43,10 +44,11 @@ class PublicRentalController extends Controller
             return back()->withInput()->withErrors(['form' => 'Rentals are temporarily unavailable. Please contact us on WhatsApp.']);
         }
 
+        $locale = VisitorLocale::current();
         $group = CustomerGroup::first();
         $customer = Customer::where('phone_number', $phone)->first();
         if (! $customer) {
-            $customer = Customer::create([
+            $customer = Customer::create(\App\Support\SchemaColumns::forTable('customers', [
                 'customer_group_id' => $group ? $group->id : 1,
                 'name' => $data['full_name'],
                 'company_name' => $data['company_name'] ?? null,
@@ -55,7 +57,8 @@ class PublicRentalController extends Controller
                 'address' => $data['address'] ?? 'N/A',
                 'city' => 'N/A',
                 'is_active' => true,
-            ]);
+                'preferred_locale' => $locale,
+            ]));
         } else {
             $customer->name = $data['full_name'];
             if (! empty($data['email'])) {
@@ -66,6 +69,9 @@ class PublicRentalController extends Controller
             }
             if (! empty($data['address'])) {
                 $customer->address = $data['address'];
+            }
+            if ($locale && empty($customer->preferred_locale) && \App\Support\SchemaColumns::has('customers', 'preferred_locale')) {
+                $customer->preferred_locale = $locale;
             }
             $customer->save();
         }
@@ -101,13 +107,13 @@ class PublicRentalController extends Controller
         ]);
 
         try {
-            $msg = WhatsAppMessage::statusBlock('📦', 'Booking Request', $booking->reference_no)
-                .WhatsAppMessage::greeting($data['full_name'])
-                ."Your equipment rental request has been received and is pending review.\n\n"
-                .WhatsAppMessage::bullet('Reference', $booking->reference_no)
-                .WhatsAppMessage::bullet('Period', $data['start_date'].' → '.$data['end_date'])
-                ."\nOur team will contact you on WhatsApp shortly."
-                .WhatsAppMessage::footer();
+            $msg = WhatsAppMessage::withLocale($locale, function () use ($data, $booking) {
+                return WhatsAppMessage::rentalRequestReceived(
+                    $data['full_name'],
+                    $booking->reference_no,
+                    $data['start_date'].' → '.$data['end_date']
+                );
+            });
             $whatsapp->sendText($phone, $msg);
         } catch (\Throwable $e) {
             Log::warning('Rental request WhatsApp failed: '.$e->getMessage());

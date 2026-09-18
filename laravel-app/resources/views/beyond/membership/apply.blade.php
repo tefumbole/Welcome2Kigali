@@ -37,30 +37,62 @@
                 <input type="hidden" name="signature" id="membership-signature">
 
                 <div x-show="step === 1">
-                    <h2 class="text-xl font-bold text-black">{{ __('site.membership.choose_plan') }}</h2>
-                    <p class="mt-2 text-base text-gray-800 font-medium">{{ __('site.membership.discount_all', ['pct' => $discount]) }}</p>
-                    <p class="text-sm text-gray-500 mt-1">{{ __('site.membership.pick_then_details') }}</p>
+                    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+                        <div>
+                            <p class="text-xs font-bold tracking-[0.2em] uppercase text-brand-gold m-0">{{ __('site.membership.plans_eyebrow') }}</p>
+                            <h2 class="text-2xl md:text-3xl font-extrabold text-black mt-1 mb-0">{{ __('site.membership.choose_plan') }}</h2>
+                        </div>
+                        <p class="text-sm font-semibold text-brand-gold m-0">{{ __('site.membership.discount_all', ['pct' => $discount]) }}</p>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2 mb-0">{{ __('site.membership.pick_then_details') }}</p>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                         @if($promo)
                             <button type="button"
                                     @click="selectPlan('promo', {{ json_encode($promo->name) }})"
-                                    class="text-left p-4 rounded-xl border-2 transition-colors"
-                                    :class="plan === 'promo' ? 'border-brand-gold bg-amber-50' : 'border-gray-100 hover:border-brand-gold'">
-                                <p class="text-xs font-bold tracking-[0.18em] uppercase text-brand-gold m-0">{{ __('site.membership.free_badge') }}</p>
-                                <p class="font-bold text-black text-lg m-0 mt-1">{{ $promo->name }}</p>
-                                <p class="text-sm text-gray-600 m-0">{{ $promo->free_days }} {{ __('site.membership.days') }} · 0 FRW</p>
-                                <p class="text-xs text-gray-500 mt-2 mb-0">{{ $promo->description ?: __('site.membership.promo_blurb', ['days' => $promo->free_days]) }}</p>
+                                    class="group relative text-left overflow-hidden rounded-2xl p-[2px] transition-transform duration-200 hover:-translate-y-0.5"
+                                    :class="plan === 'promo' ? 'scale-[1.01]' : ''">
+                                <span class="absolute inset-0 bg-gradient-to-br from-brand-gold via-amber-300 to-[#8a6a2e]"></span>
+                                <span class="relative flex h-full flex-col rounded-[14px] bg-[#111] text-white p-5 min-h-[210px]">
+                                    <span class="flex items-center justify-between gap-2">
+                                        <span class="inline-flex items-center rounded-full bg-brand-gold text-black text-[10px] font-extrabold tracking-[0.18em] uppercase px-2.5 py-1">{{ __('site.membership.free_badge') }}</span>
+                                        <span class="text-[10px] font-bold uppercase tracking-widest text-brand-gold/90">{{ __('site.membership.featured') }}</span>
+                                    </span>
+                                    <span class="font-extrabold text-xl mt-3 leading-tight">{{ $promo->name }}</span>
+                                    <span class="flex items-end gap-2 mt-3">
+                                        <span class="text-4xl font-black text-brand-gold leading-none">0</span>
+                                        <span class="text-sm font-semibold text-white/70 pb-1">FRW · {{ $promo->free_days }} {{ __('site.membership.days') }}</span>
+                                    </span>
+                                    <span class="text-sm text-white/70 mt-3 leading-snug">{{ $promo->description ?: __('site.membership.promo_blurb', ['days' => $promo->free_days]) }}</span>
+                                    <span class="mt-auto pt-4 flex items-center justify-between">
+                                        <span class="text-xs text-white/55">{{ __('site.membership.perk_community') }}</span>
+                                        <span class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-brand-gold text-brand-gold"
+                                              :class="plan === 'promo' ? 'bg-brand-gold text-black border-brand-gold' : ''">
+                                            <i data-lucide="check" class="w-4 h-4"></i>
+                                        </span>
+                                    </span>
+                                </span>
                             </button>
                         @endif
                         @foreach($plans as $plan)
                             <button type="button"
                                     @click="selectPlan({{ json_encode((string) $plan->id) }}, {{ json_encode($plan->name) }})"
-                                    class="text-left p-4 rounded-xl border-2 transition-colors"
-                                    :class="plan === {{ json_encode((string) $plan->id) }} ? 'border-brand-gold bg-amber-50' : 'border-gray-100 hover:border-brand-gold'">
-                                <p class="font-bold text-black text-lg m-0">{{ $plan->name }}</p>
-                                <p class="text-sm text-gray-600 m-0">{{ $plan->duration_months }} {{ __('site.membership.months') }} · {{ number_format($plan->fee) }} FRW</p>
-                                <p class="text-xs text-gray-500 mt-2 mb-0">{{ __('site.membership.discount_all', ['pct' => $discount]) }}</p>
+                                    class="group relative text-left overflow-hidden rounded-2xl border-2 bg-white p-5 min-h-[210px] flex flex-col transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
+                                    :class="plan === {{ json_encode((string) $plan->id) }} ? 'border-brand-gold bg-gradient-to-br from-amber-50 via-white to-white shadow-lg ring-2 ring-brand-gold/30' : 'border-gray-100 hover:border-brand-gold/60'">
+                                <span class="flex items-center justify-between gap-2">
+                                    <span class="inline-flex items-center rounded-full bg-black text-white text-[10px] font-bold tracking-[0.16em] uppercase px-2.5 py-1">{{ $plan->duration_months }} {{ __('site.membership.months') }}</span>
+                                    <span class="inline-flex h-7 w-7 items-center justify-center rounded-full border"
+                                          :class="plan === {{ json_encode((string) $plan->id) }} ? 'bg-brand-gold border-brand-gold text-black' : 'border-gray-200 text-transparent'">
+                                        <i data-lucide="check" class="w-4 h-4"></i>
+                                    </span>
+                                </span>
+                                <span class="font-extrabold text-xl text-black mt-3 leading-tight">{{ $plan->name }}</span>
+                                <span class="flex items-end gap-1.5 mt-3">
+                                    <span class="text-3xl md:text-4xl font-black text-black leading-none tracking-tight">{{ number_format($plan->fee) }}</span>
+                                    <span class="text-sm font-semibold text-gray-500 pb-1">FRW</span>
+                                </span>
+                                <span class="text-sm text-gray-500 mt-3">{{ __('site.membership.discount_all', ['pct' => $discount]) }}</span>
+                                <span class="mt-auto pt-4 text-xs font-semibold text-brand-gold">{{ __('site.membership.tap_to_select') }}</span>
                             </button>
                         @endforeach
                     </div>

@@ -4,6 +4,7 @@ namespace App\Services\Messaging;
 
 use App\Services\BeyondWasenderService;
 use App\Services\TwilioWhatsAppService;
+use App\Support\VisitorLocale;
 use App\Support\WhatsAppMessage;
 use Clickatell\ClickatellException;
 use Twilio\Rest\Client;
@@ -78,8 +79,12 @@ class NotificationRouter
             return ['success' => true, 'skipped' => true, 'provider' => 'none'];
         }
 
-        $message = WhatsAppMessage::otpMessage($otp, $purpose, $expiresMinutes);
-        $purposeLabel = WhatsAppMessage::otpPurposeLabel($purpose);
+        $message = WhatsAppMessage::withLocale(VisitorLocale::current(), function () use ($otp, $purpose, $expiresMinutes) {
+            return WhatsAppMessage::otpMessage($otp, $purpose, $expiresMinutes);
+        });
+        $purposeLabel = WhatsAppMessage::withLocale(VisitorLocale::current(), function () use ($purpose) {
+            return WhatsAppMessage::otpPurposeLabel($purpose);
+        });
         $minutes = max(1, (int) $expiresMinutes);
 
         if ($this->whatsappProvider() === 'TWILIO') {

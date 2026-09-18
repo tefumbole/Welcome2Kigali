@@ -24,8 +24,11 @@ FILES=(
   VERSION
   app/Support/SiteBrand.php
   app/Support/WhatsAppMessage.php
+  app/Support/VisitorLocale.php
   app/Support/MessageSerial.php
   app/ContactMessage.php
+  app/Customer.php
+  app/Http/Controllers/PublicRentalController.php
   app/Services/ContactInquiryService.php
   app/Services/Messaging/NotificationRouter.php
   database/migrations/2026_09_18_103000_create_institutional_messages.php
@@ -167,6 +170,12 @@ FILES=(
   config/services.php
   resources/lang/en/site.php
   resources/lang/fr/site.php
+  resources/lang/rw/site.php
+  resources/lang/rw/menu.php
+  resources/lang/en/whatsapp.php
+  resources/lang/fr/whatsapp.php
+  resources/lang/rw/whatsapp.php
+  database/migrations/2026_09_18_180000_add_preferred_locale_to_visitor_records.php
   resources/views/pdf/membership_confirmation.blade.php
   resources/views/layout/main.blade.php
   resources/views/beyond/layout.blade.php
@@ -265,6 +274,7 @@ sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_17_120000_ensure_w2k_module_columns.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_18_103000_create_institutional_messages.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_18_120000_create_wa_message_serials_table.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_18_180000_add_preferred_locale_to_visitor_records.php
 sudo -u www-data php "\$APP/artisan" permission:cache-reset || true
 sudo -u www-data php "\$APP/artisan" view:clear
 sudo -u www-data php "\$APP/artisan" cache:clear

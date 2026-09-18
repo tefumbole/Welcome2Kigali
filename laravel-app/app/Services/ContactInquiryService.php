@@ -6,6 +6,7 @@ use App\ContactMessage;
 use App\Services\Messaging\NotificationRouter;
 use App\Support\MessageSerial;
 use App\Support\SiteBrand;
+use App\Support\VisitorLocale;
 use App\Support\WhatsAppMessage;
 use App\User;
 use Illuminate\Support\Facades\Log;
@@ -22,10 +23,11 @@ class ContactInquiryService
         $subject = trim((string) ($input['subject'] ?? 'Website enquiry'));
         $body = trim((string) ($input['message'] ?? ''));
         $serial = MessageSerial::next('MSG');
+        $locale = VisitorLocale::current();
 
         if (Schema::hasTable('contact_messages')) {
             try {
-                ContactMessage::create([
+                ContactMessage::create(\App\Support\SchemaColumns::forTable('contact_messages', [
                     'serial' => $serial,
                     'name' => $name ?: 'Guest',
                     'email' => $email !== '' ? $email : null,
@@ -33,7 +35,8 @@ class ContactInquiryService
                     'subject' => $subject,
                     'message' => $body,
                     'ip' => $ip,
-                ]);
+                    'preferred_locale' => $locale,
+                ]));
             } catch (\Throwable $e) {
                 Log::warning('[contact] save failed: '.$e->getMessage());
             }
@@ -47,7 +50,9 @@ class ContactInquiryService
             try {
                 app(NotificationRouter::class)->sendWhatsAppText(
                     $phone,
-                    WhatsAppMessage::contactVisitorAck($name, $subject, $serial),
+                    WhatsAppMessage::withLocale($locale, function () use ($name, $subject, $serial) {
+                        return WhatsAppMessage::contactVisitorAck($name, $subject, $serial);
+                    }),
                     ['title' => 'Message received']
                 );
             } catch (\Throwable $e) {
@@ -109,6 +114,7 @@ class ContactInquiryService
                 'phone' => $phone,
                 'body' => $body,
                 'sent_at' => now()->format('d M Y H:i'),
+                'locale' => 'en',
             ], function ($message) use ($to, $subject, $serial, $email) {
                 $message->to($to)->subject(WhatsAppMessage::emailSubject($subject, $serial));
                 if ($email !== '') {

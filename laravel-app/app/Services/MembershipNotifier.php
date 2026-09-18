@@ -7,6 +7,7 @@ use App\MembershipApplication;
 use App\MembershipNotification;
 use App\Services\Messaging\NotificationRouter;
 use App\Support\MembershipQr;
+use App\Support\VisitorLocale;
 use App\Support\WhatsAppMessage;
 use App\User;
 use Illuminate\Support\Facades\Log;
@@ -31,10 +32,13 @@ class MembershipNotifier
 
     public function applicationReceived(MembershipApplication $application)
     {
-        $this->sendPhone($application->phone, WhatsAppMessage::membershipApplicationReceived(
-            $application->full_name,
-            $application->reference
-        ), [
+        $locale = VisitorLocale::from($application);
+        $this->sendPhone($application->phone, WhatsAppMessage::withLocale($locale, function () use ($application) {
+            return WhatsAppMessage::membershipApplicationReceived(
+                $application->full_name,
+                $application->reference
+            );
+        }), [
             'title' => 'Membership application',
             'message' => 'Your membership application has been received.',
             'details' => $application->reference,
@@ -71,32 +75,39 @@ class MembershipNotifier
         $customer = $membership->customer;
         $phone = $customer ? $customer->phone_number : optional($membership->application)->phone;
         $name = $customer ? $customer->name : optional($membership->application)->full_name;
-        $this->sendPhone($phone, WhatsAppMessage::membershipApproved(
-            $name,
-            $membership->number,
-            $membership->status,
-            optional($membership->expires_at)->toFormattedDateString(),
-            $payUrl,
-            MembershipQr::verifyUrl($membership)
-        ));
+        $locale = VisitorLocale::from($customer ?: optional($membership->application));
+        $this->sendPhone($phone, WhatsAppMessage::withLocale($locale, function () use ($name, $membership, $payUrl) {
+            return WhatsAppMessage::membershipApproved(
+                $name,
+                $membership->number,
+                $membership->status,
+                optional($membership->expires_at)->toFormattedDateString(),
+                $payUrl,
+                MembershipQr::verifyUrl($membership)
+            );
+        }));
     }
 
     public function rejected(MembershipApplication $application)
     {
-        $this->sendPhone($application->phone, WhatsAppMessage::membershipRejected(
-            $application->full_name,
-            $application->reference,
-            $application->admin_note
-        ));
+        $this->sendPhone($application->phone, WhatsAppMessage::withLocale(VisitorLocale::from($application), function () use ($application) {
+            return WhatsAppMessage::membershipRejected(
+                $application->full_name,
+                $application->reference,
+                $application->admin_note
+            );
+        }));
     }
 
     public function moreInfo(MembershipApplication $application)
     {
-        $this->sendPhone($application->phone, WhatsAppMessage::membershipMoreInfo(
-            $application->full_name,
-            $application->reference,
-            $application->admin_note ?: 'Please contact us on WhatsApp with the missing documents.'
-        ));
+        $this->sendPhone($application->phone, WhatsAppMessage::withLocale(VisitorLocale::from($application), function () use ($application) {
+            return WhatsAppMessage::membershipMoreInfo(
+                $application->full_name,
+                $application->reference,
+                $application->admin_note ?: WhatsAppMessage::t('membership_more_default')
+            );
+        }));
     }
 
     public function reminder(Membership $membership, $kind)
@@ -110,13 +121,15 @@ class MembershipNotifier
         if (! $customer || ! $customer->phone_number) {
             return;
         }
-        $result = $this->sendPhone($customer->phone_number, WhatsAppMessage::membershipRenewalReminder(
-            $customer->name,
-            $membership->number,
-            optional($membership->expires_at)->toFormattedDateString(),
-            MembershipQr::renewUrl($membership),
-            $kind
-        ));
+        $result = $this->sendPhone($customer->phone_number, WhatsAppMessage::withLocale(VisitorLocale::from($customer), function () use ($customer, $membership, $kind) {
+            return WhatsAppMessage::membershipRenewalReminder(
+                $customer->name,
+                $membership->number,
+                optional($membership->expires_at)->toFormattedDateString(),
+                MembershipQr::renewUrl($membership),
+                $kind
+            );
+        }));
         MembershipNotification::create([
             'membership_id' => $membership->id,
             'kind' => $kind,

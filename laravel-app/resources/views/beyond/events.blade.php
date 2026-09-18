@@ -5,47 +5,53 @@
 
 @section('content')
 
+@php
+    $eventsHero = trim(strip_tags((string) \App\Support\SiteContent::get('events.hero_title', '')));
+    if ($eventsHero === '' || preg_match('/^club\s+events$/i', $eventsHero)) {
+        $eventsHero = __('site.events.hero_title');
+    }
+@endphp
 @include('beyond.partials.hero', [
-    'title' => \App\Support\SiteContent::html('events.hero_title', 'Club <span class="text-brand-gold">Events</span>'),
-    'subtitle' => \App\Support\SiteContent::text('events.hero_subtitle', 'Gatherings, culture nights, and community moments in Kigali.'),
+    'title' => e($eventsHero),
+    'subtitle' => \App\Support\SiteContent::text('events.hero_subtitle', __('site.events.hero_sub')),
 ])
 
-<section class="py-10 bg-gray-50 min-h-screen">
+<section class="py-5 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <form method="GET" action="{{ url('/events') }}" class="mb-8 flex flex-col md:flex-row gap-4 items-stretch md:items-end">
+        <form method="GET" action="{{ url('/events') }}" class="mb-4 flex flex-col md:flex-row gap-3 items-stretch md:items-end">
             <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('site.events.search') }}</label>
+                <label class="block text-xs font-medium text-gray-700 mb-1">{{ __('site.events.search') }}</label>
                 <input type="text" name="q" value="{{ request('q') }}" placeholder="{{ __('site.events.search_ph') }}"
-                       class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-brand-blue focus:border-brand-blue">
+                       class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('site.events.filter') }}</label>
-                <select name="filter" class="rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-brand-blue">
+                <label class="block text-xs font-medium text-gray-700 mb-1">{{ __('site.events.filter') }}</label>
+                <select name="filter" class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-brand-blue">
                     @foreach(['upcoming' => __('site.events.upcoming'), 'featured' => __('site.events.featured'), 'ongoing' => __('site.events.ongoing'), 'past' => __('site.events.past')] as $k => $label)
                         <option value="{{ $k }}" {{ $filter === $k ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('site.events.type') }}</label>
-                <select name="type" class="rounded-lg border border-gray-300 px-4 py-2">
+                <label class="block text-xs font-medium text-gray-700 mb-1">{{ __('site.events.type') }}</label>
+                <select name="type" class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm">
                     <option value="">{{ __('site.events.all_types') }}</option>
                     @foreach(\App\Event::TYPES as $k => $label)
                         <option value="{{ $k }}" {{ request('type') === $k ? 'selected' : '' }}>{{ __('site.events.types.'.$k) }}</option>
                     @endforeach
                 </select>
             </div>
-            <button type="submit" class="px-6 py-2 bg-brand-blue text-white font-semibold rounded-lg hover:bg-brand-dark transition">{{ __('site.events.search') }}</button>
+            <button type="submit" class="px-5 py-1.5 bg-brand-blue text-white text-sm font-semibold rounded-lg hover:bg-brand-dark transition">{{ __('site.events.search') }}</button>
         </form>
 
         @if ($events->isEmpty())
-            <div class="text-center py-20">
-                <i data-lucide="calendar" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ __('site.events.none') }}</h2>
-                <p class="text-gray-600">{{ __('site.events.none_sub') }}</p>
+            <div class="text-center py-8">
+                <i data-lucide="calendar" class="w-12 h-12 text-gray-300 mx-auto mb-3"></i>
+                <h2 class="text-xl font-bold text-gray-800 mb-1">{{ __('site.events.none') }}</h2>
+                <p class="text-gray-600 text-sm">{{ __('site.events.none_sub') }}</p>
             </div>
         @else
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 @foreach ($events as $row)
                     @php
                         $ev = $row['event'];
@@ -65,12 +71,12 @@
                     @endphp
                     <div class="bg-white rounded-xl border border-gray-200 hover:border-brand-blue transition-all hover:shadow-xl overflow-hidden flex flex-col">
                         <a href="{{ url('/events/' . $ev->slug) }}" class="block relative">
-                            <div class="relative aspect-[4/3] overflow-hidden bg-gray-200">
+                            <div class="relative aspect-[16/10] overflow-hidden bg-gray-200">
                                 @if ($flyer)
                                     <img src="{{ $flyer }}" alt="{{ $pub->public_title ?: $ev->name }}" class="w-full h-full object-cover">
                                 @else
-                                    <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-blue to-brand-light min-h-[220px]">
-                                        <i data-lucide="calendar" class="w-16 h-16 text-white opacity-50"></i>
+                                    <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-blue to-brand-navy min-h-[140px]">
+                                        <i data-lucide="calendar" class="w-12 h-12 text-white opacity-50"></i>
                                     </div>
                                 @endif
                                 @if($status)
@@ -81,7 +87,7 @@
                             </div>
                         </a>
                         @if($countdownAt && optional($pub)->show_countdown)
-                            <div class="p-3">
+                            <div class="p-2">
                                 @include('beyond.partials.event_countdown', [
                                     'targetIso' => $countdownAt->toIso8601String(),
                                     'timezone' => $ev->timezone ?: 'Africa/Kigali',
@@ -91,7 +97,7 @@
                                 ])
                             </div>
                         @endif
-                        <div class="px-4 pb-4">
+                        <div class="px-3 pb-3">
                             <a href="{{ url('/events/' . $ev->slug) }}" class="inline-flex items-center gap-2 text-brand-blue font-semibold text-sm">
                                 {{ __('site.events.view') }} <i data-lucide="arrow-right" class="w-4 h-4"></i>
                             </a>

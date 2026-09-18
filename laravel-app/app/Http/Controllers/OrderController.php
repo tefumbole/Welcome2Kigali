@@ -246,17 +246,19 @@ class OrderController extends Controller
             ];
         }
 
-        $msg = \App\Support\WhatsAppMessage::orderStatusUpdate(
-            $order->name,
-            $order->id,
-            $status,
-            $order->created_at,
-            $order->grand_total,
-            $order->payment_method,
-            $order->address,
-            $extra,
-            $lines
-        );
+        $msg = \App\Support\WhatsAppMessage::withLocale(\App\Support\VisitorLocale::from($order), function () use ($order, $status, $extra, $lines) {
+            return \App\Support\WhatsAppMessage::orderStatusUpdate(
+                $order->name,
+                $order->id,
+                $status,
+                $order->created_at,
+                $order->grand_total,
+                $order->payment_method,
+                $order->address,
+                $extra,
+                $lines
+            );
+        });
 
         try{
             $this->wpMessage($order->phone, $msg);
@@ -300,16 +302,18 @@ class OrderController extends Controller
             $extra = ! empty($data['delivery_date']) ? 'Expected date: '.$data['delivery_date'] : '';
         }
 
-        $msg = \App\Support\WhatsAppMessage::orderStatusUpdate(
-            $order->name,
-            $order->id,
-            $status,
-            $order->created_at,
-            $order->grand_total,
-            $order->payment_method,
-            $order->address,
-            $extra
-        );
+        $msg = \App\Support\WhatsAppMessage::withLocale(\App\Support\VisitorLocale::from($order), function () use ($order, $status, $extra) {
+            return \App\Support\WhatsAppMessage::orderStatusUpdate(
+                $order->name,
+                $order->id,
+                $status,
+                $order->created_at,
+                $order->grand_total,
+                $order->payment_method,
+                $order->address,
+                $extra
+            );
+        });
 
         try{
             $this->wpMessage($order->phone, $msg);

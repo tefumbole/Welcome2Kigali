@@ -9,6 +9,39 @@ class WhatsAppMessage
     /** @var string Serial allocated for the current message (shown in header + footer). */
     protected static $lastSerial = '';
 
+    /** @var string|null Locale for spoken copy (en|fr|rw). Null = visitor/request locale. */
+    protected static $locale = null;
+
+    public static function locale($locale = null)
+    {
+        if ($locale !== null) {
+            self::$locale = VisitorLocale::normalize($locale);
+        }
+
+        return VisitorLocale::normalize(self::$locale ?: VisitorLocale::current());
+    }
+
+    public static function withLocale($locale, callable $callback)
+    {
+        $previous = self::$locale;
+        self::$locale = VisitorLocale::normalize($locale);
+        try {
+            return $callback();
+        } finally {
+            self::$locale = $previous;
+        }
+    }
+
+    public static function t($key, $replace = [])
+    {
+        return trans('whatsapp.'.$key, $replace, self::locale());
+    }
+
+    public static function choice($key, $number, $replace = [])
+    {
+        return trans_choice('whatsapp.'.$key, $number, $replace, self::locale());
+    }
+
     public static function companyName()
     {
         $fromEnv = trim((string) config('services.whatsapp.company_name', ''));
@@ -130,14 +163,14 @@ class WhatsAppMessage
     {
         $name = trim((string) $name);
         if ($name === '') {
-            return "Bonjour, / Hello,\n\n";
+            return self::t('greeting')."\n\n";
         }
 
-        return "Bonjour *{$name}*, / Hello *{$name}*,\n\n";
+        return self::t('greeting_named', ['name' => $name])."\n\n";
     }
 
     /**
-     * Shared Mulema layout: serial header, bilingual greeting, ☐ fields, footer.
+     * Shared Mulema layout: serial header, greeting in the visitor language, ☐ fields, footer.
      *
      * @param  array  $fields  label => value
      */
@@ -189,9 +222,9 @@ class WhatsAppMessage
 
     public static function footer()
     {
-        $out = "\nCordialement, / Kind regards,\n*".self::companyName()."*";
+        $out = "\n".self::t('regards')."\n*".self::companyName()."*";
         if (self::$lastSerial !== '') {
-            $out .= "\nSerial No: *".self::$lastSerial."*";
+            $out .= "\n".self::t('serial_no').": *".self::$lastSerial."*";
         }
 
         return $out;
@@ -202,22 +235,24 @@ class WhatsAppMessage
      */
     public static function contactWebsiteMessage($name, $phone, $email, $subject, $body, $serial = null)
     {
-        $serial = self::resolveSerial($serial, 'NEW CONTACT MESSAGE');
-        $subjectLine = trim((string) $subject) !== '' ? trim((string) $subject) : 'Website enquiry';
-        $msg = self::statusBlock('📩', 'NOUVEAU MESSAGE / NEW CONTACT MESSAGE', $serial);
-        $msg .= self::greeting($name !== '' ? $name : 'Team');
-        $msg .= "Vous avez reçu un message depuis le site.\nYou have received a message from the website.\n\n";
-        $msg .= self::field('Nom / Name', $name);
-        if (trim((string) $phone) !== '') {
-            $msg .= self::field('Téléphone / Phone', $phone);
-        }
-        $msg .= self::field('E-mail / Email', $email);
-        $msg .= self::field('Sujet / Subject', $subjectLine);
-        $body = trim((string) $body);
-        $msg .= "\n☐ *Message:*\n".($body !== '' ? $body : '—')."\n";
-        $msg .= self::footer();
+        return self::withLocale('en', function () use ($name, $phone, $email, $subject, $body, $serial) {
+            $serial = self::resolveSerial($serial, 'NEW CONTACT MESSAGE');
+            $subjectLine = trim((string) $subject) !== '' ? trim((string) $subject) : self::t('website_enquiry');
+            $msg = self::statusBlock('📩', self::t('contact_staff_title'), $serial);
+            $msg .= self::greeting($name !== '' ? $name : 'Team');
+            $msg .= self::t('contact_staff_intro')."\n\n";
+            $msg .= self::field(self::t('label_name'), $name);
+            if (trim((string) $phone) !== '') {
+                $msg .= self::field(self::t('label_phone'), $phone);
+            }
+            $msg .= self::field(self::t('label_email'), $email);
+            $msg .= self::field(self::t('label_subject'), $subjectLine);
+            $body = trim((string) $body);
+            $msg .= "\n☐ *".self::t('label_message').":*\n".($body !== '' ? $body : '—')."\n";
+            $msg .= self::footer();
 
-        return $msg;
+            return $msg;
+        });
     }
 
     public static function contactStaffNotice($serial, $name, $email, $phone, $subject, $body)
@@ -227,13 +262,24 @@ class WhatsAppMessage
 
     public static function contactVisitorAck($name, $subject, $serial)
     {
-        $msg = self::statusBlock('✅', 'MESSAGE REÇU / MESSAGE RECEIVED', $serial);
+        $msg = self::statusBlock('✅', self::t('contact_visitor_title'), $serial);
         $msg .= self::greeting($name);
-        $company = self::companyName();
-        $msg .= "Merci d'avoir contacté *{$company}*. Nous avons bien reçu votre message et vous répondrons sous peu.\n";
-        $msg .= "Thank you for contacting *{$company}*. We have received your message and will reply shortly.\n\n";
-        $msg .= self::bullet('Sujet / Subject', $subject);
-        $msg .= "\nVeuillez conserver ce numéro de série / Please keep this serial number if you follow up with us.";
+        $msg .= self::t('contact_visitor_intro', ['company' => self::companyName()])."\n\n";
+        $msg .= self::bullet(self::t('label_subject'), $subject);
+        $msg .= "\n".self::t('contact_visitor_keep');
+        $msg .= self::footer();
+
+        return $msg;
+    }
+
+    public static function rentalRequestReceived($name, $reference, $period)
+    {
+        $msg = self::statusBlock('📦', self::t('rental_title'), $reference);
+        $msg .= self::greeting($name);
+        $msg .= self::t('rental_intro')."\n\n";
+        $msg .= self::bullet(self::t('label_reference'), $reference);
+        $msg .= self::bullet(self::t('label_period'), $period);
+        $msg .= "\n".self::t('rental_followup');
         $msg .= self::footer();
 
         return $msg;
@@ -611,14 +657,14 @@ class WhatsAppMessage
             return $currencyCode !== '' ? trim($currencyCode.' '.$formatted) : $formatted;
         };
 
-        $msg = self::statusBlock('🧾', 'Sale Confirmed');
+        $msg = self::statusBlock('🧾', self::t('sale_title'));
         $msg .= self::greeting($customerName);
-        $msg .= "Thank you for shopping with *{$company}*. Your order is confirmed.\n\n";
-        $msg .= self::bullet('Order Number', $referenceNo);
-        $msg .= self::bullet('Order Date', $orderDate);
+        $msg .= self::t('sale_intro', ['company' => $company])."\n\n";
+        $msg .= self::bullet(self::t('sale_order_no'), $referenceNo);
+        $msg .= self::bullet(self::t('sale_order_date'), $orderDate);
 
         if (! empty($lines)) {
-            $msg .= "\n*Items:*\n";
+            $msg .= "\n*".self::t('sale_items').":*\n";
             foreach ($lines as $index => $line) {
                 $name = $line['name'] ?? 'Item';
                 $qty = $line['qty'] ?? '';
@@ -639,19 +685,19 @@ class WhatsAppMessage
         }
 
         $msg .= "\n";
-        $msg .= self::bullet('Total', $money($grandTotal));
-        $msg .= self::bullet('Payment', $payingMethod ?: '—');
+        $msg .= self::bullet(self::t('sale_total'), $money($grandTotal));
+        $msg .= self::bullet(self::t('sale_payment'), $payingMethod ?: '—');
         if (trim((string) $billingAddress) !== '') {
-            $msg .= self::bullet('Billing', $billingAddress);
+            $msg .= self::bullet(self::t('sale_billing'), $billingAddress);
         }
         if (trim((string) $deliveryAddress) !== '') {
-            $msg .= self::bullet('Delivery', $deliveryAddress);
+            $msg .= self::bullet(self::t('sale_delivery'), $deliveryAddress);
         }
         if (trim((string) $billerName) !== '') {
-            $msg .= self::bullet('Served by', $billerName);
+            $msg .= self::bullet(self::t('sale_served'), $billerName);
         }
 
-        $msg .= "\nThank you for choosing *{$company}*.";
+        $msg .= "\n".self::t('sale_thanks', ['company' => $company]);
         $msg .= self::footer();
 
         return $msg;
@@ -676,17 +722,20 @@ class WhatsAppMessage
     {
         $key = strtolower(trim((string) $purpose));
         $map = [
-            'login' => 'login verification',
-            'password_reset' => 'password reset',
-            'password reset' => 'password reset',
-            'reset' => 'password reset',
-            'register' => 'account registration',
-            'verify' => 'account verification',
-            'permission' => 'permission confirmation',
-            'membership' => 'membership verification',
+            'login' => 'otp_login',
+            'password_reset' => 'otp_password_reset',
+            'password reset' => 'otp_password_reset',
+            'reset' => 'otp_password_reset',
+            'register' => 'otp_register',
+            'verify' => 'otp_verify',
+            'permission' => 'otp_permission',
+            'membership' => 'otp_membership',
         ];
+        if (isset($map[$key])) {
+            return self::t($map[$key]);
+        }
 
-        return $map[$key] ?? ($purpose ? ucwords(str_replace('_', ' ', (string) $purpose)) : 'Login verification');
+        return $purpose ? ucwords(str_replace('_', ' ', (string) $purpose)) : self::t('otp_login');
     }
 
     /**
@@ -700,13 +749,13 @@ class WhatsAppMessage
         $minutes = max(1, (int) $expiresMinutes);
         $otp = preg_replace('/\D/', '', (string) $otp);
 
-        $msg = self::statusBlock('🔐', 'AUTHENTICATION');
+        $msg = self::statusBlock('🔐', self::t('otp_title'));
         $msg .= self::greeting('');
-        $msg .= "Thank you for choosing *{$company}*.\n\n";
-        $msg .= "Your one-time verification code for {$purposeLabel} is:\n\n";
+        $msg .= self::t('otp_thanks', ['company' => $company])."\n\n";
+        $msg .= self::t('otp_intro', ['purpose' => $purposeLabel])."\n\n";
         $msg .= "*{$otp}*\n\n";
-        $msg .= "This code is valid for {$minutes} minute".($minutes === 1 ? '' : 's').".\n\n";
-        $msg .= "Please do not share this code with anyone. Our team will never ask for it.";
+        $msg .= self::choice('otp_valid', $minutes, ['minutes' => $minutes])."\n\n";
+        $msg .= self::t('otp_share');
         $msg .= self::footer();
 
         return $msg;
@@ -1171,11 +1220,11 @@ class WhatsAppMessage
 
     public static function membershipApplicationReceived($name, $reference)
     {
-        $msg = self::statusBlock('🪪', 'MEMBERSHIP APPLICATION');
+        $msg = self::statusBlock('🪪', self::t('membership_received_title'));
         $msg .= self::greeting($name);
-        $msg .= "Thank you for your membership application.\n\n";
-        $msg .= "We have received your request and our team will review it shortly. You will receive a WhatsApp message once a decision has been made.\n\n";
-        $msg .= self::bullet('Reference', $reference);
+        $msg .= self::t('membership_received_intro')."\n\n";
+        $msg .= self::t('membership_received_body')."\n\n";
+        $msg .= self::bullet(self::t('label_reference'), $reference);
         $msg .= self::footer();
 
         return $msg;
@@ -1183,36 +1232,38 @@ class WhatsAppMessage
 
     public static function membershipApplicationAdmin($adminName, $applicantName, $reference, $loginUrl)
     {
-        $msg = self::statusBlock('🪪', 'NEW MEMBERSHIP APPLICATION');
-        $msg .= self::greeting($adminName ?: 'Team');
-        $msg .= "A new membership application is ready for review.\n\n";
-        $msg .= self::bullet('Applicant', $applicantName);
-        $msg .= self::bullet('Reference', $reference);
-        $msg .= self::actionLink('Review application', $loginUrl);
-        $msg .= self::footer();
+        return self::withLocale('en', function () use ($adminName, $applicantName, $reference, $loginUrl) {
+            $msg = self::statusBlock('🪪', self::t('membership_admin_title'));
+            $msg .= self::greeting($adminName ?: 'Team');
+            $msg .= self::t('membership_admin_intro')."\n\n";
+            $msg .= self::bullet(self::t('membership_admin_applicant'), $applicantName);
+            $msg .= self::bullet(self::t('label_reference'), $reference);
+            $msg .= self::actionLink(self::t('membership_admin_review'), $loginUrl);
+            $msg .= self::footer();
 
-        return $msg;
+            return $msg;
+        });
     }
 
     public static function membershipApproved($name, $number, $status, $expires, $payUrl = null, $verifyUrl = null)
     {
         $company = self::companyName();
-        $msg = self::statusBlock('✅', 'MEMBERSHIP UPDATE');
+        $msg = self::statusBlock('✅', self::t('membership_update_title'));
         $msg .= self::greeting($name);
-        $msg .= "Your membership with *{$company}* has been updated.\n\n";
-        $msg .= self::bullet('Membership No', $number);
-        $msg .= self::bullet('Status', $status);
+        $msg .= self::t('membership_update_intro', ['company' => $company])."\n\n";
+        $msg .= self::bullet(self::t('membership_no'), $number);
+        $msg .= self::bullet(self::t('membership_status'), $status);
         if ($expires) {
-            $msg .= self::bullet('Expires', $expires);
+            $msg .= self::bullet(self::t('membership_expires'), $expires);
         }
         if ($payUrl) {
-            $msg .= "\nTo activate or continue your membership, please complete payment using the secure link below.";
-            $msg .= self::actionLink('Pay membership fee', $payUrl);
+            $msg .= "\n".self::t('membership_pay_intro');
+            $msg .= self::actionLink(self::t('membership_pay'), $payUrl);
         }
         if ($verifyUrl) {
-            $msg .= self::actionLink('Membership card', $verifyUrl);
+            $msg .= self::actionLink(self::t('membership_card'), $verifyUrl);
         }
-        $msg .= "\nWe look forward to welcoming you at the club.";
+        $msg .= "\n".self::t('membership_welcome');
         $msg .= self::footer();
 
         return $msg;
@@ -1221,14 +1272,14 @@ class WhatsAppMessage
     public static function membershipRejected($name, $reference, $note = null)
     {
         $company = self::companyName();
-        $msg = self::statusBlock('❌', 'MEMBERSHIP APPLICATION');
+        $msg = self::statusBlock('❌', self::t('membership_received_title'));
         $msg .= self::greeting($name);
-        $msg .= "Thank you for your interest in membership with *{$company}*.\n\n";
-        $msg .= "After review, we are unable to approve application *{$reference}* at this time.\n";
+        $msg .= self::t('membership_rejected_intro', ['company' => $company])."\n\n";
+        $msg .= self::t('membership_rejected_body', ['reference' => $reference])."\n";
         if ($note) {
             $msg .= "\n".$note."\n";
         }
-        $msg .= "\nYou are welcome to contact us on this number if you have questions.";
+        $msg .= "\n".self::t('membership_rejected_contact');
         $msg .= self::footer();
 
         return $msg;
@@ -1236,12 +1287,12 @@ class WhatsAppMessage
 
     public static function membershipMoreInfo($name, $reference, $note)
     {
-        $msg = self::statusBlock('📎', 'MEMBERSHIP — MORE INFORMATION');
+        $msg = self::statusBlock('📎', self::t('membership_more_title'));
         $msg .= self::greeting($name);
-        $msg .= "Thank you for your membership application *{$reference}*.\n\n";
-        $msg .= "We need a little more information before we can complete the review.\n\n";
+        $msg .= self::t('membership_more_intro', ['reference' => $reference])."\n\n";
+        $msg .= self::t('membership_more_body')."\n\n";
         $msg .= $note."\n";
-        $msg .= "\nPlease reply on this WhatsApp number with the requested details.";
+        $msg .= "\n".self::t('membership_more_reply');
         $msg .= self::footer();
 
         return $msg;
@@ -1250,16 +1301,16 @@ class WhatsAppMessage
     public static function membershipRenewalReminder($name, $number, $expires, $renewUrl, $kind)
     {
         $expired = ($kind === 'expired' || $kind === 'after');
-        $msg = self::statusBlock('🔔', $expired ? 'MEMBERSHIP EXPIRED' : 'MEMBERSHIP RENEWAL');
+        $msg = self::statusBlock('🔔', $expired ? self::t('membership_expired_title') : self::t('membership_renewal_title'));
         $msg .= self::greeting($name);
         if ($expired) {
-            $msg .= "Your membership *{$number}* has expired. Member pricing and benefits are no longer active.\n\n";
-            $msg .= "You may renew at any time to restore your membership.\n\n";
+            $msg .= self::t('membership_expired_body', ['number' => $number])."\n\n";
+            $msg .= self::t('membership_expired_renew')."\n\n";
         } else {
-            $msg .= "This is a courtesy reminder that your membership *{$number}* is due for renewal.\n\n";
+            $msg .= self::t('membership_renewal_body', ['number' => $number])."\n\n";
         }
-        $msg .= self::bullet('Expiry', $expires ?: '—');
-        $msg .= self::actionLink('Renew membership', $renewUrl);
+        $msg .= self::bullet(self::t('membership_expiry'), $expires ?: '—');
+        $msg .= self::actionLink(self::t('membership_renew'), $renewUrl);
         $msg .= self::footer();
 
         return $msg;
@@ -1375,14 +1426,14 @@ class WhatsAppMessage
 
     public static function orderStatusUpdate($customerName, $orderId, $status, $orderDate, $grandTotal, $paymentMethod, $address, $extraNote = '', array $lines = [])
     {
-        $msg = self::statusBlock('🧾', 'ORDER UPDATE');
+        $msg = self::statusBlock('🧾', self::t('order_update_title'));
         $msg .= self::greeting($customerName);
-        $msg .= "Your order status has been updated to *{$status}*.\n\n";
-        $msg .= self::bullet('Order Number', $orderId);
-        $msg .= self::bullet('Order Date', $orderDate);
-        $msg .= self::bullet('Status', $status);
+        $msg .= self::t('order_update_intro', ['status' => $status])."\n\n";
+        $msg .= self::bullet(self::t('sale_order_no'), $orderId);
+        $msg .= self::bullet(self::t('sale_order_date'), $orderDate);
+        $msg .= self::bullet(self::t('order_status'), $status);
         if (! empty($lines)) {
-            $msg .= "\n*Items:*\n";
+            $msg .= "\n*".self::t('sale_items').":*\n";
             foreach ($lines as $index => $line) {
                 $msg .= ($index + 1).') '.($line['name'] ?? 'Item');
                 if (! empty($line['qty'])) {
@@ -1395,9 +1446,9 @@ class WhatsAppMessage
             }
         }
         $msg .= "\n";
-        $msg .= self::bullet('Total', number_format((float) $grandTotal, 2));
-        $msg .= self::bullet('Payment', $paymentMethod);
-        $msg .= self::bullet('Delivery', $address);
+        $msg .= self::bullet(self::t('sale_total'), number_format((float) $grandTotal, 2));
+        $msg .= self::bullet(self::t('sale_payment'), $paymentMethod);
+        $msg .= self::bullet(self::t('sale_delivery'), $address);
         $extraNote = trim((string) $extraNote);
         if ($extraNote !== '') {
             $msg .= "\n{$extraNote}\n";

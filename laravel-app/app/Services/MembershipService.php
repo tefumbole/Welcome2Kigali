@@ -168,6 +168,7 @@ class MembershipService
             'signed_at' => $signature ? Carbon::now() : null,
             'signed_agreement_version' => $agreement ? $agreement->version : null,
             'submitted_ip' => $data['submitted_ip'] ?? null,
+            'preferred_locale' => $data['preferred_locale'] ?? \App\Support\VisitorLocale::current(),
         ];
         $application = MembershipApplication::create(\App\Support\SchemaColumns::forTable('membership_applications', $payload));
 
@@ -213,7 +214,7 @@ class MembershipService
         }
         if (! $customer) {
             $walkIn = CustomerGroup::where('is_system', 0)->where('is_active', 1)->orderBy('id')->first();
-            $customer = Customer::create([
+            $customer = Customer::create(\App\Support\SchemaColumns::forTable('customers', [
                 'customer_group_id' => $walkIn ? $walkIn->id : null,
                 'name' => $application->full_name,
                 'company_name' => $application->company_name,
@@ -222,13 +223,17 @@ class MembershipService
                 'address' => 'Kigali',
                 'city' => 'Kigali',
                 'is_active' => 1,
-            ]);
+                'preferred_locale' => $application->preferred_locale ?: \App\Support\VisitorLocale::from($application),
+            ]));
         } else {
             $customer->name = $application->full_name;
             $customer->email = $application->email;
             $customer->phone_number = $application->phone;
             if ($application->company_name) {
                 $customer->company_name = $application->company_name;
+            }
+            if ($application->preferred_locale && empty($customer->preferred_locale) && \App\Support\SchemaColumns::has('customers', 'preferred_locale')) {
+                $customer->preferred_locale = $application->preferred_locale;
             }
             $customer->save();
         }
