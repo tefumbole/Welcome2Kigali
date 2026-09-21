@@ -207,6 +207,10 @@ FILES=(
   resources/views/sale/create_sale.blade.php
   resources/views/booking/pos.blade.php
   resources/views/booking/create.blade.php
+  resources/views/membership/dashboard.blade.php
+  resources/views/membership/partials/tabs.blade.php
+  resources/views/task_manager/partials/tabs.blade.php
+  resources/views/course_manager/partials/styles.blade.php
   resources/views/booking/invoice.blade.php
   resources/views/sale/invoice.blade.php
   resources/lang/en/file.php

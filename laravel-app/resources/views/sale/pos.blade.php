@@ -21,24 +21,137 @@
         input.product_price_change.form-control {
             padding: 5px 0px;
         }
+        body.beyond-pos-active { overflow: hidden; }
         body.beyond-pos-active .main-footer { display: none; }
         body.beyond-pos-active #beyond-module-tabs { display: none !important; }
+        body.beyond-pos-active .content-inner { min-height: 100vh; height: 100vh; overflow: hidden; }
+        body.beyond-pos-active .content-inner > .page-content { padding-bottom: 0 !important; overflow: hidden; }
+        body.beyond-pos-active .pos-section {
+            padding: 6px 8px 118px !important;
+            height: 100%;
+            overflow: hidden;
+        }
         body.beyond-pos-active .pos-section .container-fluid { max-width: 100%; padding-left: 8px; padding-right: 8px; }
-        body.beyond-pos-active .pos-section .card { border-radius: 12px; border-color: #e3e9f4; box-shadow: 0 8px 24px rgba(15,35,80,.05); }
+        body.beyond-pos-active .pos-section .card {
+            border-radius: 12px;
+            border-color: #eee4d0;
+            box-shadow: 0 8px 24px rgba(10,10,10,.08);
+        }
+        body.beyond-pos-active .transaction-list {
+            height: calc(100vh - 430px) !important;
+            max-height: calc(100vh - 400px);
+            min-height: 110px;
+        }
+        body.beyond-pos-active .table-container {
+            height: calc(100vh - 250px) !important;
+            max-height: calc(100vh - 230px);
+        }
         body.beyond-pos-active .pos-section .btn-primary,
         body.beyond-pos-active .pos-section .btn-info,
         body.beyond-pos-active .pos-section .btn-success { border-radius: 8px; }
-        body.beyond-pos-active .pos-section .menu-btn { border-color: #0b3f90; color: #0b3f90; border-radius: 8px; }
+        body.beyond-pos-active .pos-section .btn-default,
+        body.beyond-pos-active .pos-section .menu-btn {
+            background: #fff !important;
+            border: 1px solid #0A0A0A !important;
+            color: #0A0A0A !important;
+            border-radius: 8px;
+        }
+        body.beyond-pos-active .pos-section .btn-default:hover,
+        body.beyond-pos-active .pos-section .menu-btn:hover {
+            background: #C5A059 !important;
+            border-color: #C5A059 !important;
+            color: #0A0A0A !important;
+        }
         body.beyond-pos-active .pos-section .grand-total,
-        body.beyond-pos-active .pos-section .total-section { background: linear-gradient(135deg, #0b3f90, #072f6b) !important; color: #fff !important; border-radius: 10px; }
-        body.beyond-pos-active .pos-section .payment-buttons .btn { border-radius: 10px; font-weight: 700; }
+        body.beyond-pos-active .pos-section .total-section,
+        body.beyond-pos-active .payment-amount {
+            background: #0A0A0A !important;
+            color: #C5A059 !important;
+            border-radius: 10px;
+        }
+        body.beyond-pos-active .payment-amount h2 {
+            color: #C5A059 !important;
+            font-size: 1.25rem;
+            line-height: 1.4;
+            padding: 8px 12px;
+        }
+        body.beyond-pos-active .totals { border-top-color: #eee4d0 !important; }
+        body.beyond-pos-active #category-filter,
+        body.beyond-pos-active #brand-filter {
+            background: #0A0A0A !important;
+            border-color: #0A0A0A !important;
+            color: #C5A059 !important;
+        }
+        body.beyond-pos-active #featured-filter {
+            background: #C5A059 !important;
+            border-color: #C5A059 !important;
+            color: #0A0A0A !important;
+        }
+        body.beyond-pos-active .payment-options {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: stretch;
+            gap: 8px;
+            left: 230px;
+            right: 0;
+            width: auto;
+            padding: 10px 12px;
+            background: #0A0A0A;
+            border-top: 2px solid #C5A059;
+            z-index: 40;
+        }
+        body.beyond-pos-active .payment-options .column-5 {
+            float: none;
+            flex: 1 1 8.6rem;
+            min-width: 8.2rem;
+            max-width: 14rem;
+            margin: 0;
+            padding: 0;
+        }
+        body.beyond-pos-active .payment-options .btn-custom {
+            background: #16110c !important;
+            color: #C5A059 !important;
+            border: 1px solid #C5A059 !important;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0;
+            line-height: 1.25;
+            padding: 8px 8px;
+            white-space: nowrap;
+        }
+        body.beyond-pos-active .payment-options .btn-custom:hover {
+            background: #C5A059 !important;
+            color: #0A0A0A !important;
+        }
+        body.beyond-pos-active #cash-btn {
+            background: #C5A059 !important;
+            color: #0A0A0A !important;
+            border-color: #C5A059 !important;
+        }
+        body.beyond-pos-active #cancel-btn {
+            background: #7B3F2A !important;
+            color: #F7F1E8 !important;
+            border-color: #7B3F2A !important;
+        }
+        body.beyond-pos-active .payment-options [data-target="#recentTransaction"] {
+            background: #C5A059 !important;
+            color: #0A0A0A !important;
+            border-color: #C5A059 !important;
+        }
+        body.beyond-pos-active .pos-section .header .navbar {
+            background: #0A0A0A !important;
+            border-radius: 10px;
+        }
+        body.beyond-pos-active .pos-section .header .navbar a,
+        body.beyond-pos-active .pos-section .header .navbar i { color: #C5A059 !important; }
         body.beyond-pos-active .pos-section .product-img img {
             width: 100%;
             max-height: 90px;
             object-fit: contain;
             display: block;
             margin: 0 auto;
-            background: #f5f7fb;
+            background: #F7F1E8;
         }
         body.beyond-pos-active .pos-section .product-img p {
             font-size: 12px;
@@ -64,6 +177,10 @@
             line-height: 1em;
         }
         body.beyond-pos-active .pos-section .btn-default .dripicons-plus:before { font-size: 16px; }
+        @media (max-width: 991px) {
+            body.beyond-pos-active .payment-options { left: 0; }
+            body.beyond-pos-active .pos-section { padding-bottom: 140px !important; }
+        }
     </style>
     <script>document.body.classList.add('beyond-pos-active');</script>
     @if(false)

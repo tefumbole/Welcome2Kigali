@@ -357,6 +357,12 @@
                 display: block;
             }
 
+            body:has(.tm-nav) #beyond-module-tabs,
+            body:has(.mm-nav) #beyond-module-tabs,
+            body:has(.site-content-tabs-nav) #beyond-module-tabs {
+                display: none !important;
+            }
+
             .beyond-module-tabs-label {
                 font-size: 11px;
                 font-weight: 700;
@@ -1590,6 +1596,7 @@
                                     <li id="membership-doc-menu"><a href="{{ route('membership.admin.documents') }}">Documents</a></li>
                                     <li id="membership-note-menu"><a href="{{ route('membership.admin.notifications') }}">Notifications</a></li>
                                     <li id="membership-rep-menu"><a href="{{ route('membership.admin.reports') }}">Reports</a></li>
+                                    <li id="membership-audit-menu"><a href="{{ route('membership.admin.audit') }}">Audit</a></li>
                                     <li id="membership-set-menu"><a href="{{ route('membership.admin.settings') }}">Settings</a></li>
                                 </ul>
                             </li>
@@ -2740,7 +2747,7 @@
                             if (k && !map[k]) map[k] = li;
                         });
                         Object.keys(map).forEach(function (k) {
-                            if (hidden.indexOf(k) !== -1 && k !== 'site-content' && k !== 'setting') {
+                            if (hidden.indexOf(k) !== -1 && k !== 'site-content' && k !== 'setting' && k !== 'help') {
                                 map[k].style.display = 'none';
                             }
                             if (labels[k]) {
@@ -3602,6 +3609,7 @@
                   'announcements-module': 'announcements',
                   'courses-module': 'courses',
                   membership: 'members',
+                  'membership-module': 'members',
                   'timesheets-module': 'timesheets',
                   'timesheet-admin-module': 'timesheets',
                   order: 'orders',
@@ -3783,6 +3791,12 @@
                   var $tabsWrap = $('#beyond-module-tabs');
 
                   $subNav.empty().removeClass('is-visible');
+
+                  if ($('.tm-nav, .mm-nav, .site-content-tabs-nav').length) {
+                      $nav.empty();
+                      $tabsWrap.removeClass('is-visible');
+                      return;
+                  }
 
                   var $activeItem = $('#side-main-menu ul.collapse li.active').first();
                   if (onBookingRequest && $('#booking-requests-menu').length) {

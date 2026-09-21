@@ -17,10 +17,13 @@
         ['membership.admin.settings', 'Settings', 'dripicons-gear', 'tone-blue'],
     ];
 @endphp
-<nav class="cm-nav" aria-label="Membership">
+<nav class="cm-nav mm-nav" aria-label="Membership">
     @foreach($tabs as $tab)
         <a href="{{ route($tab[0]) }}" class="{{ $tab[3] }} {{ $mmTab === $tab[0] ? 'is-active' : '' }}">
             <i class="{{ $tab[2] }}"></i> {{ $tab[1] }}
         </a>
     @endforeach
+    <a href="{{ url('/admin/help') }}#members" class="tone-gold">
+        <i class="dripicons-question"></i> Help
+    </a>
 </nav>

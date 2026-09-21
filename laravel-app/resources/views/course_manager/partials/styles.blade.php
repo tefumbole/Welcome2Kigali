@@ -43,20 +43,26 @@
     .cm-nav a.tone-red i { color: #ef4444; }
     .cm-nav a.tone-red.is-active, .cm-nav a.tone-red:hover { background: #ef4444; border-color: #ef4444; color: #fff !important; }
     .cm-nav a.tone-red:hover i { color: #fff !important; }
-    .cm-title { color: #0b3f90; font-weight: 800; font-size: 1.75rem; margin: 0 0 4px; }
-    .cm-subtitle { color: #6b7280; margin: 0; }
+    .cm-title { color: #0A0A0A; font-weight: 800; font-size: 1.75rem; margin: 0 0 4px; }
+    .cm-subtitle { color: #6F4E37; margin: 0; }
     .cm-page-card {
-        background: #fff; border: 1px solid #eef2f7; border-radius: 14px;
-        box-shadow: 0 1px 3px rgba(15,23,42,.06); padding: 1.25rem; margin-bottom: 1rem;
+        background: #fff; border: 1px solid #eee4d0; border-radius: 14px;
+        box-shadow: 0 1px 3px rgba(10,10,10,.06); padding: 1.25rem; margin-bottom: 1rem;
     }
+    .cm-stat-value { font-weight: 800; }
+    .cm-stat-value.is-gold { color: #C5A059; }
+    .cm-stat-value.is-caramel { color: #C47A2C; }
+    .cm-stat-value.is-burgundy { color: #7B3F2A; }
+    .cm-stat-value.is-espresso { color: #0A0A0A; }
+    .cm-stat-value.is-mocha { color: #6F4E37; }
     .cm-btn-primary {
-        background: #0b3f90; border: 1px solid #0b3f90; color: #fff;
+        background: #0A0A0A; border: 1px solid #0A0A0A; color: #C5A059;
         border-radius: 8px; padding: 8px 14px; font-weight: 600; font-size: 14px;
         display: inline-flex; align-items: center; gap: 6px; text-decoration: none; cursor: pointer;
     }
-    .cm-btn-primary:hover { background: #0a3578; color: #fff; text-decoration: none; }
+    .cm-btn-primary:hover { background: #C5A059; color: #0A0A0A; border-color: #C5A059; text-decoration: none; }
     .cm-btn-gold {
-        background: #e8b923; border: 1px solid #e8b923; color: #111;
+        background: #C5A059; border: 1px solid #C5A059; color: #0A0A0A;
         border-radius: 8px; padding: 8px 14px; font-weight: 700; font-size: 14px;
         display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
     }
@@ -72,12 +78,12 @@
     }
     .cm-stat .label { font-size: 12px; color: #6b7280; font-weight: 600; margin: 0; }
     .cm-stat .value { font-size: 1.6rem; font-weight: 800; color: #111; margin: 4px 0 0; }
-    .cm-stat .value.green { color: #16a34a; }
+    .cm-stat .value.green { color: #C5A059; }
     .cm-badge {
         display: inline-block; padding: 3px 10px; border-radius: 999px;
-        font-size: 12px; font-weight: 600; background: #f1f5f9; color: #334155;
+        font-size: 12px; font-weight: 600; background: #F7F1E8; color: #3D2914;
     }
-    .cm-price { color: #16a34a; font-weight: 800; }
+    .cm-price { color: #C5A059; font-weight: 800; }
     .cm-order form { display: inline; }
     .cm-order button {
         border: 0; background: #f1f5f9; color: #64748b; border-radius: 4px;

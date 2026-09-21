@@ -18,4 +18,7 @@
             <i class="{{ $tab[2] }}"></i> {{ $tab[1] }}
         </a>
     @endforeach
+    <a href="{{ url('/admin/help') }}#tasks" class="tone-gold">
+        <i class="dripicons-question"></i> Help
+    </a>
 </nav>

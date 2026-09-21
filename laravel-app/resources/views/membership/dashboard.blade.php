@@ -12,21 +12,21 @@
         @endif
         <div class="row">
             @foreach([
-                ['Active', $stats['active'], 'success'],
-                ['Expiring (30 days)', $stats['expiring'], 'warning'],
-                ['Expired', $stats['expired'], 'danger'],
-                ['Pending applications', $stats['pending_apps'], 'info'],
-                ['Promotional', $stats['promotional'], 'secondary'],
-                ['Paid members', $stats['paid_members'], 'primary'],
-                ['Registration revenue', number_format($stats['revenue']).' FRW', 'success'],
-                ['Renewal revenue', number_format($stats['renewal_revenue']).' FRW', 'success'],
-                ['Free-product value', number_format($stats['free_value']).' FRW', 'warning'],
-                ['Promo → paid %', $stats['promo_to_paid'].'%', 'info'],
+                ['Active', $stats['active'], 'gold'],
+                ['Expiring (30 days)', $stats['expiring'], 'caramel'],
+                ['Expired', $stats['expired'], 'burgundy'],
+                ['Pending applications', $stats['pending_apps'], 'espresso'],
+                ['Promotional', $stats['promotional'], 'mocha'],
+                ['Paid members', $stats['paid_members'], 'espresso'],
+                ['Registration revenue', number_format($stats['revenue']).' FRW', 'gold'],
+                ['Renewal revenue', number_format($stats['renewal_revenue']).' FRW', 'gold'],
+                ['Free-product value', number_format($stats['free_value']).' FRW', 'caramel'],
+                ['Promo → paid %', $stats['promo_to_paid'].'%', 'gold'],
             ] as $card)
                 <div class="col-md-3 mb-3">
                     <div class="cm-page-card p-3">
                         <div class="text-muted small">{{ $card[0] }}</div>
-                        <div class="h4 mb-0 text-{{ $card[2] }}">{{ $card[1] }}</div>
+                        <div class="h4 mb-0 cm-stat-value is-{{ $card[2] }}">{{ $card[1] }}</div>
                     </div>
                 </div>
             @endforeach

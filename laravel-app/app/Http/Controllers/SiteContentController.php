@@ -63,7 +63,7 @@ class SiteContentController extends Controller
     {
         $this->authorizeAdmin();
         $this->saveOrder($request, 'side_menu_order', SiteMenu::sideItems());
-        $this->saveVisibility($request, 'side_menu_hidden', SiteMenu::sideItems(), ['site-content', 'setting']);
+        $this->saveVisibility($request, 'side_menu_hidden', SiteMenu::sideItems(), ['site-content', 'setting', 'help']);
         $this->saveLabels($request, 'side_menu_labels', SiteMenu::sideItems());
 
         return redirect('/admin/site-content?tab=side-menu')->with('message', 'Side bar saved. Admin menu updated.');

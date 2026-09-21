@@ -88,6 +88,13 @@ class SiteMenu
             }
         }
 
+        if ($settingKey === 'side_menu_order' && isset($items['help'])) {
+            $ordered = array_values(array_filter($ordered, function ($k) {
+                return $k !== 'help';
+            }));
+            $ordered[] = 'help';
+        }
+
         return $ordered;
     }
 

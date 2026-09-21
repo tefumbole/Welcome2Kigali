@@ -110,6 +110,9 @@
                     <a class="beyond-module-tab tone-purple" href="{{ url('/admin/site-content?tab=side-menu') }}">
                         <i class="dripicons-view-list"></i> Reorder in Side Bars
                     </a>
+                    <a class="beyond-module-tab tone-gold" href="{{ url('/admin/help') }}#content">
+                        <i class="dripicons-question"></i> Help
+                    </a>
                 </div>
 
                 @if(in_array($tab, ['landing-menu', 'side-menu', 'people-menu', 'settings-menu', 'content-tabs'], true))
@@ -160,7 +163,7 @@
                                         $canEdit = in_array($tab, ['landing-menu', 'side-menu'], true);
                                         $hiddenList = $tab === 'side-menu' ? ($sideHidden ?? []) : ($landingHidden ?? []);
                                         $labelList = $tab === 'side-menu' ? ($sideLabels ?? []) : ($landingLabels ?? []);
-                                        $locked = $tab === 'side-menu' && in_array($key, ['site-content', 'setting'], true);
+                                        $locked = $tab === 'side-menu' && in_array($key, ['site-content', 'setting', 'help'], true);
                                     @endphp
                                     <li class="list-group-item d-flex justify-content-between align-items-center" data-key="{{ $key }}">
                                         <span class="d-flex align-items-center flex-grow-1 mr-2">

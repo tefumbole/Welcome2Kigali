@@ -371,3 +371,16 @@ nav.navbar a.menu-btn:hover {
     border-color: #C5A059 !important;
     color: #0A0A0A !important;
 }
+
+body:has(.tm-nav) #beyond-module-tabs,
+body:has(.mm-nav) #beyond-module-tabs,
+body:has(.site-content-tabs-nav) #beyond-module-tabs {
+    display: none !important;
+}
+
+.cm-stat-value.is-gold { color: #C5A059 !important; }
+.cm-stat-value.is-caramel { color: #C47A2C !important; }
+.cm-stat-value.is-burgundy { color: #7B3F2A !important; }
+.cm-stat-value.is-espresso { color: #0A0A0A !important; }
+.cm-stat-value.is-mocha { color: #6F4E37 !important; }
+.cm-title { color: #0A0A0A !important; }
