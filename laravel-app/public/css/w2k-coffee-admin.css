@@ -95,6 +95,29 @@ a:hover {
     color: #0A0A0A !important;
 }
 
+/* Booking create — coffee instead of leftover blue */
+.booking-create-page .card-header {
+    background: linear-gradient(135deg, #0A0A0A 0%, #16110c 100%) !important;
+    color: #C5A059 !important;
+    border-bottom: 2px solid #C5A059 !important;
+}
+.booking-create-page .card-body {
+    background: #F7F1E8 !important;
+}
+.booking-create-page .booking-section-title,
+.booking-create-page #myTable thead th {
+    color: #C5A059 !important;
+}
+.booking-create-page #myTable thead th {
+    background: #0A0A0A !important;
+}
+.booking-create-page .search-box .btn-secondary,
+.booking-create-page .btn-booking-primary {
+    background: #0A0A0A !important;
+    border-color: #0A0A0A !important;
+    color: #fff !important;
+}
+
 .beyond-role-badge {
     background: rgba(197, 160, 89, 0.2) !important;
     color: #6F4E37 !important;

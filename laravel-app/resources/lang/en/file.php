@@ -572,6 +572,7 @@ return [
 	"Recieved Amount" => "Received Amount",
 	"Total Amount" => "Total Amount",
 	"Due Amount" => "Due Amount",
+	"Pending Amount" => "Pending Amount",
 	"Theme" => "Theme",
 	"Staff Access" => "Staff Access",
 	"All Records" => "All Records",

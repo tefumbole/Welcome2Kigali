@@ -170,15 +170,15 @@
                     </tr>
                 @endif
                 <tr class="inv-grand">
-                    <th>{{ trans('file.grand total') }}</th>
+                    <th>{{ trans('file.Due Amount') }}</th>
                     <td>{{ number_format((float) $lims_sale_data->grand_total, 2) }}</td>
                 </tr>
                 <tr>
-                    <th>Amount Paid</th>
+                    <th>{{ trans('file.Paying Amount') }}</th>
                     <td>{{ number_format($paidAmount, 2) }}</td>
                 </tr>
                 <tr>
-                    <th>Amount Pending</th>
+                    <th>{{ trans('file.Pending Amount') }}</th>
                     <td>{{ number_format($dueAmount, 2) }}</td>
                 </tr>
                 <tr>

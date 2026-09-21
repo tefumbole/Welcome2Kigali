@@ -48,13 +48,14 @@
     .booking-create-page .card {
         border: 0;
         border-radius: 12px;
-        box-shadow: 0 8px 20px rgba(11, 63, 144, 0.07);
+        box-shadow: 0 8px 20px rgba(10, 10, 10, 0.08);
         overflow: hidden;
     }
     .booking-create-page .card-header {
-        background: linear-gradient(135deg, #0b3f90 0%, #1456b8 100%);
-        color: #fff;
+        background: linear-gradient(135deg, #0A0A0A 0%, #16110c 100%) !important;
+        color: #C5A059 !important;
         border: 0;
+        border-bottom: 2px solid #C5A059 !important;
         padding: 10px 16px;
     }
     .booking-create-page .card-header h4 {
@@ -62,6 +63,7 @@
         font-weight: 800;
         font-size: 18px;
         line-height: 1.2;
+        color: #C5A059 !important;
     }
     .booking-create-page .card-header .booking-header-sub {
         margin: 2px 0 0;
@@ -71,7 +73,7 @@
     }
     .booking-create-page .card-body {
         padding: 12px 14px 14px;
-        background: #f8fbff;
+        background: #F7F1E8;
     }
     .booking-create-page .card-body > p.italic { display: none; }
     .booking-section {
@@ -86,7 +88,7 @@
         font-weight: 800;
         letter-spacing: 0.06em;
         text-transform: uppercase;
-        color: #0b3f90;
+        color: #C5A059;
         margin-bottom: 6px;
     }
     .booking-create-page label {
@@ -114,16 +116,16 @@
         line-height: 24px;
     }
     .booking-create-page .form-control:focus {
-        border-color: #c6ab47 !important;
-        box-shadow: 0 0 0 0.12rem rgba(198, 171, 71, 0.16) !important;
+        border-color: #C5A059 !important;
+        box-shadow: 0 0 0 0.12rem rgba(197, 160, 89, 0.22) !important;
     }
     .booking-create-page textarea.form-control {
         height: auto;
         min-height: 56px;
     }
     .booking-create-page .search-box .btn-secondary {
-        background: #0b3f90;
-        border-color: #0b3f90;
+        background: #0A0A0A;
+        border-color: #0A0A0A;
         border-radius: 8px 0 0 8px;
         padding: 4px 10px;
     }
@@ -136,8 +138,8 @@
     }
     .booking-create-page .input-with-action .btn-default {
         border-radius: 8px;
-        border-color: #c6ab47;
-        color: #0b3f90;
+        border-color: #C5A059;
+        color: #C5A059;
         min-width: 34px;
         padding: 4px 8px;
     }
@@ -157,8 +159,8 @@
         font-size: 12px;
     }
     #myTable thead th {
-        background: #0b3f90;
-        color: #fff;
+        background: #0A0A0A !important;
+        color: #C5A059 !important;
         border: 0;
         white-space: nowrap;
         font-size: 11px;
@@ -245,12 +247,12 @@
     }
     .booking-summary-bar .summary-item strong {
         display: block;
-        color: #0b3f90;
+        color: #C5A059;
         font-size: 15px;
     }
     .btn-booking-primary {
-        background: #0b3f90;
-        border-color: #0b3f90;
+        background: #0A0A0A;
+        border-color: #0A0A0A;
         color: #fff;
         border-radius: 8px;
         padding: 8px 16px;
@@ -258,9 +260,9 @@
         font-size: 13px;
     }
     .btn-booking-accent {
-        background: #c6ab47;
-        border-color: #c6ab47;
-        color: #10213d;
+        background: #C5A059;
+        border-color: #C5A059;
+        color: #0A0A0A;
         border-radius: 8px;
         padding: 8px 16px;
         font-weight: 700;
@@ -268,7 +270,7 @@
     }
     .flatpickr-calendar {
         border-radius: 12px;
-        box-shadow: 0 16px 40px rgba(11, 63, 144, 0.18);
+        box-shadow: 0 16px 40px rgba(10, 10, 10, 0.18);
         z-index: 10050 !important;
     }
     .booking-create-page select.selectpicker {
@@ -313,30 +315,30 @@
         padding: 2px 28px 2px 8px;
         border-radius: 6px;
         border: 1px solid #d7e0ef;
-        background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%230b3f90' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z'/%3E%3C/svg%3E") no-repeat right 8px center;
+        background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23C5A059' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z'/%3E%3C/svg%3E") no-repeat right 8px center;
         background-size: 10px;
-        color: #0b3f90;
+        color: #C5A059;
         font-weight: 600;
         font-size: 12px;
         cursor: pointer;
     }
     #myTable select.booking_method:focus {
-        border-color: #c6ab47;
+        border-color: #C5A059;
         box-shadow: 0 0 0 0.12rem rgba(198, 171, 71, 0.16);
         outline: none;
     }
     #myTable .ibtnDup {
-        background: #c6ab47;
-        border-color: #c6ab47;
-        color: #fff;
+        background: #C5A059;
+        border-color: #C5A059;
+        color: #0A0A0A;
         margin-right: 4px;
         padding: 3px 8px;
         font-size: 12px;
     }
     #myTable .ibtnDup:hover {
-        background: #b3983a;
-        border-color: #b3983a;
-        color: #fff;
+        background: #0A0A0A;
+        border-color: #0A0A0A;
+        color: #C5A059;
     }
     #myTable .ibtnDel {
         padding: 3px 8px;
@@ -370,11 +372,44 @@
         position: relative;
         z-index: 2;
         margin-bottom: 6px;
-        max-height: min(38vh, 360px);
+        max-height: min(46vh, 440px);
         overflow: auto;
         border: 1px solid #e3e9f4;
         border-radius: 10px;
         background: #fff;
+    }
+    #myTable { min-width: 960px; }
+    .w2k-pay-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(150px, 1fr));
+        gap: 12px 16px;
+        align-items: end;
+    }
+    @media (max-width: 991px) {
+        .w2k-pay-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .w2k-pay-box .form-control[readonly] {
+        background: #f4f6fb;
+        font-weight: 700;
+        color: #0a0a0a;
+        cursor: default;
+    }
+    .w2k-pay-pending {
+        min-height: 34px;
+        display: flex;
+        align-items: center;
+        font-weight: 800;
+        font-size: 15px;
+        padding: 4px 12px;
+        border-radius: 8px;
+        background: #f4f6fb;
+        border: 1px solid #d7e0ef;
+        margin: 0;
+    }
+    .w2k-pay-box.is-pending .w2k-pay-pending {
+        background: #fff6e5;
+        border-color: #c5a059;
+        color: #7a5a12;
     }
     .booking-create-page .booking-order-wrap thead th {
         position: sticky;
@@ -677,33 +712,27 @@
                                     </div>
                                 </div>
                                 <div id="payment">
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label>{{trans('file.Paid By')}}</label>
-                                                <select name="paid_by_id" class="form-control">
-                                                    <option value="1">Cash</option>
-                                                    <option value="3">Credit Card</option>
-                                                </select>
-                                            </div>
+                                    <div class="w2k-pay-grid">
+                                        <div class="form-group mb-0">
+                                            <label>{{trans('file.Paid By')}}</label>
+                                            <select name="paid_by_id" class="form-control">
+                                                <option value="1">Cash</option>
+                                                <option value="3">Credit Card</option>
+                                            </select>
                                         </div>
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label>{{trans('file.Recieved Amount')}} *</label>
-                                                <input type="number" name="paying_amount" class="form-control" id="paying-amount" step="any" />
-                                            </div>
+                                        <div class="form-group mb-0 w2k-pay-box">
+                                            <label>{{trans('file.Due Amount')}}</label>
+                                            <input type="text" class="form-control" id="due-amount" value="0.00" readonly tabindex="-1">
+                                            <input type="hidden" name="paying_amount" id="paying-amount" value="">
                                         </div>
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label>{{trans('file.Paying Amount')}} *</label>
-                                                <input type="number" name="paid_amount" class="form-control" id="paid-amount" step="any"/>
-                                            </div>
+                                        <div class="form-group mb-0">
+                                            <label>{{trans('file.Paying Amount')}} *</label>
+                                            <input type="number" name="paid_amount" class="form-control" id="paid-amount" step="any" min="0">
                                         </div>
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label>{{trans('file.Change')}}</label>
-                                                <p id="change" class="ml-2">0.00</p>
-                                            </div>
+                                        <div class="form-group mb-0 w2k-pay-box" id="pending-box">
+                                            <label>{{trans('file.Pending Amount')}}</label>
+                                            <p id="pending-amount" class="w2k-pay-pending">0.00</p>
+                                            <p id="change" class="d-none">0.00</p>
                                         </div>
                                     </div>
                                     <div class="row mt-2">
@@ -1971,11 +2000,11 @@ function calculateGrandTotal() {
     $('#order_discount').text(order_discount.toFixed(2));
     $('#shipping_cost').text(shipping_cost.toFixed(2));
     $('#grand_total').text(grand_total.toFixed(2));
-    if( $('select[name="payment_status"]').val() == 4 ){
-        $('#paying-amount').val('');
+    $('input[name="grand_total"]').val(grand_total.toFixed(2));
+    if ($('select[name="payment_status"]').val() == 4) {
         $('#paid-amount').val(grand_total.toFixed(2));
     }
-    $('input[name="grand_total"]').val(grand_total.toFixed(2));
+    syncBookingPaymentFields();
 }
 
 $('input[name="order_discount"]').on("input", function() {
@@ -1993,19 +2022,19 @@ $('select[name="order_tax_rate"]').on("change", function() {
 $('select[name="payment_status"]').on("change", function() {
     var payment_status = $(this).val();
     if (payment_status == 3 || payment_status == 4) {
-        $("#paid-amount").prop('disabled',false);
+        $("#paid-amount").prop('disabled', false);
         $("#payment").show();
-        $("#paying-amount").prop('required',true);
-        $("#paid-amount").prop('required',true);
-        if(payment_status == 4){
-            $("#paid-amount").prop('disabled',true);
-            $('input[name="paying_amount"]').val($('input[name="grand_total"]').val());
-            $('input[name="paid_amount"]').val($('input[name="grand_total"]').val());
+        $("#paid-amount").prop('required', true);
+        if (payment_status == 4) {
+            $("#paid-amount").prop('disabled', true);
+            $('#paid-amount').val(($('input[name="grand_total"]').val() || '0'));
+        } else if (!$('#paid-amount').val()) {
+            $('#paid-amount').val('');
         }
+        syncBookingPaymentFields();
     }
-    else{
-        $("#paying-amount").prop('required',false);
-        $("#paid-amount").prop('required',false);
+    else {
+        $("#paid-amount").prop('required', false);
         $('input[name="paying_amount"]').val('');
         $('input[name="paid_amount"]').val('');
         $("#payment").hide();
@@ -2082,17 +2111,31 @@ $('select[name="gift_card_id"]').on("change", function() {
     }
 });
 
-$('input[name="paid_amount"]').on("input", function() {
-    if( $(this).val() > parseFloat($('input[name="paying_amount"]').val()) ) {
-        alert('Paying amount cannot be bigger than recieved amount');
-        $(this).val('');
+function parseMoney(v) {
+    var n = parseFloat(v);
+    return isNaN(n) ? 0 : n;
+}
+function invoiceDueAmount() {
+    return parseMoney($('input[name="grand_total"]').val() || $('#grand_total').text());
+}
+function syncBookingPaymentFields() {
+    var due = invoiceDueAmount();
+    $('#due-amount').val(due.toFixed(2));
+    var paying = parseMoney($('#paid-amount').val());
+    if (paying < 0) paying = 0;
+    if (due > 0 && paying > due) {
+        paying = due;
+        $('#paid-amount').val(paying.toFixed(2));
     }
-    else if( $(this).val() > parseFloat($('#grand_total').text()) ){
-        alert('Paying amount cannot be bigger than grand total');
-        $(this).val('');
-    }
+    $('#paying-amount').val(paying.toFixed(2));
+    var pending = Math.max(0, due - paying);
+    $('#pending-amount').text(pending.toFixed(2));
+    $('#change').text(pending.toFixed(2));
+    $('#pending-box').toggleClass('is-pending', pending > 0.004);
+}
 
-    $("#change").text( parseFloat($("#paying-amount").val() - $(this).val()).toFixed(2) );
+$('input[name="paid_amount"]').on("input", function() {
+    syncBookingPaymentFields();
     var id = $('select[name="paid_by_id"]').val();
     if(id == 2){
         var balance = gift_card_amount[$("#gift_card_id").val()] - gift_card_expense[$("#gift_card_id").val()];
@@ -2103,10 +2146,6 @@ $('input[name="paid_amount"]').on("input", function() {
         if( $('input[name="paid_amount"]').val() > deposit[$('#customer_id').val()] )
             alert('Amount exceeds customer deposit! Customer deposit : '+ deposit[$('#customer_id').val()]);
     }
-});
-
-$('input[name="paying_amount"]').on("input", function() {
-    $("#change").text( parseFloat( $(this).val() - $("#paid-amount").val()).toFixed(2));
 });
 
 $(window).keydown(function(e){
@@ -2137,15 +2176,22 @@ $(document).on('submit', '.payment-form', function(e) {
         alert("Please insert product to order table!")
         e.preventDefault();
     }
-    else if( parseFloat($("#paying-amount").val()) < parseFloat($("#paid-amount").val()) ){
-        alert('Paying amount cannot be bigger than recieved amount');
-        e.preventDefault();
-    }
-    else if( $('select[name="payment_status"]').val() == 3 && parseFloat($("#paid-amount").val()) == parseFloat($('input[name="grand_total"]').val()) ) {
-        alert('Paying amount equals to grand total! Please change payment status.');
-        e.preventDefault();
-    }
     else {
+        syncBookingPaymentFields();
+        var due = invoiceDueAmount();
+        var paying = parseMoney($('#paid-amount').val());
+        var status = $('select[name="payment_status"]').val();
+        if ((status == 3 || status == 4) && paying <= 0) {
+            alert('Enter the paying amount.');
+            e.preventDefault();
+            return;
+        }
+        if (status == 3 && due > 0 && paying >= due) {
+            $('select[name="payment_status"]').val('4');
+        }
+        if (status == 4 && due > 0 && paying < due) {
+            $('select[name="payment_status"]').val('3');
+        }
         $("#paid-amount").prop('disabled',false);
         $(".batch-no").prop('disabled', false);
     }

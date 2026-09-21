@@ -192,17 +192,18 @@
                     {!! Form::open(['route' => 'booking.add-payment', 'method' => 'post', 'files' => true, 'class' => 'payment-form' ]) !!}
                     <div class="row">
                         <input type="hidden" name="balance">
+                        <input type="hidden" name="paying_amount" id="add-paying-amount">
                         <div class="col-md-6">
-                            <label>{{trans('file.Due Amount')}} *</label>
-                            <input type="text" name="paying_amount" class="form-control numkey" step="any" required>
+                            <label>{{trans('file.Due Amount')}}</label>
+                            <input type="text" id="add-due-amount" class="form-control" readonly tabindex="-1">
                         </div>
                         <div class="col-md-6">
                             <label>{{trans('file.Paying Amount')}} *</label>
-                            <input type="text" id="amount" name="amount" class="form-control"  step="any" required>
+                            <input type="text" id="amount" name="amount" class="form-control" step="any" required>
                         </div>
                         <div class="col-md-6 mt-1">
-                            <label>{{trans('file.Change')}} : </label>
-                            <p class="change ml-2">0.00</p>
+                            <label>{{trans('file.Pending Amount')}}</label>
+                            <p class="change pending-amount font-weight-bold mb-0" style="font-size:16px;">0.00</p>
                         </div>
                         <div class="col-md-6 mt-1">
                             <label>{{trans('file.Paid By')}}</label>
@@ -323,17 +324,18 @@
                 <div class="modal-body">
                     {!! Form::open(['route' => 'booking.update-payment', 'method' => 'post', 'class' => 'payment-form' ]) !!}
                     <div class="row">
+                        <input type="hidden" name="edit_paying_amount">
                         <div class="col-md-6">
-                            <label>{{trans('file.Recieved Amount')}} *</label>
-                            <input type="text" name="edit_paying_amount" class="form-control numkey"  step="any" required>
+                            <label>{{trans('file.Due Amount')}}</label>
+                            <input type="text" id="edit-due-amount" class="form-control" readonly tabindex="-1">
                         </div>
                         <div class="col-md-6">
                             <label>{{trans('file.Paying Amount')}} *</label>
                             <input type="text" name="edit_amount" class="form-control"  step="any" required>
                         </div>
                         <div class="col-md-6 mt-1">
-                            <label>{{trans('file.Change')}} : </label>
-                            <p class="change ml-2">0.00</p>
+                            <label>{{trans('file.Pending Amount')}}</label>
+                            <p class="change pending-amount font-weight-bold mb-0" style="font-size:16px;">0.00</p>
                         </div>
                         <div class="col-md-6 mt-1">
                             <label>{{trans('file.Paid By')}}</label>
@@ -581,10 +583,12 @@
             deposit = $('table.sale-list tbody tr:nth-child(' + (rowindex + 1) + ')').find('.deposit').val();
             var booking_id = $(this).data('id').toString();
             var balance = $('table.sale-list tbody tr:nth-child(' + (rowindex + 1) + ')').find('td:nth-child(10)').text();
-            balance = parseFloat(balance.replace(/,/g, ''));
-            $('input[name="paying_amount"]').val(balance);
+            balance = parseFloat(balance.replace(/,/g, '')) || 0;
+            $('#add-due-amount').val(balance.toFixed(2));
             $('#add-payment input[name="balance"]').val(balance);
-            $('input[name="amount"]').val(balance);
+            $('#add-payment input[name="paying_amount"]').val('0.00');
+            $('input[name="amount"]').val('');
+            $('#add-payment .pending-amount').text(balance.toFixed(2));
             $('input[name="booking_id"]').val(booking_id);
         });
 
@@ -671,9 +675,13 @@
 
                     $('.selectpicker').selectpicker('refresh');
                     $("#payment_reference").html(payment_reference[index]);
-                    $('input[name="edit_paying_amount"]').val(paying_amount[index]);
-                    $('#edit-payment .change').text(change[index]);
-                    $('input[name="edit_amount"]').val(paid_amount[index]);
+                    var paidNow = parseFloat(paid_amount[index]) || 0;
+                    var dueAmt = parseFloat(paying_amount[index]);
+                    if (isNaN(dueAmt) || dueAmt < paidNow) dueAmt = paidNow;
+                    $('#edit-due-amount').val(dueAmt.toFixed(2));
+                    $('input[name="edit_paying_amount"]').val(paidNow.toFixed(2));
+                    $('#edit-payment .pending-amount').text(Math.max(0, dueAmt - paidNow).toFixed(2));
+                    $('input[name="edit_amount"]').val(paidNow.toFixed(2));
                     $('textarea[name="edit_payment_note"]').val(payment_note[index]);
                     return false;
                 }
@@ -731,20 +739,31 @@
             }
         });
 
-        $('input[name="paying_amount"]').on("input", function() {
-            $(".change").text(parseFloat( $(this).val() - $('input[name="amount"]').val() ).toFixed(2));
-        });
+        function syncAddPaymentPending() {
+            var due = parseFloat($('#add-due-amount').val()) || 0;
+            var pay = parseFloat($('#amount').val()) || 0;
+            if (pay < 0) pay = 0;
+            if (due > 0 && pay > due) {
+                pay = due;
+                $('#amount').val(due.toFixed(2));
+            }
+            $('#add-paying-amount').val(pay.toFixed(2));
+            $('#add-payment .pending-amount').text(Math.max(0, due - pay).toFixed(2));
+        }
+        function syncEditPaymentPending() {
+            var due = parseFloat($('#edit-due-amount').val()) || 0;
+            var pay = parseFloat($('input[name="edit_amount"]').val()) || 0;
+            if (pay < 0) pay = 0;
+            if (due > 0 && pay > due) {
+                pay = due;
+                $('input[name="edit_amount"]').val(due.toFixed(2));
+            }
+            $('input[name="edit_paying_amount"]').val(pay.toFixed(2));
+            $('#edit-payment .pending-amount').text(Math.max(0, due - pay).toFixed(2));
+        }
 
         $('input[name="amount"]').on("input", function() {
-            if( $(this).val() > parseFloat($('input[name="paying_amount"]').val()) ) {
-                alert('Paying amount cannot be bigger than recieved amount');
-                $(this).val('');
-            }
-            else if( $(this).val() > parseFloat($('input[name="balance"]').val()) ) {
-                alert('Paying amount cannot be bigger than due amount');
-                $(this).val('');
-            }
-            $(".change").text(parseFloat($('input[name="paying_amount"]').val() - $(this).val()).toFixed(2));
+            syncAddPaymentPending();
             var id = $('#add-payment select[name="paid_by_id"]').val();
             var amount = $(this).val();
             if(id == 2){
@@ -806,16 +825,8 @@
                 alert('Amount exceeds card balance! Gift Card balance: '+ balance[id]);
         });
 
-        $('input[name="edit_paying_amount"]').on("input", function() {
-            $(".change").text(parseFloat( $(this).val() - $('input[name="edit_amount"]').val() ).toFixed(2));
-        });
-
         $('input[name="edit_amount"]').on("input", function() {
-            if( $(this).val() > parseFloat($('input[name="edit_paying_amount"]').val()) ) {
-                alert('Paying amount cannot be bigger than recieved amount');
-                $(this).val('');
-            }
-            $(".change").text(parseFloat($('input[name="edit_paying_amount"]').val() - $(this).val()).toFixed(2));
+            syncEditPaymentPending();
             var amount = $(this).val();
             var id = $('#edit-payment select[name="gift_card_id"]').val();
             if(amount > balance[id]){
@@ -1184,19 +1195,25 @@
         }
 
         $(document).on('submit', '.payment-form', function(e) {
-            if( $('input[name="paying_amount"]').val() < parseFloat($('#amount').val()) ) {
-                alert('Paying amount cannot be bigger than recieved amount');
-                $('input[name="amount"]').val('');
-                $(".change").text(parseFloat( $('input[name="paying_amount"]').val() - $('#amount').val() ).toFixed(2));
-                e.preventDefault();
+            var $form = $(this);
+            if ($form.find('#amount').length) {
+                syncAddPaymentPending();
+                var due = parseFloat($('#add-due-amount').val()) || 0;
+                var pay = parseFloat($('#amount').val()) || 0;
+                if (pay <= 0) {
+                    alert('Enter the paying amount.');
+                    e.preventDefault();
+                    return;
+                }
+                if (due > 0 && pay > due) {
+                    alert('Paying amount cannot be bigger than due amount');
+                    e.preventDefault();
+                    return;
+                }
             }
-            else if( $('input[name="edit_paying_amount"]').val() < parseFloat($('input[name="edit_amount"]').val()) ) {
-                alert('Paying amount cannot be bigger than recieved amount');
-                $('input[name="edit_amount"]').val('');
-                $(".change").text(parseFloat( $('input[name="edit_paying_amount"]').val() - $('input[name="edit_amount"]').val() ).toFixed(2));
-                e.preventDefault();
+            if ($form.find('input[name="edit_amount"]').length) {
+                syncEditPaymentPending();
             }
-
             $('#edit-payment select[name="edit_paid_by_id"]').prop('disabled', false);
         });
 

@@ -233,20 +233,22 @@
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label>{{trans('file.Recieved Amount')}} *</label>
-                                                    <input type="number" name="paying_amount" class="form-control" id="paying-amount" step="any" />
+                                                    <label>{{trans('file.Due Amount')}}</label>
+                                                    <input type="text" class="form-control" id="due-amount" value="0.00" readonly tabindex="-1">
+                                                    <input type="hidden" name="paying_amount" id="paying-amount" value="">
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label>{{trans('file.Paying Amount')}} *</label>
-                                                    <input type="number" name="paid_amount" class="form-control" id="paid-amount" step="any"/>
+                                                    <input type="number" name="paid_amount" class="form-control" id="paid-amount" step="any" min="0">
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label>{{trans('file.Change')}}</label>
-                                                    <p id="change" class="ml-2">0.00</p>
+                                                    <label>{{trans('file.Pending Amount')}}</label>
+                                                    <p id="pending-amount" class="form-control-plaintext font-weight-bold mb-0">0.00</p>
+                                                    <p id="change" class="d-none">0.00</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -966,11 +968,11 @@
             $('#order_discount').text(order_discount.toFixed(2));
             $('#shipping_cost').text(shipping_cost.toFixed(2));
             $('#grand_total').text(grand_total.toFixed(2));
-            if( $('select[name="payment_status"]').val() == 4 ){
-                $('#paying-amount').val('');
+            $('input[name="grand_total"]').val(grand_total.toFixed(2));
+            if ($('select[name="payment_status"]').val() == 4) {
                 $('#paid-amount').val(grand_total.toFixed(2));
             }
-            $('input[name="grand_total"]').val(grand_total.toFixed(2));
+            syncInvoicePaymentFields();
         }
 
         $('input[name="order_discount"]').on("input", function() {
@@ -990,16 +992,14 @@
             if (payment_status == 3 || payment_status == 4) {
                 $("#paid-amount").prop('disabled',false);
                 $("#payment").show();
-                $("#paying-amount").prop('required',true);
                 $("#paid-amount").prop('required',true);
                 if(payment_status == 4){
                     $("#paid-amount").prop('disabled',true);
-                    $('input[name="paying_amount"]').val($('input[name="grand_total"]').val());
-                    $('input[name="paid_amount"]').val($('input[name="grand_total"]').val());
+                    $('#paid-amount').val(($('input[name="grand_total"]').val() || '0'));
                 }
+                syncInvoicePaymentFields();
             }
             else{
-                $("#paying-amount").prop('required',false);
                 $("#paid-amount").prop('required',false);
                 $('input[name="paying_amount"]').val('');
                 $('input[name="paid_amount"]').val('');
@@ -1077,17 +1077,30 @@
             }
         });
 
-        $('input[name="paid_amount"]').on("input", function() {
-            if( $(this).val() > parseFloat($('input[name="paying_amount"]').val()) ) {
-                alert('Paying amount cannot be bigger than recieved amount');
-                $(this).val('');
+        function parseMoney(v) {
+            var n = parseFloat(v);
+            return isNaN(n) ? 0 : n;
+        }
+        function invoiceDueAmount() {
+            return parseMoney($('input[name="grand_total"]').val() || $('#grand_total').text());
+        }
+        function syncInvoicePaymentFields() {
+            var due = invoiceDueAmount();
+            $('#due-amount').val(due.toFixed(2));
+            var paying = parseMoney($('#paid-amount').val());
+            if (paying < 0) paying = 0;
+            if (due > 0 && paying > due) {
+                paying = due;
+                $('#paid-amount').val(paying.toFixed(2));
             }
-            else if( $(this).val() > parseFloat($('#grand_total').text()) ){
-                alert('Paying amount cannot be bigger than grand total');
-                $(this).val('');
-            }
+            $('#paying-amount').val(paying.toFixed(2));
+            var pending = Math.max(0, due - paying);
+            $('#pending-amount').text(pending.toFixed(2));
+            $('#change').text(pending.toFixed(2));
+        }
 
-            $("#change").text( parseFloat($("#paying-amount").val() - $(this).val()).toFixed(2) );
+        $('input[name="paid_amount"]').on("input", function() {
+            syncInvoicePaymentFields();
             var id = $('select[name="paid_by_id"]').val();
             if(id == 2){
                 var balance = gift_card_amount[$("#gift_card_id").val()] - gift_card_expense[$("#gift_card_id").val()];
@@ -1098,10 +1111,6 @@
                 if( $('input[name="paid_amount"]').val() > deposit[$('#customer_id').val()] )
                     alert('Amount exceeds customer deposit! Customer deposit : '+ deposit[$('#customer_id').val()]);
             }
-        });
-
-        $('input[name="paying_amount"]').on("input", function() {
-            $("#change").text( parseFloat( $(this).val() - $("#paid-amount").val()).toFixed(2));
         });
 
         $(window).keydown(function(e){
@@ -1129,15 +1138,22 @@
                 alert("Please insert product to order table!")
                 e.preventDefault();
             }
-            else if( parseFloat($("#paying-amount").val()) < parseFloat($("#paid-amount").val()) ){
-                alert('Paying amount cannot be bigger than recieved amount');
-                e.preventDefault();
-            }
-            else if( $('select[name="payment_status"]').val() == 3 && parseFloat($("#paid-amount").val()) == parseFloat($('input[name="grand_total"]').val()) ) {
-                alert('Paying amount equals to grand total! Please change payment status.');
-                e.preventDefault();
-            }
             else {
+                syncInvoicePaymentFields();
+                var due = invoiceDueAmount();
+                var paying = parseMoney($('#paid-amount').val());
+                var status = $('select[name="payment_status"]').val();
+                if ((status == 3 || status == 4) && paying <= 0) {
+                    alert('Enter the paying amount.');
+                    e.preventDefault();
+                    return;
+                }
+                if (status == 3 && due > 0 && paying >= due) {
+                    $('select[name="payment_status"]').val('4');
+                }
+                if (status == 4 && due > 0 && paying < due) {
+                    $('select[name="payment_status"]').val('3');
+                }
                 $("#paid-amount").prop('disabled',false);
                 $(".batch-no").prop('disabled', false);
             }

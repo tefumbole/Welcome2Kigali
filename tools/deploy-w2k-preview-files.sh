@@ -206,6 +206,12 @@ FILES=(
   resources/views/sale/create_sale.blade.php
   resources/views/booking/pos.blade.php
   resources/views/booking/create.blade.php
+  resources/views/booking/invoice.blade.php
+  resources/views/sale/invoice.blade.php
+  resources/lang/en/file.php
+  resources/views/pdf/booking_pdf.blade.php
+  resources/views/pdf/rent_pdf.blade.php
+  resources/views/pdf/sale_pdf.blade.php
   resources/views/booking/edit.blade.php
   resources/views/booking/create_sale.blade.php
   resources/views/product/create.blade.php
