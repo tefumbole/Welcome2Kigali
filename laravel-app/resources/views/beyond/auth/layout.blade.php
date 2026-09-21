@@ -8,23 +8,23 @@
     @keyframes beyondLogoGlow {
         0%, 100% {
             box-shadow:
-                0 0 0 3px #6F4E37,
-                0 0 0 7px rgba(197, 160, 89, 0.28),
-                0 0 22px rgba(92, 61, 46, 0.45);
+                0 0 0 3px #C5A059,
+                0 0 0 6px rgba(10, 10, 10, 0.35),
+                0 0 22px rgba(197, 160, 89, 0.55);
         }
         50% {
             box-shadow:
-                0 0 0 3px #5C3D2E,
-                0 0 0 8px rgba(197, 160, 89, 0.42),
-                0 0 30px rgba(111, 78, 55, 0.58);
+                0 0 0 3px #E8C56B,
+                0 0 0 7px rgba(10, 10, 10, 0.2),
+                0 0 32px rgba(232, 197, 107, 0.7);
         }
     }
     .beyond-logo-spin-wrap {
         width: 6.5rem;
         height: 6.5rem;
         border-radius: 9999px;
-        background: #F7F1E8;
-        border: 3px solid #6F4E37;
+        background: #0A0A0A;
+        border: 3px solid #C5A059;
         display: flex;
         align-items: center;
         justify-content: center;
