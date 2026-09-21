@@ -6,14 +6,25 @@
 <style>
     @keyframes beyondLogoSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     @keyframes beyondLogoGlow {
-        0%, 100% { box-shadow: 0 0 0 6px rgba(212, 175, 55, 0.18), 0 0 28px rgba(212, 175, 55, 0.45); }
-        50% { box-shadow: 0 0 0 8px rgba(212, 175, 55, 0.28), 0 0 40px rgba(212, 175, 55, 0.65); }
+        0%, 100% {
+            box-shadow:
+                0 0 0 3px #6F4E37,
+                0 0 0 7px rgba(197, 160, 89, 0.28),
+                0 0 22px rgba(92, 61, 46, 0.45);
+        }
+        50% {
+            box-shadow:
+                0 0 0 3px #5C3D2E,
+                0 0 0 8px rgba(197, 160, 89, 0.42),
+                0 0 30px rgba(111, 78, 55, 0.58);
+        }
     }
     .beyond-logo-spin-wrap {
         width: 6.5rem;
         height: 6.5rem;
         border-radius: 9999px;
-        background: #fff;
+        background: #F7F1E8;
+        border: 3px solid #6F4E37;
         display: flex;
         align-items: center;
         justify-content: center;
