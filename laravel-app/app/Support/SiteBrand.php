@@ -13,27 +13,25 @@ class SiteBrand
     public static function logoUrl($generalSetting = null)
     {
         $setting = $generalSetting ?: GeneralSetting::latest()->first();
-        $fallback = url('public/branding/w2k-logo.png').'?v=4';
-
         if ($setting && ! empty($setting->site_logo)) {
             $filename = basename((string) $setting->site_logo);
             $path = base_path('public/logo/'.$filename);
-            if (is_file($path) && filesize($path) > 0 && filesize($path) <= 800000) {
-                return url('public/logo/'.$filename);
+            if (is_file($path) && filesize($path) > 0) {
+                return url('public/logo/'.$filename).'?v='.filemtime($path);
             }
         }
 
         $brandPath = base_path('public/branding/w2k-logo.png');
         if (is_file($brandPath)) {
-            return $fallback;
+            return url('public/branding/w2k-logo.png').'?v='.filemtime($brandPath);
         }
 
         $markPath = base_path('public/branding/w2k-mark.png');
         if (is_file($markPath)) {
-            return url('public/branding/w2k-mark.png');
+            return url('public/branding/w2k-mark.png').'?v='.filemtime($markPath);
         }
 
-        return $fallback;
+        return url('public/branding/w2k-logo.png');
     }
 
     public static function landingUrl($density = '1x')

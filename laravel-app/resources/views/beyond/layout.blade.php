@@ -50,44 +50,33 @@
         .floaty { animation: floaty 4s ease-in-out infinite; }
         [x-cloak] { display:none !important; }
 
-        @keyframes navLogoSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        /* Gold ↔ Silver metallic shift (no white plate / circle) */
-        @keyframes navLogoMetal {
-            0%, 100% {
-                filter: sepia(1) saturate(4.2) hue-rotate(2deg) brightness(1.12) contrast(1.05)
-                    drop-shadow(0 0 8px rgba(212,175,55,.7));
-            }
-            50% {
-                filter: grayscale(1) brightness(1.45) contrast(1.15) saturate(0.2)
-                    drop-shadow(0 0 8px rgba(220,220,230,.65));
-            }
-        }
         .nav-logo-link {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             flex-shrink: 0;
-            margin-right: .75rem;
+            height: 100%;
+            margin-right: .85rem;
             background: transparent;
             border: 0;
-            padding: 0;
+            padding: .35rem 0;
             box-shadow: none;
         }
-        .nav-logo-spin {
+        .nav-logo-img {
+            display: block;
             width: auto;
-            height: 4.25rem;
+            height: 3.85rem;
+            max-width: min(58vw, 16.5rem);
             object-fit: contain;
+            object-position: left center;
             background: transparent;
             border-radius: 0;
         }
         @media (min-width: 768px) {
-            .nav-logo-spin { height: 5.25rem; }
+            .nav-logo-img { height: 4.65rem; max-width: 18rem; }
         }
         @media (min-width: 1024px) {
-            .nav-logo-spin { height: 5.75rem; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .nav-logo-spin { animation: none; }
+            .nav-logo-img { height: 5.15rem; max-width: 20rem; }
         }
 
         .site-footer { background: transparent; color: #F7F1E8; }
@@ -232,7 +221,6 @@
     $contactWhatsAppDigits = \App\Support\SiteBrand::phoneWhatsAppDigits();
     $contactWebsite = \App\Support\SiteBrand::websiteLabel();
     $contactAddress = \App\Support\SiteBrand::address();
-    $siteMarkUrl = \App\Support\SiteBrand::markUrl();
     $locale = app()->getLocale();
     $navDefs = [
         'home'     => ['label' => __('site.nav.home'), 'url' => url('/')],
@@ -263,7 +251,7 @@
 <header class="bg-brand-navy sticky top-0 z-40 shadow-lg border-b border-brand-gold/40" x-data="{ open: false, userMenu: false, cartCount: {{ (int) $headerCartCount }} }" @keydown.escape.window="userMenu = false" @cart-updated.window="cartCount = $event.detail.number">
     <div class="w-full flex items-center justify-between h-[4.75rem] sm:h-[5.75rem] lg:h-[6.25rem] pl-2 pr-3 sm:pl-3 sm:pr-6 lg:pl-4 lg:pr-8">
         <a href="{{ url('/') }}" class="nav-logo-link" aria-label="{{ $siteTitle }} home">
-            <img src="{{ $siteMarkUrl }}" alt="{{ $siteTitle }}" class="nav-logo-spin">
+            <img src="{{ $siteLogoUrl }}" alt="{{ $siteTitle }}" class="nav-logo-img">
         </a>
 
         <nav class="hidden lg:flex items-center gap-x-4 xl:gap-x-6 flex-1 justify-center min-w-0">

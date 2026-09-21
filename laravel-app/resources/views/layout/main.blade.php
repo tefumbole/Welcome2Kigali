@@ -150,10 +150,13 @@
             }
 
             .sidebar-brand-block img {
-                width: 52px;
-                height: 52px;
+                width: auto;
+                height: 44px;
+                max-width: 168px;
                 object-fit: contain;
-                margin-bottom: 8px;
+                object-position: left center;
+                margin: 0 10px 0 0;
+                flex-shrink: 0;
             }
 
             .sidebar-brand-title,
@@ -1053,6 +1056,9 @@
               @endphp
               <div class="sidebar-brand-block">
                   <div class="sidebar-brand-header">
+                      <a href="{{ url('/admin') }}" class="sidebar-brand-logo" aria-label="{{ $brandTitle }}">
+                          <img src="{{ \App\Support\SiteBrand::logoUrl($general_setting ?? null) }}" alt="{{ $brandTitle }}">
+                      </a>
                       <div class="sidebar-brand-text">
                           <a href="{{ url('/admin') }}" class="sidebar-brand-title" style="text-decoration:none; display:block;">{{ $brandTitle }}</a>
                       </div>
