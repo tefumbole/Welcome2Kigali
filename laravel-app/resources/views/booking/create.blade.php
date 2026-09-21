@@ -10,32 +10,6 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
 <style>
-    /* Compact create-booking to fit more of the form (esp. order table) on screen */
-    body:has(.booking-create-page) .beyond-module-tabs {
-        margin-bottom: 8px;
-    }
-    body:has(.booking-create-page) .beyond-module-tabs-label {
-        padding: 6px 12px 0;
-        font-size: 10px;
-    }
-    body:has(.booking-create-page) .beyond-module-tabs-nav {
-        padding: 6px 8px 8px;
-        gap: 4px;
-    }
-    body:has(.booking-create-page) .beyond-module-tab {
-        padding: 5px 9px;
-        font-size: 11px;
-        border-radius: 8px;
-        border-width: 1px;
-        gap: 5px;
-    }
-    body:has(.booking-create-page) .beyond-module-tab .beyond-attention-badge {
-        min-width: 16px;
-        height: 16px;
-        font-size: 9px;
-        top: -6px;
-        left: -6px;
-    }
     body:has(.booking-create-page) section.forms {
         padding-top: 0 !important;
         margin-top: 0 !important;
@@ -429,12 +403,6 @@
     @media (max-height: 780px) {
         .booking-create-page .booking-order-wrap {
             max-height: min(32vh, 280px);
-        }
-        body:has(.booking-create-page) .beyond-module-tabs-nav {
-            max-height: 56px;
-            overflow-x: auto;
-            overflow-y: hidden;
-            flex-wrap: nowrap;
         }
     }
 </style>

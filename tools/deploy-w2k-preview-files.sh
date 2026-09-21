@@ -201,6 +201,7 @@ FILES=(
   resources/views/sale/create.blade.php
   resources/views/booking/index.blade.php
   resources/views/booking/online-index.blade.php
+  resources/views/booking/daily_booking.blade.php
   resources/views/setting/reward_point_setting.blade.php
   resources/views/sale/edit.blade.php
   resources/views/sale/create_sale.blade.php

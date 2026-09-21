@@ -370,27 +370,50 @@
             .beyond-module-tabs-nav {
                 display: flex;
                 flex-wrap: wrap;
+                gap: 10px;
+                overflow: visible;
+                padding: 12px 14px 10px;
+            }
+
+            .beyond-module-subtabs-nav {
+                display: none;
+                flex-wrap: wrap;
                 gap: 8px;
                 overflow: visible;
-                padding: 12px 10px 10px;
+                padding: 8px 14px 12px;
+                border-top: 1px dashed #eee4d0;
+                margin: 0 10px 4px;
+            }
+
+            .beyond-module-subtabs-nav.is-visible {
+                display: flex;
             }
 
             .beyond-module-tab {
                 display: inline-flex;
                 align-items: center;
                 gap: 8px;
-                padding: 10px 14px;
-                border-radius: 10px;
+                padding: 12px 18px;
+                border-radius: 12px;
                 border: 2px solid #d7e0ef;
                 background: #fff;
                 color: #4b5870;
-                font-size: 13px;
+                font-size: 14px;
                 font-weight: 700;
+                line-height: 1.2;
                 text-decoration: none !important;
                 transition: all 0.15s ease;
                 white-space: nowrap;
                 margin: 0;
                 position: relative;
+                min-height: 44px;
+            }
+
+            .beyond-module-subtabs-nav .beyond-module-tab {
+                padding: 8px 14px;
+                font-size: 13px;
+                min-height: 38px;
+                border-radius: 10px;
             }
 
             .beyond-attention-badge {
@@ -3314,6 +3337,7 @@
                   <div id="beyond-module-tabs" class="beyond-module-tabs">
                       <div id="beyond-module-tabs-label" class="beyond-module-tabs-label"></div>
                       <div id="beyond-module-tabs-nav" class="beyond-module-tabs-nav"></div>
+                      <div id="beyond-module-subtabs-nav" class="beyond-module-subtabs-nav"></div>
                   </div>
               </div>
               @if(\App\Support\SiteMenu::isSettingsHubPath())
@@ -3701,29 +3725,10 @@
                   $nav.append($tab);
               }
 
-              function buildModuleTabs() {
-                  appendHelpLinksToSubmenus();
-                  var $activeItem = $('#side-main-menu ul.collapse li.active').first();
-                  var $nav = $('#beyond-module-tabs-nav');
-                  var $tabsWrap = $('#beyond-module-tabs');
-                  var onHelpPage = window.location.pathname.indexOf('/admin/help') !== -1;
-
-                  if (!$activeItem.length) {
-                      $('#beyond-module-tabs-label').text('Guide');
-                      $nav.empty();
-                      appendHelpTab($nav, helpUrl, onHelpPage);
-                      $tabsWrap.addClass('is-visible');
-                      return;
-                  }
-
-                  var $submenu = $activeItem.closest('ul.collapse');
-                  var $parentLink = $submenu.siblings('a').first();
-                  var $parentLi = $submenu.closest('li');
-                  var parentLabel = $.trim($parentLink.find('span').first().text()) || $.trim($parentLink.text());
-
-                  $parentLi.children('a').addClass('menu-parent-active').attr('aria-expanded', 'true');
-                  $('#beyond-module-tabs-label').text(parentLabel);
-                  $nav.empty();
+              function fillTabsFromSubmenu($nav, $submenu, $parentLink, options) {
+                  options = options || {};
+                  var tones = ['tone-blue', 'tone-gold', 'tone-purple', 'tone-pink', 'tone-green', 'tone-orange', 'tone-teal', 'tone-red'];
+                  var forceActiveHref = options.forceActiveHref || '';
 
                   $submenu.find('> li > a').each(function (index) {
                       var $link = $(this);
@@ -3743,9 +3748,11 @@
                           return;
                       }
 
-                      var tones = ['tone-blue', 'tone-gold', 'tone-purple', 'tone-pink', 'tone-green', 'tone-orange', 'tone-teal', 'tone-red'];
                       var toneClass = tones[index % tones.length];
                       var isActive = $link.closest('li').hasClass('active');
+                      if (forceActiveHref) {
+                          isActive = href.indexOf(forceActiveHref) !== -1;
+                      }
                       var iconClass = resolveTabIcon($link, $parentLink);
                       var $tab = $('<a>', {
                           'class': 'beyond-module-tab ' + toneClass + (isActive ? ' is-active' : ''),
@@ -3764,10 +3771,60 @@
 
                       $nav.append($tab);
                   });
+              }
+
+              function buildModuleTabs() {
+                  appendHelpLinksToSubmenus();
+                  var path = window.location.pathname || '';
+                  var onHelpPage = path.indexOf('/admin/help') !== -1;
+                  var onBookingRequest = path.indexOf('/bookings/requests') !== -1;
+                  var $nav = $('#beyond-module-tabs-nav');
+                  var $subNav = $('#beyond-module-subtabs-nav');
+                  var $tabsWrap = $('#beyond-module-tabs');
+
+                  $subNav.empty().removeClass('is-visible');
+
+                  var $activeItem = $('#side-main-menu ul.collapse li.active').first();
+                  if (onBookingRequest && $('#booking-requests-menu').length) {
+                      $activeItem = $('#booking-requests-menu');
+                      $('#booking-requests-menu').addClass('active');
+                      $('#online-booking-index-menu').removeClass('active');
+                  }
+
+                  if (!$activeItem.length) {
+                      $('#beyond-module-tabs-label').text('Guide');
+                      $nav.empty();
+                      appendHelpTab($nav, helpUrl, onHelpPage);
+                      $tabsWrap.addClass('is-visible');
+                      return;
+                  }
+
+                  var $submenu = $activeItem.closest('ul.collapse');
+                  var $parentLink = $submenu.siblings('a').first();
+                  var $parentLi = $submenu.closest('li');
+                  var parentLabel = $.trim($parentLink.find('span').first().text()) || $.trim($parentLink.text());
+
+                  $parentLi.children('a').addClass('menu-parent-active').attr('aria-expanded', 'true');
+                  $('#beyond-module-tabs-label').text(parentLabel);
+                  $nav.empty();
+
+                  fillTabsFromSubmenu($nav, $submenu, $parentLink, onBookingRequest ? { forceActiveHref: '/bookings/requests' } : {});
 
                   var helpAlreadyLast = $nav.children().last().find('span').first().text() === 'Help';
                   if (!helpAlreadyLast) {
                       appendHelpTab($nav, helpHrefForMenu($submenu), onHelpPage);
+                  }
+
+                  var $nested = $activeItem.find('> ul').first();
+                  var $orderMenu = $('ul#order');
+                  if ($nested.length) {
+                      fillTabsFromSubmenu($subNav, $nested, $activeItem.children('a').first());
+                  } else if (onBookingRequest && $orderMenu.length) {
+                      fillTabsFromSubmenu($subNav, $orderMenu, $orderMenu.siblings('a').first(), { forceActiveHref: '/bookings/requests' });
+                  }
+
+                  if ($subNav.children().length) {
+                      $subNav.addClass('is-visible');
                   }
 
                   if ($nav.children().length) {

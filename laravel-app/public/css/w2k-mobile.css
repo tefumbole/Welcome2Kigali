@@ -23,8 +23,9 @@ button, a, [role="button"] {
     .landing-hero-actions a {
         width: 100%;
         max-width: none;
+        min-width: 0;
         justify-content: center;
-        min-height: 2.75rem;
+        min-height: 2.85rem;
     }
 
     header button[class*="lg:hidden"] {

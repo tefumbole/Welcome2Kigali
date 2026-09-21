@@ -295,9 +295,20 @@
 
     <script type="text/javascript">
 
-        $("ul#order").siblings('a').attr('aria-expanded','true');
-        $("ul#order").addClass("show");
-        $("ul#order #online-booking-index-menu").addClass("active");
+        var onBookingRequest = window.location.pathname.indexOf('/bookings/requests') !== -1;
+        if (onBookingRequest) {
+            $("ul#booking").siblings('a').attr('aria-expanded','true');
+            $("ul#booking").addClass("show");
+            $("ul#booking #booking-requests-menu").addClass("active");
+            $("ul#order #online-booking-index-menu").removeClass("active");
+        } else {
+            $("ul#order").siblings('a').attr('aria-expanded','true');
+            $("ul#order").addClass("show");
+            $("ul#order #online-booking-index-menu").addClass("active");
+        }
+        if (typeof window.beyondBuildModuleTabs === 'function') {
+            window.beyondBuildModuleTabs();
+        }
 
         var public_key = <?php echo json_encode($lims_pos_setting_data->stripe_public_key) ?>;
         var all_permission = <?php echo json_encode($all_permission) ?>;

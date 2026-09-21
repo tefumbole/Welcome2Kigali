@@ -324,3 +324,50 @@ nav.navbar a.menu-btn:hover {
     color: #C5A059;
     border-color: #C5A059;
 }
+
+.beyond-module-tabs-nav,
+.beyond-module-subtabs-nav.is-visible {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    overflow: visible !important;
+    max-height: none !important;
+}
+.beyond-module-tabs-nav {
+    gap: 10px !important;
+    padding: 12px 14px 10px !important;
+}
+.beyond-module-tab {
+    padding: 12px 18px !important;
+    font-size: 14px !important;
+    min-height: 44px !important;
+    border-radius: 12px !important;
+}
+.beyond-module-subtabs-nav .beyond-module-tab {
+    padding: 8px 14px !important;
+    font-size: 13px !important;
+    min-height: 38px !important;
+}
+.beyond-module-tab:hover {
+    box-shadow: 0 4px 12px rgba(10, 10, 10, 0.12) !important;
+}
+.beyond-module-tab.is-active {
+    box-shadow: 0 6px 16px rgba(10, 10, 10, 0.16) !important;
+}
+.beyond-attention-badge {
+    background: #0A0A0A !important;
+    border-color: #C5A059 !important;
+    color: #C5A059 !important;
+}
+
+.booking-calendar-page .btn-primary,
+.booking-calendar-page .btn-dark {
+    background: #0A0A0A !important;
+    border-color: #0A0A0A !important;
+    color: #C5A059 !important;
+}
+.booking-calendar-page .btn-outline-primary,
+.booking-calendar-page .btn-outline-dark {
+    background: #fff !important;
+    border-color: #C5A059 !important;
+    color: #0A0A0A !important;
+}

@@ -33,7 +33,37 @@
         background: linear-gradient(to top, rgba(5,5,5,.55), transparent 75%);
     }
     body.home-landing .landing-hero-actions a {
+        box-sizing: border-box;
+        min-width: 11.5rem;
+        height: 2.85rem;
+        padding: 0 1.6rem;
+        font-size: .95rem;
+        font-weight: 700;
+        line-height: 1;
+        border-radius: 999px;
+        border: 2px solid #C5A059;
+        background: #C5A059;
+        color: #0A0A0A;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        text-decoration: none;
         box-shadow: 0 8px 24px rgba(0,0,0,.45);
+        transition: transform .15s ease, background .15s ease, border-color .15s ease;
+    }
+    body.home-landing .landing-hero-actions a:hover,
+    body.home-landing .landing-hero-actions a:focus {
+        background: #b08d45;
+        border-color: #b08d45;
+        color: #0A0A0A;
+        transform: scale(1.04);
+    }
+    body.home-landing .landing-hero-actions a i {
+        width: 1rem;
+        height: 1rem;
+        flex-shrink: 0;
+        color: #0A0A0A;
     }
     body.home-landing .home-version {
         position: absolute;
@@ -66,17 +96,14 @@
          decoding="async"
          fetchpriority="high">
     <div class="landing-hero-actions">
-        <a href="{{ url('/register-now') }}"
-           class="bg-brand-gold hover:bg-[#b08d45] text-black h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base font-bold rounded-full hover:scale-105 transition-transform inline-flex items-center justify-center">
-            {{ \App\Support\SiteContent::text('home.cta_primary', __('site.home.join')) }} <i data-lucide="arrow-right" class="ml-2 w-4 h-4"></i>
+        <a href="{{ url('/register-now') }}">
+            {{ \App\Support\SiteContent::text('home.cta_primary', __('site.home.join')) }} <i data-lucide="arrow-right"></i>
         </a>
-        <a href="{{ url('/events') }}"
-           class="h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base font-bold rounded-full border-2 border-brand-gold bg-black/80 text-brand-gold hover:bg-brand-gold hover:text-black inline-flex items-center justify-center gap-2">
-            <i data-lucide="calendar" class="w-4 h-4"></i> {{ \App\Support\SiteContent::text('home.cta_events', __('site.home.events')) }}
+        <a href="{{ url('/events') }}">
+            <i data-lucide="calendar"></i> {{ \App\Support\SiteContent::text('home.cta_events', __('site.home.events')) }}
         </a>
-        <a href="{{ url('/menu') }}"
-           class="h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base font-bold rounded-full border-2 border-white bg-black/80 text-white hover:bg-white hover:text-black inline-flex items-center justify-center gap-2">
-            <i data-lucide="coffee" class="w-4 h-4"></i> {{ \App\Support\SiteContent::text('home.cta_cafe', __('site.home.cafe_menu')) }}
+        <a href="{{ url('/menu') }}">
+            <i data-lucide="coffee"></i> {{ \App\Support\SiteContent::text('home.cta_cafe', __('site.home.cafe_menu')) }}
         </a>
     </div>
     <p class="home-version">{{ \App\Support\AppVersion::bcl() }}</p>
