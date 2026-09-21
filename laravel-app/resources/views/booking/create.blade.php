@@ -72,7 +72,7 @@
     }
     .booking-create-page label {
         font-weight: 700;
-        color: #1f2a44;
+        color: #1a120c;
         font-size: 12px;
         margin-bottom: 2px;
     }
@@ -87,8 +87,9 @@
         padding-bottom: 4px !important;
         font-size: 13px;
         border-radius: 8px !important;
-        border-color: #d7e0ef !important;
+        border-color: #C5A059 !important;
         box-shadow: none !important;
+        outline: none !important;
     }
     .booking-create-page .bootstrap-select .dropdown-toggle .filter-option-inner-inner {
         font-size: 13px;
@@ -196,7 +197,7 @@
         min-width: 148px;
         border-radius: 6px;
         padding: 4px 8px;
-        border: 1px solid #d7e0ef;
+        border: 1px solid #C5A059;
         background: #fff;
         min-height: 30px !important;
         height: 30px;
@@ -274,16 +275,26 @@
     }
     .booking-create-page .bootstrap-select > .dropdown-toggle.btn-link {
         background: #fff !important;
-        color: #1f2a44 !important;
+        color: #1a120c !important;
         text-decoration: none !important;
         box-shadow: none !important;
+        outline: none !important;
     }
     .booking-create-page .bootstrap-select {
         width: 100% !important;
     }
     .booking-create-page .bootstrap-select > .dropdown-toggle {
         background: #fff !important;
-        border: 1px solid #d7e0ef !important;
+        border: 1px solid #C5A059 !important;
+        color: #1a120c !important;
+        outline: none !important;
+    }
+    .booking-create-page .bootstrap-select > .dropdown-toggle:focus,
+    .booking-create-page .bootstrap-select.show > .dropdown-toggle {
+        background: #F7F1E8 !important;
+        border-color: #C5A059 !important;
+        box-shadow: 0 0 0 0.15rem rgba(197, 160, 89, 0.28) !important;
+        outline: none !important;
     }
     #myTable select.booking_method {
         appearance: none;
@@ -293,7 +304,7 @@
         height: 30px;
         padding: 2px 28px 2px 8px;
         border-radius: 6px;
-        border: 1px solid #d7e0ef;
+        border: 1px solid #C5A059;
         background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23C5A059' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z'/%3E%3C/svg%3E") no-repeat right 8px center;
         background-size: 10px;
         color: #C5A059;
@@ -1349,7 +1360,7 @@ var pos;
 var role_id = <?php echo json_encode(Auth::user()->role_id)?>;
 
 $('.selectpicker').selectpicker({
-    style: 'btn-link',
+    style: 'btn-w2k-select',
 });
 
 $('[data-toggle="tooltip"]').tooltip();

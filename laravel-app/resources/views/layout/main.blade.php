@@ -1038,8 +1038,8 @@
                 color: #fff !important;
             }
         </style>
-        <link rel="stylesheet" href="<?php echo asset('public/css/w2k-coffee-admin.css') ?>" type="text/css">
-        <link rel="stylesheet" href="<?php echo asset('public/css/w2k-mobile.css') ?>" type="text/css">
+        <link rel="stylesheet" href="<?php echo asset('public/css/w2k-coffee-admin.css') ?>?v={{ \App\Support\AppVersion::label() }}" type="text/css">
+        <link rel="stylesheet" href="<?php echo asset('public/css/w2k-mobile.css') ?>?v={{ \App\Support\AppVersion::label() }}" type="text/css">
       </head>
 
       <body onload="myFunction()">
@@ -3552,15 +3552,19 @@
           });
 
           $('.selectpicker').selectpicker({
-              style: 'btn-link',
+              style: 'btn-w2k-select',
           });
+          $('.bootstrap-select > .dropdown-toggle').removeClass('btn-link').addClass('btn-w2k-select');
 
           (function () {
-              function isCustomerSelect($select) {
-                  var name = ($select.attr('name') || '').toLowerCase();
-                  var id = ($select.attr('id') || '').toLowerCase();
-                  return name.indexOf('customer') !== -1 || id.indexOf('customer') !== -1 || $select.hasClass('customer-type-search');
-              }
+                  function isCustomerSelect($select) {
+                      var name = ($select.attr('name') || '').toLowerCase();
+                      var id = ($select.attr('id') || '').toLowerCase();
+                      if (name.indexOf('cc_customer') !== -1 || name.indexOf('cc[') === 0) {
+                          return false;
+                      }
+                      return name === 'customer_id' || id === 'customer_id' || $select.hasClass('customer-type-search');
+                  }
 
               if (!$('#customer-type-search-style').length) {
                   $('head').append('<style id="customer-type-search-style">.customer-search-empty .dropdown-menu li:not(.bs-searchbox):not(.no-results){display:none!important;}.customer-search-empty .bs-searchbox input::placeholder{color:#6c757d;}</style>');

@@ -384,3 +384,89 @@ body:has(.site-content-tabs-nav) #beyond-module-tabs {
 .cm-stat-value.is-espresso { color: #0A0A0A !important; }
 .cm-stat-value.is-mocha { color: #6F4E37 !important; }
 .cm-title { color: #0A0A0A !important; }
+
+/* Customer / Warehouse / Biller / Company pickers: coffee, not blue btn-link */
+.bootstrap-select > select,
+.bootstrap-select > select.selectpicker,
+.bootstrap-select > select.mobile-device {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    left: -9999px !important;
+    z-index: 0 !important;
+}
+.bootstrap-select.form-control {
+    background: transparent !important;
+    border: 0 !important;
+    height: auto !important;
+    padding: 0 !important;
+}
+.btn-w2k-select,
+.btn.btn-w2k-select,
+.bootstrap-select > .dropdown-toggle,
+.bootstrap-select > .dropdown-toggle.btn,
+.bootstrap-select > .dropdown-toggle.btn-link,
+.bootstrap-select > .dropdown-toggle.btn-w2k-select,
+.bootstrap-select > .dropdown-toggle.bs-placeholder {
+    background: #fff !important;
+    color: #1a120c !important;
+    border: 1px solid #C5A059 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    outline: none !important;
+    text-decoration: none !important;
+    min-height: 34px;
+}
+.bootstrap-select > .dropdown-toggle.bs-placeholder,
+.bootstrap-select > .dropdown-toggle.bs-placeholder .filter-option-inner-inner {
+    color: #6b5e4e !important;
+}
+.bootstrap-select > .dropdown-toggle:hover,
+.bootstrap-select > .dropdown-toggle:focus,
+.bootstrap-select > .dropdown-toggle:active,
+.bootstrap-select.show > .dropdown-toggle,
+.bootstrap-select.btn-group.show > .dropdown-toggle,
+.btn-w2k-select:hover,
+.btn-w2k-select:focus,
+.btn-w2k-select:active {
+    background: #F7F1E8 !important;
+    border-color: #C5A059 !important;
+    color: #0A0A0A !important;
+    box-shadow: 0 0 0 0.15rem rgba(197, 160, 89, 0.28) !important;
+    outline: none !important;
+}
+.bootstrap-select .dropdown-toggle .caret {
+    border-top-color: #C5A059 !important;
+}
+.bootstrap-select .dropdown-menu {
+    border: 1px solid #C5A059 !important;
+    background: #fff !important;
+    border-radius: 8px !important;
+}
+.bootstrap-select .dropdown-menu .dropdown-item,
+.bootstrap-select .dropdown-menu li a {
+    color: #1a120c !important;
+}
+.bootstrap-select .dropdown-menu .dropdown-item:hover,
+.bootstrap-select .dropdown-menu li a:hover {
+    background: #F7F1E8 !important;
+    color: #0A0A0A !important;
+}
+.bootstrap-select .dropdown-menu .dropdown-item.active,
+.bootstrap-select .dropdown-menu .dropdown-item:active,
+.bootstrap-select .dropdown-menu li.selected a,
+.bootstrap-select .dropdown-menu a.selected {
+    background: #0A0A0A !important;
+    color: #C5A059 !important;
+}
+.bootstrap-select .bs-searchbox .form-control {
+    border-color: #C5A059 !important;
+}
+.bootstrap-select .bs-searchbox .form-control:focus {
+    border-color: #C5A059 !important;
+    box-shadow: 0 0 0 0.12rem rgba(197, 160, 89, 0.25) !important;
+}
