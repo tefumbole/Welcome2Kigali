@@ -10,7 +10,7 @@
               <title>Customer Name: {{ $customer_name }}</title>
           @endif
         <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="robots" content="all,follow">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <link rel="manifest" href="{{url('manifest.json')}}">
@@ -675,6 +675,7 @@
             .side-navbar .main-menu {
                 overflow-y: auto !important;
                 overflow-x: hidden;
+                overflow-anchor: none;
                 scrollbar-width: auto;
                 scrollbar-color: var(--beyond-accent) rgba(255, 255, 255, 0.2);
             }
@@ -1038,6 +1039,7 @@
             }
         </style>
         <link rel="stylesheet" href="<?php echo asset('public/css/w2k-coffee-admin.css') ?>" type="text/css">
+        <link rel="stylesheet" href="<?php echo asset('public/css/w2k-mobile.css') ?>" type="text/css">
       </head>
 
       <body onload="myFunction()">
@@ -3406,7 +3408,23 @@
 
           if ($(window).outerWidth() > 1199) {
               $('nav.side-navbar').removeClass('shrink');
+              $('body').removeClass('w2k-nav-open');
+          } else {
+              $('nav.side-navbar').addClass('shrink');
+              $('body').removeClass('w2k-nav-open');
           }
+          $(document).on('click', '#toggle-btn', function () {
+              if ($(window).outerWidth() <= 1199) {
+                  setTimeout(function () {
+                      $('body').toggleClass('w2k-nav-open', !$('nav.side-navbar').hasClass('shrink'));
+                  }, 0);
+              }
+          });
+          $(document).on('click', 'body.w2k-nav-open', function (e) {
+              if ($(e.target).closest('nav.side-navbar, #toggle-btn').length) return;
+              $('nav.side-navbar').addClass('shrink');
+              $('body').removeClass('w2k-nav-open');
+          });
           function myFunction() {
               setTimeout(showPage, 150);
           }
@@ -3866,8 +3884,56 @@
               });
 
               window.beyondBuildModuleTabs = buildModuleTabs;
-              buildModuleTabs();
-              $(document).ready(buildModuleTabs);
+
+              function sidebarScroller() {
+                  return document.querySelector('.side-navbar .main-menu');
+              }
+
+              function saveSidebarScroll() {
+                  var el = sidebarScroller();
+                  if (!el) return;
+                  try { sessionStorage.setItem('w2k-sidebar-scroll', String(el.scrollTop)); } catch (err) {}
+              }
+
+              function selectedSidebarRow() {
+                  var $item = $('#side-main-menu ul.collapse li.active').first();
+                  if ($item.length) {
+                      return $item.closest('#side-main-menu > li');
+                  }
+                  return $('#side-main-menu > li > a.menu-parent-active').closest('li');
+              }
+
+              function keepSidebarOnSelected() {
+                  var scroller = sidebarScroller();
+                  var $row = selectedSidebarRow();
+                  if (!scroller || !$row.length) return;
+                  var row = $row[0];
+                  var sRect = scroller.getBoundingClientRect();
+                  var rRect = row.getBoundingClientRect();
+                  var inView = rRect.top >= sRect.top + 8 && rRect.bottom <= sRect.bottom - 8;
+                  if (inView) {
+                      saveSidebarScroll();
+                      return;
+                  }
+                  var nextTop = scroller.scrollTop + (rRect.top - sRect.top) - Math.max(16, scroller.clientHeight * 0.28);
+                  scroller.scrollTop = Math.max(0, nextTop);
+                  saveSidebarScroll();
+              }
+
+              function initSidebarNavState() {
+                  buildModuleTabs();
+                  keepSidebarOnSelected();
+              }
+
+              initSidebarNavState();
+              $(document).ready(function () {
+                  initSidebarNavState();
+                  setTimeout(keepSidebarOnSelected, 50);
+                  setTimeout(keepSidebarOnSelected, 280);
+              });
+              $(window).on('beforeunload', saveSidebarScroll);
+              $(document).on('click', '#side-main-menu a', saveSidebarScroll);
+              $('.side-navbar .main-menu').on('scroll', saveSidebarScroll);
           })();
         </script>
       </body>

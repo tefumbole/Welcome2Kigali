@@ -233,6 +233,9 @@ FILES=(
   public/css/custom.css
   public/css/w2k-coffee-admin.css
   public/css/w2k-mobile.css
+  public/js/front.js
+  resources/views/purchase/index.blade.php
+  resources/views/beyond/events.blade.php
   resources/views/report/average_report.blade.php
   resources/views/events/contracts/sign.blade.php
 )

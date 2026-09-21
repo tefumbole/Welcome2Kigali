@@ -22,11 +22,11 @@
             <div class="flex-1">
                 <label class="block text-xs font-medium text-gray-700 mb-1">{{ __('site.events.search') }}</label>
                 <input type="text" name="q" value="{{ request('q') }}" placeholder="{{ __('site.events.search_ph') }}"
-                       class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue">
+                       class="w-full rounded-lg border border-gray-300 px-3 py-2.5 min-h-[44px] text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-700 mb-1">{{ __('site.events.filter') }}</label>
-                <select name="filter" class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-brand-blue">
+                <select name="filter" class="w-full md:w-auto rounded-lg border border-gray-300 px-3 py-2.5 min-h-[44px] text-sm focus:ring-2 focus:ring-brand-blue">
                     @foreach(['upcoming' => __('site.events.upcoming'), 'featured' => __('site.events.featured'), 'ongoing' => __('site.events.ongoing'), 'past' => __('site.events.past')] as $k => $label)
                         <option value="{{ $k }}" {{ $filter === $k ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
@@ -34,14 +34,14 @@
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-700 mb-1">{{ __('site.events.type') }}</label>
-                <select name="type" class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm">
+                <select name="type" class="w-full md:w-auto rounded-lg border border-gray-300 px-3 py-2.5 min-h-[44px] text-sm">
                     <option value="">{{ __('site.events.all_types') }}</option>
                     @foreach(\App\Event::TYPES as $k => $label)
                         <option value="{{ $k }}" {{ request('type') === $k ? 'selected' : '' }}>{{ __('site.events.types.'.$k) }}</option>
                     @endforeach
                 </select>
             </div>
-            <button type="submit" class="px-5 py-1.5 bg-brand-blue text-white text-sm font-semibold rounded-lg hover:bg-brand-dark transition">{{ __('site.events.search') }}</button>
+            <button type="submit" class="px-5 py-2.5 min-h-[44px] bg-brand-blue text-white text-sm font-semibold rounded-lg hover:bg-brand-dark transition w-full md:w-auto">{{ __('site.events.search') }}</button>
         </form>
 
         @if ($events->isEmpty())

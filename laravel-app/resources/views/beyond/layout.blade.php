@@ -360,10 +360,10 @@
         </button>
     </div>
 
-    <div x-show="open" x-cloak class="lg:hidden pb-4 px-4 bg-black border-t border-brand-gold/30">
-        <nav class="flex flex-col space-y-3 pt-4">
+    <div x-show="open" x-cloak class="lg:hidden pb-4 px-4 bg-black border-t border-brand-gold/30 max-h-[calc(100dvh-4.75rem)] overflow-y-auto">
+        <nav class="flex flex-col space-y-1 pt-3">
             @foreach ($navLinks as $link)
-                <a href="{{ $link['url'] }}" class="text-lg font-medium py-2 {{ !empty($link['special']) ? 'text-brand-gold' : 'text-white hover:text-brand-gold' }}">{{ $link['label'] }}</a>
+                <a href="{{ $link['url'] }}" class="text-base font-medium min-h-[44px] flex items-center {{ !empty($link['special']) ? 'text-brand-gold' : 'text-white hover:text-brand-gold' }}">{{ $link['label'] }}</a>
             @endforeach
             <div class="flex items-center gap-2 pt-1">
                 @if ($contactPhone)
@@ -374,9 +374,9 @@
                 <a href="{{ \App\Support\SiteBrand::mapsUrl() }}" target="_blank" rel="noopener" class="text-white hover:text-brand-gold" title="{{ __('site.contact.open_maps') }}">
                     <i data-lucide="map-pin" class="w-5 h-5"></i>
                 </a>
-                <a href="{{ url('/lang/en') }}" class="px-2 py-1 text-sm rounded {{ $locale === 'en' ? 'bg-brand-gold text-black' : 'border border-white/20 text-white' }}">EN</a>
-                <a href="{{ url('/lang/fr') }}" class="px-2 py-1 text-sm rounded {{ $locale === 'fr' ? 'bg-brand-gold text-black' : 'border border-white/20 text-white' }}">FR</a>
-                <a href="{{ url('/lang/rw') }}" class="px-2 py-1 text-sm rounded {{ $locale === 'rw' ? 'bg-brand-gold text-black' : 'border border-white/20 text-white' }}">RW</a>
+                    <a href="{{ url('/lang/en') }}" class="px-3 py-2 min-h-[40px] inline-flex items-center text-sm rounded {{ $locale === 'en' ? 'bg-brand-gold text-black' : 'border border-white/20 text-white' }}">EN</a>
+                <a href="{{ url('/lang/fr') }}" class="px-3 py-2 min-h-[40px] inline-flex items-center text-sm rounded {{ $locale === 'fr' ? 'bg-brand-gold text-black' : 'border border-white/20 text-white' }}">FR</a>
+                <a href="{{ url('/lang/rw') }}" class="px-3 py-2 min-h-[40px] inline-flex items-center text-sm rounded {{ $locale === 'rw' ? 'bg-brand-gold text-black' : 'border border-white/20 text-white' }}">RW</a>
             </div>
             <a href="{{ url('/cart') }}" class="flex items-center gap-2 text-lg font-medium text-white hover:text-brand-gold">
                 {{ __('site.nav.cart') }}

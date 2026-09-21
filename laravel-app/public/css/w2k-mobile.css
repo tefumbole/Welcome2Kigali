@@ -1,4 +1,4 @@
-/* Welcome 2 Kigali — public + shared mobile layout */
+/* Welcome 2 Kigali — public + admin, all screen sizes */
 html {
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
@@ -6,13 +6,19 @@ html {
 body {
     overflow-x: hidden;
 }
+img, video, canvas, svg {
+    max-width: 100%;
+    height: auto;
+}
 input, select, textarea, button {
     font-size: 16px;
+    max-width: 100%;
 }
 button, a, [role="button"] {
     -webkit-tap-highlight-color: rgba(197, 160, 89, 0.25);
 }
 
+/* ---- Public: tablet ---- */
 @media (max-width: 1023px) {
     .landing-hero-actions {
         flex-direction: column;
@@ -41,7 +47,20 @@ button, a, [role="button"] {
     }
 }
 
-@media (max-width: 639px) {
+/* ---- Public: phone ---- */
+@media (max-width: 767px) {
+    body.home-landing .landing-hero-art {
+        object-fit: cover;
+        object-position: center 28%;
+    }
+    body.home-landing .home-version {
+        right: .55rem;
+        bottom: auto;
+        top: .55rem;
+        font-size: 10px;
+        z-index: 5;
+    }
+
     .nav-logo-spin { height: 3.35rem !important; }
 
     .site-footer-swoosh { opacity: .35; width: min(9rem, 42vw); }
@@ -85,12 +104,184 @@ button, a, [role="button"] {
         min-height: auto;
         padding: .8rem .9rem;
     }
-}
 
-@media (max-width: 767px) {
     .table-responsive,
     .dataTables_wrapper {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
+    }
+
+    main img,
+    .cm-page-card img,
+    article img {
+        height: auto;
+    }
+}
+
+@media (max-width: 639px) {
+    .nav-logo-spin { height: 3.1rem !important; }
+}
+
+/* ---- Admin: off-canvas sidebar + fluid content ---- */
+@media (max-width: 1199px) {
+    .page {
+        margin-left: 0 !important;
+        width: 100% !important;
+        max-width: 100%;
+        padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    }
+
+    nav.side-navbar {
+        width: min(86vw, 280px) !important;
+        max-width: 280px;
+        transform: translateX(0);
+        opacity: 1 !important;
+        z-index: 1050;
+        transition: transform .22s ease;
+        box-shadow: 8px 0 24px rgba(10, 10, 10, .35);
+    }
+    nav.side-navbar.shrink {
+        width: min(86vw, 280px) !important;
+        transform: translateX(-105%);
+        opacity: 1 !important;
+        pointer-events: none;
+        box-shadow: none;
+    }
+
+    body.w2k-nav-open::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 10, 10, .46);
+        z-index: 1040;
+    }
+
+    .header {
+        position: sticky;
+        top: 0;
+        z-index: 1020;
+    }
+    .header .navbar .container-fluid {
+        padding-left: max(.5rem, env(safe-area-inset-left, 0px));
+        padding-right: max(.5rem, env(safe-area-inset-right, 0px));
+    }
+
+    .beyond-module-tabs {
+        margin-bottom: 12px;
+    }
+    .beyond-module-tabs-nav,
+    .beyond-module-subtabs-nav.is-visible,
+    .tm-nav, .cm-nav, .mm-nav, .qt-nav, .an-nav, .jb-nav, .ct-nav,
+    .site-content-tabs-nav {
+        gap: 8px !important;
+        padding-left: 4px !important;
+        padding-right: 4px !important;
+    }
+    .beyond-module-tab,
+    .tm-nav a, .cm-nav a, .qt-nav a, .an-nav a, .jb-nav a, .ct-nav a {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+        min-height: 38px !important;
+    }
+
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .dt-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .modal-dialog {
+        margin: .6rem auto;
+        max-width: calc(100% - 1.2rem);
+    }
+}
+
+@media (max-width: 767px) {
+    .page-content,
+    .content-inner > .page-content {
+        padding-bottom: 16px !important;
+    }
+
+    .card-body,
+    .cm-page-card,
+    .tm-page-card {
+        padding: 12px !important;
+    }
+
+    .cm-title, .tm-title, h1.cm-title {
+        font-size: 1.35rem !important;
+    }
+
+    .form-inline {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 8px;
+    }
+    .form-inline .form-control,
+    .form-inline .btn,
+    .form-inline select {
+        width: 100%;
+        margin: 0 !important;
+    }
+
+    .dataTables_wrapper .row,
+    .dataTables_length,
+    .dataTables_filter {
+        width: 100%;
+        text-align: left !important;
+    }
+    .dataTables_filter input {
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-top: 6px;
+    }
+
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    body.beyond-pos-active .pos-section {
+        padding: 6px 6px 150px !important;
+        height: auto !important;
+        overflow: auto !important;
+    }
+    body.beyond-pos-active .transaction-list,
+    body.beyond-pos-active .table-container {
+        height: auto !important;
+        max-height: 46vh !important;
+    }
+    body.beyond-pos-active .payment-options {
+        left: 0 !important;
+        right: 0 !important;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    }
+    body.beyond-pos-active .payment-options .column-5 {
+        flex: 1 1 46%;
+        min-width: 46%;
+        max-width: none;
+    }
+
+    .calendar-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    .calendar-weekday { display: none !important; }
+
+    .filter-window .row > [class*="col-"] {
+        max-width: 50%;
+        flex: 0 0 50%;
+    }
+}
+
+@media (max-width: 479px) {
+    body.beyond-pos-active .payment-options .column-5 {
+        flex: 1 1 100%;
+        min-width: 100%;
     }
 }
