@@ -82,6 +82,7 @@
     $("ul#payments").siblings('a').attr('aria-expanded','true');
     $("ul#payments").addClass("show");
     $("ul#payments #desposit-index-menu").addClass("active");
+    var user_verified = <?php echo json_encode(config('app.user_verified') ? '1' : '0') ?>;
 
        var table = $('#customer-table').DataTable( {
         "order": [],

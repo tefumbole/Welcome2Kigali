@@ -74,6 +74,14 @@ return [
     'timezone' => env('APP_TIMEZONE', 'UTC'),
 
     /*
+    | SalePro leftover: empty USER_VERIFIED locked Settings as "demo".
+    | Welcome 2 Kigali is live — default true. After config:cache, env() in
+    | controllers is always null, which is why the pink banner kept appearing.
+    | Set USER_VERIFIED=false only if you intentionally want a demo lock.
+    */
+    'user_verified' => filter_var(env('USER_VERIFIED', true), FILTER_VALIDATE_BOOLEAN),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------

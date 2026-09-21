@@ -68,6 +68,7 @@
     $("ul#setting").siblings('a').attr('aria-expanded','true');
     $("ul#setting").addClass("show");
     $("ul#setting #customer-group-menu").addClass("active");
+    var user_verified = <?php echo json_encode(config('app.user_verified') ? '1' : '0') ?>;
 
        var table = $('#customer-table').DataTable( {
         "order": [],

@@ -101,6 +101,10 @@ FILES=(
   app/Services/BeyondAuthService.php
   app/Http/Middleware/Active.php
   app/Http/Controllers/SettingController.php
+  app/Http/Controllers/UserController.php
+  app/Http/Controllers/RoleController.php
+  app/Http/Controllers/AccountsController.php
+  app/Http/Controllers/CurrencyController.php
   app/Http/Controllers/ContractSettingsController.php
   app/Http/Controllers/ContractController.php
   app/Http/Controllers/ContractTemplateController.php
@@ -259,6 +263,48 @@ done
   resources/views/beyond \
   resources/views/help \
   public/branding/help \
+  "$SSH_HOST:$REMOTE/"
+
+# Demo-lock blades not always listed in FILES
+/usr/bin/rsync -az --relative \
+  resources/views/adjustment/index.blade.php \
+  resources/views/attendance/index.blade.php \
+  resources/views/biller/index.blade.php \
+  resources/views/brand/create.blade.php \
+  resources/views/category/create.blade.php \
+  resources/views/coupon/index.blade.php \
+  resources/views/customer/index.blade.php \
+  resources/views/customer/index2.blade.php \
+  resources/views/customer_group/create.blade.php \
+  resources/views/customer_group/deposits.blade.php \
+  resources/views/customer_group/payments.blade.php \
+  resources/views/delivery/index.blade.php \
+  resources/views/department/index.blade.php \
+  resources/views/employee/index.blade.php \
+  resources/views/expense/asset.blade.php \
+  resources/views/expense/index.blade.php \
+  resources/views/expense_category/index.blade.php \
+  resources/views/fixed_asset/asset/activity.blade.php \
+  resources/views/fixed_asset/asset/activity_repair.blade.php \
+  resources/views/gift_card/index.blade.php \
+  resources/views/holiday/index.blade.php \
+  resources/views/letter_category/index.blade.php \
+  resources/views/money_transfer/index.blade.php \
+  resources/views/payment/create.blade.php \
+  resources/views/payment/customer-data.blade.php \
+  resources/views/payment/deposits.blade.php \
+  resources/views/payroll/index.blade.php \
+  resources/views/product/vendor_index.blade.php \
+  resources/views/quotation/index.blade.php \
+  resources/views/report/patient_due_report.blade.php \
+  resources/views/return/index.blade.php \
+  resources/views/return_purchase/index.blade.php \
+  resources/views/supplier/index.blade.php \
+  resources/views/tax/create.blade.php \
+  resources/views/transfer/index.blade.php \
+  resources/views/unit/create.blade.php \
+  resources/views/user/index.blade.php \
+  resources/views/warehouse/create.blade.php \
   "$SSH_HOST:$REMOTE/"
 
 if [ -f "$APP/app/Support/SiteI18n.php" ]; then

@@ -129,7 +129,7 @@
 
     var all_permission = <?php echo json_encode($all_permission) ?>;
     var return_id = [];
-    var user_verified = <?php echo json_encode(env('USER_VERIFIED')) ?>;
+    var user_verified = <?php echo json_encode(config('app.user_verified') ? '1' : '0') ?>;
     
     $.ajaxSetup({
         headers: {

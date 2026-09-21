@@ -143,7 +143,7 @@
     var slidertext;
     var product_id = [];
     var all_permission = <?php echo json_encode($all_permission) ?>;
-    var user_verified = <?php echo json_encode(env('USER_VERIFIED')) ?>;
+    var user_verified = <?php echo json_encode(config('app.user_verified') ? '1' : '0') ?>;
     var is_admin_user = <?php echo json_encode(in_array(Auth::user()->role_id, [1, 2])) ?>;
     var can_manage_products = user_verified == '1' || is_admin_user;
     $.ajaxSetup({
