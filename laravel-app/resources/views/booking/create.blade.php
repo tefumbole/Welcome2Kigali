@@ -72,16 +72,21 @@
         font-style: italic;
     }
     .booking-create-page .card-body {
-        padding: 12px 14px 14px;
-        background: #F7F1E8;
+        padding: 14px 16px 16px;
+        background: #fff;
     }
     .booking-create-page .card-body > p.italic { display: none; }
     .booking-section {
-        background: #fff;
-        border: 1px solid #e3e9f4;
-        border-radius: 10px;
-        padding: 10px 12px 6px;
-        margin-bottom: 8px;
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        padding: 0 0 12px;
+        margin-bottom: 12px;
+        box-shadow: none;
+    }
+    .booking-section + .booking-section {
+        border-top: 1px solid #eee4d0;
+        padding-top: 12px;
     }
     .booking-section-title {
         font-size: 11px;

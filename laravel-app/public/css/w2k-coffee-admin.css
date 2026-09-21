@@ -102,7 +102,12 @@ a:hover {
     border-bottom: 2px solid #C5A059 !important;
 }
 .booking-create-page .card-body {
-    background: #F7F1E8 !important;
+    background: #fff !important;
+}
+.booking-create-page .booking-section {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
 }
 .booking-create-page .booking-section-title,
 .booking-create-page #myTable thead th {
