@@ -34,6 +34,7 @@ FILES=(
   database/migrations/2026_09_18_103000_create_institutional_messages.php
   database/migrations/2026_09_18_120000_create_wa_message_serials_table.php
   database/migrations/2026_09_18_203000_create_stock_durations_table.php
+  database/migrations/2026_09_21_133000_add_commission_to_general_settings.php
   resources/views/mail/contact_message.blade.php
   app/Support/AppUrl.php
   app/Support/SchemaColumns.php
@@ -342,6 +343,7 @@ sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_18_120000_create_wa_message_serials_table.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_18_180000_add_preferred_locale_to_visitor_records.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_18_203000_create_stock_durations_table.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_21_133000_add_commission_to_general_settings.php
 sudo -u www-data php "\$APP/artisan" permission:cache-reset || true
 sudo -u www-data php "\$APP/artisan" view:clear
 sudo -u www-data php "\$APP/artisan" cache:clear

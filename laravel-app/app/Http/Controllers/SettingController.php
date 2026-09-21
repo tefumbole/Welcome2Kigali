@@ -167,7 +167,9 @@ class SettingController extends Controller
         $general_setting->category = $data['category'];
         $general_setting->profit_percentage = $data['profit_percentage'];
         $general_setting->letter_serial_no = $data['letter_serial_no'];
-        $general_setting->commission = $data['commission'];
+        if (\Schema::hasColumn('general_settings', 'commission')) {
+            $general_setting->commission = $data['commission'] ?? $general_setting->commission;
+        }
         if (\Schema::hasColumn('general_settings', 'default_warehouse_id')) {
             $general_setting->default_warehouse_id = $data['default_warehouse_id'] ?: null;
             $general_setting->default_biller_id = $data['default_biller_id'] ?: null;
