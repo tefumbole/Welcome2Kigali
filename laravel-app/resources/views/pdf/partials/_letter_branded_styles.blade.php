@@ -4,8 +4,7 @@
     $useSystemLetterhead = ! empty($use_system_letterhead);
     $letterheadFlow = ! empty($letterhead_flow);
     $letterhead = $letterhead ?? \App\Support\Letterhead::resolve($general_setting ?? null);
-    $hasLetterhead = ! empty($letterhead['has_header'])
-        && ($useSystemLetterhead || ($general_setting->invoice_format ?? '') == 'beyond_a4');
+    $hasLetterhead = ! empty($letterhead['has_header']);
 @endphp
 <style type="text/css">
 @if($letterheadFlow)

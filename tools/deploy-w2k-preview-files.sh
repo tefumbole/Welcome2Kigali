@@ -222,6 +222,12 @@ FILES=(
   resources/views/pdf/booking_pdf.blade.php
   resources/views/pdf/rent_pdf.blade.php
   resources/views/pdf/sale_pdf.blade.php
+  resources/views/pdf/letter_pdf.blade.php
+  resources/views/pdf/letter_download_pdf.blade.php
+  resources/views/pdf/partials/_letter_branded_open.blade.php
+  resources/views/pdf/partials/_letter_branded_close.blade.php
+  resources/views/pdf/partials/_letter_branded_styles.blade.php
+  resources/views/pdf/partials/_letter_branded_inner.blade.php
   resources/views/booking/edit.blade.php
   resources/views/booking/create_sale.blade.php
   resources/views/product/create.blade.php

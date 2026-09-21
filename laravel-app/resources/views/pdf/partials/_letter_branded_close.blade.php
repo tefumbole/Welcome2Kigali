@@ -2,9 +2,7 @@
     $useSystemLetterhead = ! empty($use_system_letterhead);
     $letterheadFlow = ! empty($letterhead_flow);
     $letterhead = $letterhead ?? \App\Support\Letterhead::resolve($general_setting ?? null);
-    $hasLetterFooter = ! empty($letterhead['has_footer']) && (
-        $useSystemLetterhead || (($general_setting->invoice_format ?? '') == 'beyond_a4')
-    );
+    $hasLetterFooter = ! empty($letterhead['has_footer']);
 @endphp
 @php
     $footerPdf = ($hasLetterFooter && ! empty($letterhead['footer_path']))
