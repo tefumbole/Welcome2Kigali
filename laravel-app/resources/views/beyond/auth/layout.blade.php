@@ -49,7 +49,7 @@
 @section('content')
 <div class="min-h-[80vh] bg-gradient-to-br from-brand-blue to-[#001f42] flex items-center justify-center p-4">
     <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div class="pt-8 pb-4 px-8 text-center">
+        <div class="pt-6 sm:pt-8 pb-4 px-5 sm:px-8 text-center">
             <div class="beyond-logo-spin-wrap mx-auto mb-4">
                 <img src="{{ \App\Support\SiteBrand::logoUrl($general_setting ?? null) }}" alt="{{ \App\Support\SiteBrand::siteTitle($general_setting ?? null) }}"
                      class="beyond-logo-spin">
@@ -59,7 +59,7 @@
             @endif
             <div class="mt-4 h-1 w-24 mx-auto rounded-full bg-brand-blue"></div>
         </div>
-        <div class="px-8 pb-8 pt-2">
+        <div class="px-5 sm:px-8 pb-6 sm:pb-8 pt-2">
             @if (session('success'))
                 <div class="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-800 px-4 py-3 text-sm">{{ session('success') }}</div>
             @endif

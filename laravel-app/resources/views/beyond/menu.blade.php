@@ -226,7 +226,7 @@
 
 <div x-data="w2kMenuCart({{ (int) ($cartCount ?? 0) }}, {{ json_encode(isset($groups[0]['id']) ? 'menu-'.$groups[0]['id'] : '') }})" class="menu-book text-white">
     <div class="max-w-[1180px] mx-auto px-4 pt-8 pb-2 text-center">
-        <h1 class="font-serif text-3xl sm:text-4xl text-[#F7F1E8]">{!! \App\Support\SiteContent::html('menu.hero_title', 'Cafe & <span class="text-brand-gold">Restaurant</span>') !!}</h1>
+        <h1 class="font-serif text-2xl sm:text-3xl lg:text-4xl text-[#F7F1E8]">{!! \App\Support\SiteContent::html('menu.hero_title', 'Cafe & <span class="text-brand-gold">Restaurant</span>') !!}</h1>
         <p class="mt-2 text-sm sm:text-base text-white/70 max-w-2xl mx-auto">{{ __('site.menu.hero_sub') }}</p>
     </div>
     <div class="menu-cat-nav sticky top-[4.75rem] sm:top-[5.75rem] lg:top-[6.25rem] z-30 bg-black/95 backdrop-blur border-b border-brand-gold/20">

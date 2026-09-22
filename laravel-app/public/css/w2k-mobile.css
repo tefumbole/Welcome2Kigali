@@ -1,4 +1,5 @@
 /* Welcome 2 Kigali — public + admin, all screen sizes */
+*, *::before, *::after { box-sizing: border-box; }
 html {
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
@@ -24,22 +25,8 @@ button, a, [role="button"] {
     -webkit-tap-highlight-color: rgba(197, 160, 89, 0.25);
 }
 
-/* ---- Public: tablet ---- */
+/* ---- Public: tablet / small laptop ---- */
 @media (max-width: 1023px) {
-    .landing-hero-actions {
-        flex-direction: column;
-        align-items: stretch;
-        padding: .65rem 1rem calc(.85rem + env(safe-area-inset-bottom, 0px));
-        gap: .55rem;
-    }
-    .landing-hero-actions a {
-        width: 100%;
-        max-width: none;
-        min-width: 0;
-        justify-content: center;
-        min-height: 2.85rem;
-    }
-
     header button[class*="lg:hidden"] {
         min-width: 44px;
         min-height: 44px;
@@ -50,6 +37,32 @@ button, a, [role="button"] {
 
     .site-footer-inner .grid {
         gap: 1rem;
+    }
+
+    .landing-hero-actions {
+        gap: .55rem;
+        padding: .65rem 1rem calc(.85rem + env(safe-area-inset-bottom, 0px));
+    }
+    .landing-hero-actions a {
+        min-width: 9.5rem;
+        min-height: 2.75rem;
+    }
+}
+
+/* ---- Public: phone ---- */
+@media (max-width: 639px) {
+    .landing-hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+        padding: .55rem .85rem calc(.75rem + env(safe-area-inset-bottom, 0px));
+        gap: .45rem;
+    }
+    .landing-hero-actions a {
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+        justify-content: center;
+        min-height: 2.85rem;
     }
 }
 
@@ -289,5 +302,45 @@ button, a, [role="button"] {
     body.beyond-pos-active .payment-options .column-5 {
         flex: 1 1 100%;
         min-width: 100%;
+    }
+}
+
+/* ---- Landscape phones / short tablets ---- */
+@media (max-height: 520px) and (orientation: landscape) {
+    body.home-landing .landing-hero-actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        padding: .4rem .75rem calc(.45rem + env(safe-area-inset-bottom, 0px));
+    }
+    body.home-landing .landing-hero-actions a {
+        width: auto;
+        min-width: 8.5rem;
+        height: 2.35rem;
+        min-height: 2.35rem;
+        font-size: .82rem;
+    }
+}
+
+/* ---- Inner public pages: readable type and tap targets ---- */
+@media (max-width: 767px) {
+    main input:not([type="checkbox"]):not([type="radio"]),
+    main select,
+    main textarea {
+        min-height: 44px;
+        font-size: 16px;
+    }
+    main button[type="submit"],
+    main .btn,
+    .w2k-footer-join a {
+        min-height: 44px;
+    }
+}
+
+/* 14" / 1366 laptops: keep chrome compact without hiding the menu */
+@media (min-width: 1024px) and (max-width: 1366px) {
+    header nav a {
+        letter-spacing: 0;
     }
 }

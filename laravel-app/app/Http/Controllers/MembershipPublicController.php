@@ -15,6 +15,9 @@ use App\Support\MembershipQr;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 
@@ -31,10 +34,7 @@ class MembershipPublicController extends Controller
 
     public function apply()
     {
-        $plans = MembershipPlan::active()->whereIn('code', ['monthly', 'quarterly', 'annual'])->get();
-        if ($plans->isEmpty()) {
-            $plans = MembershipPlan::active()->get();
-        }
+        $plans = $this->publicPlans();
         $promo = MembershipPromotion::current();
         $agreement = MembershipAgreement::current();
         $idTypes = json_decode(MembershipSetting::get('id_doc_types', json_encode(['national_id', 'passport'])), true) ?: ['national_id', 'passport'];
@@ -386,6 +386,60 @@ class MembershipPublicController extends Controller
             return response()->json(['status' => 'missing'], 404);
         }
         return response()->json($row);
+    }
+
+    protected function publicPlans()
+    {
+        $codes = ['monthly', 'quarterly', 'annual'];
+        $plans = MembershipPlan::active()->whereIn('code', $codes)->get();
+        if ($plans->count() < 1) {
+            $this->ensureDefaultPlans();
+            $plans = MembershipPlan::active()->whereIn('code', $codes)->get();
+        }
+        if ($plans->count() < 1) {
+            $plans = MembershipPlan::orderBy('sort_order')->get();
+        }
+
+        return $plans;
+    }
+
+    protected function ensureDefaultPlans()
+    {
+        if (! Schema::hasTable('membership_plans')) {
+            return;
+        }
+        $now = now();
+        $defaults = [
+            ['monthly', 'Monthly', 1, 15000, 1],
+            ['quarterly', 'Quarterly', 3, 40000, 2],
+            ['annual', 'Annual', 12, 140000, 4],
+        ];
+        foreach ($defaults as $plan) {
+            $row = DB::table('membership_plans')->where('code', $plan[0])->first();
+            if ($row) {
+                if (! $row->is_active) {
+                    DB::table('membership_plans')->where('id', $row->id)->update([
+                        'is_active' => 1,
+                        'updated_at' => $now,
+                    ]);
+                }
+                continue;
+            }
+            try {
+                DB::table('membership_plans')->insert([
+                    'code' => $plan[0],
+                    'name' => $plan[1],
+                    'duration_months' => $plan[2],
+                    'fee' => $plan[3],
+                    'is_active' => 1,
+                    'sort_order' => $plan[4],
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            } catch (\Throwable $e) {
+                Log::warning('Could not restore membership plan '.$plan[0].': '.$e->getMessage());
+            }
+        }
     }
 
     protected function uploadedFromDataUrl($dataUrl, $basename)

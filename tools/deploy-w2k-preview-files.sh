@@ -63,6 +63,13 @@ FILES=(
   app/Services/MembershipService.php
   app/Services/MembershipNotifier.php
   app/Http/Controllers/MembershipAdminController.php
+  app/Http/Controllers/CourseManagerController.php
+  app/Services/CourseManagerService.php
+  resources/views/membership/applications.blade.php
+  resources/views/membership/application_show.blade.php
+  resources/views/course_manager/registrations.blade.php
+  resources/views/role/permission.blade.php
+  database/migrations/2026_09_22_155000_add_memberships_delete_permission.php
   app/Http/Controllers/MembershipPublicController.php
   app/Http/Controllers/MembershipPosController.php
   app/Http/Controllers/SaleController.php
@@ -79,6 +86,7 @@ FILES=(
   app/Http/Controllers/PawaPayCallbackController.php
   app/Http/Controllers/StripePaymentController.php
   app/Http/Controllers/BeyondController.php
+  database/seeds/CafeMenuSeeder.php
   app/Http/Middleware/EncryptCookies.php
   app/Http/Middleware/VerifyCsrfToken.php
   app/Providers/AppServiceProvider.php
@@ -377,6 +385,7 @@ sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_18_203000_create_stock_durations_table.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_21_133000_add_commission_to_general_settings.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_21_153500_grant_superadmin_all_permissions.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_22_155000_add_memberships_delete_permission.php
 sudo -u www-data php "\$APP/artisan" permission:cache-reset || true
 sudo -u www-data php "\$APP/artisan" view:clear
 sudo -u www-data php "\$APP/artisan" cache:clear
@@ -385,3 +394,29 @@ sudo -u www-data php -r "require '\$APP/vendor/autoload.php'; \\\$app = require 
 chown -R www-data:www-data "\$APP/storage" "\$APP/bootstrap/cache"
 echo "Deployed W2K preview — \$(tr -d '[:space:]' < "\$APP/VERSION")"
 EOS
+
+# Fail the deploy if public catalog pages come back empty.
+SITE_URL="${W2K_PUBLIC_URL:-https://www.welcome2kigali.net}"
+smoke() {
+  local path="$1"
+  local must_have="$2"
+  local must_not="${3:-}"
+  local html
+  html="$(curl -fsSL --max-time 25 "${SITE_URL}${path}")" || {
+    echo "SMOKE FAIL: ${SITE_URL}${path} did not load" >&2
+    return 1
+  }
+  if ! printf '%s' "$html" | grep -Fq "$must_have"; then
+    echo "SMOKE FAIL: ${path} is missing “${must_have}”" >&2
+    return 1
+  fi
+  if [ -n "$must_not" ] && printf '%s' "$html" | grep -Fq "$must_not"; then
+    echo "SMOKE FAIL: ${path} still shows “${must_not}”" >&2
+    return 1
+  fi
+  echo "SMOKE OK: ${path}"
+}
+smoke /menu "Espresso" "after cafe products are seeded"
+smoke /membership/apply "Choose a plan"
+smoke /about "Our Vision"
+

@@ -32,8 +32,13 @@ class BeyondController extends Controller
 
     public function about()
     {
+        $leaders = \App\Leader::published()->ordered()->get();
+        if ($leaders->isEmpty() && \Illuminate\Support\Facades\Schema::hasTable('leaders')) {
+            $leaders = \App\Leader::ordered()->get();
+        }
+
         return view('beyond.about', [
-            'leaders' => \App\Leader::published()->ordered()->get(),
+            'leaders' => $leaders,
         ]);
     }
 
@@ -159,18 +164,21 @@ class BeyondController extends Controller
             'Food',
         ];
 
-        $categories = \App\Category::where('is_active', 1)
-            ->whereIn('name', $categoryNames)
-            ->orderByRaw('FIELD(name, "'.implode('","', $categoryNames).'")')
-            ->get();
+        $categories = $this->cafeCategories($categoryNames);
+        $productCount = $categories->isEmpty()
+            ? 0
+            : \App\Product::whereIn('category_id', $categories->pluck('id'))->count();
+        if ($categories->isEmpty() || $productCount < 1) {
+            $this->ensureCafeMenu();
+            $categories = $this->cafeCategories($categoryNames);
+        }
 
         if ($categories->isEmpty()) {
-            $categories = \App\Category::where('is_active', 1)->orderBy('name')->get();
+            $categories = \App\Category::orderBy('name')->get();
         }
 
         return $categories->map(function ($category) {
             $items = \App\Product::where('category_id', $category->id)
-                ->where('is_active', 1)
                 ->orderBy('id')
                 ->get()
                 ->map(function ($product) {
@@ -199,6 +207,33 @@ class BeyondController extends Controller
                 'items' => $items,
             ];
         })->values();
+    }
+
+    private function cafeCategories(array $categoryNames)
+    {
+        $categories = \App\Category::whereIn('name', $categoryNames)->get();
+        $inactiveIds = $categories->filter(function ($category) {
+            return ! $category->is_active;
+        })->pluck('id');
+        if ($inactiveIds->count()) {
+            \App\Category::whereIn('id', $inactiveIds)->update(['is_active' => 1]);
+            $categories = \App\Category::whereIn('name', $categoryNames)->get();
+        }
+
+        return $categories->sortBy(function ($category) use ($categoryNames) {
+            $index = array_search($category->name, $categoryNames, true);
+
+            return $index === false ? 999 : $index;
+        })->values();
+    }
+
+    private function ensureCafeMenu()
+    {
+        try {
+            (new \CafeMenuSeeder())->run();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Cafe menu seed failed: '.$e->getMessage());
+        }
     }
 
     private function menuSectionLook($name)

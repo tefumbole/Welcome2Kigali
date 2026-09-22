@@ -43,7 +43,7 @@
         };
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Great+Vibes&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url('public/css/w2k-mobile.css') }}">
+    <link rel="stylesheet" href="{{ url('public/css/w2k-mobile.css') }}?v={{ @filemtime(public_path('css/w2k-mobile.css')) ?: 10 }}">
     <style>
         body { font-family: 'Montserrat', ui-sans-serif, system-ui, sans-serif; }
         @keyframes floaty { 0%,100% { transform: translateY(0); opacity:.4 } 50% { transform: translateY(-20px); opacity:.9 } }
@@ -261,11 +261,11 @@
             <img src="{{ $siteLogoUrl }}" alt="{{ $siteTitle }}" class="nav-logo-img">
         </a>
 
-        <nav class="hidden lg:flex items-center gap-x-4 xl:gap-x-6 flex-1 justify-center min-w-0">
+        <nav class="hidden lg:flex items-center gap-x-2.5 xl:gap-x-5 2xl:gap-x-6 flex-1 justify-center min-w-0">
             @foreach ($navLinks as $link)
                 @php $active = rtrim($currentUrl,'/') === rtrim($link['url'],'/'); @endphp
                 <a href="{{ $link['url'] }}"
-                   class="text-lg xl:text-[1.3rem] font-medium transition-colors duration-300 whitespace-nowrap
+                   class="text-[0.92rem] xl:text-lg 2xl:text-[1.25rem] font-medium transition-colors duration-300 whitespace-nowrap
                       @if($active) text-brand-gold border-b-2 border-brand-gold pb-1
                       @elseif(!empty($link['special'])) text-brand-gold hover:text-white font-bold
                       @else text-white hover:text-brand-gold @endif">
@@ -275,25 +275,25 @@
         </nav>
 
         <div class="hidden lg:flex items-center shrink-0">
-            <div class="flex items-center gap-2 xl:gap-3 mr-5 pr-4 border-r border-white/15">
+            <div class="flex items-center gap-1.5 xl:gap-3 mr-3 xl:mr-5 pr-3 xl:pr-4 border-r border-white/15">
             <div class="flex items-center gap-1 text-xs font-semibold">
-                <a href="{{ url('/lang/en') }}" class="px-2 py-1 rounded {{ $locale === 'en' ? 'bg-brand-gold text-brand-blue' : 'text-white hover:text-brand-gold border border-white/20' }}">EN</a>
-                <a href="{{ url('/lang/fr') }}" class="px-2 py-1 rounded {{ $locale === 'fr' ? 'bg-brand-gold text-brand-blue' : 'text-white hover:text-brand-gold border border-white/20' }}">FR</a>
-                <a href="{{ url('/lang/rw') }}" class="px-2 py-1 rounded {{ $locale === 'rw' ? 'bg-brand-gold text-brand-blue' : 'text-white hover:text-brand-gold border border-white/20' }}">RW</a>
+                <a href="{{ url('/lang/en') }}" class="px-2 py-1 min-h-[32px] inline-flex items-center rounded {{ $locale === 'en' ? 'bg-brand-gold text-brand-blue' : 'text-white hover:text-brand-gold border border-white/20' }}">EN</a>
+                <a href="{{ url('/lang/fr') }}" class="px-2 py-1 min-h-[32px] inline-flex items-center rounded {{ $locale === 'fr' ? 'bg-brand-gold text-brand-blue' : 'text-white hover:text-brand-gold border border-white/20' }}">FR</a>
+                <a href="{{ url('/lang/rw') }}" class="px-2 py-1 min-h-[32px] inline-flex items-center rounded {{ $locale === 'rw' ? 'bg-brand-gold text-brand-blue' : 'text-white hover:text-brand-gold border border-white/20' }}">RW</a>
             </div>
 
             @if ($contactPhone)
-            <a href="{{ \App\Support\SiteBrand::phoneWhatsAppUrl() }}" target="_blank" rel="noopener" class="text-white hover:text-brand-gold transition-colors" title="{{ __('site.contact.whatsapp') }}">
+            <a href="{{ \App\Support\SiteBrand::phoneWhatsAppUrl() }}" target="_blank" rel="noopener" class="hidden xl:inline-flex text-white hover:text-brand-gold transition-colors min-w-[36px] min-h-[36px] items-center justify-center" title="{{ __('site.contact.whatsapp') }}">
                 <i data-lucide="phone" class="w-5 h-5"></i>
             </a>
             @endif
-            <a href="{{ \App\Support\SiteBrand::mapsUrl() }}" target="_blank" rel="noopener" class="text-white hover:text-brand-gold transition-colors" title="{{ __('site.contact.open_maps') }}">
+            <a href="{{ \App\Support\SiteBrand::mapsUrl() }}" target="_blank" rel="noopener" class="hidden xl:inline-flex text-white hover:text-brand-gold transition-colors min-w-[36px] min-h-[36px] items-center justify-center" title="{{ __('site.contact.open_maps') }}">
                 <i data-lucide="map-pin" class="w-5 h-5"></i>
             </a>
-            <a href="{{ url('/cart') }}" class="relative text-white hover:text-brand-gold transition-colors" title="{{ __('site.nav.cart') }}">
+            <a href="{{ url('/cart') }}" class="relative text-white hover:text-brand-gold transition-colors min-w-[36px] min-h-[36px] inline-flex items-center justify-center" title="{{ __('site.nav.cart') }}">
                 <i data-lucide="shopping-bag" class="w-5 h-5"></i>
                 <span x-show="cartCount > 0" x-cloak x-text="cartCount"
-                      class="absolute -top-2 -right-2 min-w-[1.15rem] h-[1.15rem] px-1 rounded-full bg-brand-gold text-black text-[10px] font-bold flex items-center justify-center"></span>
+                      class="absolute -top-1 -right-1 min-w-[1.15rem] h-[1.15rem] px-1 rounded-full bg-brand-gold text-black text-[10px] font-bold flex items-center justify-center"></span>
             </a>
             </div>
 
@@ -341,7 +341,7 @@
                     </div>
                 </div>
             @else
-                <a href="{{ url('/login') }}" class="bg-transparent border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-black font-medium transition-all rounded-md px-4 py-2 flex items-center gap-2">
+                <a href="{{ url('/login') }}" class="bg-transparent border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-black font-medium transition-all rounded-md px-3 py-1.5 xl:px-4 xl:py-2 text-sm flex items-center gap-2 min-h-[40px]">
                     <i data-lucide="log-in" class="w-4 h-4"></i> {{ __('site.nav.login') }}
                 </a>
             @endif
@@ -436,7 +436,7 @@
         @endunless
         <div class="site-footer-inner">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 {{ $isLandingFooter ? 'pt-2 pb-2' : 'pt-1 pb-3' }}">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 lg:gap-10 items-start">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-10 items-start">
                 <div class="min-w-0">
                     <h3 class="site-footer-heading">
                         <i data-lucide="clipboard-check"></i>
@@ -467,7 +467,7 @@
                     </div>
                 </div>
 
-                <div class="min-w-0 flex sm:justify-end items-start w2k-footer-join">
+                <div class="min-w-0 flex md:justify-end items-start w2k-footer-join">
                     <a href="{{ url('/register-now') }}"
                        class="inline-flex items-center rounded-full bg-brand-gold hover:bg-[#b08d45] text-black text-sm font-bold px-5 py-2.5 shadow-md">
                         {{ \App\Support\SiteContent::text('home.cta_primary', __('site.home.join')) }}

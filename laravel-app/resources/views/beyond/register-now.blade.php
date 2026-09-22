@@ -6,19 +6,19 @@
 @section('content')
 
 <div class="min-h-screen bg-gray-50 flex flex-col">
-    <div class="relative h-[300px] w-full bg-brand-blue overflow-hidden">
+    <div class="relative h-[200px] sm:h-[240px] md:h-[300px] w-full bg-brand-blue overflow-hidden">
         <div class="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-overlay" style="background-image:url('https://images.unsplash.com/photo-1693045181224-9fc2f954f054');"></div>
         <div class="absolute inset-0 bg-gradient-to-t from-brand-blue via-transparent to-transparent"></div>
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center text-white z-10">
-            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-2">{{ \App\Support\SiteContent::text('register.hero_title', __('site.register.heading')) }}</h1>
-            <p class="text-lg md:text-xl text-blue-100 max-w-2xl">
+            <h1 class="text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight mb-2">{{ \App\Support\SiteContent::text('register.hero_title', __('site.register.heading')) }}</h1>
+            <p class="text-sm sm:text-lg md:text-xl text-blue-100 max-w-2xl">
                 {{ \App\Support\SiteContent::text('register.hero_subtitle', __('site.register.sub')) }}
             </p>
         </div>
     </div>
 
-    <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 z-20 pb-16 w-full" x-data="registerForm()">
-        <div class="bg-white rounded-xl shadow-xl border p-6 md:p-8">
+    <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 sm:-mt-16 md:-mt-20 z-20 pb-16 w-full" x-data="registerForm()">
+        <div class="bg-white rounded-xl shadow-xl border p-4 sm:p-6 md:p-8">
 
             @if ($errors->any())
                 <div class="mb-6 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
@@ -35,7 +35,7 @@
                 <div class="flex-1 space-y-4">
                     <h2 class="text-xl font-bold text-brand-blue">{{ __('site.register.select') }}</h2>
                     <input type="search" x-model="search" placeholder="{{ __('site.register.search') }}"
-                           class="w-full rounded-md border border-gray-200 px-3 py-2 focus:border-brand-blue outline-none">
+                           class="w-full rounded-md border border-gray-200 px-3 py-2.5 min-h-[44px] focus:border-brand-blue outline-none">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[520px] overflow-y-auto pr-1">
                         @foreach ($courses as $course)
                             <label x-show="matches(@js($course->name))"
@@ -57,25 +57,25 @@
                     <h2 class="text-xl font-bold text-brand-blue">{{ __('site.register.details') }}</h2>
                     <div>
                         <label class="text-sm font-semibold text-gray-700">{{ __('site.register.full_name') }}</label>
-                        <input required name="client_name" value="{{ old('client_name') }}" type="text" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2">
+                        <input required name="client_name" value="{{ old('client_name') }}" type="text" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2.5 min-h-[44px]">
                     </div>
                     <div>
                         <label class="text-sm font-semibold text-gray-700">{{ __('site.register.email') }}</label>
-                        <input required name="client_email" value="{{ old('client_email') }}" type="email" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2">
+                        <input required name="client_email" value="{{ old('client_email') }}" type="email" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2.5 min-h-[44px]">
                     </div>
                     <div>
                         <label class="text-sm font-semibold text-gray-700">{{ __('site.register.phone') }}</label>
-                        <input required name="client_phone" value="{{ old('client_phone') }}" type="tel" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2">
+                        <input required name="client_phone" value="{{ old('client_phone') }}" type="tel" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2.5 min-h-[44px]">
                     </div>
                     <div>
                         <label class="text-sm font-semibold text-gray-700">{{ __('site.register.company') }}</label>
-                        <input name="company_name" value="{{ old('company_name') }}" type="text" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2">
+                        <input name="company_name" value="{{ old('company_name') }}" type="text" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2.5 min-h-[44px]">
                     </div>
                     <p class="text-sm text-gray-600" x-show="selected.length > 0">
                         <span class="font-semibold" x-text="selected.length"></span> {{ __('site.register.selected') }}
                     </p>
                     <p class="text-sm text-red-600" x-show="error" x-text="error"></p>
-                    <button type="submit" class="w-full bg-brand-blue hover:bg-brand-dark text-white font-bold py-3 rounded-md flex items-center justify-center gap-2">
+                    <button type="submit" class="w-full bg-brand-blue hover:bg-brand-dark text-white font-bold py-3 min-h-[48px] rounded-md flex items-center justify-center gap-2">
                         <i data-lucide="send" class="w-5 h-5"></i> {{ __('site.register.submit') }}
                     </button>
                     <p class="text-xs text-gray-400 text-center">{{ __('site.register.whatsapp_note') }}</p>

@@ -114,6 +114,13 @@ class CafeMenuSeeder extends Seeder
     {
         $existing = DB::table('categories')->where('name', $name)->first();
         if ($existing) {
+            if (! $existing->is_active) {
+                DB::table('categories')->where('id', $existing->id)->update([
+                    'is_active' => 1,
+                    'updated_at' => $now,
+                ]);
+            }
+
             return $existing->id;
         }
 
@@ -131,6 +138,13 @@ class CafeMenuSeeder extends Seeder
         $code = 'W2K-'.str_pad((string) $seq, 3, '0', STR_PAD_LEFT);
         $existing = DB::table('products')->where('name', $name)->where('category_id', $categoryId)->first();
         if ($existing) {
+            if (! $existing->is_active) {
+                DB::table('products')->where('id', $existing->id)->update([
+                    'is_active' => 1,
+                    'updated_at' => $now,
+                ]);
+            }
+
             return $existing->id;
         }
 
