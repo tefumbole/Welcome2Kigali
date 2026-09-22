@@ -8,13 +8,16 @@
 @push('head')
 <style>
     body.home-landing {
-        background-color: #6c9dd7;
+        background-color: #0A0A0A;
         height: 100dvh;
+        max-height: 100dvh;
         overflow: hidden;
     }
     body.home-landing .landing-hero--fullpage {
         position: relative;
-        background-color: #6c9dd7;
+        width: 100%;
+        overflow: hidden;
+        background-color: #0A0A0A;
         background-image: none;
     }
     body.home-landing .landing-hero-art {
@@ -22,15 +25,28 @@
         inset: 0;
         width: 100%;
         height: 100%;
-        object-fit: contain;
-        object-position: center;
+        max-width: none;
+        object-fit: cover;
+        object-position: center 40%;
         z-index: 1;
         pointer-events: none;
         user-select: none;
         -webkit-user-drag: none;
     }
+    @media (max-width: 767px) {
+        body.home-landing .landing-hero-art { object-position: 28% 32%; }
+    }
+    @media (min-width: 768px) and (max-width: 1199px) {
+        body.home-landing .landing-hero-art { object-position: 38% 38%; }
+    }
+    @media (min-width: 1800px) {
+        body.home-landing .landing-hero-art { object-position: center 46%; }
+    }
     body.home-landing .landing-hero-actions {
-        background: linear-gradient(to top, rgba(10, 10, 10, .28), transparent 72%);
+        background: linear-gradient(to top, rgba(10, 10, 10, .42), transparent 78%);
+        padding-left: max(1rem, env(safe-area-inset-left, 0px));
+        padding-right: max(1rem, env(safe-area-inset-right, 0px));
+        padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
     }
     body.home-landing .landing-hero-actions a {
         box-sizing: border-box;

@@ -151,23 +151,30 @@
         .site-footer-divider { width: 1px; align-self: stretch; min-height: 2.5rem; background: #C5A059; opacity: .55; }
 
         body.home-landing {
+            height: 100dvh;
+            max-height: 100dvh;
             min-height: 100dvh;
-            overflow-x: hidden;
+            overflow: hidden;
+            background: #0A0A0A;
         }
         body.home-landing main {
             flex: 1 1 auto;
             display: flex;
             flex-direction: column;
             min-height: 0;
-            background: transparent;
+            width: 100%;
+            overflow: hidden;
+            background: #0A0A0A;
         }
         .landing-hero--fullpage {
+            position: relative;
             flex: 1 1 auto;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
             min-height: 0;
             width: 100%;
+            overflow: hidden;
         }
         .landing-hero-actions {
             position: relative;
