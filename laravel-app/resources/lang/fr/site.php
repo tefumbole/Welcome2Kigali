@@ -319,6 +319,7 @@ return [
         'featured' => 'À la une',
         'tap_to_select' => 'Touchez pour continuer',
         'perk_community' => 'Accès au club · tarifs membres après l’essai',
+        'month' => 'mois',
         'months' => 'mois',
         'days' => 'jours',
         'discount_note' => 'Les membres bénéficient de :pct % sur tous les produits du club.',
