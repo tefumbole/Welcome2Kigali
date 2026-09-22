@@ -3382,8 +3382,10 @@ class SaleController extends Controller
                 }
                 elseif($payment->paying_method == 'Deposit'){
                     $lims_customer_data = Customer::find($lims_sale_data->customer_id);
-                    $lims_customer_data->expense -= $payment->amount;
-                    $lims_customer_data->save();
+                    if ($lims_customer_data) {
+                        $lims_customer_data->expense -= $payment->amount;
+                        $lims_customer_data->save();
+                    }
                 }
                 $payment->delete();
             }
@@ -3492,8 +3494,10 @@ class SaleController extends Controller
             }
             elseif($payment->paying_method == 'Deposit'){
                 $lims_customer_data = Customer::find($lims_sale_data->customer_id);
-                $lims_customer_data->expense -= $payment->amount;
-                $lims_customer_data->save();
+                if ($lims_customer_data) {
+                    $lims_customer_data->expense -= $payment->amount;
+                    $lims_customer_data->save();
+                }
             }
             $payment->delete();
         }

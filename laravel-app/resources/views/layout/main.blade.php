@@ -2619,7 +2619,7 @@
                                 @if($general_setting_permission_active || $catalogSettingsAccess)
                                     <li id="general-setting-menu"><a href="{{route('setting.general')}}">{{trans('file.General Setting')}}</a></li>
                                 @endif
-                                @if($role->name == 'Admin' || $role->name == 'System' || $manageSite)
+                                @if(in_array(optional($role)->name, ['Admin', 'System'], true) || $manageSite)
                                     <li id="role-menu"><a href="{{route('role.index')}}">{{trans('file.Role Permission')}}</a></li>
                                 @endif
                                 @if($send_notification_permission_active)

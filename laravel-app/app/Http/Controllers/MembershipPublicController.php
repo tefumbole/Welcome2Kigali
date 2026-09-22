@@ -35,6 +35,7 @@ class MembershipPublicController extends Controller
     public function apply()
     {
         $plans = $this->publicPlans();
+        $this->ensureDefaultPromotion();
         $promo = MembershipPromotion::current();
         $agreement = MembershipAgreement::current();
         $idTypes = json_decode(MembershipSetting::get('id_doc_types', json_encode(['national_id', 'passport'])), true) ?: ['national_id', 'passport'];
@@ -439,6 +440,45 @@ class MembershipPublicController extends Controller
             } catch (\Throwable $e) {
                 Log::warning('Could not restore membership plan '.$plan[0].': '.$e->getMessage());
             }
+        }
+    }
+
+    protected function ensureDefaultPromotion()
+    {
+        if (! Schema::hasTable('membership_promotions')) {
+            return;
+        }
+        if (MembershipPromotion::current()) {
+            return;
+        }
+
+        $now = now();
+        $row = DB::table('membership_promotions')->orderBy('id')->first();
+        if ($row) {
+            DB::table('membership_promotions')->where('id', $row->id)->update([
+                'is_enabled' => 1,
+                'starts_at' => $row->starts_at ?: $now,
+                'ends_at' => null,
+                'updated_at' => $now,
+            ]);
+
+            return;
+        }
+
+        try {
+            DB::table('membership_promotions')->insert([
+                'name' => 'Demo',
+                'type' => 'free_days',
+                'free_days' => 90,
+                'is_enabled' => 1,
+                'starts_at' => $now,
+                'ends_at' => null,
+                'description' => 'Approved applicants pay zero and receive 90 days of membership.',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Could not restore membership Demo promotion: '.$e->getMessage());
         }
     }
 

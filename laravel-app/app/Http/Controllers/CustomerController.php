@@ -466,10 +466,26 @@ class CustomerController extends Controller
     public function deleteBySelection(Request $request)
     {
         $customer_id = $request['customerIdArray'];
+        $blocked = 0;
+        $deleted = 0;
         foreach ($customer_id as $id) {
             $lims_customer_data = Customer::find($id);
+            if (! $lims_customer_data) {
+                continue;
+            }
+            if ($lims_customer_data->deleteBlockers()) {
+                $blocked++;
+                continue;
+            }
             $lims_customer_data->is_active = false;
             $lims_customer_data->save();
+            $deleted++;
+        }
+        if ($blocked && ! $deleted) {
+            return 'Cannot delete: these customers still have sales, quotations, or registrations.';
+        }
+        if ($blocked) {
+            return $deleted.' deleted. '.$blocked.' skipped because they still have sales, quotations, or registrations.';
         }
         return 'Customer deleted successfully!';
     }
@@ -477,8 +493,18 @@ class CustomerController extends Controller
     public function destroy($id)
     {
         $lims_customer_data = Customer::find($id);
+        if (! $lims_customer_data) {
+            return redirect('customer')->with('not_permitted', 'Customer not found.');
+        }
+        $blockers = $lims_customer_data->deleteBlockers();
+        if ($blockers) {
+            return redirect('customer')->with(
+                'not_permitted',
+                'This customer cannot be deleted while they still have '.implode(', ', $blockers).'.'
+            );
+        }
         $lims_customer_data->is_active = false;
         $lims_customer_data->save();
-        return redirect('customer')->with('not_permitted','Data deleted Successfully');
+        return redirect('customer')->with('message', 'Data deleted Successfully');
     }
 }

@@ -73,6 +73,7 @@ FILES=(
   app/Http/Controllers/MembershipPublicController.php
   app/Http/Controllers/MembershipPosController.php
   app/Http/Controllers/SaleController.php
+  app/Http/Controllers/CustomerController.php
   app/Http/Controllers/CashRegisterController.php
   app/Http/Controllers/SiteContentController.php
   app/Http/Controllers/ProductController.php
@@ -208,6 +209,7 @@ FILES=(
   database/migrations/2026_09_22_113500_add_preferred_locale_to_be_users.php
   resources/views/pdf/membership_confirmation.blade.php
   resources/views/layout/main.blade.php
+  resources/views/index.blade.php
   resources/views/beyond/layout.blade.php
   resources/views/beyond/home.blade.php
   resources/views/beyond/about.blade.php
@@ -401,11 +403,18 @@ smoke() {
   local path="$1"
   local must_have="$2"
   local must_not="${3:-}"
-  local html
-  html="$(curl -fsSL --max-time 25 "${SITE_URL}${path}")" || {
-    echo "SMOKE FAIL: ${SITE_URL}${path} did not load" >&2
-    return 1
-  }
+  local html="" attempt=1
+  while [ "$attempt" -le 2 ]; do
+    html="$(curl -fsSL -A 'W2K-deploy-smoke' --max-time 25 "${SITE_URL}${path}")" || {
+      echo "SMOKE FAIL: ${SITE_URL}${path} did not load" >&2
+      return 1
+    }
+    if printf '%s' "$html" | grep -Fq "$must_have"; then
+      break
+    fi
+    attempt=$((attempt + 1))
+    sleep 2
+  done
   if ! printf '%s' "$html" | grep -Fq "$must_have"; then
     echo "SMOKE FAIL: ${path} is missing “${must_have}”" >&2
     return 1

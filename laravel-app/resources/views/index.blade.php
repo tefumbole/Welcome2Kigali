@@ -140,7 +140,7 @@
         <button class="btn btn-secondary date-btn active" data-start_date="{{date('Y').'-'.date('m').'-'.'01'}}" data-end_date="{{date('Y-m-d')}}">{{trans('file.This Month')}}</button>
         <button class="btn btn-secondary date-btn" data-start_date="{{date('Y').'-01'.'-01'}}" data-end_date="{{date('Y').'-12'.'-31'}}">{{trans('file.This Year')}}</button>
       </div>
-      @if($role->name == 'Admin' || Auth::user()->role_id <= 2)
+      @if(optional($role)->name == 'Admin' || Auth::user()->role_id <= 2)
       <a href="{{ route('setting.general') }}" class="btn btn-primary"><i class="dripicons-gear"></i> Settings</a>
       @endif
     </div>
@@ -417,7 +417,7 @@
                             <tr>
                               <td>{{ date($general_setting->date_format, strtotime($sale->created_at->toDateString())) }}</td>
                               <td>{{$sale->reference_no}}</td>
-                              <td>{{$customer->name}}</td>
+                              <td>{{ optional($customer)->name ?: '—' }}</td>
                               @if($sale->sale_status == 1)
                               <td><div class="badge badge-success">{{trans('file.Completed')}}</div></td>
                               @elseif($sale->sale_status == 2)
@@ -489,7 +489,7 @@
                             <tr>
                               <td>{{date($general_setting->date_format, strtotime($quotation->created_at->toDateString())) }}</td>
                               <td>{{$quotation->reference_no}}</td>
-                              <td>{{$customer->name}}</td>
+                              <td>{{ optional($customer)->name ?: '—' }}</td>
                               @if($quotation->quotation_status == 1)
                               <td><div class="badge badge-danger">Pending</div></td>
                               @else
@@ -613,7 +613,7 @@
                         <?php $product = DB::table('products')->find($sale->product_id); ?>
                         <tr>
                           <td>{{$key + 1}}</td>
-                          <td>{{$product->name}}<br>[{{$product->code}}]</td>
+                          <td>{{ optional($product)->name ?: '—' }}<br>[{{ optional($product)->code }}]</td>
                           <td>{{number_format((float)$sale->total_price, 2, '.', '')}}</td>
                         </tr>
                         @endforeach
