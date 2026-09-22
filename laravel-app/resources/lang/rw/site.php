@@ -318,7 +318,7 @@ return [
         'featured' => 'Ibyibanze',
         'tap_to_select' => 'Kanda ukomeze',
         'perk_community' => 'Kwinjira muri club · ibiciro by’abanyamuryango nyuma y’ikizamini',
-        'months' => 'amezi',
+        'months' => 'ukwezi|amezi',
         'days' => 'iminsi',
         'discount_note' => 'Abanyamuryango babona :pct% ku bicuruzwa byose muri club.',
         'discount_all' => 'Abanyamuryango babona :pct% ku bicuruzwa byose.',

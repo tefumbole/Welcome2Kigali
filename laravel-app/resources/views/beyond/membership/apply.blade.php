@@ -139,7 +139,7 @@
                                     class="plan-card"
                                     :class="plan === {{ json_encode((string) $plan->id) }} ? 'is-on' : ''">
                                 <span class="flex items-center justify-between gap-2">
-                                    <span class="plan-badge">{{ $plan->duration_months }} {{ __('site.membership.months') }}</span>
+                                    <span class="plan-badge">{{ $plan->duration_months }} {{ trans_choice('site.membership.months', (int) $plan->duration_months) }}</span>
                                     <span class="plan-check"><i data-lucide="check" class="w-3.5 h-3.5"></i></span>
                                 </span>
                                 <span class="plan-name font-extrabold text-base mt-2 leading-tight">{{ $plan->name }}</span>

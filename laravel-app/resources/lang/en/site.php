@@ -318,7 +318,7 @@ return [
         'featured' => 'Featured',
         'tap_to_select' => 'Tap to continue',
         'perk_community' => 'Club access · member pricing after the trial',
-        'months' => 'months',
+        'months' => 'month|months',
         'days' => 'days',
         'discount_note' => 'Members enjoy :pct% off all products at the club.',
         'discount_all' => 'Members have :pct% discount on all products.',
