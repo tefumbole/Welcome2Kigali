@@ -36,7 +36,13 @@ class SiteBrand
 
     public static function landingUrl($density = '1x')
     {
-        $file = $density === '2x' ? 'w2k-landing@2x.jpg' : 'w2k-landing.jpg';
+        if ($density === 'png') {
+            $file = 'w2k-landing.png';
+        } elseif ($density === '2x') {
+            $file = 'w2k-landing@2x.jpg';
+        } else {
+            $file = 'w2k-landing.jpg';
+        }
         $path = base_path('public/branding/'.$file);
         if (! is_file($path)) {
             $file = 'w2k-landing.png';

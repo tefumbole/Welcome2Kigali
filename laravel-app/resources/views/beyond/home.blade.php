@@ -6,6 +6,11 @@
 @section('hide_footer', '1')
 
 @push('head')
+<link rel="preload" as="image"
+      href="{{ \App\Support\SiteBrand::landingUrl('2x') }}"
+      imagesrcset="{{ \App\Support\SiteBrand::landingUrl('1x') }} 1280w, {{ \App\Support\SiteBrand::landingUrl('2x') }} 1678w, {{ \App\Support\SiteBrand::landingUrl('png') }} 1678w"
+      imagesizes="100vw"
+      fetchpriority="high">
 <style>
     body.home-landing {
         background-color: #0A0A0A;
@@ -28,6 +33,8 @@
         max-width: none;
         object-fit: cover;
         object-position: center 40%;
+        image-rendering: auto;
+        image-rendering: high-quality;
         z-index: 1;
         pointer-events: none;
         user-select: none;
@@ -104,10 +111,10 @@
     <h1 class="sr-only">{!! \App\Support\SiteContent::html('home.hero_title', \App\Support\SiteBrand::siteTitle($general_setting ?? null)) !!}</h1>
     <img class="landing-hero-art"
          src="{{ \App\Support\SiteBrand::landingUrl('2x') }}"
-         srcset="{{ \App\Support\SiteBrand::landingUrl('1x') }} 1024w, {{ \App\Support\SiteBrand::landingUrl('2x') }} 2048w"
+         srcset="{{ \App\Support\SiteBrand::landingUrl('1x') }} 1280w, {{ \App\Support\SiteBrand::landingUrl('2x') }} 1678w, {{ \App\Support\SiteBrand::landingUrl('png') }} 1678w"
          sizes="100vw"
-         width="2048"
-         height="1142"
+         width="1678"
+         height="937"
          alt="{{ \App\Support\SiteBrand::siteTitle($general_setting ?? null) }}"
          decoding="async"
          fetchpriority="high">
