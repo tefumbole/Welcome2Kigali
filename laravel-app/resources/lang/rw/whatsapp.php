@@ -4,7 +4,7 @@ return [
     'greeting' => 'Muraho,',
     'greeting_named' => 'Muraho *:name*,',
     'regards' => 'Murakoze,',
-    'serial_no' => 'Inomero yo gukurikirana',
+    'serial_no' => 'Numero y’icyegeranyo',
 
     'contact_staff_title' => 'UBUTUMWA BUSHYA',
     'contact_staff_intro' => 'Mwakiriye ubutumwa buvuye ku rubuga.',
@@ -34,7 +34,7 @@ return [
 
     'membership_received_title' => 'ICYIFUZO CY’UBUNYAMURYANGO',
     'membership_received_intro' => 'Murakoze ku cyifuzo cy’ubunyamuryango.',
-    'membership_received_body' => 'Twakiriye icyifuzo cyawe kandi itsinda ryacu rizakisuzuma vuba. Uzahabwa ubutumwa bwa WhatsApp iyo icyemezo kimaze gufatwa.',
+    'membership_received_body' => 'Twakiriye icyifuzo cyawe kandi itsinda ryacu rizakisuzuma vuba. Uzahabwa ubutumwa bwa WhatsApp icyemezo kimaze gufatwa.',
     'membership_admin_title' => 'ICYIFUZO GISHYA CY’UBUNYAMURYANGO',
     'membership_admin_intro' => 'Hari icyifuzo gishya cy’ubunyamuryango kitegereje gusuzumwa.',
     'membership_admin_applicant' => 'Uwasabye',
@@ -68,7 +68,7 @@ return [
     'rental_intro' => 'Icyifuzo cyawe cy’ubukode bw’ibikoresho cyakiriwe kiri gusuzumwa.',
     'rental_followup' => 'Itsinda ryacu rizaguhamagara kuri WhatsApp vuba.',
 
-    'email_serial' => 'Inomero yo gukurikirana',
+    'email_serial' => 'Numero y’icyegeranyo',
     'email_staff_intro' => 'Mwakiriye ubutumwa buvuye ku rubuga.',
 
     'sale_title' => 'IGURISHA RYEMEJWE',
