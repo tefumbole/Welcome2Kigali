@@ -34,7 +34,7 @@
         -webkit-user-drag: none;
     }
     @media (max-width: 767px) {
-        body.home-landing .landing-hero-art { object-position: left 30%; }
+        body.home-landing .landing-hero-art { object-position: 14% 28%; }
     }
     @media (min-width: 768px) and (max-width: 1199px) {
         body.home-landing .landing-hero-art { object-position: 12% 36%; }
