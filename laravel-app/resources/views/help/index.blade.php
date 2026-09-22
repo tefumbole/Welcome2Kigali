@@ -144,8 +144,8 @@
         <h3>2. Public website</h3>
         <p>Guests see Home, Menu, Events, About, and Become a Member in the black header (with EN / FR / RW). Those pages are edited in <strong>Site Content</strong> — not in Products.</p>
         <h4>Home</h4>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/home.png') }}?v={{ $hv }}" alt="Home page with three gold buttons over the Kigali night skyline">
-        <p class="w2k-help-cap">Home hero: Welcome 2 Kigali Expats Club artwork, then three gold buttons — <strong>Join the Club</strong>, <strong>Events</strong>, and <strong>Cafe Menu</strong>. Language switcher EN / FR / RW is in the header. Version (W2K_V_…) is in the bottom-right of the hero.</p>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/home.png') }}?v={{ $hv }}" alt="Home page with the sunrise Kigali artwork and three gold buttons">
+        <p class="w2k-help-cap">Home fills the screen with the current sunrise <strong>Welcome 2 Kigali</strong> artwork (KIGALI wordmark over the city). Three gold buttons sit on the image — <strong>Join the Club</strong>, <strong>Events</strong>, and <strong>Cafe Menu</strong>. Language switcher EN / FR / RW is in the header. Version (W2K_V_…) is in the bottom-right.</p>
         <h4>Cafe menu (what guests order)</h4>
         <img class="w2k-help-shot" src="{{ url('public/branding/help/menu.png') }}?v={{ $hv }}" alt="Cafe and Restaurant menu Coffee and Tea list">
         <p class="w2k-help-cap">Menu title is Cafe &amp; Restaurant. Category pills: Coffee &amp; Tea (active), Iced &amp; Specialty, Tea &amp; Hot Beverages, Fresh &amp; Detox Juices, Smoothies, Food. Espresso beverages include Espresso 2,000, Americano 2,000, Macchiato 2,000, Cortado 2,000, Flat White 2,500, Cappuccino 3,000, Café Latte 3,000, Caramel Macchiato 4,000, Café Mocha 4,000, and African Coffee 4,000. A photo sits on the right. Click a drink to add it to the cart.</p>

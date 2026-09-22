@@ -4,13 +4,13 @@ return [
     'greeting' => 'Muraho,',
     'greeting_named' => 'Muraho *:name*,',
     'regards' => 'Murakoze,',
-    'serial_no' => 'Numero y’icyegeranyo',
+    'serial_no' => 'Inomero yo gukurikirana',
 
     'contact_staff_title' => 'UBUTUMWA BUSHYA',
     'contact_staff_intro' => 'Mwakiriye ubutumwa buvuye ku rubuga.',
     'contact_visitor_title' => 'UBUTUMWA BWAKIRIWE',
     'contact_visitor_intro' => 'Murakoze kuvugana na *:company*. Twakiriye ubutumwa bwawe kandi tuzagusubiza vuba.',
-    'contact_visitor_keep' => 'Bika iyi numero y’icyegeranyo niba ugiye gukurikirana.',
+    'contact_visitor_keep' => 'Bika iyi nomero niba ugiye gukurikirana.',
     'label_name' => 'Amazina',
     'label_phone' => 'Telefoni',
     'label_email' => 'Imeri',
@@ -22,7 +22,7 @@ return [
 
     'otp_title' => 'KWEMEZA',
     'otp_thanks' => 'Murakoze guhitamo *:company*.',
-    'otp_intro' => 'Kode yawe yo kwemeza inshuro imwe kuri :purpose ni:',
+    'otp_intro' => 'Kode yawe yo kwemeza :purpose ni:',
     'otp_valid' => 'Iyi kode ikora mu munota :minutes.|Iyi kode ikora mu minota :minutes.',
     'otp_share' => 'Ntuyisangize undi muntu. Itsinda ryacu ntirizayisaba.',
     'otp_login' => 'kwemeza kwinjira',
@@ -47,7 +47,7 @@ return [
     'membership_pay_intro' => 'Kugira ngo ufungure cyangwa ukomeze ubunyamuryango, nyamuneka wishyure ukoresheje ihuza rizewe hepfo.',
     'membership_pay' => 'Ishyura amafaranga y’ubunyamuryango',
     'membership_card' => 'Ikarita y’umunyamuryango',
-    'membership_welcome' => 'Turakwegereje muri club.',
+    'membership_welcome' => 'Turakwitegereje muri club.',
     'membership_rejected_intro' => 'Murakoze kwifuza ubunyamuryango muri *:company*.',
     'membership_rejected_body' => 'Nyuma yo gusuzuma, ntidushobora kwemeza icyifuzo *:reference* ubu.',
     'membership_rejected_contact' => 'Urashobora kutwandikira kuri iyi numero niba ufite ibibazo.',
@@ -68,7 +68,7 @@ return [
     'rental_intro' => 'Icyifuzo cyawe cy’ubukode bw’ibikoresho cyakiriwe kiri gusuzumwa.',
     'rental_followup' => 'Itsinda ryacu rizaguhamagara kuri WhatsApp vuba.',
 
-    'email_serial' => 'Numero y’icyegeranyo',
+    'email_serial' => 'Inomero yo gukurikirana',
     'email_staff_intro' => 'Mwakiriye ubutumwa buvuye ku rubuga.',
 
     'sale_title' => 'IGURISHA RYEMEJWE',
@@ -86,6 +86,6 @@ return [
     'order_update_intro' => 'Imiterere y’igitumanwa cyawe yahindutse ikaba *:status*.',
     'order_status' => 'Imiterere',
     'order_address' => 'Aderesi',
-    'document_attached' => 'INYANDIKO YOMBIWE',
+    'document_attached' => 'INYANDIKO YOHEREJWE',
     'document_please_find' => "Dore *:file* yawe yoherejwe.\n",
 ];

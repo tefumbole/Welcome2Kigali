@@ -27,7 +27,7 @@ return [
         'quick_links' => 'Quick Links',
         'contact' => 'Contact',
         'rights' => 'All rights reserved.',
-        'developed' => 'Developed By:',
+        'developed' => 'Developed by',
         'tagline' => 'Experience Rwanda. Belong in Kigali.',
         'services' => 'Services',
         'events_rentals' => 'Events & Rentals',

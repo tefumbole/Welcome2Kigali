@@ -15,7 +15,7 @@ return [
     'shipping_cost' => 'Frais de livraison',
     'grand_total' => 'Total général',
     'thank_you' => 'Merci',
-    'dear' => 'Cher/Chère',
+    'dear' => 'Bonjour',
     'booking_status' => 'Statut de la réservation',
     'payment_status' => 'Statut du paiement',
     'completed' => 'Terminée',
