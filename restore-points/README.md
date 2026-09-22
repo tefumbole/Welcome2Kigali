@@ -1,9 +1,10 @@
-# Alpha Bridge / Beyond Enterprise ERP restore points
+# Restore points
 
 Each restore point is a **git tag** plus a short manifest in this folder.
 
 | Version | Tag | Notes |
 |---------|-----|-------|
+| W2K_V_1.10.4 | `W2K_V_1.10.4` | Welcome 2 Kigali live snapshot: About fly-in identity grid, leadership, customer-delete guard, Menu/Membership restore |
 | BCL_ERP_V2.8.8 | `BCL_ERP_V2.8.8` | Offer portal + WW on apply, program capacity, signed quotation PDF, note paste formatting, settings TZ/invoice fix |
 | ABT_ERP_V.2.2.23 | `ABT_ERP_V.2.2.23` | Job Board internships, countdown, camera snap, WhatsApp stages, logo fix, header toggle |
 | ABT_ERP_V.2.2.15 | `ABT_ERP_V.2.2.15` | Timesheets (Employee + Admin), Laravel deploy script (storage perms) |

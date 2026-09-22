@@ -89,115 +89,70 @@
         </div>
     </section>
 
-    <section
-        id="identity"
-        class="pb-16"
-        x-data="aboutIdentitySlides()"
-        x-init="watch($el)"
-    >
-        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="identity" class="identity-fly pb-16">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-8">
                 <h2 class="font-serif text-2xl sm:text-3xl font-bold text-black">{{ \App\Support\SiteContent::text('about.values_heading', __('site.about.identity')) }}</h2>
                 <div class="h-1 w-16 bg-brand-gold mx-auto mt-3"></div>
             </div>
-            <div class="relative">
-                <div class="overflow-hidden rounded-2xl">
-                    <div class="relative min-h-[13.5rem] sm:min-h-[12rem]">
-                        @foreach($aboutValues as $index => $value)
-                            <article
-                                x-show="active === {{ $index }}"
-                                x-transition:enter="transition ease-out duration-500"
-                                x-transition:enter-start="opacity-0 translate-x-8"
-                                x-transition:enter-end="opacity-100 translate-x-0"
-                                x-transition:leave="transition ease-in duration-300"
-                                x-transition:leave-start="opacity-100 translate-x-0"
-                                x-transition:leave-end="opacity-0 -translate-x-8"
-                                class="absolute inset-0 bg-white rounded-2xl border border-black/5 shadow-sm px-8 py-8 sm:px-10 sm:py-9 flex flex-col justify-center text-center"
-                                @if($index > 0) x-cloak @endif
-                            >
-                                <h3 class="font-serif text-2xl sm:text-3xl font-bold text-black">{{ $value['title'] }}</h3>
-                                <div class="h-1 w-10 bg-brand-gold mx-auto mt-3 mb-4"></div>
-                                <p class="text-gray-600 leading-7 max-w-xl mx-auto">{{ $value['text'] }}</p>
-                            </article>
-                        @endforeach
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                @foreach($aboutValues as $value)
+                    <div class="identity-fly-card bg-white rounded-2xl border border-black/5 shadow-sm p-6">
+                        <h3 class="font-semibold text-black mb-2">{{ $value['title'] }}</h3>
+                        <p class="text-sm text-gray-600 leading-6">{{ $value['text'] }}</p>
                     </div>
-                </div>
-                <button type="button" class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 sm:-translate-x-4 w-10 h-10 rounded-full bg-white border border-black/10 shadow-sm text-black hover:text-brand-gold" @click="prev()" aria-label="Previous">
-                    <span class="sr-only">Previous</span>
-                    <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                </button>
-                <button type="button" class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 sm:translate-x-4 w-10 h-10 rounded-full bg-white border border-black/10 shadow-sm text-black hover:text-brand-gold" @click="next(); start()" aria-label="Next">
-                    <span class="sr-only">Next</span>
-                    <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                </button>
-            </div>
-            <div class="flex justify-center gap-2 mt-6" role="tablist">
-                @foreach($aboutValues as $index => $value)
-                    <button
-                        type="button"
-                        class="w-2.5 h-2.5 rounded-full transition-colors"
-                        :class="active === {{ $index }} ? 'bg-brand-gold' : 'bg-black/20'"
-                        @click="go({{ $index }})"
-                        :aria-selected="active === {{ $index }}"
-                        aria-label="{{ $value['title'] }}"
-                    ></button>
                 @endforeach
             </div>
         </div>
     </section>
 </div>
 
-<script>
-function aboutIdentitySlides() {
-    return {
-        active: 0,
-        total: {{ count($aboutValues) }},
-        timer: null,
-        watch: function (el) {
-            var self = this;
-            if (!('IntersectionObserver' in window)) {
-                self.start();
-                return;
-            }
-            var seen = false;
-            var observer = new IntersectionObserver(function (entries) {
-                entries.forEach(function (entry) {
-                    if (entry.isIntersecting) {
-                        if (!seen) {
-                            seen = true;
-                            self.active = 0;
-                        }
-                        self.start();
-                    } else {
-                        self.stop();
-                    }
-                });
-            }, { threshold: 0.4 });
-            observer.observe(el);
-        },
-        start: function () {
-            var self = this;
-            this.stop();
-            this.timer = setInterval(function () { self.next(); }, 4200);
-        },
-        stop: function () {
-            if (this.timer) {
-                clearInterval(this.timer);
-                this.timer = null;
-            }
-        },
-        next: function () {
-            this.active = (this.active + 1) % this.total;
-        },
-        prev: function () {
-            this.active = (this.active - 1 + this.total) % this.total;
-            this.start();
-        },
-        go: function (index) {
-            this.active = index;
-            this.start();
+<style>
+    .identity-fly-card {
+        opacity: 0;
+        transform: translate3d(-56px, 36px, 0);
+    }
+    .identity-fly-card.is-in {
+        opacity: 1;
+        transform: none;
+        transition: opacity 1.1s ease, transform 1.1s cubic-bezier(.16, 1, .3, 1);
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .identity-fly-card {
+            opacity: 1;
+            transform: none;
         }
-    };
-}
+    }
+</style>
+<noscript>
+    <style>.identity-fly-card { opacity: 1; transform: none; }</style>
+</noscript>
+<script>
+(function () {
+    var section = document.getElementById('identity');
+    if (!section) return;
+    var cards = section.querySelectorAll('.identity-fly-card');
+    var started = false;
+    function reveal() {
+        if (started) return;
+        started = true;
+        Array.prototype.forEach.call(cards, function (card, i) {
+            setTimeout(function () { card.classList.add('is-in'); }, i * 1100);
+        });
+    }
+    if (!('IntersectionObserver' in window)) {
+        reveal();
+        return;
+    }
+    var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                reveal();
+                observer.disconnect();
+            }
+        });
+    }, { threshold: 0.2 });
+    observer.observe(section);
+})();
 </script>
 @endsection
