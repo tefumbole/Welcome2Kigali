@@ -1067,11 +1067,11 @@
                 <div class="main-menu">
                     <ul id="side-main-menu" class="side-menu list-unstyled">
                         @if(Auth::user()->role_id != 7)
-                            <li><a href="{{ url('/admin') }}"> <i class="dripicons-meter"></i><span>{{ __('file.dashboard') }}</span></a></li>
+                            <li><a href="{{ url('/admin') }}"> <i class="dripicons-meter"></i><span>{{ __('sidebar.dashboard') }}</span></a></li>
                         @endif
                         @if(\App\Support\StaffAccess::canManageSite())
-                            <li><a href="{{ url('/admin/site-content') }}" data-nav-key="site-content"> <i class="dripicons-web"></i><span>Site Content</span></a></li>
-                            <li><a href="{{ url('/admin/leaders') }}" data-nav-key="leaders"> <i class="dripicons-user-group"></i><span>About Us Leaders</span></a></li>
+                            <li><a href="{{ url('/admin/site-content') }}" data-nav-key="site-content"> <i class="dripicons-web"></i><span>{{ __('sidebar.site-content') }}</span></a></li>
+                            <li><a href="{{ url('/admin/leaders') }}" data-nav-key="leaders"> <i class="dripicons-user-group"></i><span>{{ __('sidebar.leaders') }}</span></a></li>
                         @endif
                         <?php
                         $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
@@ -1115,7 +1115,7 @@
                         ])->first() : null;
                         ?>
                         @if($category_permission_active || $index_permission_active || $print_barcode_active || $stock_count_active || $adjustment_active || $manageSite)
-                            <li><a href="#product" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-list"></i><span>{{__('file.product')}}</span><span></a>
+                            <li><a href="#product" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-list"></i><span>{{ __('sidebar.product') }}</span><span></a>
                                 <ul id="product" class="collapse list-unstyled ">
                                     @if($category_permission_active || $manageSite)
                                         <li id="category-menu"><a href="{{route('category.index')}}">{{__('file.category')}}</a></li>
@@ -1154,7 +1154,7 @@
                         ])->first();
                         ?>
                         @if($index_permission_active)
-                            <li><a href="#purchase" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-card"></i><span>{{trans('file.Purchase')}}</span></a>
+                            <li><a href="#purchase" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-card"></i><span>{{ __('sidebar.purchase') }}</span></a>
                                 <ul id="purchase" class="collapse list-unstyled ">
                                     <li id="purchase-list-menu"><a href="{{route('purchases.index')}}">{{trans('file.Purchase List')}}</a></li>
                                         <?php
@@ -1203,7 +1203,7 @@
                         ])->first();
                         ?>
                         @if($sale_index_permission_active || $gift_card_permission_active || $coupon_permission_active || $delivery_permission_active)
-                            <li><a href="#sale" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-cart"></i><span>{{trans('file.Sale')}}</span></a>
+                            <li><a href="#sale" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-cart"></i><span>{{ __('sidebar.sale') }}</span></a>
                                 <ul id="sale" class="collapse list-unstyled ">
                                     @if($sale_index_permission_active)
                                         <li id="sale-list-menu"><a href="{{route('sales.index')}}">{{trans('file.Sale List')}}</a></li>
@@ -1251,7 +1251,7 @@
                                     $booking_reminder_count = 0;
                                 }
                             ?>
-                            <li><a href="#booking" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-exchange"></i><span>{{trans('file.Booking Module')}}</span></a>
+                            <li><a href="#booking" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-exchange"></i><span>{{ __('sidebar.booking') }}</span></a>
                                 <ul id="booking" class="collapse list-unstyled ">
                                         <?php
                                         $create_permission_booking = DB::table('permissions')->where('name', 'booking_create')->first();
@@ -1267,7 +1267,7 @@
 
                                         ?>
                                     @if($create_permission_booking_active)
-                                        <li id="booking-create-menu"><a href="{{route('booking.create')}}">Booking Create</a></li>
+                                        <li id="booking-create-menu"><a href="{{route('booking.create')}}">{{ __('sidebar.booking_create') }}</a></li>
                                     @endif
                                         <?php
                                         $create_permission_booking = DB::table('permissions')->where('name', 'booking_index')->first();
@@ -1277,15 +1277,15 @@
                                         ])->first() : null;
                                         ?>
                                     @if($create_permission_booking_active)
-                                        <li id="booking-index-menu"><a href="{{route('booking.index')}}">Booking List</a></li>
+                                        <li id="booking-index-menu"><a href="{{route('booking.index')}}">{{ __('sidebar.booking_list') }}</a></li>
                                         <li id="booking-requests-menu">
-                                            <a href="{{route('booking.requests')}}">Booking Request
+                                            <a href="{{route('booking.requests')}}">{{ __('sidebar.booking_request') }}
                                                 @if($booking_request_count > 0)<span class="beyond-attention-badge" data-count="{{ $booking_request_count }}">{{ $booking_request_count > 99 ? '99+' : $booking_request_count }}</span>@endif
                                             </a>
                                         </li>
-                                        <li id="booking-product-menu"><a href="{{route('booking.product')}}">Booked Products</a></li>
+                                        <li id="booking-product-menu"><a href="{{route('booking.product')}}">{{ __('sidebar.booking_products') }}</a></li>
                                         <li id="booking-reminders-menu">
-                                            <a href="{{route('booking.reminders')}}">Booking Reminder
+                                            <a href="{{route('booking.reminders')}}">{{ __('sidebar.booking_reminder') }}
                                                 @if($booking_reminder_count > 0)<span class="beyond-attention-badge" data-count="{{ $booking_reminder_count }}">{{ $booking_reminder_count > 99 ? '99+' : $booking_reminder_count }}</span>@endif
                                             </a>
                                         </li>
@@ -1345,7 +1345,7 @@
                         ])->first() : null;
                         ?>
                         @if($permissions_module_active || $hrm_for_perms_active)
-                            <li><a href="#staff-permissions" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-checkmark"></i><span>Permissions</span></a>
+                            <li><a href="#staff-permissions" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-checkmark"></i><span>{{ __('sidebar.permissions') }}</span></a>
                                 <ul id="staff-permissions" class="collapse list-unstyled ">
                                     <li id="perm-requests-menu">
                                         <a href="{{ route('permissions.requests') }}">Permission Request
@@ -1358,7 +1358,7 @@
                             </li>
                         @endif
                         @if($events_module_active)
-                            <li><a href="#events-module" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-calendar"></i><span>Events</span></a>
+                            <li><a href="#events-module" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-calendar"></i><span>{{ __('sidebar.events') }}</span></a>
                                 <ul id="events-module" class="collapse list-unstyled ">
                                     @if(in_array('events.view', $all_permission))
                                         <li id="events-dashboard-menu"><a href="{{ route('events.dashboard') }}">Events Dashboard</a></li>
@@ -1416,7 +1416,7 @@
                                     || in_array($role->id ?? 0, [1, 2]);
                             @endphp
                             @if($oi_cat || $oi_tpl || $oi_evt || $oi_send)
-                            <li><a href="#online_invitation" data-nav-key="invitations" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-ticket"></i><span>Digital Invitations</span></a>
+                            <li><a href="#online_invitation" data-nav-key="invitations" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-ticket"></i><span>{{ __('sidebar.invitations') }}</span></a>
                                 <ul id="online_invitation" class="collapse list-unstyled ">
                                     @if($oi_cat)
                                         <li id="online-invitation-category-menu"><a href="{{ route('online_invitation.categories.index') }}">Categories</a></li>
@@ -1451,20 +1451,20 @@
                         ])->first() : null;
                         ?>
                         @if($tasks_module_active)
-                            <li><a href="#tasks-module" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-checklist"></i><span>Task Manager</span></a>
+                            <li><a href="#tasks-module" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-checklist"></i><span>{{ __('sidebar.tasks') }}</span></a>
                                 <ul id="tasks-module" class="collapse list-unstyled ">
                                     @if(in_array('tasks.view', $all_permission))
-                                        <li id="tasks-dashboard-menu"><a href="{{ route('tasks.dashboard') }}">Task Dashboard</a></li>
-                                        <li id="tasks-list-menu"><a href="{{ route('tasks.index') }}">All Tasks</a></li>
-                                        <li id="tasks-scheduled-menu"><a href="{{ route('tasks.scheduled') }}">Scheduled</a></li>
-                                        <li id="tasks-reminders-menu"><a href="{{ route('tasks.reminders') }}">Reminders</a></li>
-                                        <li id="tasks-pending-menu"><a href="{{ route('tasks.pending') }}">Pending Acceptances</a></li>
+                                        <li id="tasks-dashboard-menu"><a href="{{ route('tasks.dashboard') }}">{{ __('sidebar.tasks_dashboard') }}</a></li>
+                                        <li id="tasks-list-menu"><a href="{{ route('tasks.index') }}">{{ __('sidebar.tasks_all') }}</a></li>
+                                        <li id="tasks-scheduled-menu"><a href="{{ route('tasks.scheduled') }}">{{ __('sidebar.tasks_scheduled') }}</a></li>
+                                        <li id="tasks-reminders-menu"><a href="{{ route('tasks.reminders') }}">{{ __('sidebar.tasks_reminders') }}</a></li>
+                                        <li id="tasks-pending-menu"><a href="{{ route('tasks.pending') }}">{{ __('sidebar.tasks_pending') }}</a></li>
                                     @endif
                                     @if(in_array('tasks.create', $all_permission))
-                                        <li id="tasks-create-menu"><a href="{{ route('tasks.create') }}">Create Task</a></li>
+                                        <li id="tasks-create-menu"><a href="{{ route('tasks.create') }}">{{ __('sidebar.tasks_create') }}</a></li>
                                     @endif
                                     @if(in_array('tasks.settings', $all_permission))
-                                        <li id="tasks-settings-menu"><a href="{{ route('tasks.settings') }}">Task Settings</a></li>
+                                        <li id="tasks-settings-menu"><a href="{{ route('tasks.settings') }}">{{ __('sidebar.tasks_settings') }}</a></li>
                                     @endif
                                 </ul>
                             </li>
@@ -1477,15 +1477,15 @@
                             ])->first() : null;
                         @endphp
                         @if($jobs_module_active)
-                            <li><a href="#jobs-module" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-briefcase"></i><span>Job Board</span></a>
+                            <li><a href="#jobs-module" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-briefcase"></i><span>{{ __('sidebar.jobs') }}</span></a>
                                 <ul id="jobs-module" class="collapse list-unstyled ">
-                                    <li id="jobs-list-menu"><a href="{{ route('jobs.index') }}">Job Postings</a></li>
-                                    <li id="jobs-create-menu"><a href="{{ route('jobs.create') }}">Add Job</a></li>
-                                    <li id="jobs-create-intern-menu"><a href="{{ route('jobs.createInternship') }}">Add Internship</a></li>
-                                    <li id="jobs-apps-menu"><a href="{{ route('jobs.applications') }}">All Applications</a></li>
-                                    <li id="jobs-awaiting-menu"><a href="{{ route('jobs.awaiting') }}">Awaiting Approval</a></li>
-                                    <li id="jobs-selected-menu"><a href="{{ route('jobs.selected') }}">Selected</a></li>
-                                    <li id="jobs-rejected-menu"><a href="{{ route('jobs.rejected') }}">Rejected</a></li>
+                                    <li id="jobs-list-menu"><a href="{{ route('jobs.index') }}">{{ __('sidebar.jobs_list') }}</a></li>
+                                    <li id="jobs-create-menu"><a href="{{ route('jobs.create') }}">{{ __('sidebar.jobs_add') }}</a></li>
+                                    <li id="jobs-create-intern-menu"><a href="{{ route('jobs.createInternship') }}">{{ __('sidebar.jobs_add_intern') }}</a></li>
+                                    <li id="jobs-apps-menu"><a href="{{ route('jobs.applications') }}">{{ __('sidebar.jobs_apps') }}</a></li>
+                                    <li id="jobs-awaiting-menu"><a href="{{ route('jobs.awaiting') }}">{{ __('sidebar.jobs_awaiting') }}</a></li>
+                                    <li id="jobs-selected-menu"><a href="{{ route('jobs.selected') }}">{{ __('sidebar.jobs_selected') }}</a></li>
+                                    <li id="jobs-rejected-menu"><a href="{{ route('jobs.rejected') }}">{{ __('sidebar.jobs_rejected') }}</a></li>
                                 </ul>
                             </li>
                         @endif
@@ -1518,18 +1518,18 @@
                                 );
                             @endphp
                             @if($internship_is_supervisor)
-                                <li><a href="#supervisor-module" data-nav-key="internships" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-users"></i><span>Supervisor</span></a>
+                                <li><a href="#supervisor-module" data-nav-key="internships" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-users"></i><span>{{ __('sidebar.supervisor') }}</span></a>
                                     <ul id="supervisor-module" class="collapse list-unstyled ">
-                                        <li id="ip-sup-home"><a href="{{ route('internship.supervisor.dashboard') }}">Home</a></li>
-                                        <li id="ip-my-students"><a href="{{ route('internship.supervisor.students') }}">My Interns</a></li>
-                                        <li id="ip-tasks-sup"><a href="{{ route('internship.tasks') }}">Tasks</a></li>
-                                        <li id="ip-grade-queue"><a href="{{ route('internship.supervisor.index') }}">Grade Queue</a></li>
+                                        <li id="ip-sup-home"><a href="{{ route('internship.supervisor.dashboard') }}">{{ __('sidebar.intern_home') }}</a></li>
+                                        <li id="ip-my-students"><a href="{{ route('internship.supervisor.students') }}">{{ __('sidebar.intern_mine') }}</a></li>
+                                        <li id="ip-tasks-sup"><a href="{{ route('internship.tasks') }}">{{ __('sidebar.intern_tasks') }}</a></li>
+                                        <li id="ip-grade-queue"><a href="{{ route('internship.supervisor.index') }}">{{ __('sidebar.intern_grade') }}</a></li>
                                     </ul>
                                 </li>
                             @elseif($internship_is_admin)
-                                <li id="ip-hub"><a href="{{ route('internship.dashboard') }}" data-nav-key="internships"> <i class="fa fa-graduation-cap"></i><span>Internships</span></a></li>
+                                <li id="ip-hub"><a href="{{ route('internship.dashboard') }}" data-nav-key="internships"> <i class="fa fa-graduation-cap"></i><span>{{ __('sidebar.internships') }}</span></a></li>
                             @else
-                            <li><a href="#internship-module" data-nav-key="internships" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-graduation-cap"></i><span>Internships</span></a>
+                            <li><a href="#internship-module" data-nav-key="internships" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-graduation-cap"></i><span>{{ __('sidebar.internships') }}</span></a>
                                 <ul id="internship-module" class="collapse list-unstyled ">
                                     @if($internship_student_active || in_array($role->id, [1,2]))
                                         <li id="ip-student-dash"><a href="{{ route('internship.student.dashboard') }}">My Placement (student)</a></li>
@@ -1548,7 +1548,7 @@
                             ])->first() : null;
                         @endphp
                         @if($contracts_module_active)
-                            <li><a href="#contracts-module" data-nav-key="contracts" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document-edit"></i><span>Contracts</span></a>
+                            <li><a href="#contracts-module" data-nav-key="contracts" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document-edit"></i><span>{{ __('sidebar.contracts') }}</span></a>
                                 <ul id="contracts-module" class="collapse list-unstyled ">
                                     <li id="contracts-dashboard-menu"><a href="{{ route('contracts.dashboard') }}">Dashboard</a></li>
                                     <li id="contracts-list-menu"><a href="{{ route('contracts.index') }}">Contract List</a></li>
@@ -1571,7 +1571,7 @@
                             ])->first() : null;
                         @endphp
                         @if($courses_module_active)
-                            <li><a href="#courses-module" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-graduation-cap"></i><span>Courses</span></a>
+                            <li><a href="#courses-module" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-graduation-cap"></i><span>{{ __('sidebar.courses') }}</span></a>
                                 <ul id="courses-module" class="collapse list-unstyled ">
                                     <li id="courses-list-menu"><a href="{{ route('courses.index') }}">Course List</a></li>
                                     <li id="courses-create-menu"><a href="{{ route('courses.create') }}">Add Course</a></li>
@@ -1591,21 +1591,21 @@
                             ])->first() : null;
                         @endphp
                         @if($membership_module_active || in_array(strtolower(optional($role)->name), ['admin', 'owner', 'super admin'], true))
-                            <li><a href="#membership-module" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-id-card"></i><span>Membership</span></a>
+                            <li><a href="#membership-module" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-id-card"></i><span>{{ __('sidebar.membership') }}</span></a>
                                 <ul id="membership-module" class="collapse list-unstyled ">
-                                    <li id="membership-dash-menu"><a href="{{ route('membership.admin.dashboard') }}">Dashboard</a></li>
-                                    <li id="membership-apps-menu"><a href="{{ route('membership.admin.applications') }}">Applications</a></li>
-                                    <li id="membership-members-menu"><a href="{{ route('membership.admin.members') }}">Members</a></li>
-                                    <li id="membership-plans-menu"><a href="{{ route('membership.admin.plans') }}">Plans</a></li>
-                                    <li id="membership-promo-menu"><a href="{{ route('membership.admin.promotions') }}">Promotions</a></li>
-                                    <li id="membership-ben-menu"><a href="{{ route('membership.admin.benefits') }}">Benefits</a></li>
-                                    <li id="membership-pay-menu"><a href="{{ route('membership.admin.payments') }}">Payments</a></li>
-                                    <li id="membership-agr-menu"><a href="{{ route('membership.admin.agreements') }}">Agreements</a></li>
-                                    <li id="membership-doc-menu"><a href="{{ route('membership.admin.documents') }}">Documents</a></li>
-                                    <li id="membership-note-menu"><a href="{{ route('membership.admin.notifications') }}">Notifications</a></li>
-                                    <li id="membership-rep-menu"><a href="{{ route('membership.admin.reports') }}">Reports</a></li>
-                                    <li id="membership-audit-menu"><a href="{{ route('membership.admin.audit') }}">Audit</a></li>
-                                    <li id="membership-set-menu"><a href="{{ route('membership.admin.settings') }}">Settings</a></li>
+                                    <li id="membership-dash-menu"><a href="{{ route('membership.admin.dashboard') }}">{{ __('sidebar.members_dashboard') }}</a></li>
+                                    <li id="membership-apps-menu"><a href="{{ route('membership.admin.applications') }}">{{ __('sidebar.members_apps') }}</a></li>
+                                    <li id="membership-members-menu"><a href="{{ route('membership.admin.members') }}">{{ __('sidebar.members_list') }}</a></li>
+                                    <li id="membership-plans-menu"><a href="{{ route('membership.admin.plans') }}">{{ __('sidebar.members_plans') }}</a></li>
+                                    <li id="membership-promo-menu"><a href="{{ route('membership.admin.promotions') }}">{{ __('sidebar.members_promos') }}</a></li>
+                                    <li id="membership-ben-menu"><a href="{{ route('membership.admin.benefits') }}">{{ __('sidebar.members_benefits') }}</a></li>
+                                    <li id="membership-pay-menu"><a href="{{ route('membership.admin.payments') }}">{{ __('sidebar.members_pay') }}</a></li>
+                                    <li id="membership-agr-menu"><a href="{{ route('membership.admin.agreements') }}">{{ __('sidebar.members_agreements') }}</a></li>
+                                    <li id="membership-doc-menu"><a href="{{ route('membership.admin.documents') }}">{{ __('sidebar.members_docs') }}</a></li>
+                                    <li id="membership-note-menu"><a href="{{ route('membership.admin.notifications') }}">{{ __('sidebar.members_notes') }}</a></li>
+                                    <li id="membership-rep-menu"><a href="{{ route('membership.admin.reports') }}">{{ __('sidebar.members_reports') }}</a></li>
+                                    <li id="membership-audit-menu"><a href="{{ route('membership.admin.audit') }}">{{ __('sidebar.members_audit') }}</a></li>
+                                    <li id="membership-set-menu"><a href="{{ route('membership.admin.settings') }}">{{ __('sidebar.members_settings') }}</a></li>
                                 </ul>
                             </li>
                         @endif
@@ -1617,15 +1617,15 @@
                             ])->first() : null;
                         @endphp
                         @if($timesheets_module_active)
-                            <li><a href="#timesheets-module" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-clock"></i><span>TimeSheets (Employee)</span></a>
+                            <li><a href="#timesheets-module" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-clock"></i><span>{{ __('sidebar.timesheets') }}</span></a>
                                 <ul id="timesheets-module" class="collapse list-unstyled ">
-                                    <li id="ts-activities-menu"><a href="{{ route('timesheet.activities') }}">Create Activity</a></li>
-                                    <li id="ts-fill-menu"><a href="{{ route('timesheet.fill') }}">Fill Time Sheet</a></li>
-                                    <li id="ts-week-menu"><a href="{{ route('timesheet.working-week') }}">Working Week</a></li>
+                                    <li id="ts-activities-menu"><a href="{{ route('timesheet.activities') }}">{{ __('sidebar.ts_create') }}</a></li>
+                                    <li id="ts-fill-menu"><a href="{{ route('timesheet.fill') }}">{{ __('sidebar.ts_fill') }}</a></li>
+                                    <li id="ts-week-menu"><a href="{{ route('timesheet.working-week') }}">{{ __('sidebar.ts_week') }}</a></li>
                                 </ul>
                             </li>
                             @if(in_array($role->id, [1, 2]) || in_array('timesheets.admin', $all_permission ?? []) || in_array('timesheets.manage', $all_permission ?? []))
-                            <li><a href="#timesheet-admin-module" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-graph-bar"></i><span>TimeSheet Admin</span></a>
+                            <li><a href="#timesheet-admin-module" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-graph-bar"></i><span>{{ __('sidebar.timesheet-admin') }}</span></a>
                                 <ul id="timesheet-admin-module" class="collapse list-unstyled ">
                                     <li id="tsa-report-menu"><a href="{{ route('timesheet.admin.report') }}">TimeSheet Report</a></li>
                                     <li id="tsa-ot-menu"><a href="{{ route('timesheet.admin.overtime') }}">Overtime Report</a></li>
@@ -1637,14 +1637,14 @@
                         @endif
                         @if(in_array('shops-index', $all_permission))
                             <li>
-                                <a href="#shop" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-building"></i><span>Shops</span><span></a>
+                                <a href="#shop" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-building"></i><span>{{ __('sidebar.shop') }}</span><span></a>
                                 <ul id="shop" class="collapse list-unstyled ">
                                     <li id="shop-list-menu"><a href="{{route('shop.index')}}">Shop Listing</a></li>
                                 </ul>
                             </li>
                         @endif
                         @if(in_array('orders-index', $all_permission))
-                            <li><a href="#order" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document"></i><span>{{trans('file.order')}}</span><span></a>
+                            <li><a href="#order" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document"></i><span>{{ __('sidebar.order') }}</span><span></a>
                                 <ul id="order" class="collapse list-unstyled ">
                                     <li id="order-list-menu"><a href="{{route('order.index')}}">{{trans('file.Order List')}}</a></li>
                                     @if(Auth::user()->role_id != 12 || Auth::user()->can_donation == 1)
@@ -1671,7 +1671,7 @@
                         {{--                        @endif--}}
                         @if(in_array('payments-index', $all_permission))
                             <li>
-                                <a href="#payments" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-dollar"></i><span>Payments</span></a>
+                                <a href="#payments" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-dollar"></i><span>{{ __('sidebar.payments') }}</span></a>
                                 <ul id="payments" class="collapse list-unstyled ">
                                     <li id="payment-index-menu"><a href="{{route('payment.index')}}">Awaiting Payment</a></li>
                                     <li id="desposit-index-menu"><a href="{{route('deposit.index')}}">All Deposits</a></li>
@@ -1696,7 +1696,7 @@
 
                         ?>
                         @if($index_permission_letter_active)
-                            <li><a href="#letter" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-newspaper-o"></i><span>{{trans('file.Letters')}}</span></a>
+                            <li><a href="#letter" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-newspaper-o"></i><span>{{ __('sidebar.letter') }}</span></a>
                                 <ul id="letter" class="collapse list-unstyled ">
                                         <?php
                                         $create_permission_letter = DB::table('permissions')->where('name', 'letter_create')->first();
@@ -1860,7 +1860,7 @@
                             ])->first() : null;
                         @endphp
                         @if($announcements_module_active)
-                            <li><a href="#announcements-module" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-bullhorn"></i><span>Announcements</span></a>
+                            <li><a href="#announcements-module" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-bullhorn"></i><span>{{ __('sidebar.announcements') }}</span></a>
                                 <ul id="announcements-module" class="collapse list-unstyled ">
                                     <li id="announcements-compose-menu"><a href="{{ route('announcements.compose') }}">Compose</a></li>
                                     <li id="announcements-list-menu"><a href="{{ route('announcements.index') }}">All Announcements</a></li>
@@ -1893,7 +1893,7 @@
                         ])->first();
                         ?>
                         @if($index_permission_active)
-                            <li><a href="#expense" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-wallet"></i><span>{{trans('file.Expense')}}</span></a>
+                            <li><a href="#expense" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-wallet"></i><span>{{ __('sidebar.expense') }}</span></a>
                                 <ul id="expense" class="collapse list-unstyled ">
                                     <li id="exp-cat-menu"><a href="{{route('expense_categories.index')}}">{{trans('file.Expense Category')}}</a></li>
                                     @if(Auth::user()->role_id != 7)
@@ -1920,7 +1920,7 @@
                         ])->first();
                         ?>
                         @if($index_permission_active)
-                            <li><a href="#quotation" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document"></i><span>{{trans('file.Quotation')}}</span><span></a>
+                            <li><a href="#quotation" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document"></i><span>{{ __('sidebar.quotation') }}</span><span></a>
                                 <ul id="quotation" class="collapse list-unstyled ">
                                     <li id="quotation-list-menu"><a href="{{route('quotations.index')}}">{{trans('file.Quotation List')}}</a></li>
                                         <?php
@@ -2016,7 +2016,7 @@
                         ])->first();
                         ?>
                         @if($index_permission_active)
-                            <li><a href="#assets" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-home"></i><span>{{trans('file.Fixed Assets')}}</span><span></a>
+                            <li><a href="#assets" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-home"></i><span>{{ __('sidebar.assets') }}</span><span></a>
                                 <ul id="assets" class="collapse list-unstyled ">
                                     @if($asset_index_active)<li id="assets-dashboard-menu"><a href="{{route('asset.dashboard')}}">{{trans('file.Assets Dashboard')}}</a></li>@endif
                                     @if($region_index_active)<li id="region-menu"><a href="{{route('region.index')}}">{{trans('file.Assets Region')}}</a></li>@endif
@@ -2047,7 +2047,7 @@
                         ])->first();
                         ?>
                         @if($index_permission_active)
-                            <li><a href="#transfer" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-export"></i><span>{{trans('file.Transfer')}}</span></a>
+                            <li><a href="#transfer" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-export"></i><span>{{ __('sidebar.transfer') }}</span></a>
                                 <ul id="transfer" class="collapse list-unstyled ">
                                     <li id="transfer-list-menu"><a href="{{route('transfers.index')}}">{{trans('file.Transfer List')}}</a></li>
                                         <?php
@@ -2081,7 +2081,7 @@
                         ])->first();
                         ?>
                         @if($sale_return_index_permission_active || $purchase_return_index_permission_active)
-                            <li><a href="#return" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-return"></i><span>{{trans('file.return')}}</span></a>
+                            <li><a href="#return" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-return"></i><span>{{ __('sidebar.return') }}</span></a>
                                 <ul id="return" class="collapse list-unstyled ">
                                     @if($sale_return_index_permission_active)
                                         <li id="sale-return-menu"><a href="{{route('return-sale.index')}}">{{trans('file.Sale')}}</a></li>
@@ -2129,7 +2129,7 @@
 
                         ?>
                         @if($index_permission_active || $balance_sheet_permission_active || $account_statement_permission_active || $money_transfer_permission_active)
-                            <li class=""><a href="#account" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-briefcase"></i><span>{{trans('file.Accounting')}}</span></a>
+                            <li class=""><a href="#account" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-briefcase"></i><span>{{ __('sidebar.account') }}</span></a>
                                 <ul id="account" class="collapse list-unstyled ">
                                     @if($index_permission_active)
                                         <li id="account-list-menu"><a href="{{route('accounts.index')}}">{{trans('file.Account List')}}</a></li>
@@ -2184,7 +2184,7 @@
                         ?>
                         @if($hrm_active)
                             @if(Auth::user()->role_id != 5)
-                                <li class=""><a href="#hrm" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-user-group"></i><span>HRM</span></a>
+                                <li class=""><a href="#hrm" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-user-group"></i><span>{{ __('sidebar.hrm') }}</span></a>
                                     <ul id="hrm" class="collapse list-unstyled ">
                                         @if($department_active)
                                             <li id="dept-menu"><a href="{{route('departments.index')}}">{{trans('file.Department')}}</a></li>
@@ -2236,7 +2236,7 @@
                         ])->first();
                         ?>
                         @if($user_index_permission_active || $customer_index_permission_active || $biller_index_permission_active || $supplier_index_permission_active)
-                            <li><a href="#people" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-user"></i><span>{{trans('file.People')}}</span></a>
+                            <li><a href="#people" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-user"></i><span>{{ __('sidebar.people') }}</span></a>
                                 <ul id="people" class="collapse list-unstyled ">
 
                                     @if($user_index_permission_active)
@@ -2393,7 +2393,7 @@
                                 ['role_id', $role->id] ])->first();
                         ?>
                         @if($JE_active ||$average_sale_active || $profit_loss_active || $best_seller_active || $warehouse_report_active || $warehouse_stock_report_active || $product_report_active || $daily_sale_active || $monthly_sale_active || $daily_purchase_active || $monthly_purchase_active || $purchase_report_active || $sale_report_active || $payment_report_active || $product_qty_alert_active || $user_report_active || $customer_report_active || $supplier_report_active || $due_report_active)
-                            <li><a href="#report" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document-remove"></i><span>{{trans('file.Reports')}}</span></a>
+                            <li><a href="#report" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document-remove"></i><span>{{ __('sidebar.report') }}</span></a>
                                 <ul id="report" class="collapse list-unstyled ">
                                     @if($profit_loss_active)
                                         <li id="profit-loss-report-menu">
@@ -2529,7 +2529,7 @@
                             </li>
                         @endif
 
-                        <li><a href="{{ route('setting.general') }}" data-nav-key="setting"> <i class="dripicons-gear"></i><span>{{trans('file.settings')}}</span></a>
+                        <li><a href="{{ route('setting.general') }}" data-nav-key="setting"> <i class="dripicons-gear"></i><span>{{ __('sidebar.setting') }}</span></a>
                             <ul id="setting" class="collapse list-unstyled ">
                                 <?php
                                 $send_notification_permission = DB::table('permissions')->where('name', 'send_notification')->first();
@@ -2676,20 +2676,20 @@
                                 @endif
                             </ul>
                         </li>
-                            <li><a href="#help-module" data-nav-key="help" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-question"></i><span>Help</span></a>
+                            <li><a href="#help-module" data-nav-key="help" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-question"></i><span>{{ __('sidebar.help') }}</span></a>
                                 <ul id="help-module" class="collapse list-unstyled ">
-                                    <li id="help-guide-menu"><a href="{{ route('help.index') }}">User Guide</a></li>
-                                    <li id="help-website-menu"><a href="{{ route('help.index') }}#website">Public website</a></li>
-                                    <li id="help-products-menu"><a href="{{ route('help.index') }}#products">Products &amp; cafe</a></li>
-                                    <li id="help-pos-menu"><a href="{{ route('help.index') }}#pos">POS &amp; sales</a></li>
-                                    <li id="help-rental-menu"><a href="{{ route('help.index') }}#rental">Rental</a></li>
-                                    <li id="help-quote-menu"><a href="{{ route('help.index') }}#quotations">Quotations</a></li>
-                                    <li id="help-contracts-menu"><a href="{{ route('help.index') }}#contracts">Contracts</a></li>
-                                    <li id="help-members-menu"><a href="{{ route('help.index') }}#members">Membership</a></li>
-                                    <li id="help-expense-menu"><a href="{{ route('help.index') }}#expenses">Expenses</a></li>
-                                    <li id="help-orders-menu"><a href="{{ route('help.index') }}#orders">Online orders</a></li>
-                                    <li id="help-assets-menu"><a href="{{ route('help.index') }}#assets">Fixed assets</a></li>
-                                    <li id="help-content-menu"><a href="{{ route('help.index') }}#content">Site Content</a></li>
+                                    <li id="help-guide-menu"><a href="{{ route('help.index') }}">{{ __('sidebar.help_guide') }}</a></li>
+                                    <li id="help-website-menu"><a href="{{ route('help.index') }}#website">{{ __('sidebar.help_website') }}</a></li>
+                                    <li id="help-products-menu"><a href="{{ route('help.index') }}#products">{{ __('sidebar.help_products') }}</a></li>
+                                    <li id="help-pos-menu"><a href="{{ route('help.index') }}#pos">{{ __('sidebar.help_pos') }}</a></li>
+                                    <li id="help-rental-menu"><a href="{{ route('help.index') }}#rental">{{ __('sidebar.help_rental') }}</a></li>
+                                    <li id="help-quote-menu"><a href="{{ route('help.index') }}#quotations">{{ __('sidebar.help_quote') }}</a></li>
+                                    <li id="help-contracts-menu"><a href="{{ route('help.index') }}#contracts">{{ __('sidebar.help_contracts') }}</a></li>
+                                    <li id="help-members-menu"><a href="{{ route('help.index') }}#members">{{ __('sidebar.help_members') }}</a></li>
+                                    <li id="help-expense-menu"><a href="{{ route('help.index') }}#expenses">{{ __('sidebar.help_expense') }}</a></li>
+                                    <li id="help-orders-menu"><a href="{{ route('help.index') }}#orders">{{ __('sidebar.help_orders') }}</a></li>
+                                    <li id="help-assets-menu"><a href="{{ route('help.index') }}#assets">{{ __('sidebar.help_assets') }}</a></li>
+                                    <li id="help-content-menu"><a href="{{ route('help.index') }}#content">{{ __('sidebar.help_content') }}</a></li>
                                 </ul>
                             </li>
                     </ul>

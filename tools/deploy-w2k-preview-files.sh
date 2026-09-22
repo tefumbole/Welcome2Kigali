@@ -203,6 +203,7 @@ FILES=(
   resources/views/beyond/layout.blade.php
   resources/views/beyond/home.blade.php
   resources/views/beyond/about.blade.php
+  resources/views/beyond/partials/hero.blade.php
   resources/views/beyond/contact.blade.php
   resources/views/beyond/menu.blade.php
   resources/views/beyond/menu-qr.blade.php
@@ -234,6 +235,11 @@ FILES=(
   resources/views/booking/invoice.blade.php
   resources/views/sale/invoice.blade.php
   resources/lang/en/file.php
+  resources/lang/fr/file.php
+  resources/lang/rw/file.php
+  resources/lang/en/sidebar.php
+  resources/lang/fr/sidebar.php
+  resources/lang/rw/sidebar.php
   resources/views/pdf/booking_pdf.blade.php
   resources/views/pdf/rent_pdf.blade.php
   resources/views/pdf/sale_pdf.blade.php

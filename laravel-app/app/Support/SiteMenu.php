@@ -23,46 +23,56 @@ class SiteMenu
         ];
     }
 
-    /** Admin sidebar top-level items: key => label (default order). Keys match
-     *  the sidebar collapse targets (#product, #purchase, ...). */
-    public static function sideItems()
+    /** English fallbacks used to detect unsaved / stock labels. */
+    public static function sideItemsEnglish()
     {
         return [
-            'dashboard'    => 'Dashboard',
-            'site-content' => 'Site Content',
-            'leaders'      => 'About Us Leaders',
-            'invitations'  => 'Digital Invitations',
-            'internships'  => 'Internships',
-            'product'      => 'Product',
-            'purchase'     => 'Purchase',
-            'sale'         => 'Sale',
-            'booking'      => 'Rental Module',
-            'events'       => 'Events',
-            'tasks'        => 'Task Manager',
-            'jobs'         => 'Job Board',
-            'contracts'    => 'Contracts',
-            'permissions'  => 'Permissions',
-            'announcements'=> 'Announcements',
-            'courses'      => 'Courses',
-            'membership'   => 'Membership',
-            'timesheets'   => 'TimeSheets (Employee)',
+            'dashboard'       => 'Dashboard',
+            'site-content'    => 'Site Content',
+            'leaders'         => 'About Us Leaders',
+            'invitations'     => 'Digital Invitations',
+            'internships'     => 'Internships',
+            'product'         => 'Product',
+            'purchase'        => 'Purchase',
+            'sale'            => 'Sale',
+            'booking'         => 'Rental Module',
+            'events'          => 'Events',
+            'tasks'           => 'Task Manager',
+            'jobs'            => 'Job Board',
+            'contracts'       => 'Contracts',
+            'permissions'     => 'Permissions',
+            'announcements'   => 'Announcements',
+            'courses'         => 'Courses',
+            'membership'      => 'Membership',
+            'timesheets'      => 'TimeSheets (Employee)',
             'timesheet-admin' => 'TimeSheet Admin',
-            'shop'         => 'Shops',
-            'order'        => 'Online Order',
-            'payments'     => 'Payments',
-            'letter'       => 'Letters',
-            'expense'      => 'Expense',
-            'quotation'    => 'Quotation',
-            'assets'       => 'Fixed Assets',
-            'transfer'     => 'Transfer',
-            'return'       => 'Return',
-            'account'      => 'Accounting',
-            'hrm'          => 'HRM',
-            'people'       => 'People',
-            'report'       => 'Reports',
-            'setting'      => 'Settings',
-            'help'         => 'Help',
+            'shop'            => 'Shops',
+            'order'           => 'Online Order',
+            'payments'        => 'Payments',
+            'letter'          => 'Letters',
+            'expense'         => 'Expense',
+            'quotation'       => 'Quotation',
+            'assets'          => 'Fixed Assets',
+            'transfer'        => 'Transfer',
+            'return'          => 'Return',
+            'account'         => 'Accounting',
+            'hrm'             => 'HRM',
+            'people'          => 'People',
+            'report'          => 'Reports',
+            'setting'         => 'Settings',
+            'help'            => 'Help',
         ];
+    }
+
+    /** Admin sidebar top-level items: key => label in the active locale. */
+    public static function sideItems()
+    {
+        $out = [];
+        foreach (array_keys(self::sideItemsEnglish()) as $k) {
+            $out[$k] = __('sidebar.'.$k);
+        }
+
+        return $out;
     }
 
     /**
@@ -116,9 +126,14 @@ class SiteMenu
         if (! is_array($saved)) {
             $saved = [];
         }
+        $english = $settingKey === 'side_menu_labels' ? self::sideItemsEnglish() : [];
         $out = [];
         foreach ($defaults as $k => $label) {
             $custom = isset($saved[$k]) ? trim((string) $saved[$k]) : '';
+            $stock = isset($english[$k]) ? $english[$k] : '';
+            if ($custom !== '' && $stock !== '' && strcasecmp($custom, $stock) === 0) {
+                $custom = '';
+            }
             $out[$k] = $custom !== '' ? $custom : $label;
         }
 
