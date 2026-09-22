@@ -517,13 +517,15 @@ class RentalContractController extends Controller
 
         $controller = app(self::class);
         $link = url('rental-agreement/' . $contract->signature_token);
-        $msg = WhatsAppMessage::signatureRequest(
-            $customer->name,
-            $booking->reference_no,
-            $link,
-            null,
-            $contract->contract_type
-        );
+        $msg = WhatsAppMessage::forRecipient($customer, function () use ($customer, $booking, $link, $contract) {
+            return WhatsAppMessage::signatureRequest(
+                $customer->name,
+                $booking->reference_no,
+                $link,
+                null,
+                $contract->contract_type
+            );
+        });
 
         $controller->sendWhatsAppToCustomer($customer, $msg);
         $controller->notifyAwaitingSignature($booking);
@@ -577,7 +579,9 @@ class RentalContractController extends Controller
             try {
                 $this->sendWhatsAppToCustomer(
                     $customer,
-                    WhatsAppMessage::clientSignedPendingReview($customerName, $booking->reference_no, $reviewUrl)
+                    WhatsAppMessage::forRecipient($customer, function () use ($customerName, $booking, $reviewUrl) {
+                        return WhatsAppMessage::clientSignedPendingReview($customerName, $booking->reference_no, $reviewUrl);
+                    })
                 );
                 $this->sendWhatsAppDocumentToCustomer(
                     $customer,
@@ -650,13 +654,15 @@ class RentalContractController extends Controller
         $scanUrl = url('rental/scan/' . $contract->qr_token);
         $portalUrl = url('rental-portal/' . $contract->signature_token);
 
-        $clientMsg = WhatsAppMessage::contractApprovedClient(
-            $customer->name,
-            $booking->reference_no,
-            $portalUrl,
-            $contract->client_username,
-            $contract->generated_password
-        );
+        $clientMsg = WhatsAppMessage::forRecipient($customer, function () use ($customer, $booking, $portalUrl, $contract) {
+            return WhatsAppMessage::contractApprovedClient(
+                $customer->name,
+                $booking->reference_no,
+                $portalUrl,
+                $contract->client_username,
+                $contract->generated_password
+            );
+        });
 
         $this->sendWhatsAppToCustomer($customer, $clientMsg);
         $this->sendWhatsAppDocumentToCustomer($customer, $signedPdfPath, 'signed_rental_agreement.pdf', $signedPdfUrl);

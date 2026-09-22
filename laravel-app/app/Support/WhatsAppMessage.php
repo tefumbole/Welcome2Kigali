@@ -32,6 +32,11 @@ class WhatsAppMessage
         }
     }
 
+    public static function forRecipient($recipient, callable $callback)
+    {
+        return self::withLocale(VisitorLocale::from($recipient), $callback);
+    }
+
     public static function t($key, $replace = [])
     {
         return trans('whatsapp.'.$key, $replace, self::locale());

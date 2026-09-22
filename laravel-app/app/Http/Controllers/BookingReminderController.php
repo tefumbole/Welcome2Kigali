@@ -80,12 +80,14 @@ class BookingReminderController extends Controller
             }
 
             try {
-                $msg = WhatsAppMessage::bookingScheduledReminder(
-                    $customer->name,
-                    $booking->reference_no,
-                    $reminder->remind_at->format('d M Y, H:i'),
-                    $reminder->message
-                );
+                $msg = WhatsAppMessage::forRecipient($customer, function () use ($customer, $booking, $reminder) {
+                    return WhatsAppMessage::bookingScheduledReminder(
+                        $customer->name,
+                        $booking->reference_no,
+                        $reminder->remind_at->format('d M Y, H:i'),
+                        $reminder->message
+                    );
+                });
                 $controller->sendWhatsAppToCustomer($customer, $msg);
                 $reminder->update(['sent_at' => now()]);
             } catch (\Exception $e) {

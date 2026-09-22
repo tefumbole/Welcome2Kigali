@@ -232,7 +232,7 @@ class MembershipService
             if ($application->company_name) {
                 $customer->company_name = $application->company_name;
             }
-            if ($application->preferred_locale && empty($customer->preferred_locale) && \App\Support\SchemaColumns::has('customers', 'preferred_locale')) {
+            if ($application->preferred_locale && \App\Support\SchemaColumns::has('customers', 'preferred_locale')) {
                 $customer->preferred_locale = $application->preferred_locale;
             }
             $customer->save();

@@ -159,6 +159,7 @@ class BeyondAuthController extends Controller
         }
 
         Auth::guard('beyond')->login($user);
+        \App\Support\VisitorLocale::syncAfterLogin(null, $user);
         $request->session()->put('beyond_masked_phone', $this->whatsapp->maskPhone($phone));
 
         if ($this->auth->shouldSkipOtp()) {

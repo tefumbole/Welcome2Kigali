@@ -17,7 +17,7 @@ class BeyondUser extends Authenticatable
 
     protected $fillable = [
         'id', 'email', 'username', 'password_hash', 'name', 'role', 'status',
-        'phone', 'address', 'must_change_credentials',
+        'phone', 'address', 'must_change_credentials', 'preferred_locale',
     ];
 
     protected $hidden = ['password_hash'];

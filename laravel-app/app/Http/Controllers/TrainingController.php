@@ -79,10 +79,15 @@ class TrainingController extends Controller
             return;
         }
 
-        $message = \App\Support\WhatsAppMessage::trainingRegistration(
-            $registration->client_name,
-            $registration->reference_number,
-            $registration->course_names
+        $message = \App\Support\WhatsAppMessage::withLocale(
+            \App\Support\VisitorLocale::forContact($registration->client_phone, $registration->client_email ?? null),
+            function () use ($registration) {
+                return \App\Support\WhatsAppMessage::trainingRegistration(
+                    $registration->client_name,
+                    $registration->reference_number,
+                    $registration->course_names
+                );
+            }
         );
 
         $this->whatsapp->sendText($registration->client_phone, $message);

@@ -3,6 +3,11 @@
 <head>
     <meta charset="utf-8">
     <title>{{ $general_setting->site_title }}</title>
+    @php
+        $letterhead_flow = true;
+        $use_system_letterhead = true;
+        $letterhead = \App\Support\Letterhead::ensureSynced();
+    @endphp
     @include('pdf.partials._letter_branded_styles')
 </head>
 <body>
@@ -14,12 +19,6 @@
         $user_class = \App\Employee::class;
     }
 @endphp
-
-@if($general_setting->invoice_format != 'beyond_a4' && !empty($general_setting->site_logo))
-    <div style="text-align:right;margin-bottom:10px;">
-        <img src="{{ public_path('logo/') . $general_setting->site_logo }}" height="80" alt="">
-    </div>
-@endif
 
 @php
     $data->rendered_header = isset($data->rendered_header) ? $data->rendered_header : $data->header;

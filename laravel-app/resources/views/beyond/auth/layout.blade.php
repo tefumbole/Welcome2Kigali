@@ -9,21 +9,23 @@
         0%, 100% {
             box-shadow:
                 0 0 0 3px #C5A059,
-                0 0 0 6px rgba(10, 10, 10, 0.35),
-                0 0 22px rgba(197, 160, 89, 0.55);
+                0 0 0 6px rgba(197, 160, 89, 0.28),
+                0 0 22px rgba(197, 160, 89, 0.45);
         }
         50% {
             box-shadow:
                 0 0 0 3px #E8C56B,
-                0 0 0 7px rgba(10, 10, 10, 0.2),
-                0 0 32px rgba(232, 197, 107, 0.7);
+                0 0 0 7px rgba(232, 197, 107, 0.35),
+                0 0 32px rgba(232, 197, 107, 0.6);
         }
     }
     .beyond-logo-spin-wrap {
-        width: 6.5rem;
-        height: 6.5rem;
+        width: 7rem;
+        height: 7rem;
+        padding: 7px;
+        box-sizing: border-box;
         border-radius: 9999px;
-        background: #0A0A0A;
+        background: #ffffff;
         border: 3px solid #C5A059;
         display: flex;
         align-items: center;
@@ -31,9 +33,10 @@
         animation: beyondLogoGlow 2.8s ease-in-out infinite;
     }
     .beyond-logo-spin {
-        width: 5.75rem;
-        height: 5.75rem;
+        width: 122%;
+        height: 122%;
         border-radius: 9999px;
+        background: transparent;
         object-fit: contain;
         animation: beyondLogoSpin 6s linear infinite;
     }

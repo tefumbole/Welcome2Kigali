@@ -8,13 +8,13 @@
 @push('head')
 <style>
     body.home-landing {
-        background-color: #050505;
+        background-color: #6c9dd7;
         height: 100dvh;
         overflow: hidden;
     }
     body.home-landing .landing-hero--fullpage {
         position: relative;
-        background-color: #050505;
+        background-color: #6c9dd7;
         background-image: none;
     }
     body.home-landing .landing-hero-art {
@@ -30,7 +30,7 @@
         -webkit-user-drag: none;
     }
     body.home-landing .landing-hero-actions {
-        background: linear-gradient(to top, rgba(5,5,5,.55), transparent 75%);
+        background: linear-gradient(to top, rgba(10, 10, 10, .28), transparent 72%);
     }
     body.home-landing .landing-hero-actions a {
         box-sizing: border-box;
@@ -91,7 +91,7 @@
          srcset="{{ \App\Support\SiteBrand::landingUrl('1x') }} 1024w, {{ \App\Support\SiteBrand::landingUrl('2x') }} 2048w"
          sizes="100vw"
          width="2048"
-         height="960"
+         height="1142"
          alt="{{ \App\Support\SiteBrand::siteTitle($general_setting ?? null) }}"
          decoding="async"
          fetchpriority="high">

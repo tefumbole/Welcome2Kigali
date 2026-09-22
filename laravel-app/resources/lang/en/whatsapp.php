@@ -86,4 +86,6 @@ return [
     'order_update_intro' => 'Your order status has been updated to *:status*.',
     'order_status' => 'Status',
     'order_address' => 'Address',
+    'document_attached' => 'DOCUMENT ATTACHED',
+    'document_please_find' => "Please find your *:file* attached.\n",
 ];

@@ -15,10 +15,7 @@ class LanguageController extends Controller
             $locale = 'en';
         }
 
-        setcookie('language', $locale, time() + (86400 * 365), '/');
-        if (function_exists('session')) {
-            session(['language' => $locale]);
-        }
+        \App\Support\VisitorLocale::persistChoice($locale);
 
         $back = url()->previous();
         if (! $back || $back === url()->current()) {

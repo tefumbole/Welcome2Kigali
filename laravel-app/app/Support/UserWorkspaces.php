@@ -356,6 +356,7 @@ class UserWorkspaces
         }
         try {
             Auth::guard('beyond')->login($beyond, false);
+            VisitorLocale::syncAfterLogin($erpUser, $beyond);
         } catch (\Throwable $e) {
             \Log::warning('bridgeBeyond login skipped: '.$e->getMessage());
 

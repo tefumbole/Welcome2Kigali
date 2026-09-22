@@ -86,4 +86,6 @@ return [
     'order_update_intro' => 'Le statut de votre commande est maintenant *:status*.',
     'order_status' => 'Statut',
     'order_address' => 'Adresse',
+    'document_attached' => 'DOCUMENT JOINT',
+    'document_please_find' => "Veuillez trouver ci-joint *:file*.\n",
 ];

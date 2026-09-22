@@ -82,13 +82,20 @@
         <br>
     @endforeach
 @endif
-{{--@if($general_setting->invoice_format != 'beyond_a4')--}}
+@php
+    $letterhead = \App\Support\Letterhead::resolve($general_setting ?? null);
+    $siteTitle = trim((string) ($general_setting->site_title ?? ''));
+@endphp
+@if(! empty($letterhead['header_url']))
+    <img src="{{ $letterhead['header_url'] }}" alt="{{ $siteTitle }}" style="width:100%;max-height:110px;object-fit:contain;display:block;margin:0 0 8px;">
+@elseif(! empty($general_setting->site_logo))
     <div class="align-items-center-logo">
-        @if($general_setting->site_logo)
-            <img src="{{url('public/logo/', $general_setting->site_logo)}}" height="150" width="150" style="margin:10px 0;">
-        @endif
+        <img src="{{ url('public/logo/', $general_setting->site_logo) }}" height="80" alt="{{ $siteTitle }}" style="margin:10px 0;">
     </div>
-{{--@endif--}}
+@endif
+@if($siteTitle !== '')
+    <div style="text-align:center;font-weight:700;font-size:18px;color:#0A0A0A;margin:0 0 16px;">{{ $siteTitle }}</div>
+@endif
 
 @php
     use App\Support\LetterSignature;
@@ -211,4 +218,7 @@
 </div>
 @if($data->comment)
     <p class="small text-muted mt-2">Internal comment: {{ $data->comment }}</p>
+@endif
+@if(! empty($letterhead['footer_url']))
+    <img src="{{ $letterhead['footer_url'] }}" alt="" style="width:100%;max-height:80px;object-fit:contain;display:block;margin:18px 0 0;">
 @endif

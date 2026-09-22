@@ -399,9 +399,11 @@ class QuotationController extends Controller
         $message = 'Quotation created successfully';
         if($lims_quotation_data->quotation_status == Quotation::STATUS_AWAITING && !empty($mail_data['email'])){
             try{
-                Mail::send( 'mail.quotation_details', $mail_data, function( $message ) use ($mail_data)
-                {
-                    $message->to( $mail_data['email'] )->subject( 'Quotation Details' );
+                \App\Support\VisitorLocale::using(\App\Support\VisitorLocale::from($lims_customer_data), function () use ($mail_data) {
+                    Mail::send( 'mail.quotation_details', $mail_data, function( $message ) use ($mail_data)
+                    {
+                        $message->to( $mail_data['email'] )->subject( __('mail.quotation_details') );
+                    });
                 });
             }
             catch(\Exception $e){
@@ -480,9 +482,11 @@ class QuotationController extends Controller
                 $mail_data['total'][$key] = $product_quotation_data->total;
             }
             try{
-                Mail::send( 'mail.quotation_details', $mail_data, function( $message ) use ($mail_data)
-                {
-                    $message->to( $mail_data['email'] )->subject( 'Quotation Details' );
+                \App\Support\VisitorLocale::using(\App\Support\VisitorLocale::from($lims_customer_data), function () use ($mail_data) {
+                    Mail::send( 'mail.quotation_details', $mail_data, function( $message ) use ($mail_data)
+                    {
+                        $message->to( $mail_data['email'] )->subject( __('mail.quotation_details') );
+                    });
                 });
                 $message = 'Mail sent successfully';
                 // Never downgrade a quotation the client already approved or rejected;
@@ -579,13 +583,15 @@ class QuotationController extends Controller
         $products = $this->quotationWhatsAppProducts($lims_quotation_data, $mail_data);
         $pricing = $this->quotationWhatsAppPricing($lims_quotation_data, $mail_data);
 
-        $msg = WhatsAppMessage::quotationApprovalRequest(
-            $lims_customer_data->name,
-            $lims_quotation_data->reference_no,
-            number_format((float) $lims_quotation_data->grand_total, 2),
-            $approvalUrl,
-            array_merge($pricing, ['products' => $products])
-        );
+        $msg = WhatsAppMessage::forRecipient($lims_customer_data, function () use ($lims_customer_data, $lims_quotation_data, $approvalUrl, $pricing, $products) {
+            return WhatsAppMessage::quotationApprovalRequest(
+                $lims_customer_data->name,
+                $lims_quotation_data->reference_no,
+                number_format((float) $lims_quotation_data->grand_total, 2),
+                $approvalUrl,
+                array_merge($pricing, ['products' => $products])
+            );
+        });
 
         $message = 'Quotation sent for client signature via WhatsApp. PDF will be delivered after the client signs.';
         try{
@@ -641,9 +647,11 @@ class QuotationController extends Controller
             return 'Quotation saved, but customer phone is missing so the PDF was not sent.';
         }
 
-        $text = $context === 'no_signature'
-            ? WhatsAppMessage::quotationNoSignaturePdf($customer->name, $quotation->reference_no, $quotation->grand_total)
-            : WhatsAppMessage::quotationSignedPdf($customer->name, $quotation->reference_no, $quotation->grand_total);
+        $text = WhatsAppMessage::forRecipient($customer, function () use ($customer, $quotation, $context) {
+            return $context === 'no_signature'
+                ? WhatsAppMessage::quotationNoSignaturePdf($customer->name, $quotation->reference_no, $quotation->grand_total)
+                : WhatsAppMessage::quotationSignedPdf($customer->name, $quotation->reference_no, $quotation->grand_total);
+        });
 
         try {
             $this->wpMessage($customer->phone_number, $text);
@@ -754,6 +762,7 @@ class QuotationController extends Controller
             $recipients[] = [
                 'phone' => $cc->phone_number,
                 'name' => $cc->name,
+                'recipient' => $cc,
             ];
         }
 
@@ -766,18 +775,23 @@ class QuotationController extends Controller
             }
             $seen[$digits] = true;
             try {
-                $msg = WhatsAppMessage::quotationStakeholderNotify(
-                    $recipient['name'],
-                    $event,
-                    $quotation->reference_no,
-                    $customerName,
-                    $grandTotal,
-                    $comment,
-                    $lines,
-                    $approvalUrl,
-                    $listUrl,
-                    $pricing
-                );
+                $buildStakeholder = function () use ($recipient, $event, $quotation, $customerName, $grandTotal, $comment, $lines, $approvalUrl, $listUrl, $pricing) {
+                    return WhatsAppMessage::quotationStakeholderNotify(
+                        $recipient['name'],
+                        $event,
+                        $quotation->reference_no,
+                        $customerName,
+                        $grandTotal,
+                        $comment,
+                        $lines,
+                        $approvalUrl,
+                        $listUrl,
+                        $pricing
+                    );
+                };
+                $msg = ! empty($recipient['recipient'])
+                    ? WhatsAppMessage::forRecipient($recipient['recipient'], $buildStakeholder)
+                    : $buildStakeholder();
                 $this->wpMessage($recipient['phone'], $msg);
             } catch (\Throwable $e) {
                 \Log::warning('Quotation stakeholder notify failed: '.$e->getMessage());
@@ -1313,9 +1327,11 @@ class QuotationController extends Controller
 
         if($lims_quotation_data->quotation_status == Quotation::STATUS_AWAITING && !empty($mail_data['email'])){
             try{
-                Mail::send( 'mail.quotation_details', $mail_data, function( $message ) use ($mail_data)
-                {
-                    $message->to( $mail_data['email'] )->subject( 'Quotation Details' );
+                \App\Support\VisitorLocale::using(\App\Support\VisitorLocale::from($lims_customer_data), function () use ($mail_data) {
+                    Mail::send( 'mail.quotation_details', $mail_data, function( $message ) use ($mail_data)
+                    {
+                        $message->to( $mail_data['email'] )->subject( __('mail.quotation_details') );
+                    });
                 });
             }
             catch(\Exception $e){

@@ -168,6 +168,7 @@ class PublicPermissionController extends Controller
                 list($user, $tempPassword) = $this->createPortalUser($data, $phone);
             }
             Auth::guard('beyond')->login($user);
+            \App\Support\VisitorLocale::syncAfterLogin(null, $user);
             $request->session()->put('beyond_otp_verified', true);
             $permission = $this->createPermission($user, $data, $phone);
             $this->notifyPermission($permission, $created ? $tempPassword : null);
@@ -220,6 +221,7 @@ class PublicPermissionController extends Controller
         }
 
         Auth::guard('beyond')->login($user);
+        \App\Support\VisitorLocale::syncAfterLogin(null, $user);
         $request->session()->put('beyond_otp_verified', true);
         $request->session()->put('beyond_masked_phone', $this->whatsapp->maskPhone($phone));
 

@@ -86,4 +86,6 @@ return [
     'order_update_intro' => 'Imiterere y’igitumanwa cyawe yahindutse ikaba *:status*.',
     'order_status' => 'Imiterere',
     'order_address' => 'Aderesi',
+    'document_attached' => 'INYANDIKO YOMBIWE',
+    'document_please_find' => "Dore *:file* yawe yoherejwe.\n",
 ];

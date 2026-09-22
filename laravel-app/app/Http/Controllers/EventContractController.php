@@ -78,11 +78,13 @@ class EventContractController extends Controller
 
         if ($phone) {
             try {
-                $msg = \App\Support\WhatsAppMessage::eventContractSignRequest(
-                    optional($profile)->name ?: optional(optional($profile)->customer)->name,
-                    $contract->event->name,
-                    $url
-                );
+                $msg = \App\Support\WhatsAppMessage::forRecipient(optional($profile)->customer ?: $profile, function () use ($profile, $contract, $url) {
+                    return \App\Support\WhatsAppMessage::eventContractSignRequest(
+                        optional($profile)->name ?: optional(optional($profile)->customer)->name,
+                        $contract->event->name,
+                        $url
+                    );
+                });
                 $this->sendWhatsAppToPhone($phone, $msg);
             } catch (\Exception $e) {
                 Log::warning('Contract send WhatsApp failed: ' . $e->getMessage());
@@ -121,10 +123,12 @@ class EventContractController extends Controller
             try {
                 $this->sendWhatsAppToPhone(
                     $phone,
-                    \App\Support\WhatsAppMessage::eventContractApproved(
-                        optional($profile)->name ?: optional(optional($profile)->customer)->name,
-                        $contract->reference_no
-                    )
+                    \App\Support\WhatsAppMessage::forRecipient(optional($profile)->customer ?: $profile, function () use ($profile, $contract) {
+                        return \App\Support\WhatsAppMessage::eventContractApproved(
+                            optional($profile)->name ?: optional(optional($profile)->customer)->name,
+                            $contract->reference_no
+                        );
+                    })
                 );
                 $this->sendWhatsAppDocumentToPhone(
                     $phone,

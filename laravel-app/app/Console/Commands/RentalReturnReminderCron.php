@@ -37,12 +37,14 @@ class RentalReturnReminderCron extends Command
             $productName = optional($line->product)->name ?? 'Equipment';
             $returnAt = Carbon::parse($line->end)->format('d M Y, H:i');
 
-            $msg = \App\Support\WhatsAppMessage::rentalReturnReminder(
-                $customer->name,
-                $productName,
-                $returnAt,
-                optional($line->booking)->reference_no
-            );
+            $msg = \App\Support\WhatsAppMessage::forRecipient($customer, function () use ($customer, $productName, $returnAt, $line) {
+                return \App\Support\WhatsAppMessage::rentalReturnReminder(
+                    $customer->name,
+                    $productName,
+                    $returnAt,
+                    optional($line->booking)->reference_no
+                );
+            });
 
             try {
                 $controller->wpMessage($customer->phone_number, $msg);
@@ -73,14 +75,16 @@ class RentalReturnReminderCron extends Command
             $returnAt = Carbon::parse($line->end)->format('d M Y, H:i');
             $dailyRate = number_format((float) $line->net_unit_price, 2);
 
-            $msg = \App\Support\WhatsAppMessage::lateReturnNotice(
-                $customer->name,
-                $company,
-                $productName,
-                $returnAt,
-                optional($line->booking)->reference_no,
-                $dailyRate
-            );
+            $msg = \App\Support\WhatsAppMessage::forRecipient($customer, function () use ($customer, $company, $productName, $returnAt, $line, $dailyRate) {
+                return \App\Support\WhatsAppMessage::lateReturnNotice(
+                    $customer->name,
+                    $company,
+                    $productName,
+                    $returnAt,
+                    optional($line->booking)->reference_no,
+                    $dailyRate
+                );
+            });
 
             try {
                 $controller->wpMessage($customer->phone_number, $msg);

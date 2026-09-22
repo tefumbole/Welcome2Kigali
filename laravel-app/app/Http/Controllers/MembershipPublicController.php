@@ -304,6 +304,7 @@ class MembershipPublicController extends Controller
         $existing = $auth->findByPhone($phone);
         if ($existing) {
             Auth::guard('beyond')->login($existing);
+            \App\Support\VisitorLocale::syncAfterLogin(null, $existing);
 
             return $existing;
         }
@@ -335,6 +336,7 @@ class MembershipPublicController extends Controller
         ]);
         $auth->syncProfile($user);
         Auth::guard('beyond')->login($user);
+        \App\Support\VisitorLocale::syncAfterLogin(null, $user);
 
         return $user;
     }

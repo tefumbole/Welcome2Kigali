@@ -182,11 +182,13 @@ class DeliveryController extends Controller
 
         try {
             $path = $this->buildDeliveryPdfPath($delivery);
-            $caption = WhatsAppMessage::deliverySignedDocument(
-                $customer->name,
-                $delivery->reference_no,
-                optional($sale)->reference_no
-            );
+            $caption = WhatsAppMessage::forRecipient($customer, function () use ($customer, $delivery, $sale) {
+                return WhatsAppMessage::deliverySignedDocument(
+                    $customer->name,
+                    $delivery->reference_no,
+                    optional($sale)->reference_no
+                );
+            });
             $this->wpMessage($customer->phone_number, $caption);
             $this->wpPDFMessage($path, $customer, $delivery->reference_no.'.pdf');
             $message = 'Signed delivery sent via WhatsApp.';
@@ -385,12 +387,14 @@ class DeliveryController extends Controller
             throw new \RuntimeException('Receiver phone number is required to send the signature link.');
         }
 
-        $msg = WhatsAppMessage::deliverySignatureRequest(
-            $customer->name,
-            $delivery->reference_no,
-            optional($sale)->reference_no,
-            $delivery->signatureUrl()
-        );
+        $msg = WhatsAppMessage::forRecipient($customer, function () use ($customer, $delivery, $sale) {
+            return WhatsAppMessage::deliverySignatureRequest(
+                $customer->name,
+                $delivery->reference_no,
+                optional($sale)->reference_no,
+                $delivery->signatureUrl()
+            );
+        });
         $this->wpMessage($customer->phone_number, $msg);
     }
 

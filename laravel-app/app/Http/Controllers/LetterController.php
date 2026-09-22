@@ -1085,16 +1085,18 @@ class LetterController extends Controller
 
         $message = 'Letter notification sent successfully';
         try{
-            Mail::send( 'mail.letter_details', $data, function( $message ) use ($data)
-            {
-                $message->to($data['mail'])->subject($data['subject']);
-                if (! empty($data['cc_emails'])) {
-                    $message->cc($data['cc_emails']);
-                }
+            \App\Support\VisitorLocale::using(\App\Support\VisitorLocale::from($lims_customer_data), function () use ($data) {
+                Mail::send( 'mail.letter_details', $data, function( $message ) use ($data)
+                {
+                    $message->to($data['mail'])->subject($data['subject']);
+                    if (! empty($data['cc_emails'])) {
+                        $message->cc($data['cc_emails']);
+                    }
 
-                foreach ($data['attachments'] as $attachment) {
-                    $message->attach($attachment);
-                }
+                    foreach ($data['attachments'] as $attachment) {
+                        $message->attach($attachment);
+                    }
+                });
             });
         }
         catch(\Exception $e){
@@ -1137,7 +1139,9 @@ class LetterController extends Controller
         $attachment_path = public_path('letter/attachment/');
         $message = 'Letter notification sent successfully';
         try{
-            $this->wpPDFMessage($path, $lims_customer_data, 'letter.pdf');
+            \App\Support\VisitorLocale::using(\App\Support\VisitorLocale::from($lims_customer_data), function () use ($path, $lims_customer_data) {
+                $this->wpPDFMessage($path, $lims_customer_data, 'letter.pdf');
+            });
             if ($this->isInternshipAcceptanceLetter($letter)) {
                 $this->sendInternshipLoginGuideWhatsApp($lims_customer_data);
             }
@@ -1225,13 +1229,15 @@ class LetterController extends Controller
             $password = \App\Services\InternshipAcceptanceLetterService::DEFAULT_PASSWORD;
         }
 
-        $msg = \App\Support\WhatsAppMessage::internshipAdmissionLoginGuide(
-            $name,
-            $username,
-            $password,
-            url('/login'),
-            url('/admin/timesheet/working-week')
-        );
+        $msg = \App\Support\WhatsAppMessage::forRecipient($recipient, function () use ($name, $username, $password) {
+            return \App\Support\WhatsAppMessage::internshipAdmissionLoginGuide(
+                $name,
+                $username,
+                $password,
+                url('/login'),
+                url('/admin/timesheet/working-week')
+            );
+        });
 
         try {
             // Throttle is handled by Wasender account protection retries in NotificationRouter/Wasender.

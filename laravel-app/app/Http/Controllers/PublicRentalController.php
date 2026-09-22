@@ -70,7 +70,7 @@ class PublicRentalController extends Controller
             if (! empty($data['address'])) {
                 $customer->address = $data['address'];
             }
-            if ($locale && empty($customer->preferred_locale) && \App\Support\SchemaColumns::has('customers', 'preferred_locale')) {
+            if ($locale && \App\Support\SchemaColumns::has('customers', 'preferred_locale')) {
                 $customer->preferred_locale = $locale;
             }
             $customer->save();

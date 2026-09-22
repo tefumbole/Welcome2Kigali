@@ -23,5 +23,8 @@
 
 <div class="letter-page {{ $hasLetterhead ? 'has-letterhead' : '' }}">
 @if($headerPdf && $letterheadFlow)
-    <img src="{{ $headerPdf }}" class="letter-header-img" alt="">
+    <img src="{{ $headerPdf }}" class="letter-header-img" alt="{{ $general_setting->site_title ?? '' }}">
+@endif
+@if(! empty(trim((string) ($general_setting->site_title ?? ''))))
+    <div class="letter-system-title">{{ $general_setting->site_title }}</div>
 @endif

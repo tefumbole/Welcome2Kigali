@@ -1323,9 +1323,11 @@ class BookingController extends Controller
             $message = ' Booking created successfully';
         if (empty($data['send_for_signature'])) {
             try {
-                Mail::send( 'mail.booking_details', $mail_data, function( $message ) use ($mail_data)
-                {
-                    $message->to( $mail_data['email'] )->subject( 'Booking Details' );
+                \App\Support\VisitorLocale::using(\App\Support\VisitorLocale::from($lims_customer_data ?? null), function () use ($mail_data) {
+                    Mail::send( 'mail.booking_details', $mail_data, function( $message ) use ($mail_data)
+                    {
+                        $message->to( $mail_data['email'] )->subject( __('mail.booking_details') );
+                    });
                 });
             }
             catch(\Exception $e){
@@ -1713,18 +1715,20 @@ class BookingController extends Controller
             ];
         }
 
-        $msg = \App\Support\WhatsAppMessage::bookingConfirmation(
-            $lims_customer_data->name,
-            $lims_sale_data->reference_no,
-            (string) $lims_sale_data->created_at,
-            $lines,
-            number_format($mail_data['grand_total'], 2),
-            $paying_method,
-            $biller->name,
-            $biller->address,
-            $biller->phone_number,
-            (string) \App\Support\BookingNoteFormatter::forPlainText($booking_note)
-        );
+        $msg = \App\Support\WhatsAppMessage::forRecipient($lims_customer_data, function () use ($lims_customer_data, $lims_sale_data, $mail_data, $paying_method, $biller, $booking_note, $lines) {
+            return \App\Support\WhatsAppMessage::bookingConfirmation(
+                $lims_customer_data->name,
+                $lims_sale_data->reference_no,
+                (string) $lims_sale_data->created_at,
+                $lines,
+                number_format($mail_data['grand_total'], 2),
+                $paying_method,
+                $biller->name,
+                $biller->address,
+                $biller->phone_number,
+                (string) \App\Support\BookingNoteFormatter::forPlainText($booking_note)
+            );
+        });
 
         $message = 'Booking created successfully';
         try{
@@ -1785,13 +1789,15 @@ class BookingController extends Controller
             }
 
             try {
-                $msg = \App\Support\WhatsAppMessage::bookingQuotationCc(
-                    $ccCustomer->name,
-                    $booking->reference_no,
-                    $lines,
-                    $customerName,
-                    (string) $bookingNote
-                );
+                $msg = \App\Support\WhatsAppMessage::forRecipient($ccCustomer, function () use ($ccCustomer, $booking, $lines, $customerName, $bookingNote) {
+                    return \App\Support\WhatsAppMessage::bookingQuotationCc(
+                        $ccCustomer->name,
+                        $booking->reference_no,
+                        $lines,
+                        $customerName,
+                        (string) $bookingNote
+                    );
+                });
                 $this->sendWhatsAppToCustomer($ccCustomer, $msg);
             } catch (\Exception $e) {
             }
@@ -2007,9 +2013,11 @@ class BookingController extends Controller
             }
 
             try{
-                Mail::send( 'mail.booking_details', $mail_data, function( $message ) use ($mail_data)
-                {
-                    $message->to( $mail_data['email'] )->subject( 'Booking Details' );
+                \App\Support\VisitorLocale::using(\App\Support\VisitorLocale::from($lims_customer_data), function () use ($mail_data) {
+                    Mail::send( 'mail.booking_details', $mail_data, function( $message ) use ($mail_data)
+                    {
+                        $message->to( $mail_data['email'] )->subject( __('mail.booking_details') );
+                    });
                 });
                 $message = 'Mail sent successfully';
             }
@@ -2069,9 +2077,11 @@ class BookingController extends Controller
             }
 
             try{
-                Mail::send( 'mail.booking_details', $mail_data, function( $message ) use ($mail_data)
-                {
-                    $message->to( $mail_data['email'] )->subject( 'Booking Details' );
+                \App\Support\VisitorLocale::using(\App\Support\VisitorLocale::from($lims_customer_data), function () use ($mail_data) {
+                    Mail::send( 'mail.booking_details', $mail_data, function( $message ) use ($mail_data)
+                    {
+                        $message->to( $mail_data['email'] )->subject( __('mail.booking_details') );
+                    });
                 });
                 $message = 'Mail sent successfully';
             }
@@ -3151,9 +3161,11 @@ class BookingController extends Controller
             $mail_data['paid_amount'] = $lims_sale_data->paid_amount;
             if($mail_data['email']){
                 try{
-                    Mail::send( 'mail.booking_details', $mail_data, function( $message ) use ($mail_data)
-                    {
-                        $message->to( $mail_data['email'] )->subject( 'Booking Details' );
+                    \App\Support\VisitorLocale::using(\App\Support\VisitorLocale::from($lims_customer_data), function () use ($mail_data) {
+                        Mail::send( 'mail.booking_details', $mail_data, function( $message ) use ($mail_data)
+                        {
+                            $message->to( $mail_data['email'] )->subject( __('mail.booking_details') );
+                        });
                     });
                 }
                 catch(\Exception $e){

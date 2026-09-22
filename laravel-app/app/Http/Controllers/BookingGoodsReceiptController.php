@@ -92,14 +92,16 @@ class BookingGoodsReceiptController extends Controller
 
         try {
             $link = url('goods-received/' . $receipt->signature_token);
-            $msg = WhatsAppMessage::goodsReceivedSignatureRequest(
-                $customer->name,
-                $booking->reference_no,
-                $receipt->reference_no,
-                $link,
-                $items,
-                'received'
-            );
+            $msg = WhatsAppMessage::forRecipient($customer, function () use ($customer, $booking, $receipt, $link, $items) {
+                return WhatsAppMessage::goodsReceivedSignatureRequest(
+                    $customer->name,
+                    $booking->reference_no,
+                    $receipt->reference_no,
+                    $link,
+                    $items,
+                    'received'
+                );
+            });
             $this->sendWhatsAppToCustomer($customer, $msg);
             $receipt->update(['signature_sent_at' => now()]);
         } catch (\Exception $e) {
@@ -137,14 +139,16 @@ class BookingGoodsReceiptController extends Controller
             }
 
             try {
-                $msg = WhatsAppMessage::goodsReceivedSignatureRequest(
-                    $ccCustomer->name,
-                    $booking->reference_no,
-                    $receipt->reference_no,
-                    $link,
-                    $items,
-                    'delivered'
-                );
+                $msg = WhatsAppMessage::forRecipient($ccCustomer, function () use ($ccCustomer, $booking, $receipt, $link, $items) {
+                    return WhatsAppMessage::goodsReceivedSignatureRequest(
+                        $ccCustomer->name,
+                        $booking->reference_no,
+                        $receipt->reference_no,
+                        $link,
+                        $items,
+                        'delivered'
+                    );
+                });
                 $this->sendWhatsAppToCustomer($ccCustomer, $msg);
                 $sent++;
             } catch (\Exception $e) {
@@ -228,11 +232,13 @@ class BookingGoodsReceiptController extends Controller
         if ($role === 'received') {
             try {
                 if ($customer && !empty(trim((string) $customer->phone_number))) {
-                    $msg = WhatsAppMessage::goodsReceivedSignedClient(
-                        $customer->name,
-                        $booking->reference_no,
-                        $receipt->reference_no
-                    );
+                    $msg = WhatsAppMessage::forRecipient($customer, function () use ($customer, $booking, $receipt) {
+                        return WhatsAppMessage::goodsReceivedSignedClient(
+                            $customer->name,
+                            $booking->reference_no,
+                            $receipt->reference_no
+                        );
+                    });
                     $this->sendWhatsAppToCustomer($customer, $msg);
 
                     if ($receipt->signed_pdf_path && file_exists(public_path($receipt->signed_pdf_path))) {

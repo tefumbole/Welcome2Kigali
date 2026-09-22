@@ -75,9 +75,11 @@ class SettingController extends Controller
 
     public function envSetting()
     {
-        $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
-        if (Auth::user()->role_id > 2 && (!$role || !$role->hasPermissionTo('env_setting'))) {
-            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        if (! \App\Support\StaffAccess::isSuperAdmin()) {
+            $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
+            if (Auth::user()->role_id > 2 && (!$role || !$role->hasPermissionTo('env_setting'))) {
+                return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+            }
         }
 
         $envPath = base_path('.env');
@@ -88,9 +90,11 @@ class SettingController extends Controller
 
     public function envSettingStore(Request $request)
     {
-        $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
-        if (Auth::user()->role_id > 2 && (!$role || !$role->hasPermissionTo('env_setting'))) {
-            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        if (! \App\Support\StaffAccess::isSuperAdmin()) {
+            $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
+            if (Auth::user()->role_id > 2 && (!$role || !$role->hasPermissionTo('env_setting'))) {
+                return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+            }
         }
 
         if(!config('app.user_verified'))
@@ -374,9 +378,11 @@ class SettingController extends Controller
 
     public function messagingSetting()
     {
-        $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
-        if (Auth::user()->role_id > 2 && (!$role || (!$role->hasPermissionTo('sms_setting') && !$role->hasPermissionTo('env_setting')))) {
-            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        if (! \App\Support\StaffAccess::isSuperAdmin()) {
+            $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
+            if (Auth::user()->role_id > 2 && (!$role || (!$role->hasPermissionTo('sms_setting') && !$role->hasPermissionTo('env_setting')))) {
+                return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+            }
         }
 
         $bool = function ($key, $default = true) {
@@ -418,9 +424,11 @@ class SettingController extends Controller
 
     public function messagingSettingStore(Request $request)
     {
-        $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
-        if (Auth::user()->role_id > 2 && (!$role || (!$role->hasPermissionTo('sms_setting') && !$role->hasPermissionTo('env_setting')))) {
-            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        if (! \App\Support\StaffAccess::isSuperAdmin()) {
+            $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
+            if (Auth::user()->role_id > 2 && (!$role || (!$role->hasPermissionTo('sms_setting') && !$role->hasPermissionTo('env_setting')))) {
+                return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+            }
         }
 
         if (! config('app.user_verified')) {

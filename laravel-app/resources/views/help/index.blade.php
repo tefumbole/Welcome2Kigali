@@ -116,8 +116,8 @@
     <div class="w2k-help-card" id="start">
         <h3>1. Sign in</h3>
         <p>Open <a href="{{ url('/login') }}" target="_blank" rel="noopener">welcome2kigali.net/login</a>. Use your staff email, username, or WhatsApp number. After sign-in you can switch workspace if you are both a member and staff.</p>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/login.png') }}?v={{ $hv }}" alt="Welcome 2 Kigali Expats Club sign-in card">
-        <p class="w2k-help-cap">Live login: Welcome 2 Kigali Expats Club card, Email or Username, Password, gold Forgot username or password, Login with WhatsApp OTP, black Sign in button. Version shows at the bottom of the card.</p>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/login.png') }}?v={{ $hv }}" alt="Kigali Expats Club sign-in card">
+        <p class="w2k-help-cap">Live login: spinning club logo on a <strong>white</strong> disc with a gold ring, then <strong>Kigali Expats Club</strong>, Email or Username, Password, gold Forgot username or password, Login with WhatsApp OTP, and the black Sign in button. Version (W2K_V_…) is at the bottom of the card.</p>
         <ol>
             <li>Click <strong>Login</strong> in the public header (gold button, top right).</li>
             <li>Enter email / WhatsApp number / username and password, then Sign in.</li>
@@ -145,16 +145,16 @@
         <p>Guests see Home, Menu, Events, About, and Become a Member in the black header (with EN / FR / RW). Those pages are edited in <strong>Site Content</strong> — not in Products.</p>
         <h4>Home</h4>
         <img class="w2k-help-shot" src="{{ url('public/branding/help/home.png') }}?v={{ $hv }}" alt="Home page with three gold buttons over the Kigali night skyline">
-        <p class="w2k-help-cap">Home hero: Welcome 2 Kigali Expats Club artwork, then three gold buttons — <strong>Join the Club</strong>, <strong>Events</strong>, and <strong>Cafe Menu</strong>. Language switcher EN / FR / RW is in the header. Version is in the bottom-right of the hero.</p>
+        <p class="w2k-help-cap">Home hero: Welcome 2 Kigali Expats Club artwork, then three gold buttons — <strong>Join the Club</strong>, <strong>Events</strong>, and <strong>Cafe Menu</strong>. Language switcher EN / FR / RW is in the header. Version (W2K_V_…) is in the bottom-right of the hero.</p>
         <h4>Cafe menu (what guests order)</h4>
         <img class="w2k-help-shot" src="{{ url('public/branding/help/menu.png') }}?v={{ $hv }}" alt="Cafe and Restaurant menu Coffee and Tea list">
-        <p class="w2k-help-cap">Menu title is Cafe &amp; Restaurant. Category pills: Coffee &amp; Tea (active), Iced &amp; Specialty, Tea &amp; Hot Beverages, Fresh &amp; Detox Juices, Smoothies, Food. Espresso beverages: Espresso 2,000, Americano 2,000, Macchiato 2,000, Cortado 2,000, Flat White 2,500, Cappuccino 3,000, Café Latte 3,000, Caramel Macchiato 4,000, Café Mocha 4,000. Click a drink to add it to the cart.</p>
+        <p class="w2k-help-cap">Menu title is Cafe &amp; Restaurant. Category pills: Coffee &amp; Tea (active), Iced &amp; Specialty, Tea &amp; Hot Beverages, Fresh &amp; Detox Juices, Smoothies, Food. Espresso beverages include Espresso 2,000, Americano 2,000, Macchiato 2,000, Cortado 2,000, Flat White 2,500, Cappuccino 3,000, Café Latte 3,000, Caramel Macchiato 4,000, Café Mocha 4,000, and African Coffee 4,000. A photo sits on the right. Click a drink to add it to the cart.</p>
         <h4>About the club</h4>
         <img class="w2k-help-shot" src="{{ url('public/branding/help/about.png') }}?v={{ $hv }}" alt="About page with vision, mission, and Mr. Sylvester Takwa">
         <p class="w2k-help-cap">About: Our Vision and Our Mission on cream, then Our Leadership with Mr. Sylvester Takwa, CEO / Director. Footer has Restaurant &amp; Cafe, Lounge &amp; Hospitality, contact +250 793 761 617, Kigali, Rwanda, and Join the Club.</p>
         <h4>Events</h4>
         <img class="w2k-help-shot" src="{{ url('public/branding/help/events.png') }}?v={{ $hv }}" alt="Club Events page with Upcoming filter">
-        <p class="w2k-help-cap">Club Events: search, Filter (Upcoming), Type (All types), Search. Empty state reads No Events Found. Add events under Admin → Events — they appear here automatically.</p>
+        <p class="w2k-help-cap">Club Events: search, Filter (Upcoming), Type (All types), Search. Empty state reads No Events Found — try a different filter or check back soon. Add events under Admin → Events and they appear here automatically.</p>
         <h4>Become a Member</h4>
         <img class="w2k-help-shot" src="{{ url('public/branding/help/register.png') }}?v={{ $hv }}" alt="Become a Member choose a plan cards">
         <p class="w2k-help-cap">Become a Member → Choose a plan. Promotion: FREE membership for 90 days (0 FRW). Monthly 15,000 FRW, Quarterly 40,000 FRW, Annual 140,000 FRW. Members have 10% discount on all products. Tap a plan, then scan ID or passport to continue.</p>

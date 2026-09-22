@@ -2619,7 +2619,7 @@
                                 @if($general_setting_permission_active || $catalogSettingsAccess)
                                     <li id="general-setting-menu"><a href="{{route('setting.general')}}">{{trans('file.General Setting')}}</a></li>
                                 @endif
-                                @if($role->name == 'Admin' || $manageSite)
+                                @if($role->name == 'Admin' || $role->name == 'System' || $manageSite)
                                     <li id="role-menu"><a href="{{route('role.index')}}">{{trans('file.Role Permission')}}</a></li>
                                 @endif
                                 @if($send_notification_permission_active)
@@ -3355,29 +3355,6 @@
                       <div id="beyond-module-subtabs-nav" class="beyond-module-subtabs-nav"></div>
                   </div>
               </div>
-              @if(\App\Support\SiteMenu::isSettingsHubPath())
-              <div class="settings-hub">
-                <div class="settings-hub-title">SETTINGS</div>
-                <div class="settings-hub-bar">
-                  @foreach(\App\Support\SiteMenu::settingsHubTabs() as $hubTab)
-                    @php
-                      $hubPath = trim(request()->path(), '/');
-                      $hubMatch = trim($hubTab['match'], '/');
-                      $hubActive = $hubPath === $hubMatch || strpos($hubPath, $hubMatch) === 0;
-                    @endphp
-                    <a class="{{ $hubActive ? 'is-active' : '' }}" href="{{ $hubTab['url'] }}">{{ $hubTab['label'] }}</a>
-                  @endforeach
-                </div>
-              </div>
-              <style>
-                .settings-hub { background:#fff; border-bottom:1px solid #e5e7eb; margin:-8px 0 16px; }
-                .settings-hub-title { font-size:11px; font-weight:700; letter-spacing:.08em; color:#6b7280; padding:12px 20px 0; }
-                .settings-hub-bar { display:flex; flex-wrap:wrap; gap:2px 4px; padding:6px 12px 0; }
-                .settings-hub-bar a { display:inline-block; padding:8px 10px; font-size:13px; color:#6b7280; text-decoration:none; border-bottom:2px solid transparent; }
-                .settings-hub-bar a:hover { color:#111827; }
-                .settings-hub-bar a.is-active { color:#2563eb; font-weight:600; border-bottom-color:#2563eb; }
-              </style>
-              @endif
               @yield('content')
           </div>
 

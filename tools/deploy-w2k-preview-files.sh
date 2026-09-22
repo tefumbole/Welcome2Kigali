@@ -82,7 +82,9 @@ FILES=(
   app/Http/Middleware/EncryptCookies.php
   app/Http/Middleware/VerifyCsrfToken.php
   app/Providers/AppServiceProvider.php
+  app/Providers/AuthServiceProvider.php
   app/Providers/RouteServiceProvider.php
+  database/migrations/2026_09_21_153500_grant_superadmin_all_permissions.php
   app/Http/Controllers/AnnouncementController.php
   app/Jobs/SendOnlineInvitationJob.php
   app/Http/Controllers/OnlineInvitationInvitationController.php
@@ -137,6 +139,15 @@ FILES=(
   app/Http/Controllers/AssetController.php
   app/Http/Controllers/BookingController.php
   app/Http/Controllers/QuotationController.php
+  app/Http/Controllers/RentalContractController.php
+  app/Http/Controllers/BookingGoodsReceiptController.php
+  app/Http/Controllers/BookingReminderController.php
+  app/Http/Controllers/DeliveryController.php
+  app/Http/Controllers/TrainingController.php
+  app/Http/Controllers/PublicPermissionController.php
+  app/BeyondUser.php
+  resources/views/mail/quotation_details.blade.php
+  resources/views/mail/booking_details.blade.php
   app/Console/Commands/ProcessContractReminders.php
   resources/views/contracts/sign.blade.php
   app/Support/UserWorkspaces.php
@@ -182,7 +193,11 @@ FILES=(
   resources/lang/en/whatsapp.php
   resources/lang/fr/whatsapp.php
   resources/lang/rw/whatsapp.php
+  resources/lang/en/mail.php
+  resources/lang/fr/mail.php
+  resources/lang/rw/mail.php
   database/migrations/2026_09_18_180000_add_preferred_locale_to_visitor_records.php
+  database/migrations/2026_09_22_113500_add_preferred_locale_to_be_users.php
   resources/views/pdf/membership_confirmation.blade.php
   resources/views/layout/main.blade.php
   resources/views/beyond/layout.blade.php
@@ -224,6 +239,10 @@ FILES=(
   resources/views/pdf/sale_pdf.blade.php
   resources/views/pdf/letter_pdf.blade.php
   resources/views/pdf/letter_download_pdf.blade.php
+  resources/views/pdf/cc_letter_pdf.blade.php
+  resources/views/pdf/multiple_letter_download_pdf.blade.php
+  resources/views/mail/letter_details.blade.php
+  resources/views/letter/letter_body.blade.php
   resources/views/pdf/partials/_letter_branded_open.blade.php
   resources/views/pdf/partials/_letter_branded_close.blade.php
   resources/views/pdf/partials/_letter_branded_styles.blade.php
@@ -348,8 +367,10 @@ sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_18_103000_create_institutional_messages.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_18_120000_create_wa_message_serials_table.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_18_180000_add_preferred_locale_to_visitor_records.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_22_113500_add_preferred_locale_to_be_users.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_18_203000_create_stock_durations_table.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_21_133000_add_commission_to_general_settings.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_21_153500_grant_superadmin_all_permissions.php
 sudo -u www-data php "\$APP/artisan" permission:cache-reset || true
 sudo -u www-data php "\$APP/artisan" view:clear
 sudo -u www-data php "\$APP/artisan" cache:clear

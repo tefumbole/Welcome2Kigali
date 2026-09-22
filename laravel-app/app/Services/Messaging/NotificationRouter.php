@@ -79,10 +79,11 @@ class NotificationRouter
             return ['success' => true, 'skipped' => true, 'provider' => 'none'];
         }
 
-        $message = WhatsAppMessage::withLocale(VisitorLocale::current(), function () use ($otp, $purpose, $expiresMinutes) {
+        $locale = VisitorLocale::forContact($phone);
+        $message = WhatsAppMessage::withLocale($locale, function () use ($otp, $purpose, $expiresMinutes) {
             return WhatsAppMessage::otpMessage($otp, $purpose, $expiresMinutes);
         });
-        $purposeLabel = WhatsAppMessage::withLocale(VisitorLocale::current(), function () use ($purpose) {
+        $purposeLabel = WhatsAppMessage::withLocale($locale, function () use ($purpose) {
             return WhatsAppMessage::otpPurposeLabel($purpose);
         });
         $minutes = max(1, (int) $expiresMinutes);

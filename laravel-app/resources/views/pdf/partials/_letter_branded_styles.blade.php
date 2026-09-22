@@ -63,6 +63,15 @@
     .letter-page.has-letterhead {
         padding-top: 0;
     }
+    .letter-system-title {
+        text-align: center;
+        font-size: 16px;
+        font-weight: 700;
+        color: #0A0A0A;
+        letter-spacing: 0.02em;
+        margin: 0 0 14px;
+        line-height: 1.25;
+    }
 @else
     /* Fixed positioning makes dompdf repeat these on every page. */
     .letter-header-img {

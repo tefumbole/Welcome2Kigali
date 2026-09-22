@@ -684,10 +684,12 @@ class Controller extends BaseController
             $customerName = $lims_customer_data->name ?? 'Customer';
             $caption = $captionOverride !== null && $captionOverride !== ''
                 ? $captionOverride
-                : (\App\Support\WhatsAppMessage::statusBlock('📄', 'DOCUMENT ATTACHED')
-                    . \App\Support\WhatsAppMessage::greeting($customerName)
-                    . 'Please find your *' . $filename . '* attached.'
-                    . \App\Support\WhatsAppMessage::footer());
+                : \App\Support\WhatsAppMessage::forRecipient($lims_customer_data, function () use ($customerName, $filename) {
+                    return \App\Support\WhatsAppMessage::statusBlock('📄', \App\Support\WhatsAppMessage::t('document_attached'))
+                        .\App\Support\WhatsAppMessage::greeting($customerName)
+                        .\App\Support\WhatsAppMessage::t('document_please_find', ['file' => $filename])
+                        .\App\Support\WhatsAppMessage::footer();
+                });
 
             try {
                 $this->sendWasenderTextMessage(
@@ -868,17 +870,19 @@ class Controller extends BaseController
             ];
         }
 
-        $msg = \App\Support\WhatsAppMessage::bookingConfirmation(
-            $customer ? $customer->name : 'Guest',
-            $order->id,
-            $order->created_at,
-            $lines,
-            number_format((float) $order->grand_total, 2),
-            $order->payment_method,
-            \App\Support\WhatsAppMessage::companyName(),
-            $order->address,
-            $customer ? $customer->phone : $order->phone
-        );
+        $msg = \App\Support\WhatsAppMessage::forRecipient($customer ?: $order, function () use ($customer, $order, $lines) {
+            return \App\Support\WhatsAppMessage::bookingConfirmation(
+                $customer ? $customer->name : 'Guest',
+                $order->id,
+                $order->created_at,
+                $lines,
+                number_format((float) $order->grand_total, 2),
+                $order->payment_method,
+                \App\Support\WhatsAppMessage::companyName(),
+                $order->address,
+                $customer ? $customer->phone : $order->phone
+            );
+        });
 
         try{
             $this->wpMessage($customer ? $customer->phone : $order->phone, $msg);
