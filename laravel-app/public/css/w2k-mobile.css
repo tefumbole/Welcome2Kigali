@@ -57,7 +57,7 @@ button, a, [role="button"] {
 @media (max-width: 767px) {
     body.home-landing .landing-hero-art {
         object-fit: cover;
-        object-position: 28% 32%;
+        object-position: left 30%;
     }
     body.home-landing .home-version {
         right: .55rem;

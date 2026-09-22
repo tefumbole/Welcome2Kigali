@@ -1,5 +1,5 @@
 /** Beyond Enterprise ERP release identifier — update when creating a new restore point. */
-export const APP_VERSION = 'W2K_V_1.9.2';
+export const APP_VERSION = 'W2K_V_1.9.3';
 
 export const APP_VERSION_LABEL = 'Version';
 

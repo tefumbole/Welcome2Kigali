@@ -34,10 +34,10 @@
         -webkit-user-drag: none;
     }
     @media (max-width: 767px) {
-        body.home-landing .landing-hero-art { object-position: 28% 32%; }
+        body.home-landing .landing-hero-art { object-position: left 30%; }
     }
     @media (min-width: 768px) and (max-width: 1199px) {
-        body.home-landing .landing-hero-art { object-position: 38% 38%; }
+        body.home-landing .landing-hero-art { object-position: 12% 36%; }
     }
     @media (min-width: 1800px) {
         body.home-landing .landing-hero-art { object-position: center 46%; }
