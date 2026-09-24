@@ -37,7 +37,7 @@ class MembershipPublicController extends Controller
         $plans = $this->publicPlans();
         $this->ensureDefaultPromotion();
         $promo = MembershipPromotion::current();
-        $agreement = MembershipAgreement::current();
+        $agreement = MembershipAgreement::ensureCurrent();
         $idTypes = json_decode(MembershipSetting::get('id_doc_types', json_encode(['national_id', 'passport'])), true) ?: ['national_id', 'passport'];
         $discount = $this->memberships->memberDiscountPercent();
         $beyond = Auth::guard('beyond')->user();
@@ -81,6 +81,7 @@ class MembershipPublicController extends Controller
         if (! $beyond) {
             $rules['password'] = 'required|string|min:6';
         }
+        MembershipAgreement::ensureCurrent();
         $data = $request->validate($rules);
 
         $selfieFile = $request->file('selfie') ?: $this->uploadedFromDataUrl($request->input('selfie_data'), 'selfie');

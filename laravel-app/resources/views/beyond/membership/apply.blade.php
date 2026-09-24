@@ -279,10 +279,12 @@
 
                     @if($agreement)
                         <div x-show="idRead" x-cloak class="mt-6">
-                            <button type="button" @click="openAgreement()" class="w-full md:w-auto border-2 border-black text-black font-bold px-5 py-3 rounded-md hover:bg-black hover:text-white transition-colors">
-                                {{ __('site.membership.view_agreement') }}
-                            </button>
-                            <label class="flex items-start gap-2 mt-3 text-sm">
+                            <h2 class="text-xl font-bold text-black mb-1">{{ $agreement->title }}</h2>
+                            <p class="text-sm text-gray-500 mb-3">Please read this membership license agreement carefully before you sign.</p>
+                            <div class="rounded-xl overflow-hidden border border-black/10">
+                                @include('beyond.membership.partials.agreement-document', ['agreement' => $agreement])
+                            </div>
+                            <label class="flex items-start gap-2 mt-4 text-sm">
                                 <input type="checkbox" name="accept_agreement" value="1" x-model="agreementAccepted" @if(old('accept_agreement')) checked @endif required class="mt-1">
                                 <span>{{ __('site.membership.accept') }}</span>
                             </label>

@@ -60,6 +60,7 @@ FILES=(
   app/Account.php
   app/Console/Kernel.php
   app/Console/Commands/ProcessMemberships.php
+  app/MembershipAgreement.php
   app/Services/MembershipService.php
   app/Services/MembershipNotifier.php
   app/Http/Controllers/MembershipAdminController.php

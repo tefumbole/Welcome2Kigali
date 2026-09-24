@@ -144,7 +144,7 @@ class MembershipService
 
     public function submitApplication(array $data, $files = [], $signature = null)
     {
-        $agreement = MembershipAgreement::current();
+        $agreement = MembershipAgreement::ensureCurrent();
         $promo = MembershipPromotion::current();
         $planId = ! empty($data['plan_id']) ? $data['plan_id'] : optional(MembershipPlan::active()->first())->id;
 
