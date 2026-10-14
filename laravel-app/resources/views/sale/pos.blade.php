@@ -177,9 +177,149 @@
             line-height: 1em;
         }
         body.beyond-pos-active .pos-section .btn-default .dripicons-plus:before { font-size: 16px; }
+        body.beyond-pos-active .pos .bootstrap-select.form-control:not([class*="col-"]) {
+            width: 100% !important;
+            min-width: 0;
+        }
+        body.beyond-pos-active .pos-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        body.beyond-pos-active .pos-toolbar-customer {
+            flex: 1 1 220px;
+            min-width: 180px;
+        }
+        body.beyond-pos-active .pos-toolbar-customer .input-group.pos {
+            display: flex;
+            width: 100%;
+        }
+        body.beyond-pos-active .pos-toolbar-customer .bootstrap-select {
+            flex: 1 1 auto;
+        }
+        body.beyond-pos-active .pos-toolbar-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            flex: 1 1 280px;
+        }
+        body.beyond-pos-active .pos-toolbar-actions .btn,
+        body.beyond-pos-active .pos-toolbar-actions a.btn {
+            flex: 1 1 auto;
+            min-width: 7.4rem;
+            white-space: nowrap;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 7px 10px;
+            line-height: 1.2;
+        }
+        body.beyond-pos-active .pos-toolbar-actions .pos-icon-btn {
+            flex: 0 0 40px;
+            min-width: 40px;
+            padding: 7px 8px;
+        }
+        body.beyond-pos-active .pos-product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+            gap: 8px;
+            padding: 6px 2px 12px;
+        }
+        body.beyond-pos-active .pos-product-tile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            min-height: 124px;
+            margin: 0;
+            padding: 8px 6px 6px;
+            border: 1px solid #eee4d0;
+            border-radius: 10px;
+            background: #fff;
+            color: #0A0A0A;
+            cursor: pointer;
+            text-align: center;
+        }
+        body.beyond-pos-active .pos-product-tile:hover {
+            border-color: #C5A059;
+            box-shadow: 0 4px 12px rgba(197,160,89,.2);
+        }
+        body.beyond-pos-active .pos-product-tile img {
+            width: 100%;
+            height: 72px;
+            max-height: 72px;
+            object-fit: contain;
+            background: #F7F1E8;
+            border-radius: 6px;
+        }
+        body.beyond-pos-active .pos-product-tile p {
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1.25;
+            max-height: 2.5em;
+            overflow: hidden;
+            margin: 6px 0 2px;
+        }
+        body.beyond-pos-active .pos-product-tile span {
+            font-size: 10px;
+            color: #8a7a5a;
+        }
+        body.beyond-pos-active .pos-product-empty {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 28px 12px;
+            color: #6b6254;
+            background: #faf6ee;
+            border-radius: 10px;
+        }
+        body.beyond-pos-active .pos-filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        body.beyond-pos-active .pos-filter-row .btn {
+            flex: 1 1 30%;
+            min-width: 90px;
+        }
+        body.beyond-pos-active .table-container {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
         @media (max-width: 991px) {
             body.beyond-pos-active .payment-options { left: 0; }
-            body.beyond-pos-active .pos-section { padding-bottom: 140px !important; }
+            body.beyond-pos-active .pos-section {
+                padding-bottom: 150px !important;
+                height: auto !important;
+                overflow: auto !important;
+            }
+            body.beyond-pos-active { overflow: auto; }
+            body.beyond-pos-active .content-inner,
+            body.beyond-pos-active .content-inner > .page-content {
+                height: auto !important;
+                overflow: visible !important;
+            }
+            body.beyond-pos-active .pos-side,
+            body.beyond-pos-active .products-side {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            body.beyond-pos-active .pos-product-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            body.beyond-pos-active .transaction-list {
+                height: auto !important;
+                max-height: 42vh !important;
+            }
+            body.beyond-pos-active .table-container {
+                height: auto !important;
+                max-height: none !important;
+            }
+            body.beyond-pos-active .pos-toolbar-actions .btn {
+                min-width: calc(50% - 6px);
+            }
         }
     </style>
     <script>document.body.classList.add('beyond-pos-active');</script>
@@ -1386,73 +1526,51 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                @if($lims_pos_setting_data)
-                                                    <input type="hidden" name="customer_id_hidden" value="{{$lims_pos_setting_data->customer_id}}">
-                                                @endif
-                                                <div class="input-group pos">
-                                                    @if($customer_active)
-                                                        <select required name="customer_id" id="customer_id" class="selectpicker form-control" data-live-search="true" title="Select customer..." style="width: 100px">
-                                                                <?php
-                                                                $deposit = [];
-                                                                $points = [];
-                                                                ?>
-                                                            @foreach($lims_customer_list as $customer)
-                                                                @php
-                                                                    $deposit[$customer->id] = $customer->deposit - $customer->expense;
-
-                                                      $points[$customer->id] = $customer->points;
-                                                                @endphp
-                                                                <option value="{{$customer->id}}">{{$customer->name . ' (' . $customer->phone_number . ')'}}</option>
-                                                            @endforeach
-                                                        </select>
-                                                        <button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#addCustomer"><i class="dripicons-plus"></i></button>
-                                                    @else
-                                                            <?php
-                                                            $deposit = [];
-                                                            $points = [];
-                                                            ?>
-                                                        <select required name="customer_id" id="customer_id" class="selectpicker form-control" data-live-search="true"   title="Select customer...">
-                                                            @foreach($lims_customer_list as $customer)
-                                                                @php
-                                                                    $deposit[$customer->id] = $customer->deposit - $customer->expense;
-
-                                                      $points[$customer->id] = $customer->points;
-                                                                @endphp
-                                                                <option value="{{$customer->id}}">{{$customer->name . ' (' . $customer->phone_number . ')'}}</option>
-                                                            @endforeach
-                                                        </select>
+                                        @php
+                                            $deposit = [];
+                                            $points = [];
+                                        @endphp
+                                        <div class="col-12 pos-toolbar">
+                                            <div class="pos-toolbar-customer">
+                                                <div class="form-group mb-0">
+                                                    @if($lims_pos_setting_data)
+                                                        <input type="hidden" name="customer_id_hidden" value="{{$lims_pos_setting_data->customer_id}}">
                                                     @endif
-                                                </div>
-                                                <div id="customer-balance-panel" class="mt-1" style="display:none;font-size:12px;color:#0b3f90;">
-                                                    <span>Deposit balance: <strong id="customer-deposit-balance">0.00</strong></span>
-                                                    <span class="mx-2">|</span>
-                                                    <span>Amount owing: <strong id="customer-amount-owing">0.00</strong></span>
+                                                    <div class="input-group pos">
+                                                        <select required name="customer_id" id="customer_id" class="selectpicker form-control" data-live-search="true" title="Select customer...">
+                                                            @foreach($lims_customer_list as $customer)
+                                                                @php
+                                                                    $deposit[$customer->id] = $customer->deposit - $customer->expense;
+                                                                    $points[$customer->id] = $customer->points;
+                                                                @endphp
+                                                                <option value="{{$customer->id}}">{{$customer->name . ' (' . $customer->phone_number . ')'}}</option>
+                                                            @endforeach
+                                                        </select>
+                                                        @if($customer_active)
+                                                            <button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#addCustomer"><i class="dripicons-plus"></i></button>
+                                                        @endif
+                                                    </div>
+                                                    <div id="customer-balance-panel" class="mt-1" style="display:none;font-size:12px;color:#0b3f90;">
+                                                        <span>Deposit balance: <strong id="customer-deposit-balance">0.00</strong></span>
+                                                        <span class="mx-2">|</span>
+                                                        <span>Amount owing: <strong id="customer-amount-owing">0.00</strong></span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        @if(in_array("star_product", $all_permission))
-                                            <div class="col-md-2">
-                                                <button class="btn btn-default" data-toggle="modal" data-target="#addProduct"> <i class="fa fa-star"></i> Star Sale</button>
+                                            <div class="pos-toolbar-actions">
+                                                @if(in_array("star_product", $all_permission))
+                                                    <button type="button" class="btn btn-default" data-toggle="modal" data-target="#addProduct"><i class="fa fa-star"></i> Star Sale</button>
+                                                @endif
+                                                @if(in_array("zero_stock", $all_permission))
+                                                    @if(!in_array("search_all_products", $all_permission))
+                                                        <a class="btn btn-default" href="{{ route('sale.search.all.products') }}"><i class="fa fa-search"></i> Search All Products</a>
+                                                    @else
+                                                        <a class="btn btn-default" href="{{ route('sale.search.quick.products') }}"><i class="fa fa-search"></i> Quick Search</a>
+                                                    @endif
+                                                @endif
+                                                <button type="button" id="toggle-btn-product" class="menu-btn btn btn-default"><i class="fa fa-th-large"></i> <span id="expend">Expand</span></button>
+                                                <button type="button" id="pos-menu-toggle" class="menu-btn btn btn-default pos-icon-btn" title="Toggle menu"><i class="fa fa-bars"></i></button>
                                             </div>
-                                        @endif
-                                        @if(in_array("zero_stock", $all_permission))
-                                            @if(!in_array("search_all_products", $all_permission))
-                                                <div class="col-md-3">
-                                                    <a class="btn btn-default" href="{{ route('sale.search.all.products') }}"> <i class="fa fa-search"></i> Search All Product</a>
-                                                </div>
-                                            @else
-                                                <div class="col-md-3">
-                                                    <a class="btn btn-default" href="{{ route('sale.search.quick.products') }}"> <i class="fa fa-search"></i> Quick Search</a>
-                                                </div>
-                                            @endif
-                                        @endif
-                                        <div class="col-md-2">
-                                            <button id="toggle-btn-product" href="#" class="menu-btn btn btn-default"><i class="fa fa-bars"> </i> <span id="expend">Expend</span> </button>
-                                        </div>
-                                        <div class="col-md-1">
-                                            <button type="button" id="pos-menu-toggle" class="menu-btn btn btn-default" title="Toggle menu"><i class="fa fa-bars"></i></button>
                                         </div>
                                         <div class="col-md-12">
                                             <div class="search-box form-group input-group">
@@ -1966,69 +2084,23 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-4">
-                            <button class="btn btn-block btn-primary" id="category-filter">{{trans('file.category')}}</button>
+                        <div class="col-12 pos-filter-row">
+                            <button type="button" class="btn btn-primary" id="category-filter">{{trans('file.category')}}</button>
+                            <button type="button" class="btn btn-info" id="brand-filter">{{trans('file.Brand')}}</button>
+                            <button type="button" class="btn btn-danger" id="featured-filter">{{trans('file.Featured')}}</button>
                         </div>
-                        <div class="col-md-4">
-                            <button class="btn btn-block btn-info" id="brand-filter">{{trans('file.Brand')}}</button>
-                        </div>
-                        <div class="col-md-4">
-                            <button class="btn btn-block btn-danger" id="featured-filter">{{trans('file.Featured')}}</button>
-                        </div>
-                        <div class="col-md-12 mt-1 table-container">
-                            <table id="product-table" class="table no-shadow product-list">
-                                <thead class="d-none">
-                                <tr>
-                                    <th></th>
-                                    <th></th>
-                                    <th></th>
-                                    <th></th>
-                                    <th></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                @for ($i=0; $i < ceil($product_number/5); $i++)
-                                    <tr>
-                                        <td class="product-img sound-btn" title="{{$lims_product_list[0+$i*5]->name}}" data-product ="{{$lims_product_list[0+$i*5]->code . ' (' . $lims_product_list[0+$i*5]->name . ')'}}"><img  src="{{ $lims_product_list[0+$i*5]->base_image ? asset('public/images/product/'.$lims_product_list[0+$i*5]->base_image) : asset('public/images/product/zummXD2dvAtI.png') }}" width="100%" onerror="this.onerror=null;this.src='{{ asset('public/images/product/zummXD2dvAtI.png') }}';" />
-                                            <p>{{$lims_product_list[0+$i*5]->name}}</p>
-                                            <span>{{$lims_product_list[0+$i*5]->code}}</span>
-                                        </td>
-                                        @if(!empty($lims_product_list[1+$i*5]))
-                                            <td class="product-img sound-btn" title="{{$lims_product_list[1+$i*5]->name}}" data-product ="{{$lims_product_list[1+$i*5]->code . ' (' . $lims_product_list[1+$i*5]->name . ')'}}"><img  src="{{ $lims_product_list[1+$i*5]->base_image ? asset('public/images/product/'.$lims_product_list[1+$i*5]->base_image) : asset('public/images/product/zummXD2dvAtI.png') }}" width="100%" onerror="this.onerror=null;this.src='{{ asset('public/images/product/zummXD2dvAtI.png') }}';" />
-                                                <p>{{$lims_product_list[1+$i*5]->name}}</p>
-                                                <span>{{$lims_product_list[1+$i*5]->code}}</span>
-                                            </td>
-                                        @else
-                                            <td style="border:none;"></td>
-                                        @endif
-                                        @if(!empty($lims_product_list[2+$i*5]))
-                                            <td class="product-img sound-btn" title="{{$lims_product_list[2+$i*5]->name}}" data-product ="{{$lims_product_list[2+$i*5]->code . ' (' . $lims_product_list[2+$i*5]->name . ')'}}"><img  src="{{ $lims_product_list[2+$i*5]->base_image ? asset('public/images/product/'.$lims_product_list[2+$i*5]->base_image) : asset('public/images/product/zummXD2dvAtI.png') }}" width="100%" onerror="this.onerror=null;this.src='{{ asset('public/images/product/zummXD2dvAtI.png') }}';" />
-                                                <p>{{$lims_product_list[2+$i*5]->name}}</p>
-                                                <span>{{$lims_product_list[2+$i*5]->code}}</span>
-                                            </td>
-                                        @else
-                                            <td style="border:none;"></td>
-                                        @endif
-                                        @if(!empty($lims_product_list[3+$i*5]))
-                                            <td class="product-img sound-btn" title="{{$lims_product_list[3+$i*5]->name}}" data-product ="{{$lims_product_list[3+$i*5]->code . ' (' . $lims_product_list[3+$i*5]->name . ')'}}"><img  src="{{ $lims_product_list[3+$i*5]->base_image ? asset('public/images/product/'.$lims_product_list[3+$i*5]->base_image) : asset('public/images/product/zummXD2dvAtI.png') }}" width="100%" onerror="this.onerror=null;this.src='{{ asset('public/images/product/zummXD2dvAtI.png') }}';" />
-                                                <p>{{$lims_product_list[3+$i*5]->name}}</p>
-                                                <span>{{$lims_product_list[3+$i*5]->code}}</span>
-                                            </td>
-                                        @else
-                                            <td style="border:none;"></td>
-                                        @endif
-                                        @if(!empty($lims_product_list[4+$i*5]))
-                                            <td class="product-img sound-btn" title="{{$lims_product_list[4+$i*5]->name}}" data-product ="{{$lims_product_list[4+$i*5]->code . ' (' . $lims_product_list[4+$i*5]->name . ')'}}"><img  src="{{ $lims_product_list[4+$i*5]->base_image ? asset('public/images/product/'.$lims_product_list[4+$i*5]->base_image) : asset('public/images/product/zummXD2dvAtI.png') }}" width="100%" onerror="this.onerror=null;this.src='{{ asset('public/images/product/zummXD2dvAtI.png') }}';" />
-                                                <p>{{$lims_product_list[4+$i*5]->name}}</p>
-                                                <span>{{$lims_product_list[4+$i*5]->code}}</span>
-                                            </td>
-                                        @else
-                                            <td style="border:none;"></td>
-                                        @endif
-                                    </tr>
-                                @endfor
-                                </tbody>
-                            </table>
+                        <div class="col-12 mt-1 table-container">
+                            <div id="pos-product-grid" class="pos-product-grid">
+                                @forelse($lims_product_list as $posProduct)
+                                    <button type="button" class="product-img sound-btn pos-product-tile" title="{{ $posProduct->name }}" data-product="{{ $posProduct->code . ' (' . $posProduct->name . ')' }}">
+                                        <img loading="lazy" decoding="async" src="{{ \App\Support\PosProductImage::url($posProduct->base_image ?? $posProduct->image) }}" alt="" onerror="this.onerror=null;this.src='{{ asset('public/images/product/zummXD2dvAtI.png') }}';" />
+                                        <p>{{ $posProduct->name }}</p>
+                                        <span>{{ $posProduct->code }}</span>
+                                    </button>
+                                @empty
+                                    <div class="pos-product-empty">No products yet. Use Category or search by name.</div>
+                                @endforelse
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2615,7 +2687,8 @@
         var points = <?php echo json_encode($points) ?>;
         var reward_point_setting = <?php echo json_encode($lims_reward_point_setting_data) ?>;
 
-        var product_row_number = <?php echo json_encode(optional($lims_pos_setting_data)->product_number ?? 0) ?>;
+        var product_row_number = <?php echo json_encode((int) (optional($lims_pos_setting_data)->product_number ?: 8)) ?>;
+        if (!product_row_number) { product_row_number = 8; }
         var rowindex;
         var customer_group_rate;
         var customer_group_discount_mode = 'markup';
@@ -2710,6 +2783,7 @@
         var coupon_list = <?php echo json_encode($lims_coupon_list) ?>;
         var currency = <?php echo json_encode($currency) ?>;
         window.POS_PRODUCT_IMAGE_BASE = @json(rtrim(asset('public/images/product'), '/') . '/');
+        window.POS_PRODUCT_THUMB_BASE = @json(rtrim(asset('public/images/product/thumbs'), '/') . '/');
         var newCustomerId = @json(session('new_customer_id'));
         var posMinSearchChars = {{ (int) (env('MINIMUM_SEARCH_CHAR') ?: 1) }};
 
@@ -3262,47 +3336,35 @@
             });
         });
 
+        function posEscapeHtml(value) {
+            return String(value == null ? '' : value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+        function posProductImgSrc(filename) {
+            var name = String(filename || 'zummXD2dvAtI.png').split(',')[0].trim();
+            if (!name) { name = 'zummXD2dvAtI.png'; }
+            return window.POS_PRODUCT_THUMB_BASE + name;
+        }
         function populateProduct(data) {
-            var tableData = '<table id="product-table" class="table no-shadow product-list"> <thead class="d-none"> <tr> <th></th> <th></th> <th></th> <th></th> <th></th> </tr></thead> <tbody><tr>';
-
-            if (Object.keys(data).length != 0) {
-                $.each(data['name'], function(index) {
-                    var product_info = data['code'][index]+' (' + data['name'][index] + ')';
-                    if(index % 5 == 0 && index != 0)
-                        tableData += '</tr><tr><td class="product-img sound-btn" title="'+data['name'][index]+'" data-product = "'+product_info+'"><img  src="'+window.POS_PRODUCT_IMAGE_BASE+data['image'][index]+'" width="100%" onerror="this.onerror=null;this.src=\''+window.POS_PRODUCT_IMAGE_BASE+'zummXD2dvAtI.png\';" /><p>'+data['name'][index]+'</p><span>'+data['code'][index]+'</span></td>';
-                    else
-                        tableData += '<td class="product-img sound-btn" title="'+data['name'][index]+'" data-product = "'+product_info+'"><img  src="'+window.POS_PRODUCT_IMAGE_BASE+data['image'][index]+'" width="100%" onerror="this.onerror=null;this.src=\''+window.POS_PRODUCT_IMAGE_BASE+'zummXD2dvAtI.png\';" /><p>'+data['name'][index]+'</p><span>'+data['code'][index]+'</span></td>';
+            var html = '<div id="pos-product-grid" class="pos-product-grid">';
+            if (data && data.name && data.name.length) {
+                $.each(data.name, function(index) {
+                    var name = data.name[index];
+                    var code = data.code[index];
+                    var img = data.image[index] || 'zummXD2dvAtI.png';
+                    var product_info = code + ' (' + name + ')';
+                    html += '<button type="button" class="product-img sound-btn pos-product-tile" title="'+posEscapeHtml(name)+'" data-product="'+posEscapeHtml(product_info)+'">';
+                    html += '<img loading="lazy" decoding="async" src="'+posProductImgSrc(img)+'" alt="" onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src=window.POS_PRODUCT_IMAGE_BASE+\''+posEscapeHtml(String(img).split(',')[0].trim())+'\';}else{this.src=window.POS_PRODUCT_IMAGE_BASE+\'zummXD2dvAtI.png\';}" />';
+                    html += '<p>'+posEscapeHtml(name)+'</p><span>'+posEscapeHtml(code)+'</span></button>';
                 });
-
-                if(data['name'].length % 5){
-                    var number = 5 - (data['name'].length % 5);
-                    while(number > 0)
-                    {
-                        tableData += '<td style="border:none;"></td>';
-                        number--;
-                    }
-                }
-
-                tableData += '</tr></tbody></table>';
-                $(".table-container").html(tableData);
-                $('#product-table').DataTable( {
-                    "order": [],
-                    'pageLength': product_row_number,
-                    'language': {
-                        'paginate': {
-                            'previous': '<i class="fa fa-angle-left"></i>',
-                            'next': '<i class="fa fa-angle-right"></i>'
-                        }
-                    },
-                    dom: 'tp'
-                });
-                $('table.product-list').hide();
-                $('table.product-list').show(500);
+            } else {
+                html += '<div class="pos-product-empty">No products in this view. Try Category or search by name.</div>';
             }
-            else{
-                tableData += '<td class="text-center">No data avaialable</td></tr></tbody></table>'
-                $(".table-container").html(tableData);
-            }
+            html += '</div>';
+            $(".table-container").html(html);
         }
 
         $('select[name="customer_id"]').on('change', function() {
@@ -4655,17 +4717,6 @@
 
         });
 
-        $('#product-table').DataTable( {
-            "order": [],
-            'pageLength': product_row_number,
-            'language': {
-                'paginate': {
-                    'previous': '<i class="fa fa-angle-left"></i>',
-                    'next': '<i class="fa fa-angle-right"></i>'
-                }
-            },
-            dom: 'tp'
-        });
     </script>
 @endsection
 @section('scripts')

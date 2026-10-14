@@ -40,4 +40,9 @@ class Sale extends Model
         return $this->hasMany('App\Product_Sale', 'sale_id', 'id');
     }
 
+    public function laundryOrder()
+    {
+        return $this->hasOne('App\LaundryOrder');
+    }
+
 }

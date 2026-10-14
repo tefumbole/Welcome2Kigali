@@ -91,17 +91,30 @@
     body.home-landing .home-version {
         position: absolute;
         z-index: 4;
-        right: max(1rem, env(safe-area-inset-right, 0px));
-        bottom: max(.7rem, env(safe-area-inset-bottom, 0px));
+        top: auto;
+        right: max(.55rem, env(safe-area-inset-right, 0px));
+        bottom: max(.55rem, env(safe-area-inset-bottom, 0px));
+        left: auto;
+        width: max-content;
+        max-width: calc(100% - 1.2rem);
+        height: auto;
         margin: 0;
-        padding: .25rem .65rem;
-        background: #0A0A0A;
+        padding: .2rem .5rem;
+        background: rgba(10, 10, 10, .72);
         color: #F7F1E8;
-        font-size: 11px;
+        font-size: 10px;
         letter-spacing: .06em;
         line-height: 1.2;
         border-radius: 2px;
         pointer-events: none;
+        white-space: nowrap;
+    }
+    @media (max-width: 767px) {
+        body.home-landing .home-version {
+            top: max(.45rem, env(safe-area-inset-top, 0px));
+            bottom: auto;
+            height: auto;
+        }
     }
 </style>
 @endpush

@@ -997,11 +997,24 @@ class SaleController extends Controller
         $role = Role::find(Auth::user()->role_id);
         $role->revokePermissionTo('search_all_products');
 
+        $laundryTicket = null;
+        try {
+            $itemNotes = $data['laundry_item_note'] ?? [];
+            $laundryTicket = app(\App\Services\LaundryService::class)->createFromSale(
+                $lims_sale_data->fresh('products'),
+                $data['sale_note'] ?? '',
+                is_array($itemNotes) ? $itemNotes : []
+            );
+        } catch (\Throwable $e) {
+            \Log::warning('Laundry ticket from sale failed: '.$e->getMessage(), ['sale_id' => $lims_sale_data->id]);
+        }
+
         if($data['paid_by_id'] == 9) {
             return back()->with('message', $message)        ;
         }
 
-        if ($data['payment_status'] == 4) {
+        $skipDelivery = $laundryTicket && $this->saleIsLaundryOnly($lims_sale_data);
+        if ($data['payment_status'] == 4 && ! $skipDelivery) {
             if ($lims_sale_data->products->count() > 0) {
                 Delivery::create([
                     'sale_id' => $lims_sale_data->id,
@@ -1660,7 +1673,10 @@ class SaleController extends Controller
                 ->orderBy('id', 'desc')
                 ->take($baseProductsLimit);
             if (!$canSearchAllProducts) {
-                $baseProductQuery->where('qty', '>', 0);
+                $baseProductQuery->where(function ($q) {
+                    $q->where('qty', '>', 0)
+                        ->orWhereIn('type', ['laundry', 'service', 'digital', 'combo']);
+                });
             }
             $lims_product_list = $baseProductQuery->get();
 
@@ -1678,7 +1694,10 @@ class SaleController extends Controller
                 ->orderBy('id', 'desc')
                 ->take($variantProductsLimit);
             if (!$canSearchAllProducts) {
-                $variantProductQuery->where('qty', '>', 0);
+                $variantProductQuery->where(function ($q) {
+                    $q->where('qty', '>', 0)
+                        ->orWhereIn('type', ['laundry', 'service', 'digital', 'combo']);
+                });
             }
             $lims_product_list_with_variant = $variantProductQuery->get();
 
@@ -1695,6 +1714,18 @@ class SaleController extends Controller
                 }
             }
 
+            if (count($lims_product_list) < 1) {
+                $fallback = Product::select('id', 'name', 'code', 'image')
+                    ->where('is_active', true)
+                    ->orderBy('id', 'desc')
+                    ->take(120)
+                    ->get();
+                foreach ($fallback as $product) {
+                    $images = explode(",", (string) $product->image);
+                    $product->base_image = $images[0];
+                    $lims_product_list[] = $product;
+                }
+            }
             $product_number = count($lims_product_list);
             $lims_pos_setting_data = PosSetting::latest()->first();
             $general_setting_defaults = \App\GeneralSetting::latest()->first();
@@ -1833,6 +1864,13 @@ class SaleController extends Controller
             ['is_active', true],
             ['featured', true]
         ])->select('products.id', 'products.name', 'products.code', 'products.image', 'products.is_variant')->get();
+        if ($lims_product_list->isEmpty()) {
+            $lims_product_list = Product::where('is_active', true)
+                ->select('products.id', 'products.name', 'products.code', 'products.image', 'products.is_variant')
+                ->orderBy('id', 'desc')
+                ->take(120)
+                ->get();
+        }
 
         $index = 0;
         foreach ($lims_product_list as $product) {
@@ -2654,6 +2692,22 @@ class SaleController extends Controller
             return 4;
         }
         return $paidAmount > 0 ? 3 : 2;
+    }
+
+    private function saleIsLaundryOnly(Sale $sale)
+    {
+        $lines = Product_Sale::where('sale_id', $sale->id)->get();
+        if ($lines->isEmpty()) {
+            return false;
+        }
+        foreach ($lines as $line) {
+            $product = Product::find($line->product_id);
+            if (! $product || ! \App\Support\LaundryCatalog::isLaundryProduct($product)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function barcodePng($ref)

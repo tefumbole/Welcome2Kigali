@@ -83,4 +83,9 @@ class Product extends Model
             ['featured', 1]
         ]);
     }
+
+    public function isLaundryItem()
+    {
+        return \App\Support\LaundryCatalog::isLaundryProduct($this);
+    }
 }

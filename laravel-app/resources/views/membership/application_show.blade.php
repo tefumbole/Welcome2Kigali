@@ -8,6 +8,7 @@
         <a href="{{ route('membership.admin.applications') }}">&larr; Applications</a>
         <h1 class="cm-title">{{ $application->reference }}</h1>
         @if(session('message'))<div class="alert alert-success">{{ session('message') }}</div>@endif
+        @if(session('not_permitted'))<div class="alert alert-danger">{{ session('not_permitted') }}</div>@endif
         <div class="row">
             <div class="col-md-7">
                 <div class="cm-page-card p-3 mb-3">
@@ -67,6 +68,13 @@
                     @if($application->admin_note)
                         <hr>
                         <p><strong>Admin note:</strong><br>{{ $application->admin_note }}</p>
+                    @endif
+                    @if(!empty($canDelete))
+                        <hr>
+                        <form method="POST" action="{{ route('membership.admin.applications.destroy', $application->id) }}" onsubmit="return confirm('Delete this application? This cannot be undone.');">
+                            @csrf
+                            <button class="btn btn-outline-danger btn-block">Delete application</button>
+                        </form>
                     @endif
                 </div>
             </div>

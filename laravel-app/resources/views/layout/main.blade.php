@@ -1610,6 +1610,23 @@
                             </li>
                         @endif
                         @php
+                            $laundry_module_permission = \Spatie\Permission\Models\Permission::where('name', 'laundry_module')->first();
+                            $laundry_module_active = $role && $laundry_module_permission ? \DB::table('role_has_permissions')->where([
+                                ['permission_id', optional($laundry_module_permission)->id],
+                                ['role_id', $role->id]
+                            ])->first() : null;
+                        @endphp
+                        @if($laundry_module_active || in_array(strtolower(optional($role)->name), ['admin', 'owner', 'super admin'], true))
+                            <li><a href="#laundry-module" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-tint"></i><span>{{ __('sidebar.laundry') }}</span></a>
+                                <ul id="laundry-module" class="collapse list-unstyled ">
+                                    <li id="laundry-received-menu"><a href="{{ route('laundry.received') }}">{{ __('sidebar.laundry_received') }}</a></li>
+                                    <li id="laundry-cleaning-menu"><a href="{{ route('laundry.cleaning') }}">{{ __('sidebar.laundry_cleaning') }}</a></li>
+                                    <li id="laundry-ready-menu"><a href="{{ route('laundry.ready') }}">{{ __('sidebar.laundry_ready') }}</a></li>
+                                    <li id="laundry-collect-menu"><a href="{{ route('laundry.collect') }}">{{ __('sidebar.laundry_collect') }}</a></li>
+                                </ul>
+                            </li>
+                        @endif
+                        @php
                             $timesheets_module_permission = \Spatie\Permission\Models\Permission::where('name', 'timesheets_module')->first();
                             $timesheets_module_active = $role && $timesheets_module_permission ? \DB::table('role_has_permissions')->where([
                                 ['permission_id', optional($timesheets_module_permission)->id],

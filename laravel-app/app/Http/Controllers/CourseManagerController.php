@@ -46,6 +46,41 @@ class CourseManagerController extends Controller
         abort(403, 'You are not allowed to access Course Management.');
     }
 
+    protected function canDeleteRegistrations()
+    {
+        $user = Auth::user();
+        $role = $user ? Role::find($user->role_id) : null;
+        $isAdmin = $role && in_array(strtolower($role->name), ['admin', 'owner', 'super admin'], true);
+
+        return $isAdmin || in_array('courses.delete', $this->all_permission, true);
+    }
+
+    protected function authorizeCourseDelete()
+    {
+        if ($this->canDeleteRegistrations()) {
+            return;
+        }
+        abort(403, 'You are not allowed to delete registrations.');
+    }
+
+    protected function idList($raw)
+    {
+        if (! is_array($raw)) {
+            $raw = preg_split('/\s*,\s*/', (string) $raw) ?: [];
+        }
+        $ids = [];
+        foreach ($raw as $value) {
+            foreach (preg_split('/\s*,\s*/', (string) $value) ?: [] as $id) {
+                $id = trim($id);
+                if ($id !== '') {
+                    $ids[] = $id;
+                }
+            }
+        }
+
+        return array_values(array_unique($ids));
+    }
+
     public function index(Request $request)
     {
         $this->authorizeCourses('courses.view');
@@ -164,8 +199,21 @@ class CourseManagerController extends Controller
         $this->authorizeCourses('courses.view');
         $stats = $this->courses->registrationStats();
         $items = $this->courses->registrations($request->get('q'), $request->get('status'));
+        $canDelete = $this->canDeleteRegistrations();
 
-        return view('course_manager.registrations', compact('items', 'stats'));
+        return view('course_manager.registrations', compact('items', 'stats', 'canDelete'));
+    }
+
+    public function destroyRegistrations(Request $request)
+    {
+        $this->authorizeCourseDelete();
+        $deleted = $this->courses->deleteRegistrations($this->idList($request->input('ids', [])));
+        if ($deleted < 1) {
+            return back()->with('not_permitted', 'Select at least one registration to delete.');
+        }
+
+        return redirect()->route('courses.registrations')
+            ->with('message', $deleted === 1 ? '1 registration deleted.' : $deleted.' registrations deleted.');
     }
 
     public function updateRegistration(Request $request, $id)

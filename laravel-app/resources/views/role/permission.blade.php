@@ -1772,6 +1772,123 @@
                                     <th colspan="5">Digital Invitations Module End</th>
                                 </tr>
 
+                                {{-- Membership --}}
+                                <tr class="permission-section-header">
+                                    <th colspan="5">
+                                        <div class="checkbox">
+                                            <input type="checkbox" class="section-select-all" id="section-membership-module">
+                                            <label for="section-membership-module">Membership</label>
+                                        </div>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>Membership</td>
+                                    <td class="report-permissions" colspan="5">
+                                        @foreach([
+                                            'membership_module' => 'Membership Module',
+                                            'memberships.view' => 'View',
+                                            'memberships.approve' => 'Approve',
+                                            'memberships.reject' => 'Reject',
+                                            'memberships.suspend' => 'Suspend',
+                                            'memberships.renew' => 'Renew',
+                                            'memberships.settings' => 'Settings',
+                                            'memberships.promotions' => 'Promotions',
+                                            'memberships.benefits' => 'Benefits',
+                                            'memberships.payments' => 'Payments',
+                                            'memberships.documents' => 'Documents',
+                                            'memberships.reports' => 'Reports',
+                                            'memberships.delete' => 'Delete applications',
+                                        ] as $perm => $label)
+                                        @php $pid = str_replace('.', '_', $perm); @endphp
+                                        <span>
+                                            <div class="checkbox">
+                                                @if(in_array($perm, $all_permission))
+                                                    <input type="checkbox" value="1" id="{{ $pid }}" name="{{ $perm }}" checked>
+                                                @else
+                                                    <input type="checkbox" value="1" id="{{ $pid }}" name="{{ $perm }}">
+                                                @endif
+                                                <label for="{{ $pid }}" class="padding05">{{ $label }}</label>
+                                            </div>
+                                        </span>
+                                        @endforeach
+                                    </td>
+                                </tr>
+                                <tr class="permission-section-end">
+                                    <th colspan="5">Membership End</th>
+                                </tr>
+                                <tr class="permissions-header">
+                                    <th colspan="5">
+                                        <div class="checkbox">
+                                            <input type="checkbox" id="section-laundry-module" class="section-toggle">
+                                            <label for="section-laundry-module">Laundry</label>
+                                        </div>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>Laundry</td>
+                                    <td class="report-permissions" colspan="5">
+                                        @foreach([
+                                            'laundry_module' => 'Laundry Module',
+                                            'laundry.received' => 'Received',
+                                            'laundry.cleaning' => 'Cleaning',
+                                            'laundry.ready' => 'Ready for collection',
+                                            'laundry.collect' => 'Collect',
+                                        ] as $perm => $label)
+                                        @php $pid = str_replace('.', '_', $perm); @endphp
+                                        <span>
+                                            <div class="checkbox">
+                                                @if(in_array($perm, $all_permission))
+                                                    <input type="checkbox" value="1" id="{{ $pid }}" name="{{ $perm }}" checked>
+                                                @else
+                                                    <input type="checkbox" value="1" id="{{ $pid }}" name="{{ $perm }}">
+                                                @endif
+                                                <label for="{{ $pid }}" class="padding05">{{ $label }}</label>
+                                            </div>
+                                        </span>
+                                        @endforeach
+                                    </td>
+                                </tr>
+                                <tr class="permission-section-end">
+                                    <th colspan="5">Laundry End</th>
+                                </tr>
+
+                                {{-- Course Manager --}}
+                                <tr class="permission-section-header">
+                                    <th colspan="5">
+                                        <div class="checkbox">
+                                            <input type="checkbox" class="section-select-all" id="section-courses-module">
+                                            <label for="section-courses-module">Course Manager</label>
+                                        </div>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>Courses</td>
+                                    <td class="report-permissions" colspan="5">
+                                        @foreach([
+                                            'courses_module' => 'Course Module',
+                                            'courses.view' => 'View',
+                                            'courses.create' => 'Add',
+                                            'courses.update' => 'Edit',
+                                            'courses.delete' => 'Delete courses & registrations',
+                                        ] as $perm => $label)
+                                        @php $pid = str_replace('.', '_', $perm); @endphp
+                                        <span>
+                                            <div class="checkbox">
+                                                @if(in_array($perm, $all_permission))
+                                                    <input type="checkbox" value="1" id="{{ $pid }}" name="{{ $perm }}" checked>
+                                                @else
+                                                    <input type="checkbox" value="1" id="{{ $pid }}" name="{{ $perm }}">
+                                                @endif
+                                                <label for="{{ $pid }}" class="padding05">{{ $label }}</label>
+                                            </div>
+                                        </span>
+                                        @endforeach
+                                    </td>
+                                </tr>
+                                <tr class="permission-section-end">
+                                    <th colspan="5">Course Manager End</th>
+                                </tr>
+
                                 {{--                                Booking Module--}}
                                 <tr class="permission-section-header">
                                     <th colspan="5">

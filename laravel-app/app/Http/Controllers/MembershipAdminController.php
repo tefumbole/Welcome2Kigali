@@ -20,6 +20,7 @@ use App\Services\MembershipService;
 use App\Support\MembershipQr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use Spatie\Permission\Models\Role;
 
@@ -62,6 +63,37 @@ class MembershipAdminController extends Controller
             return;
         }
         abort(403, 'Sales staff cannot change membership discount or settings.');
+    }
+
+    protected function canDeleteApplications()
+    {
+        return $this->isMembershipAdminRole() || in_array('memberships.delete', $this->all_permission, true);
+    }
+
+    protected function authorizeMembershipDelete()
+    {
+        if ($this->canDeleteApplications()) {
+            return;
+        }
+        abort(403, 'You are not allowed to delete applications.');
+    }
+
+    protected function idList($raw)
+    {
+        if (! is_array($raw)) {
+            $raw = preg_split('/\s*,\s*/', (string) $raw) ?: [];
+        }
+        $ids = [];
+        foreach ($raw as $value) {
+            foreach (preg_split('/\s*,\s*/', (string) $value) ?: [] as $id) {
+                $id = (int) trim($id);
+                if ($id > 0) {
+                    $ids[] = $id;
+                }
+            }
+        }
+
+        return array_values(array_unique($ids));
     }
 
     protected function isMembershipAdminRole()
@@ -142,34 +174,64 @@ class MembershipAdminController extends Controller
             });
         }
         $items = $q->paginate(30);
+        $canDelete = $this->canDeleteApplications();
 
-        return view('membership.applications', compact('items'));
+        return view('membership.applications', compact('items', 'canDelete'));
     }
 
     public function showApplication($id)
     {
         $this->authorizeMembership();
         $application = MembershipApplication::with(['plan', 'agreement', 'documents', 'membership.customer', 'promotion'])->findOrFail($id);
+        $canDelete = $this->canDeleteApplications();
 
-        return view('membership.application_show', compact('application'));
+        return view('membership.application_show', compact('application', 'canDelete'));
+    }
+
+    public function destroyApplication($id)
+    {
+        $this->authorizeMembershipDelete();
+        $deleted = $this->memberships->deleteApplications([(int) $id]);
+
+        return redirect()->route('membership.admin.applications')
+            ->with('message', $deleted ? 'Application deleted.' : 'Nothing was deleted.');
+    }
+
+    public function destroyApplications(Request $request)
+    {
+        $this->authorizeMembershipDelete();
+        $deleted = $this->memberships->deleteApplications($this->idList($request->input('ids', [])));
+        if ($deleted < 1) {
+            return back()->with('not_permitted', 'Select at least one application to delete.');
+        }
+
+        return redirect()->route('membership.admin.applications')
+            ->with('message', $deleted === 1 ? '1 application deleted.' : $deleted.' applications deleted.');
     }
 
     public function approve($id)
     {
         $this->authorizeMembership('memberships.approve');
         $application = MembershipApplication::findOrFail($id);
-        $membership = $this->memberships->approve($application, Auth::id());
-        $payUrl = null;
-        if ($membership->status === 'APPROVED_PENDING_PAYMENT' && $application->plan_id) {
-            $plan = MembershipPlan::find($application->plan_id);
-            if ($plan) {
-                $payment = $this->memberships->createPendingPayment($membership, $plan, false);
-                $payUrl = MembershipQr::renewUrl($membership).'?pay='.$payment->id;
-            }
-        }
         try {
-            $this->notifier->approved($membership, $payUrl);
+            $membership = $this->memberships->approve($application, Auth::id());
+            $payUrl = null;
+            if ($membership->status === 'APPROVED_PENDING_PAYMENT' && $application->plan_id) {
+                $plan = MembershipPlan::find($application->plan_id);
+                if ($plan) {
+                    $payment = $this->memberships->createPendingPayment($membership, $plan, false);
+                    $payUrl = MembershipQr::renewUrl($membership).'?pay='.$payment->id;
+                }
+            }
+            try {
+                $this->notifier->approved($membership, $payUrl);
+            } catch (\Throwable $e) {
+                Log::warning('Membership approval notice failed: '.$e->getMessage());
+            }
         } catch (\Throwable $e) {
+            Log::error('Membership approve failed: '.$e->getMessage(), ['application_id' => $id]);
+
+            return back()->with('not_permitted', 'Could not approve this application. '.$e->getMessage());
         }
 
         return redirect()->route('membership.admin.applications.show', $id)->with('message', 'Application approved. Membership '.$membership->number.'.');

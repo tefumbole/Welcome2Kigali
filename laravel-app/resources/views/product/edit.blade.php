@@ -25,7 +25,7 @@
                                                 @endif
                                                 <option value="digital">Digital</option>
                                                 <option value="donation">Donation</option>
-                                                <option value="service">Service</option>
+                                                <option value="laundry">Laundry</option>
                                             </select>
                                             <input type="hidden" name="type_hidden" value="{{$lims_product_data->type}}">
                                         </div>
@@ -476,7 +476,7 @@
 
     $("#digital").hide();
     $("#combo").hide();
-    $("select[name='type']").val($("input[name='type_hidden']").val());
+    $("select[name='type']").val($("input[name='type_hidden']").val() === 'service' ? 'laundry' : $("input[name='type_hidden']").val());
     variantShowHide();
     diffPriceShowHide();
     if(is_batch)
@@ -499,7 +499,7 @@
         hide();
         $("#combo").show();
     }
-    else if($("input[name='type_hidden']").val() == "donation" || $("input[name='type_hidden']").val() == "service"){
+    else if($("input[name='type_hidden']").val() == "donation" || $("input[name='type_hidden']").val() == "service" || $("input[name='type_hidden']").val() == "laundry"){
         $("input[name='cost']").prop('required',false);
         $("select[name='unit_id']").prop('required',false);
         $("input[name='file']").prop('required',false);
@@ -641,7 +641,7 @@
             $("#digital").hide();
             $("#combo").hide();
             $("input[name='price']").prop('disabled',false);
-        } else if($(this).val() == 'donation' || $(this).val() == 'service'){
+        } else if($(this).val() == 'donation' || $(this).val() == 'service' || $(this).val() == 'laundry'){
             $("input[name='cost']").prop('required',false);
             $("select[name='unit_id']").prop('required',false);
             $("input[name='file']").prop('required',false);

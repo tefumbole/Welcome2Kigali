@@ -1974,6 +1974,41 @@ class RoleController extends Controller
             }
         }
 
+        foreach ([
+            'membership_module',
+            'memberships.view',
+            'memberships.approve',
+            'memberships.reject',
+            'memberships.suspend',
+            'memberships.renew',
+            'memberships.settings',
+            'memberships.promotions',
+            'memberships.benefits',
+            'memberships.payments',
+            'memberships.documents',
+            'memberships.reports',
+            'memberships.delete',
+            'laundry_module',
+            'laundry.received',
+            'laundry.cleaning',
+            'laundry.ready',
+            'laundry.collect',
+            'courses_module',
+            'courses.view',
+            'courses.create',
+            'courses.update',
+            'courses.delete',
+        ] as $modPerm) {
+            if ($request->has($modPerm)) {
+                $permission = Permission::firstOrCreate(['name' => $modPerm]);
+                if (! $role->hasPermissionTo($modPerm)) {
+                    $role->givePermissionTo($permission);
+                }
+            } else {
+                $role->revokePermissionTo($modPerm);
+            }
+        }
+
         return redirect('role')->with('message', 'Permission updated successfully');
     }
 

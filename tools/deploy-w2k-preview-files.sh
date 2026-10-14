@@ -271,6 +271,30 @@ FILES=(
   app/Http/Controllers/HelpController.php
   resources/views/help/index.blade.php
   resources/views/product/edit.blade.php
+  app/LaundryOrder.php
+  app/LaundryOrderItem.php
+  app/Support/LaundryQr.php
+  app/Support/LaundryCatalog.php
+  app/Support/PosProductImage.php
+  app/Product.php
+  app/Console/Commands/CompressPosImages.php
+  app/Services/LaundryService.php
+  database/migrations/2026_10_14_180000_rename_services_category_to_laundry.php
+  app/Http/Controllers/LaundryController.php
+  app/Http/Controllers/LaundrySignatureController.php
+  database/migrations/2026_10_14_120000_create_laundry_module.php
+  resources/views/laundry/received.blade.php
+  resources/views/laundry/cleaning.blade.php
+  resources/views/laundry/ready.blade.php
+  resources/views/laundry/collect.blade.php
+  resources/views/laundry/show.blade.php
+  resources/views/laundry/scan.blade.php
+  resources/views/laundry/client_sign.blade.php
+  resources/views/laundry/client_signed.blade.php
+  resources/views/laundry/client_link_expired.blade.php
+  resources/views/laundry/partials/tabs.blade.php
+  resources/views/laundry/partials/flash.blade.php
+  resources/views/laundry/partials/items.blade.php
   public/uploads/membership/.gitkeep
   public/branding/footer-swoosh.svg
   public/branding/footer-wave.svg
@@ -300,16 +324,17 @@ for f in "${FILES[@]}"; do
   fi
 done
 
-/usr/bin/rsync -az --relative "${EXISTING[@]}" "$SSH_HOST:$REMOTE/"
-/usr/bin/rsync -az --relative \
+/usr/bin/rsync -rltz --relative "${EXISTING[@]}" "$SSH_HOST:$REMOTE/"
+/usr/bin/rsync -rltz --relative \
   resources/views/membership \
   resources/views/beyond \
+  resources/views/laundry \
   resources/views/help \
   public/branding/help \
   "$SSH_HOST:$REMOTE/"
 
 # Demo-lock blades not always listed in FILES
-/usr/bin/rsync -az --relative \
+/usr/bin/rsync -rltz --relative \
   resources/views/adjustment/index.blade.php \
   resources/views/attendance/index.blade.php \
   resources/views/biller/index.blade.php \
@@ -351,13 +376,14 @@ done
   "$SSH_HOST:$REMOTE/"
 
 if [ -f "$APP/app/Support/SiteI18n.php" ]; then
-  /usr/bin/rsync -az --relative app/Support/SiteI18n.php "$SSH_HOST:$REMOTE/"
+  /usr/bin/rsync -rltz --relative app/Support/SiteI18n.php "$SSH_HOST:$REMOTE/"
 fi
 
 /usr/bin/ssh -o BatchMode=yes -o ConnectTimeout=25 "$SSH_HOST" 'bash -s' <<EOS
 set -e
 APP=$REMOTE
 mkdir -p "\$APP/public/uploads/membership" \
+  "\$APP/public/uploads/laundry/signatures" \
   "\$APP/resources/views/membership" \
   "\$APP/resources/views/beyond/membership"
 # macOS rsync -a keeps 700 files/dirs that www-data cannot read
@@ -389,6 +415,9 @@ sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_21_133000_add_commission_to_general_settings.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_21_153500_grant_superadmin_all_permissions.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_09_22_155000_add_memberships_delete_permission.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_14_120000_create_laundry_module.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_14_180000_rename_services_category_to_laundry.php
+sudo -u www-data php "\$APP/artisan" images:compress-pos || true
 sudo -u www-data php "\$APP/artisan" permission:cache-reset || true
 sudo -u www-data php "\$APP/artisan" view:clear
 sudo -u www-data php "\$APP/artisan" cache:clear

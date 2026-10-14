@@ -134,9 +134,7 @@
                                                 @if(auth()->user()->role_id != 12 || auth()->user()->can_donation == 1)
                                                     <option value="donation">Donation</option>
                                                 @endif
-                                                @if(auth()->user()->role_id != 12 || auth()->user()->can_service == 1)
-                                                    <option value="service">Service</option>
-                                                @endif
+                                                <option value="laundry">Laundry</option>
                                             </select>
                                         </div>
                                     </div>
@@ -658,6 +656,37 @@
             $(".featured").hide();
             $(".promotion").hide();
             $("#batch-option").hide();
+        } else if($(this).val() == 'laundry') {
+            $("input[name='cost']").prop('required',false);
+            $("select[name='unit_id']").prop('required',false);
+            $("input[name='file']").prop('required',false);
+            $("input[name='file']").hide();
+            $("#cost").hide(300);
+            $("#unit").hide(300);
+            $("#alert-qty").hide(300);
+            $("#variant-option").hide(300);
+            $("#diffPrice-option").hide(300);
+            $("#digital").hide(300);
+            $("#combo").hide(300);
+            $("input[name='price']").prop('disabled',false);
+            $(".rent_price_per_hour").hide();
+            $(".rent_price_per_day").hide();
+            $(".rent_price_per_month").hide();
+            $(".qty").hide();
+            $("input[name='cost']").val(0);
+            $(".category_id").hide();
+            $("select[name='category_id']").prop('required', false);
+            $(".barcode_symbology").hide();
+            $(".brand_id").hide();
+            $(".tax_id").hide();
+            $(".tax_method").hide();
+            $(".product_location").hide();
+            $(".featured").hide();
+            $(".promotion").hide();
+            $("#batch-option").hide();
+            $("#is-variant").prop("checked", false);
+            $("#is-diffPrice").prop("checked", false);
+            $("#variant-section, #diffPrice-section").hide(300);
         }
     });
 

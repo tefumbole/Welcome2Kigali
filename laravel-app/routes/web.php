@@ -266,6 +266,9 @@ Route::get('/booking/invoice/{id}', 'OrderController@bookingGenerateInvoice')->n
 
 
 Route::get('/sale/scan/{id}', 'QRController@saleScan')->name('sale.scan');
+Route::get('/laundry/scan/{token}', 'LaundrySignatureController@scan')->name('laundry.scan');
+Route::get('/laundry-collect/{token}', 'LaundrySignatureController@show')->name('laundry.client.show');
+Route::post('/laundry-collect/{token}/sign', 'LaundrySignatureController@sign')->name('laundry.client.sign');
 Route::get('/quotation/scan/{id}', 'QRController@quotationScan')->name('quotation.scan');
 Route::get('/letters/scan/{id}', 'QRController@letterScan')->name('letters.scan');
 
@@ -472,6 +475,7 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
     Route::post('/admin/courses/{id}/clone', 'CourseManagerController@cloneCourse')->name('courses.clone');
     Route::get('/admin/courses/{id}/feedback', 'CourseManagerController@courseFeedback')->name('courses.course-feedback');
     Route::get('/admin/course-registrations', 'CourseManagerController@registrations')->name('courses.registrations');
+    Route::post('/admin/course-registrations/delete', 'CourseManagerController@destroyRegistrations')->name('courses.registrations.destroy-many');
     Route::post('/admin/course-registrations/{id}', 'CourseManagerController@updateRegistration')->name('courses.registrations.update');
     Route::get('/admin/course-invoices', 'CourseManagerController@invoices')->name('courses.invoices');
     Route::get('/admin/course-certificates', 'CourseManagerController@certificates')->name('courses.certificates');
@@ -481,9 +485,23 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
     Route::get('/admin/course-feedback', 'CourseManagerController@feedback')->name('courses.feedback');
     Route::post('/admin/course-feedback/{id}/delete', 'CourseManagerController@destroyFeedback')->name('courses.feedback.destroy');
 
+    Route::get('/admin/laundry', 'LaundryController@received')->name('laundry.received');
+    Route::post('/admin/laundry/received', 'LaundryController@storeReceived')->name('laundry.received.store');
+    Route::get('/admin/laundry/cleaning', 'LaundryController@cleaning')->name('laundry.cleaning');
+    Route::post('/admin/laundry/{id}/start-cleaning', 'LaundryController@startCleaning')->name('laundry.cleaning.start');
+    Route::get('/admin/laundry/ready', 'LaundryController@ready')->name('laundry.ready');
+    Route::post('/admin/laundry/{id}/ready', 'LaundryController@markReady')->name('laundry.ready.mark');
+    Route::post('/admin/laundry/{id}/pay', 'LaundryController@pay')->name('laundry.pay');
+    Route::get('/admin/laundry/collect', 'LaundryController@collect')->name('laundry.collect');
+    Route::post('/admin/laundry/{id}/collect', 'LaundryController@sendCollect')->name('laundry.collect.send');
+    Route::get('/admin/laundry/customer-price', 'LaundryController@customerPrice')->name('laundry.customer-price');
+    Route::get('/admin/laundry/{id}', 'LaundryController@show')->name('laundry.show');
+
     Route::get('/admin/membership', 'MembershipAdminController@dashboard')->name('membership.admin.dashboard');
     Route::get('/admin/membership/applications', 'MembershipAdminController@applications')->name('membership.admin.applications');
+    Route::post('/admin/membership/applications/delete', 'MembershipAdminController@destroyApplications')->name('membership.admin.applications.destroy-many');
     Route::get('/admin/membership/applications/{id}', 'MembershipAdminController@showApplication')->name('membership.admin.applications.show');
+    Route::post('/admin/membership/applications/{id}/delete', 'MembershipAdminController@destroyApplication')->name('membership.admin.applications.destroy');
     Route::post('/admin/membership/applications/{id}/approve', 'MembershipAdminController@approve')->name('membership.admin.applications.approve');
     Route::post('/admin/membership/applications/{id}/reject', 'MembershipAdminController@reject')->name('membership.admin.applications.reject');
     Route::post('/admin/membership/applications/{id}/more', 'MembershipAdminController@moreInfo')->name('membership.admin.applications.more');

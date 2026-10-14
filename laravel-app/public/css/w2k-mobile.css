@@ -73,9 +73,12 @@ button, a, [role="button"] {
         object-position: 14% 28%;
     }
     body.home-landing .home-version {
-        right: .55rem;
-        bottom: auto;
-        top: .55rem;
+        top: max(.45rem, env(safe-area-inset-top, 0px)) !important;
+        right: .55rem !important;
+        bottom: auto !important;
+        left: auto !important;
+        width: max-content !important;
+        height: auto !important;
         font-size: 10px;
         z-index: 5;
     }
@@ -271,10 +274,26 @@ button, a, [role="button"] {
         height: auto !important;
         overflow: auto !important;
     }
-    body.beyond-pos-active .transaction-list,
+    body.beyond-pos-active .transaction-list {
+        height: auto !important;
+        max-height: 42vh !important;
+    }
     body.beyond-pos-active .table-container {
         height: auto !important;
-        max-height: 46vh !important;
+        max-height: none !important;
+    }
+    body.beyond-pos-active .pos-side,
+    body.beyond-pos-active .products-side {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    body.beyond-pos-active .pos-toolbar-actions .btn,
+    body.beyond-pos-active .pos-toolbar-actions a.btn {
+        min-width: calc(50% - 6px);
+        font-size: 12px;
+    }
+    body.beyond-pos-active .pos-product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     }
     body.beyond-pos-active .payment-options {
         left: 0 !important;

@@ -23,6 +23,7 @@ use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
@@ -42,7 +43,74 @@ class MembershipService
             }
         }
 
-        return CustomerGroup::where('name', self::GROUP_NAME)->first();
+        $group = CustomerGroup::where('name', self::GROUP_NAME)->first();
+        if ($group) {
+            MembershipSetting::put('member_group_id', (string) $group->id);
+
+            return $group;
+        }
+
+        return $this->createCustomerGroup([
+            'name' => self::GROUP_NAME,
+            'percentage' => (string) MembershipSetting::get('member_discount_percent', 10),
+            'discount_mode' => 'discount',
+            'is_active' => 1,
+            'is_system' => 1,
+        ], 'member_group_id');
+    }
+
+    public function defaultCustomerGroupId()
+    {
+        $memberId = optional($this->memberGroup())->id;
+        $walkIn = CustomerGroup::query()
+            ->when($memberId, function ($q) use ($memberId) {
+                $q->where('id', '!=', $memberId);
+            });
+        if (\App\Support\SchemaColumns::has('customer_groups', 'is_system')) {
+            $walkIn->where(function ($q) {
+                $q->where('is_system', 0)->orWhereNull('is_system');
+            });
+        }
+        $walkIn = $walkIn->orderByDesc('is_active')->orderBy('id')->first();
+        if ($walkIn) {
+            return (int) $walkIn->id;
+        }
+
+        $general = $this->createCustomerGroup([
+            'name' => 'General',
+            'percentage' => '0',
+            'discount_mode' => 'markup',
+            'is_active' => 1,
+            'is_system' => 0,
+        ]);
+
+        return (int) $general->id;
+    }
+
+    protected function createCustomerGroup(array $data, $settingKey = null)
+    {
+        $existing = CustomerGroup::where('name', $data['name'])->first();
+        if ($existing) {
+            if ($settingKey) {
+                MembershipSetting::put($settingKey, (string) $existing->id);
+            }
+
+            return $existing;
+        }
+
+        $group = new CustomerGroup();
+        foreach (\App\Support\SchemaColumns::forTable('customer_groups', $data) as $key => $value) {
+            $group->{$key} = $value;
+        }
+        if ($group->percentage === null || $group->percentage === '') {
+            $group->percentage = '0';
+        }
+        $group->save();
+        if ($settingKey) {
+            MembershipSetting::put($settingKey, (string) $group->id);
+        }
+
+        return $group;
     }
 
     public function memberDiscountPercent()
@@ -105,8 +173,7 @@ class MembershipService
             return;
         }
         if ($group && (int) $customer->customer_group_id === (int) $group->id) {
-            $fallback = $membership->previous_customer_group_id
-                ?: optional(CustomerGroup::where('is_system', 0)->where('is_active', 1)->orderBy('id')->first())->id;
+            $fallback = $membership->previous_customer_group_id ?: $this->defaultCustomerGroupId();
             $customer->customer_group_id = $fallback;
             $customer->save();
         }
@@ -213,9 +280,8 @@ class MembershipService
             $customer = Customer::whereRaw("REPLACE(REPLACE(REPLACE(COALESCE(phone_number,''), '+', ''), ' ', ''), '-', '') LIKE ?", ['%'.substr($phone, -9).'%'])->first();
         }
         if (! $customer) {
-            $walkIn = CustomerGroup::where('is_system', 0)->where('is_active', 1)->orderBy('id')->first();
             $customer = Customer::create(\App\Support\SchemaColumns::forTable('customers', [
-                'customer_group_id' => $walkIn ? $walkIn->id : null,
+                'customer_group_id' => $this->defaultCustomerGroupId(),
                 'name' => $application->full_name,
                 'company_name' => $application->company_name,
                 'email' => $application->email,
@@ -627,6 +693,68 @@ class MembershipService
         }
 
         return Membership::where('customer_id', $customer->id)->orderByDesc('id')->first();
+    }
+
+    public function deleteApplications(array $ids)
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $ids))));
+        $deleted = 0;
+        foreach (MembershipApplication::whereIn('id', $ids)->get() as $application) {
+            $this->deleteApplication($application);
+            $deleted++;
+        }
+
+        return $deleted;
+    }
+
+    public function deleteApplication(MembershipApplication $application)
+    {
+        DB::transaction(function () use ($application) {
+            $membership = $application->membership;
+            $this->deleteStoredFile($application->signature_image);
+            foreach ($application->documents as $doc) {
+                $this->deleteStoredFile($doc->path);
+                $doc->delete();
+            }
+            MembershipAuditLog::where('application_id', $application->id)->delete();
+
+            $membershipId = optional($membership)->id;
+            if ($membership) {
+                if (in_array($membership->status, Membership::ACTIVE_STATUSES, true)) {
+                    $membership->application_id = null;
+                    $membership->save();
+                } else {
+                    MembershipPayment::where('membership_id', $membership->id)->delete();
+                    MembershipBenefitRedemption::where('membership_id', $membership->id)->delete();
+                    MembershipNotification::where('membership_id', $membership->id)->delete();
+                    MembershipDocument::where('membership_id', $membership->id)->delete();
+                    $this->deleteStoredFile($membership->confirmation_pdf);
+                    $membership->delete();
+                    $membershipId = null;
+                }
+            }
+
+            $meta = [
+                'reference' => $application->reference,
+                'name' => $application->full_name,
+            ];
+            $application->delete();
+            $this->audit($membershipId, null, 'application.deleted', $meta);
+        });
+    }
+
+    protected function deleteStoredFile($path)
+    {
+        $path = trim((string) $path);
+        if ($path === '') {
+            return;
+        }
+        $relative = ltrim(preg_replace('#^public/#', '', $path), '/');
+        foreach (array_unique([$path, public_path($relative), public_path($path)]) as $full) {
+            if (is_string($full) && $full !== '' && is_file($full)) {
+                @unlink($full);
+            }
+        }
     }
 
     public function audit($membershipId, $applicationId, $action, array $meta = [])

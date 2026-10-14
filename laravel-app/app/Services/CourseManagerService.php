@@ -8,6 +8,7 @@ use App\CourseFeedback;
 use App\CourseInvoice;
 use App\StudentProgress;
 use App\TrainingRegistration;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
@@ -204,6 +205,24 @@ class CourseManagerService
             'confirmed' => TrainingRegistration::where('status', 'confirmed')->count(),
             'pending' => TrainingRegistration::where('status', 'pending')->count(),
         ];
+    }
+
+    public function deleteRegistrations(array $ids)
+    {
+        $ids = array_values(array_unique(array_filter(array_map('strval', $ids))));
+        $deleted = 0;
+        foreach (TrainingRegistration::whereIn('id', $ids)->get() as $reg) {
+            DB::transaction(function () use ($reg, &$deleted) {
+                StudentProgress::where('registration_id', $reg->id)->delete();
+                CourseFeedback::where('registration_id', $reg->id)->delete();
+                CourseInvoice::where('registration_id', $reg->id)->delete();
+                CourseCertificate::where('registration_id', $reg->id)->delete();
+                $reg->delete();
+                $deleted++;
+            });
+        }
+
+        return $deleted;
     }
 
     public function updateRegistration(TrainingRegistration $reg, array $data)

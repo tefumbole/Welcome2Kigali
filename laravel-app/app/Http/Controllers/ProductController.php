@@ -590,16 +590,20 @@ class ProductController extends Controller
             $data['purchase_unit_id'] = $donation_unit->id;
             $data['category_id'] = $donation_category->id;
         }
-        elseif(($data['type'] ?? '') == 'service') {
-            $service_unit = Unit::where('unit_code', 'service')->first();
-            $service_category = Category::where('name', 'SERVICES')->first();
-            if (! $service_unit || ! $service_category) {
-                return response()->json(['message' => 'Service unit or category is missing. Add a unit coded “service” and a category named “SERVICES”.'], 422);
+        elseif(($data['type'] ?? '') == 'service' || ($data['type'] ?? '') == 'laundry') {
+            $data['type'] = 'laundry';
+            $laundry = $this->laundryCatalog();
+            if (! $laundry['unit'] || ! $laundry['category']) {
+                return response()->json(['message' => 'Laundry unit or category is missing. Add a unit coded “laundry” and a category named “Laundry”.'], 422);
             }
-            $data['unit_id'] = $service_unit->id;
-            $data['sale_unit_id'] = $service_unit->id;
-            $data['purchase_unit_id'] = $service_unit->id;
-            $data['category_id'] = $service_category->id;
+            $data['unit_id'] = $laundry['unit']->id;
+            $data['sale_unit_id'] = $laundry['unit']->id;
+            $data['purchase_unit_id'] = $laundry['unit']->id;
+            $data['category_id'] = $laundry['category']->id;
+            $data['cost'] = 0;
+            $data['qty'] = 0;
+            $data['featured'] = 1;
+            $data['barcode_symbology'] = $data['barcode_symbology'] ?? 'C128';
         }
         elseif(($data['type'] ?? '') == 'digital')
             $data['cost'] = $data['unit_id'] = $data['purchase_unit_id'] = $data['sale_unit_id'] = 0;
@@ -621,6 +625,11 @@ class ProductController extends Controller
                 $imageName = $image->getClientOriginalName();
                 $image->move($imageDir, $imageName);
                 $image_names[] = $imageName;
+                try {
+                    \App\Support\PosProductImage::compressOriginal($imageDir.DIRECTORY_SEPARATOR.$imageName);
+                    \App\Support\PosProductImage::writeThumb($imageDir.DIRECTORY_SEPARATOR.$imageName, $imageName);
+                } catch (\Throwable $e) {
+                }
             }
             $data['image'] = $image_names ? implode(",", $image_names) : 'zummXD2dvAtI.png';
         }
@@ -746,6 +755,18 @@ class ProductController extends Controller
         }
         elseif($data['type'] == 'digital')
             $data['cost'] = $data['unit_id'] = $data['purchase_unit_id'] = $data['sale_unit_id'] = 0;
+        elseif($data['type'] == 'laundry' || $data['type'] == 'service') {
+            $data['type'] = 'laundry';
+            $laundry = $this->laundryCatalog();
+            if ($laundry['unit'] && $laundry['category']) {
+                $data['unit_id'] = $laundry['unit']->id;
+                $data['sale_unit_id'] = $laundry['unit']->id;
+                $data['purchase_unit_id'] = $laundry['unit']->id;
+                $data['category_id'] = $laundry['category']->id;
+            }
+            $data['cost'] = 0;
+            $data['qty'] = 0;
+        }
 
         if(!isset($data['featured']))
             $data['featured'] = 0;
@@ -776,6 +797,12 @@ class ProductController extends Controller
                 $imageName = $image->getClientOriginalName();
                 $image->move('public/images/product', $imageName);
                 $image_names[] = $imageName;
+                try {
+                    $saved = public_path('images/product/'.$imageName);
+                    \App\Support\PosProductImage::compressOriginal($saved);
+                    \App\Support\PosProductImage::writeThumb($saved, $imageName);
+                } catch (\Throwable $e) {
+                }
             }
             if($lims_product_data->image != 'zummXD2dvAtI.png') {
                 $data['image'] = $lims_product_data->image.','.implode(",", $image_names);
@@ -1000,6 +1027,14 @@ class ProductController extends Controller
         } while (Product::where('code', $code)->where('is_active', 1)->exists());
 
         return $code;
+    }
+
+    private function laundryCatalog()
+    {
+        return [
+            'unit' => \App\Support\LaundryCatalog::unit(),
+            'category' => \App\Support\LaundryCatalog::category(),
+        ];
     }
 
     private function applyProductCatalogDefaults(array $data)

@@ -1570,4 +1570,84 @@ class WhatsAppMessage
 
         return $msg;
     }
+
+    public static function laundryStatus($customerName, $order, $kind)
+    {
+        $ref = $order->reference_no;
+        $scanUrl = $order->scanUrl();
+        $paid = $order->isPaid() ? 'Paid' : 'Unpaid (due '.number_format((float) $order->dueAmount(), 0).')';
+        $lines = [];
+        foreach ($order->items as $item) {
+            $lines[] = trim($item->name.' × '.((float) $item->qty + 0).($item->note ? ' — '.$item->note : ''));
+        }
+        $garments = implode("\n", $lines);
+
+        if ($kind === 'received') {
+            $msg = self::statusBlock('🧺', 'LAUNDRY RECEIVED');
+            $msg .= self::greeting($customerName);
+            $msg .= "Your garments have been submitted for cleaning.\n\n";
+            $msg .= self::bullet('Order', $ref);
+            $msg .= self::bullet('Payment', $paid);
+            if ($garments !== '') {
+                $msg .= "\n*Items:*\n".$garments."\n";
+            }
+            $note = trim((string) $order->notes);
+            if ($note !== '') {
+                $msg .= self::bullet('Note', $note);
+            }
+            $msg .= self::actionLink('Track your laundry', $scanUrl);
+            $msg .= self::footer();
+
+            return $msg;
+        }
+
+        if ($kind === 'cleaning') {
+            $hours = (int) $order->cleaning_duration_hours;
+            $msg = self::statusBlock('🧼', 'LAUNDRY CLEANING');
+            $msg .= self::greeting($customerName);
+            $msg .= "Your garments are being cleaned.\n\n";
+            $msg .= self::bullet('Order', $ref);
+            $msg .= self::bullet('Duration', $hours.' hour'.($hours === 1 ? '' : 's'));
+            $msg .= self::actionLink('Track your laundry', $scanUrl);
+            $msg .= self::footer();
+
+            return $msg;
+        }
+
+        if ($kind === 'ready') {
+            $msg = self::statusBlock('✅', 'READY FOR COLLECTION');
+            $msg .= self::greeting($customerName);
+            $msg .= "Your laundry is ready for collection.\n\n";
+            $msg .= self::bullet('Order', $ref);
+            $msg .= self::bullet('Payment', $paid);
+            if (! $order->isPaid()) {
+                $msg .= "Please settle the bill at the club when you collect.\n";
+            }
+            $msg .= self::actionLink('Track your laundry', $scanUrl);
+            $msg .= self::footer();
+
+            return $msg;
+        }
+
+        if ($kind === 'collect') {
+            $msg = self::statusBlock('✍️', 'SIGN TO COLLECT');
+            $msg .= self::greeting($customerName);
+            $msg .= "Please sign to confirm handover of your laundry. You may send someone else — they must sign in their name.\n\n";
+            $msg .= self::bullet('Order', $ref);
+            $msg .= self::actionLink('Sign collection', $order->collectUrl());
+            $msg .= self::footer();
+
+            return $msg;
+        }
+
+        $msg = self::statusBlock('🧺', 'LAUNDRY COLLECTED');
+        $msg .= self::greeting($customerName);
+        $msg .= "Your garments have been handed over.\n\n";
+        $msg .= self::bullet('Order', $ref);
+        $msg .= self::bullet('Collected by', $order->collector_name);
+        $msg .= self::bullet('Date', optional($order->collected_at)->format('d M Y H:i'));
+        $msg .= self::footer();
+
+        return $msg;
+    }
 }
