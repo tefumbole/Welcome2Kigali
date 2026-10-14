@@ -280,6 +280,7 @@ FILES=(
   app/Console/Commands/CompressPosImages.php
   app/Services/LaundryService.php
   database/migrations/2026_10_14_180000_rename_services_category_to_laundry.php
+  database/migrations/2026_10_14_181000_convert_laundry_category_products.php
   app/Http/Controllers/LaundryController.php
   app/Http/Controllers/LaundrySignatureController.php
   database/migrations/2026_10_14_120000_create_laundry_module.php
