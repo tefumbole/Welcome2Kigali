@@ -42,6 +42,7 @@ class LaundryController extends Controller
         $this->authorizeLaundry('laundry.received');
         $orders = LaundryOrder::with(['customer', 'items', 'sale'])
             ->where('status', LaundryOrder::STATUS_RECEIVED)
+            ->orderBy('customer_id')
             ->orderByDesc('id')
             ->paginate(30);
         $customers = Customer::where('is_active', true)->orderBy('name')->get(['id', 'name', 'phone_number']);
@@ -109,6 +110,7 @@ class LaundryController extends Controller
         $this->authorizeLaundry('laundry.cleaning');
         $orders = LaundryOrder::with(['customer', 'items', 'sale'])
             ->where('status', LaundryOrder::STATUS_CLEANING)
+            ->orderBy('customer_id')
             ->orderByDesc('id')
             ->paginate(30);
 
@@ -146,6 +148,7 @@ class LaundryController extends Controller
         $this->authorizeLaundry('laundry.ready');
         $orders = LaundryOrder::with(['customer', 'items', 'sale'])
             ->where('status', LaundryOrder::STATUS_READY)
+            ->orderBy('customer_id')
             ->orderByDesc('id')
             ->paginate(30);
 
@@ -185,10 +188,12 @@ class LaundryController extends Controller
         $this->authorizeLaundry('laundry.collect');
         $awaiting = LaundryOrder::with(['customer', 'items', 'sale'])
             ->where('status', LaundryOrder::STATUS_AWAITING_SIGNATURE)
+            ->orderBy('customer_id')
             ->orderByDesc('id')
             ->get();
         $collected = LaundryOrder::with(['customer', 'items', 'sale'])
             ->where('status', LaundryOrder::STATUS_COLLECTED)
+            ->orderBy('customer_id')
             ->orderByDesc('collected_at')
             ->paginate(30);
 
