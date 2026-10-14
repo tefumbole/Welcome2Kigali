@@ -64,7 +64,7 @@ class LaundryOrder extends Model
     {
         $map = [
             self::STATUS_RECEIVED => 'Received',
-            self::STATUS_CLEANING => 'Cleaning',
+            self::STATUS_CLEANING => 'Awaiting cleaning',
             self::STATUS_READY => 'Ready for collection',
             self::STATUS_AWAITING_SIGNATURE => 'Awaiting signature',
             self::STATUS_COLLECTED => 'Collected',

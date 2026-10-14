@@ -698,7 +698,7 @@ class SaleController extends Controller
             $product_sale['tax'] = $tax[$i];
             $product_sale['total'] = $mail_data['total'][$i] = $total[$i];
             $this->stockDurationSave($lims_product_data->id, $lims_product_data->qty);
-            Product_Sale::create($product_sale);
+            Product_Sale::create(\App\Support\SchemaColumns::forTable('product_sales', $product_sale));
             if (! empty($data['membership_benefit'][$i])) {
                 $membershipService = app(\App\Services\MembershipService::class);
                 $membership = $membershipService->activeMembershipForCustomer($data['customer_id']);
@@ -729,7 +729,9 @@ class SaleController extends Controller
             }
         }
 
-        if($data['payment_status'] == 2 || $data['payment_status'] == 3  || $data['payment_status'] == 4 || ($data['pos'] && $data['paying_amount'] > 0)) {
+        $skipZeroPayLater = ((int) ($data['paid_by_id'] ?? 0) === 9 || ! empty($data['send_to_laundry']))
+            && (float) ($data['paid_amount'] ?? 0) <= 0;
+        if(($data['payment_status'] == 2 || $data['payment_status'] == 3  || $data['payment_status'] == 4 || ($data['pos'] && $data['paying_amount'] > 0)) && ! $skipZeroPayLater) {
 
             $lims_payment_data = new Payment();
             $lims_payment_data->user_id = Auth::id();
@@ -814,11 +816,11 @@ class SaleController extends Controller
                     $lims_payment_data_debit->cash_register_id = $cash_register_data->id;
                 }
                 if($data['credit'] == null ) {
-                    $lims_account_data = Account::where('is_default_debit', true)->first();
+                    $lims_account_data = $this->defaultAccount(true);
                 }else{
-                    $lims_account_data = Account::where('id', $data['debit'])->first();
+                    $lims_account_data = Account::where('id', $data['debit'])->first() ?: $this->defaultAccount(true);
                 }
-                $lims_payment_data_debit->account_id = $lims_account_data->id;
+                $lims_payment_data_debit->account_id = $lims_account_data ? $lims_account_data->id : null;
                 $lims_payment_data_debit->debit_sale_id = $lims_sale_data->id;
                 $data['payment_reference'] = 'spr-'.date("Ymd").'-'.date("his");
                 $lims_payment_data_debit->payment_reference = $data['payment_reference'];
@@ -843,11 +845,11 @@ class SaleController extends Controller
                 $lims_payment_data->cash_register_id = $cash_register_data->id;
             }
             if(!array_key_exists('credit', $data)) {
-                $lims_account_data = Account::where('is_default', true)->first();
+                $lims_account_data = $this->defaultAccount(false);
             }else{
-                $lims_account_data = Account::where('id', $data['credit'])->first();
+                $lims_account_data = Account::where('id', $data['credit'])->first() ?: $this->defaultAccount(false);
             }
-            $lims_payment_data->account_id = $lims_account_data->id;
+            $lims_payment_data->account_id = $lims_account_data ? $lims_account_data->id : null;
             $lims_payment_data->sale_id = $lims_sale_data->id;
             $data['payment_reference'] = 'spr-'.date("Ymd").'-'.date("his");
             $lims_payment_data->payment_reference = $data['payment_reference'];
@@ -995,7 +997,12 @@ class SaleController extends Controller
         $message = $this->sendWhatsappMsg($lims_customer_data, $lims_sale_data, $mail_data, $biller, $paying_method, $net_unit_price);
 
         $role = Role::find(Auth::user()->role_id);
-        $role->revokePermissionTo('search_all_products');
+        if ($role) {
+            try {
+                $role->revokePermissionTo('search_all_products');
+            } catch (\Throwable $e) {
+            }
+        }
 
         $laundryTicket = null;
         try {
@@ -1003,14 +1010,18 @@ class SaleController extends Controller
             $laundryTicket = app(\App\Services\LaundryService::class)->createFromSale(
                 $lims_sale_data->fresh('products'),
                 $data['sale_note'] ?? '',
-                is_array($itemNotes) ? $itemNotes : []
+                is_array($itemNotes) ? $itemNotes : [],
+                true
             );
         } catch (\Throwable $e) {
             \Log::warning('Laundry ticket from sale failed: '.$e->getMessage(), ['sale_id' => $lims_sale_data->id]);
         }
 
-        if($data['paid_by_id'] == 9) {
-            return back()->with('message', $message)        ;
+        if($data['paid_by_id'] == 9 || ! empty($data['send_to_laundry'])) {
+            if ($laundryTicket) {
+                $message = trim($message.' Laundry ticket '.$laundryTicket->reference_no.' is awaiting cleaning.');
+            }
+            return back()->with('message', $message);
         }
 
         $skipDelivery = $laundryTicket && $this->saleIsLaundryOnly($lims_sale_data);
@@ -1664,10 +1675,10 @@ class SaleController extends Controller
             $lims_category_list = Category::select('id', 'name', 'parent_id')->where('is_active', true)->get();
 
             $canSearchAllProducts = $role->hasPermissionTo('search_all_products');
-            $baseProductsLimit = $canSearchAllProducts ? 900 : 300;
-            $variantProductsLimit = $canSearchAllProducts ? 400 : 180;
+            $baseProductsLimit = 24;
+            $variantProductsLimit = 12;
 
-            $baseProductQuery = Product::select('id', 'name', 'code', 'image')
+            $baseProductQuery = Product::select('id', 'name', 'code', 'image', 'type', 'category_id')
                 ->ActiveFeatured()
                 ->whereNull('is_variant')
                 ->orderBy('id', 'desc')
@@ -1685,7 +1696,7 @@ class SaleController extends Controller
                 $product->base_image = $images[0];
             }
 
-            $variantProductQuery = Product::select('id', 'name', 'code', 'image')
+            $variantProductQuery = Product::select('id', 'name', 'code', 'image', 'type', 'category_id')
                 ->ActiveFeatured()
                 ->whereNotNull('is_variant')
                 ->with(['variant' => function ($query) {
@@ -1714,19 +1725,8 @@ class SaleController extends Controller
                 }
             }
 
-            if (count($lims_product_list) < 1) {
-                $fallback = Product::select('id', 'name', 'code', 'image')
-                    ->where('is_active', true)
-                    ->orderBy('id', 'desc')
-                    ->take(120)
-                    ->get();
-                foreach ($fallback as $product) {
-                    $images = explode(",", (string) $product->image);
-                    $product->base_image = $images[0];
-                    $lims_product_list[] = $product;
-                }
-            }
             $product_number = count($lims_product_list);
+            $laundry_codes = \App\Support\LaundryCatalog::queryProducts()->pluck('code')->filter()->values();
             $lims_pos_setting_data = PosSetting::latest()->first();
             $general_setting_defaults = \App\GeneralSetting::latest()->first();
             $default_warehouse_id = $general_setting_defaults->default_warehouse_id ?? null;
@@ -1789,7 +1789,7 @@ class SaleController extends Controller
             $lims_coupon_list = Coupon::where('is_active',true)->get();
             $flag = 0;
 
-            return view('sale.pos', compact('all_permission', 'lims_customer_list', 'customer_owing', 'lims_customer_group_all', 'lims_warehouse_list', 'lims_reward_point_setting_data', 'lims_product_list', 'product_number', 'lims_tax_list', 'lims_biller_list', 'lims_pos_setting_data', 'lims_brand_list', 'lims_category_list', 'recent_sale', 'recent_draft', 'lims_coupon_list', 'flag', 'lims_account_list', 'lims_account_default', 'lims_account_default_debit', 'lims_category_list', 'lims_unit_list'));
+            return view('sale.pos', compact('all_permission', 'lims_customer_list', 'customer_owing', 'lims_customer_group_all', 'lims_warehouse_list', 'lims_reward_point_setting_data', 'lims_product_list', 'product_number', 'lims_tax_list', 'lims_biller_list', 'lims_pos_setting_data', 'lims_brand_list', 'lims_category_list', 'recent_sale', 'recent_draft', 'lims_coupon_list', 'flag', 'lims_account_list', 'lims_account_default', 'lims_account_default_debit', 'lims_category_list', 'lims_unit_list', 'laundry_codes'));
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
@@ -1863,14 +1863,10 @@ class SaleController extends Controller
         $lims_product_list = Product::where([
             ['is_active', true],
             ['featured', true]
-        ])->select('products.id', 'products.name', 'products.code', 'products.image', 'products.is_variant')->get();
-        if ($lims_product_list->isEmpty()) {
-            $lims_product_list = Product::where('is_active', true)
-                ->select('products.id', 'products.name', 'products.code', 'products.image', 'products.is_variant')
-                ->orderBy('id', 'desc')
-                ->take(120)
-                ->get();
-        }
+        ])->select('products.id', 'products.name', 'products.code', 'products.image', 'products.is_variant')
+            ->orderBy('id', 'desc')
+            ->take(24)
+            ->get();
 
         $index = 0;
         foreach ($lims_product_list as $product) {
@@ -2692,6 +2688,21 @@ class SaleController extends Controller
             return 4;
         }
         return $paidAmount > 0 ? 3 : 2;
+    }
+
+    private function defaultAccount($debit = false)
+    {
+        $col = $debit ? 'is_default_debit' : 'is_default';
+        $account = Account::where($col, true)->where('is_active', true)->first();
+        if ($account) {
+            return $account;
+        }
+        $account = Account::where('account_no', $debit ? '002' : '001')->where('is_active', true)->first();
+        if ($account) {
+            return $account;
+        }
+
+        return Account::where('is_active', true)->orderBy('id')->first();
     }
 
     private function saleIsLaundryOnly(Sale $sale)

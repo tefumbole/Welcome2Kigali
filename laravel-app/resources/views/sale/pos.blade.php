@@ -124,6 +124,11 @@
             background: #C5A059 !important;
             color: #0A0A0A !important;
         }
+        body.beyond-pos-active #send-laundry-btn {
+            background: #C5A059 !important;
+            color: #0A0A0A !important;
+            border-color: #C5A059 !important;
+        }
         body.beyond-pos-active #cash-btn {
             background: #C5A059 !important;
             color: #0A0A0A !important;
@@ -1639,6 +1644,7 @@
 
                                                             <input type="hidden" name="pos" value="1" />
                                                             <input type="hidden" name="draft" value="0" />
+                                                            <input type="hidden" name="send_to_laundry" value="0" />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1674,6 +1680,9 @@
                                         {{--                        <div class="column-5">--}}
                                         {{--                            <button style="background: #0984e3" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="credit-card-btn"><i class="fa fa-credit-card"></i> Card</button>--}}
                                         {{--                        </div>--}}
+                                        <div class="column-5" id="send-laundry-wrap" style="display:none;">
+                                            <button type="button" class="btn btn-custom" id="send-laundry-btn"><i class="fa fa-shower"></i> Send to Laundry</button>
+                                        </div>
                                         <div class="column-5">
                                             <button style="background-color: #213170" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="pay-later-btn"><i class="fa fa-paypal"></i> Send to Payment</button>
                                         </div>
@@ -2784,6 +2793,7 @@
         var currency = <?php echo json_encode($currency) ?>;
         window.POS_PRODUCT_IMAGE_BASE = @json(rtrim(asset('public/images/product'), '/') . '/');
         window.POS_PRODUCT_THUMB_BASE = @json(rtrim(asset('public/images/product/thumbs'), '/') . '/');
+        window.POS_LAUNDRY_CODES = @json(($laundry_codes ?? collect())->values());
         var newCustomerId = @json(session('new_customer_id'));
         var posMinSearchChars = {{ (int) (env('MINIMUM_SEARCH_CHAR') ?: 1) }};
 
@@ -4580,7 +4590,46 @@
             $('#shipping-cost').text(shipping_cost.toFixed(2));
             $('#grand-total').text(grand_total.toFixed(2));
             $('input[name="grand_total"]').val(grand_total.toFixed(2));
+            refreshLaundryButton();
         }
+
+        function cartHasLaundry() {
+            var codes = window.POS_LAUNDRY_CODES || [];
+            var found = false;
+            $('table.order-list tbody .product-code').each(function() {
+                var code = String($(this).val() || '');
+                if (code && codes.indexOf(code) !== -1) {
+                    found = true;
+                    return false;
+                }
+            });
+            return found;
+        }
+        function refreshLaundryButton() {
+            if (cartHasLaundry()) {
+                $('#send-laundry-wrap').show();
+            } else {
+                $('#send-laundry-wrap').hide();
+                $('input[name="send_to_laundry"]').val(0);
+            }
+        }
+        $('#send-laundry-btn').on('click', function() {
+            var rownumber = $('table.order-list tbody tr:last').index();
+            if (rownumber < 0) {
+                alert('Select a laundry item first.');
+                return;
+            }
+            if (!cartHasLaundry()) {
+                alert('Add a Laundry item to send a ticket.');
+                return;
+            }
+            $('input[name="send_to_laundry"]').val(1);
+            $('select[name="paid_by_id_select"]').val(9);
+            $('input[name="paid_by_id"]').val(9);
+            $('input[name="paid_amount"]').val(0);
+            $('input[name="paying_amount"]').val($('#grand-total').text() || 0);
+            $('.payment-form').submit();
+        });
 
         function hide() {
             $(".card-element").hide();

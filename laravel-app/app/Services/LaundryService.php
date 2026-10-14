@@ -23,7 +23,7 @@ use Illuminate\Support\Str;
 
 class LaundryService
 {
-    public function createFromSale(Sale $sale, $notes = '', array $itemNotes = [])
+    public function createFromSale(Sale $sale, $notes = '', array $itemNotes = [], $startCleaning = true)
     {
         if ((int) $sale->sale_status === 3) {
             return null;
@@ -44,7 +44,8 @@ class LaundryService
             return null;
         }
 
-        $order = $this->newOrder($sale, $sale->customer_id, $notes);
+        $status = $startCleaning ? LaundryOrder::STATUS_CLEANING : LaundryOrder::STATUS_RECEIVED;
+        $order = $this->newOrder($sale, $sale->customer_id, $notes, $status);
         foreach ($laundryLines as $index => $pair) {
             /** @var Product_Sale $line */
             list($line, $product) = $pair;
@@ -60,7 +61,7 @@ class LaundryService
             ]);
         }
 
-        $this->notify($order->fresh(['customer', 'items', 'sale']), 'received');
+        $this->notify($order->fresh(['customer', 'items', 'sale']), $startCleaning ? 'cleaning' : 'received');
 
         return $order;
     }
@@ -344,16 +345,19 @@ class LaundryService
         }
     }
 
-    protected function newOrder(Sale $sale, $customerId, $notes = '')
+    protected function newOrder(Sale $sale, $customerId, $notes = '', $status = null)
     {
+        $status = $status ?: LaundryOrder::STATUS_RECEIVED;
+
         return LaundryOrder::create([
             'reference_no' => $this->nextReference(),
             'sale_id' => $sale->id,
             'customer_id' => $customerId,
             'user_id' => Auth::id(),
-            'status' => LaundryOrder::STATUS_RECEIVED,
+            'status' => $status,
             'notes' => $notes !== '' ? $notes : null,
             'qr_token' => Str::random(40),
+            'cleaning_started_at' => $status === LaundryOrder::STATUS_CLEANING ? now() : null,
         ]);
     }
 

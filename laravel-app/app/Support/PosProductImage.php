@@ -11,8 +11,16 @@ class PosProductImage
         if (is_file($thumb)) {
             return asset('public/images/product/thumbs/'.$filename);
         }
+        $orig = public_path('images/product/'.$filename);
+        if ($filename !== 'zummXD2dvAtI.png' && is_file($orig)) {
+            return asset('public/images/product/'.$filename);
+        }
+        $placeholder = public_path('images/product/zummXD2dvAtI.png');
+        if (is_file($placeholder)) {
+            return asset('public/images/product/zummXD2dvAtI.png');
+        }
 
-        return asset('public/images/product/'.$filename);
+        return 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
     }
 
     public static function firstName($filename)
