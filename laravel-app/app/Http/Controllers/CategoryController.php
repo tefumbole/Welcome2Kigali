@@ -96,28 +96,7 @@ class CategoryController extends Controller
                 else
                     $nestedData['stock_worth'] = $total_price.' '.config('currency').' / '.$total_cost.' '.config('currency');
 
-                if(auth()->user()->role_id == 1) {
-                $nestedData['options'] = '<div class="btn-group">
-                            <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">'.trans("file.action").'
-                              <span class="caret"></span>
-                              <span class="sr-only">Toggle Dropdown</span>
-                            </button>
-                            <ul class="dropdown-menu edit-options dropdown-menu-right dropdown-default" user="menu">
-                                <li>
-                                    <button type="button" data-id="'.$category->id.'" class="open-EditCategoryDialog btn btn-link" data-toggle="modal" data-target="#editModal" ><i class="dripicons-document-edit"></i> '.trans("file.edit").'</button>
-                                </li>
-                                <li class="divider"></li>'.
-                                \Form::open(["route" => ["category.destroy", $category->id], "method" => "DELETE"] ).'
-                                <li>
-                                  <button type="submit" class="btn btn-link" onclick="return confirmDelete()"><i class="dripicons-trash"></i> '.trans("file.delete").'</button>
-                                </li>'.\Form::close().'
-                            </ul>
-                        </div>';
-                } else {
-                    $nestedData['options'] = '<div class="btn-group">
-                            NAN
-                        </div>';
-                }
+                $nestedData['options'] = $this->categoryActionHtml($category);
                 $data[] = $nestedData;
             }
         }
@@ -253,6 +232,37 @@ class CategoryController extends Controller
             $lims_category_data->save();
         }
         return 'Category deleted successfully!';
+    }
+
+    protected function canEditCategories()
+    {
+        if (\App\Support\StaffAccess::canManageSite()) {
+            return true;
+        }
+        $role = Role::find(optional(auth()->user())->role_id);
+        try {
+            return $role && $role->hasPermissionTo('category');
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    protected function categoryActionHtml(Category $category)
+    {
+        $edit = trans('file.edit') ?: 'Edit';
+        $delete = trans('file.delete') ?: 'Delete';
+        $html = '<div class="btn-group btn-group-sm category-actions">'
+            . '<button type="button" data-id="'.$category->id.'" class="open-EditCategoryDialog btn btn-default" data-toggle="modal" data-target="#editModal">'
+            . '<i class="dripicons-document-edit"></i> '.e($edit)
+            . '</button>';
+        if ($this->canEditCategories()) {
+            $html .= \Form::open(['route' => ['category.destroy', $category->id], 'method' => 'DELETE', 'style' => 'display:inline'])
+                . '<button type="submit" class="btn btn-default" onclick="return confirmDelete()"><i class="dripicons-trash"></i> '.e($delete).'</button>'
+                . \Form::close();
+        }
+        $html .= '</div>';
+
+        return $html;
     }
 
     public function destroy($id)

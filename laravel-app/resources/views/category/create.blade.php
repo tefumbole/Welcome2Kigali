@@ -13,6 +13,11 @@
   <div class="alert alert-danger alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('not_permitted') }}</div>
 @endif
 
+<style>
+    .category-actions { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+    .category-actions .btn { border: 1px solid #0A0A0A; color: #0A0A0A; background: #fff; }
+    .category-actions .open-EditCategoryDialog:hover { background: #C5A059; border-color: #C5A059; }
+</style>
 <section>
     <div class="container-fluid">
         <!-- Trigger the modal with a button -->
@@ -211,7 +216,7 @@
         'columnDefs': [
             {
                 "orderable": false,
-                'targets': [0, 1, 3, 4, 5, 6]
+                'targets': [0, 1, 3, 4, 5, 6, 7]
             },
             {
                 'render': function(data, type, row, meta){
