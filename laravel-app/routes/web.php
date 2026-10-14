@@ -487,6 +487,7 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
 
     Route::get('/admin/laundry', 'LaundryController@received')->name('laundry.received');
     Route::post('/admin/laundry/received', 'LaundryController@storeReceived')->name('laundry.received.store');
+    Route::post('/admin/laundry/{id}/accept', 'LaundryController@accept')->name('laundry.accept');
     Route::get('/admin/laundry/cleaning', 'LaundryController@cleaning')->name('laundry.cleaning');
     Route::post('/admin/laundry/{id}/start-cleaning', 'LaundryController@startCleaning')->name('laundry.cleaning.start');
     Route::get('/admin/laundry/ready', 'LaundryController@ready')->name('laundry.ready');

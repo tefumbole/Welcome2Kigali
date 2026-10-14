@@ -1829,8 +1829,8 @@
                                     <td class="report-permissions" colspan="5">
                                         @foreach([
                                             'laundry_module' => 'Laundry Module',
-                                            'laundry.received' => 'Received',
-                                            'laundry.cleaning' => 'Cleaning',
+                                            'laundry.received' => 'Awaiting Acceptance',
+                                            'laundry.cleaning' => 'Awaiting cleaning',
                                             'laundry.ready' => 'Ready for collection',
                                             'laundry.collect' => 'Collect',
                                         ] as $perm => $label)

@@ -25,7 +25,9 @@
             Customer: {{ optional($order->customer)->name }}<br>
             Payment: {{ $order->isPaid() ? 'Paid' : 'Due '.number_format($order->dueAmount(), 0) }}
         </p>
-        @if($order->cleaning_duration_hours)
+        @if($order->collect_at)
+            <p>Collect by: {{ $order->collect_at->format('d M Y H:i') }}</p>
+        @elseif($order->cleaning_duration_hours)
             <p>Cleaning time: {{ $order->cleaning_duration_hours }} hours</p>
         @endif
         <table>

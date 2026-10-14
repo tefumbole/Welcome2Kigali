@@ -7,7 +7,7 @@
         @include('laundry.partials.tabs')
         <h1 class="mb-3">Laundry — Ready for Collection</h1>
         @include('laundry.partials.flash')
-        <p class="text-muted">Unpaid and paid tickets waiting to be collected. Clothes cannot be handed over until paid.</p>
+        <p class="text-muted">Payment (cash or MoMo) must be taken before Collect. Collect sends a signature link; once signed, the process is complete.</p>
         <div class="card">
             <div class="card-body p-0">
                 <table class="table mb-0">
@@ -30,11 +30,18 @@
                                 @if($order->isPaid())
                                     <span class="badge badge-success">Paid</span>
                                 @else
-                                    <span class="badge badge-warning">Due {{ number_format($order->dueAmount(), 0) }}</span>
-                                    <form method="POST" action="{{ route('laundry.pay', $order->id) }}" class="mt-1">
+                                    <span class="badge badge-warning d-block mb-1">Due {{ number_format($order->dueAmount(), 0) }}</span>
+                                    <form method="POST" action="{{ route('laundry.pay', $order->id) }}" class="d-inline">
                                         @csrf
                                         <input type="hidden" name="amount" value="{{ $order->dueAmount() }}">
-                                        <button class="btn btn-sm btn-outline-success">Take cash {{ number_format($order->dueAmount(), 0) }}</button>
+                                        <input type="hidden" name="method" value="cash">
+                                        <button class="btn btn-sm btn-outline-success">Cash</button>
+                                    </form>
+                                    <form method="POST" action="{{ route('laundry.pay', $order->id) }}" class="d-inline">
+                                        @csrf
+                                        <input type="hidden" name="amount" value="{{ $order->dueAmount() }}">
+                                        <input type="hidden" name="method" value="momo">
+                                        <button class="btn btn-sm btn-outline-warning">MoMo</button>
                                     </form>
                                 @endif
                             </td>
@@ -42,10 +49,10 @@
                                 @if($order->isPaid())
                                     <form method="POST" action="{{ route('laundry.collect.send', $order->id) }}">
                                         @csrf
-                                        <button class="btn btn-sm btn-primary">Collected — send sign link</button>
+                                        <button class="btn btn-sm btn-primary">Collect</button>
                                     </form>
                                 @else
-                                    <button class="btn btn-sm btn-secondary" disabled title="Pay first">Collect</button>
+                                    <button class="btn btn-sm btn-secondary" disabled title="Pay first (cash or MoMo)">Collect</button>
                                 @endif
                             </td>
                         </tr>

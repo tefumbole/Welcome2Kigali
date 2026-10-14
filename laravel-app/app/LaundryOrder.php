@@ -23,6 +23,7 @@ class LaundryOrder extends Model
         'cleaning_duration_hours',
         'cleaning_started_at',
         'ready_at',
+        'collect_at',
         'qr_token',
         'collect_token',
         'collector_name',
@@ -35,6 +36,7 @@ class LaundryOrder extends Model
     protected $dates = [
         'cleaning_started_at',
         'ready_at',
+        'collect_at',
         'signed_at',
         'collected_at',
         'collect_sent_at',
@@ -63,7 +65,7 @@ class LaundryOrder extends Model
     public function statusLabel()
     {
         $map = [
-            self::STATUS_RECEIVED => 'Received',
+            self::STATUS_RECEIVED => 'Awaiting acceptance',
             self::STATUS_CLEANING => 'Awaiting cleaning',
             self::STATUS_READY => 'Ready for collection',
             self::STATUS_AWAITING_SIGNATURE => 'Awaiting signature',

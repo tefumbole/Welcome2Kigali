@@ -2,6 +2,9 @@
     @foreach($order->items as $item)
         <li>
             {{ $item->name }} × {{ $item->qty + 0 }}
+            @if($item->collect_at)
+                <small class="text-muted">· collect {{ $item->collect_at->format('d M H:i') }}</small>
+            @endif
             @if($item->note)
                 <small class="text-muted">— {{ $item->note }}</small>
             @endif

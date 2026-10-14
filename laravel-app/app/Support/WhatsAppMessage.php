@@ -1583,9 +1583,9 @@ class WhatsAppMessage
         $garments = implode("\n", $lines);
 
         if ($kind === 'received') {
-            $msg = self::statusBlock('🧺', 'LAUNDRY RECEIVED');
+            $msg = self::statusBlock('🧺', 'LAUNDRY AWAITING ACCEPTANCE');
             $msg .= self::greeting($customerName);
-            $msg .= "Your garments have been submitted for cleaning.\n\n";
+            $msg .= "Your garments have been received at the club and are awaiting acceptance.\n\n";
             $msg .= self::bullet('Order', $ref);
             $msg .= self::bullet('Payment', $paid);
             if ($garments !== '') {
@@ -1602,12 +1602,29 @@ class WhatsAppMessage
         }
 
         if ($kind === 'cleaning') {
-            $hours = (int) $order->cleaning_duration_hours;
-            $msg = self::statusBlock('🧼', 'LAUNDRY CLEANING');
+            $when = optional($order->collect_at)->format('d M Y H:i');
+            $msg = self::statusBlock('🧼', 'SENT TO CLEANING');
             $msg .= self::greeting($customerName);
-            $msg .= "Your garments are being cleaned.\n\n";
+            $msg .= "Your dress has been sent to cleaning";
+            if ($when) {
+                $msg .= " and will be ready for collection on ".$when;
+            }
+            $msg .= ".\n\n";
             $msg .= self::bullet('Order', $ref);
-            $msg .= self::bullet('Duration', $hours.' hour'.($hours === 1 ? '' : 's'));
+            if ($when) {
+                $msg .= self::bullet('Collect on', $when);
+            }
+            $itemTimes = [];
+            foreach ($order->items as $item) {
+                $line = trim($item->name.' × '.((float) $item->qty + 0));
+                if ($item->collect_at) {
+                    $line .= ' — collect '.$item->collect_at->format('d M Y H:i');
+                }
+                $itemTimes[] = $line;
+            }
+            if ($itemTimes) {
+                $msg .= "\n*Items:*\n".implode("\n", $itemTimes)."\n";
+            }
             $msg .= self::actionLink('Track your laundry', $scanUrl);
             $msg .= self::footer();
 

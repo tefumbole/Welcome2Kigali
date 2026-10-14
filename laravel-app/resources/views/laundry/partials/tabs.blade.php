@@ -8,10 +8,10 @@
 </script>
 <ul class="nav nav-tabs mb-3">
     <li class="nav-item">
-        <a class="nav-link {{ $tab === 'received' ? 'active' : '' }}" href="{{ route('laundry.received') }}">Received</a>
+        <a class="nav-link {{ $tab === 'received' ? 'active' : '' }}" href="{{ route('laundry.received') }}">Awaiting Acceptance</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link {{ $tab === 'cleaning' ? 'active' : '' }}" href="{{ route('laundry.cleaning') }}">Cleaning</a>
+        <a class="nav-link {{ $tab === 'cleaning' ? 'active' : '' }}" href="{{ route('laundry.cleaning') }}">Awaiting cleaning</a>
     </li>
     <li class="nav-item">
         <a class="nav-link {{ $tab === 'ready' ? 'active' : '' }}" href="{{ route('laundry.ready') }}">Ready for Collection</a>

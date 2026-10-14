@@ -22,7 +22,9 @@
                             @endif
                         </p>
                         @include('laundry.partials.items')
-                        @if($order->cleaning_duration_hours)
+                        @if($order->collect_at)
+                            <p class="mt-2 mb-0">Collect by: {{ $order->collect_at->format('d M Y H:i') }}</p>
+                        @elseif($order->cleaning_duration_hours)
                             <p class="mt-2 mb-0">Cleaning time: {{ $order->cleaning_duration_hours }} hours
                                 @if($order->cleaning_started_at) (from {{ $order->cleaning_started_at->format('d M Y H:i') }}) @endif
                             </p>

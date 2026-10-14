@@ -15,6 +15,11 @@ class LaundryOrderItem extends Model
         'unit_price',
         'total',
         'note',
+        'collect_at',
+    ];
+
+    protected $dates = [
+        'collect_at',
     ];
 
     public function order()

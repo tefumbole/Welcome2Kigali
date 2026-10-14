@@ -1011,7 +1011,7 @@ class SaleController extends Controller
                 $lims_sale_data->fresh('products'),
                 $data['sale_note'] ?? '',
                 is_array($itemNotes) ? $itemNotes : [],
-                true
+                false
             );
         } catch (\Throwable $e) {
             \Log::warning('Laundry ticket from sale failed: '.$e->getMessage(), ['sale_id' => $lims_sale_data->id]);
@@ -1019,7 +1019,7 @@ class SaleController extends Controller
 
         if($data['paid_by_id'] == 9 || ! empty($data['send_to_laundry'])) {
             if ($laundryTicket) {
-                $message = trim($message.' Laundry ticket '.$laundryTicket->reference_no.' is awaiting cleaning.');
+                $message = trim($message.' Laundry ticket '.$laundryTicket->reference_no.' is awaiting acceptance.');
             }
             return back()->with('message', $message);
         }

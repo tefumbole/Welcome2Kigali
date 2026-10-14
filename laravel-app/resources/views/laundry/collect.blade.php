@@ -7,6 +7,7 @@
         @include('laundry.partials.tabs')
         <h1 class="mb-3">Laundry — Collect</h1>
         @include('laundry.partials.flash')
+        <p class="text-muted">The client (or nominee) must sign. When the signature is saved, the ticket is collected and the process is complete.</p>
 
         <h5>Awaiting signature</h5>
         <div class="card mb-4">

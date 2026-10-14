@@ -80,14 +80,35 @@ class LaundryController extends Controller
             return back()->with('not_permitted', $e->getMessage())->withInput();
         }
 
-        return redirect()->route('laundry.received')->with('message', 'Laundry ticket '.$order->reference_no.' received.');
+        return redirect()->route('laundry.received')->with('message', 'Laundry ticket '.$order->reference_no.' is awaiting acceptance.');
+    }
+
+    public function accept(Request $request, $id)
+    {
+        $this->authorizeLaundry('laundry.received');
+        $order = LaundryOrder::with('items')->findOrFail($id);
+        $ids = $request->input('item_id', []);
+        if (! is_array($ids) || ! $ids) {
+            $ids = $order->items->pluck('id')->all();
+        }
+        $itemTimes = [];
+        foreach ($ids as $itemId) {
+            $itemTimes[$itemId] = $request->input('item_collect_at.'.$itemId, $request->input('collect_at'));
+        }
+        try {
+            $this->laundry->acceptForCleaning($order, $request->input('collect_at'), $itemTimes);
+        } catch (\Throwable $e) {
+            return back()->with('not_permitted', $e->getMessage());
+        }
+
+        return redirect()->route('laundry.cleaning')->with('message', $order->reference_no.' accepted and sent to awaiting cleaning. The client has been notified.');
     }
 
     public function cleaning()
     {
         $this->authorizeLaundry('laundry.cleaning');
         $orders = LaundryOrder::with(['customer', 'items', 'sale'])
-            ->whereIn('status', [LaundryOrder::STATUS_RECEIVED, LaundryOrder::STATUS_CLEANING])
+            ->where('status', LaundryOrder::STATUS_CLEANING)
             ->orderByDesc('id')
             ->paginate(30);
 
@@ -98,14 +119,13 @@ class LaundryController extends Controller
     {
         $this->authorizeLaundry('laundry.cleaning');
         $order = LaundryOrder::findOrFail($id);
-        $hours = $request->input('hours', 24);
         try {
-            $this->laundry->startCleaning($order, $hours);
+            $this->laundry->acceptForCleaning($order, $request->input('collect_at'), $request->input('item_collect_at', []));
         } catch (\Throwable $e) {
             return back()->with('not_permitted', $e->getMessage());
         }
 
-        return back()->with('message', $order->reference_no.' is now being cleaned.');
+        return redirect()->route('laundry.cleaning')->with('message', $order->reference_no.' is awaiting cleaning.');
     }
 
     public function markReady($id)
@@ -137,13 +157,14 @@ class LaundryController extends Controller
         $this->authorizeLaundry('laundry.ready');
         $order = LaundryOrder::with('sale')->findOrFail($id);
         $amount = $request->input('amount', $order->dueAmount());
+        $method = $request->input('method') === 'momo' ? 'MoMo' : 'Cash';
         try {
-            $this->laundry->addCashPayment($order, $amount, 'Laundry payment');
+            $this->laundry->addPayment($order, $amount, $method, 'Laundry '.$method.' payment');
         } catch (\Throwable $e) {
             return back()->with('not_permitted', $e->getMessage());
         }
 
-        return back()->with('message', 'Payment recorded for '.$order->reference_no.'.');
+        return back()->with('message', $method.' payment recorded for '.$order->reference_no.'.');
     }
 
     public function sendCollect($id)

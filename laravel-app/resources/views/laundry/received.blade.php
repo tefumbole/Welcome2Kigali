@@ -1,15 +1,73 @@
 @extends('layout.main')
 
 @section('content')
-@php $tab = 'received'; @endphp
+@php
+    $tab = 'received';
+    $defaultCollect = now()->addDay()->setTime(17, 0)->format('Y-m-d\TH:i');
+@endphp
 <section class="forms">
     <div class="container-fluid">
         @include('laundry.partials.tabs')
-        <h1 class="mb-3">Laundry — Received</h1>
+        <h1 class="mb-3">Laundry — Awaiting Acceptance</h1>
         @include('laundry.partials.flash')
+        <p class="text-muted">Dresses forwarded from POS wait here. Select each dress, set the collection date and time, then accept. The client is notified and the ticket moves to Awaiting cleaning.</p>
 
-        <div class="card mb-4">
-            <div class="card-header"><strong>New drop-off</strong></div>
+        @forelse($orders as $order)
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong><a href="{{ route('laundry.show', $order->id) }}">{{ $order->reference_no }}</a></strong>
+                <span>{{ optional($order->customer)->name }} · {{ optional($order->customer)->phone_number }}</span>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ route('laundry.accept', $order->id) }}">
+                    @csrf
+                    <div class="form-row align-items-end mb-2">
+                        <div class="form-group col-md-4 mb-2">
+                            <label>Collection date &amp; time for all selected</label>
+                            <input type="datetime-local" name="collect_at" class="form-control collect-all" value="{{ $defaultCollect }}" required>
+                        </div>
+                        <div class="form-group col-md-4 mb-2">
+                            <label>Payment</label>
+                            <div>
+                                @if($order->isPaid())
+                                    <span class="badge badge-success">Paid</span>
+                                @else
+                                    <span class="badge badge-warning">Due {{ number_format($order->dueAmount(), 0) }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th style="width:40px;">Select</th>
+                                <th>Dress</th>
+                                <th>Qty</th>
+                                <th>Collect by</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach($order->items as $item)
+                            <tr>
+                                <td><input type="checkbox" name="item_id[]" value="{{ $item->id }}" checked></td>
+                                <td>{{ $item->name }}@if($item->note) <small class="text-muted">— {{ $item->note }}</small>@endif</td>
+                                <td>{{ $item->qty + 0 }}</td>
+                                <td><input type="datetime-local" name="item_collect_at[{{ $item->id }}]" class="form-control form-control-sm item-collect" value="{{ $defaultCollect }}"></td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                    <button type="submit" class="btn btn-primary">Accept &amp; send to cleaning</button>
+                </form>
+            </div>
+        </div>
+        @empty
+        <div class="alert alert-light border">No dresses awaiting acceptance.</div>
+        @endforelse
+        {{ $orders->links() }}
+
+        <div class="card mt-4">
+            <div class="card-header"><strong>Walk-in drop-off</strong></div>
             <div class="card-body">
                 <form method="POST" action="{{ route('laundry.received.store') }}" id="laundry-intake">
                     @csrf
@@ -62,95 +120,77 @@
                             <input type="checkbox" name="pay_now" value="1"> Pay now (cash)
                         </label>
                         <strong>Total: <span id="laundry-total">0</span></strong>
-                        <button type="submit" class="btn btn-primary">Submit for cleaning</button>
+                        <button type="submit" class="btn btn-primary">Submit for acceptance</button>
                     </div>
                 </form>
             </div>
         </div>
-
-        <div class="card">
-            <div class="card-header"><strong>Waiting for cleaning</strong></div>
-            <div class="card-body p-0">
-                <table class="table mb-0">
-                    <thead>
-                        <tr>
-                            <th>Order</th>
-                            <th>Customer</th>
-                            <th>Items</th>
-                            <th>Payment</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    @forelse($orders as $order)
-                        <tr>
-                            <td><a href="{{ route('laundry.show', $order->id) }}">{{ $order->reference_no }}</a></td>
-                            <td>{{ optional($order->customer)->name }}</td>
-                            <td>@include('laundry.partials.items')</td>
-                            <td>
-                                @if($order->isPaid())
-                                    <span class="badge badge-success">Paid</span>
-                                @else
-                                    <span class="badge badge-warning">Due {{ number_format($order->dueAmount(), 0) }}</span>
-                                @endif
-                            </td>
-                            <td><a class="btn btn-sm btn-outline-primary" href="{{ route('laundry.show', $order->id) }}">Open</a></td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="5">No received tickets.</td></tr>
-                    @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        {{ $orders->links() }}
     </div>
 </section>
 <script>
 (function () {
+    document.querySelectorAll('.collect-all').forEach(function (input) {
+        input.addEventListener('change', function () {
+            var card = this.closest('.card');
+            if (!card) return;
+            card.querySelectorAll('.item-collect').forEach(function (el) { el.value = input.value; });
+        });
+    });
+
     var priceMap = {};
     @foreach($products as $p)
     priceMap[{{ $p->id }}] = {{ (float) $p->price }};
     @endforeach
 
     function rowHtml() {
-        return document.querySelector('#garment-table tbody tr').outerHTML;
+        var first = document.querySelector('#garment-table tbody tr');
+        return first ? first.outerHTML : '';
     }
 
     function recalc() {
         var total = 0;
         document.querySelectorAll('.garment-row').forEach(function (row) {
             var sel = row.querySelector('.garment-product');
-            var qty = parseFloat(row.querySelector('.garment-qty').value) || 0;
+            var qtyEl = row.querySelector('.garment-qty');
+            if (!sel || !qtyEl) return;
+            var qty = parseFloat(qtyEl.value) || 0;
             var id = sel.value;
             var unit = priceMap[id] || 0;
             var line = unit * qty;
-            row.querySelector('.garment-price').textContent = id ? line.toLocaleString() : '—';
+            var priceCell = row.querySelector('.garment-price');
+            if (priceCell) priceCell.textContent = id ? line.toLocaleString() : '—';
             total += line;
         });
-        document.getElementById('laundry-total').textContent = total.toLocaleString();
+        var tot = document.getElementById('laundry-total');
+        if (tot) tot.textContent = total.toLocaleString();
     }
 
-    document.getElementById('add-row').addEventListener('click', function () {
-        var tbody = document.querySelector('#garment-table tbody');
-        tbody.insertAdjacentHTML('beforeend', rowHtml());
-        recalc();
-    });
-    document.getElementById('garment-table').addEventListener('click', function (e) {
-        if (e.target.classList.contains('remove-row')) {
-            var rows = document.querySelectorAll('.garment-row');
-            if (rows.length > 1) e.target.closest('tr').remove();
+    var addBtn = document.getElementById('add-row');
+    if (addBtn) {
+        addBtn.addEventListener('click', function () {
+            document.querySelector('#garment-table tbody').insertAdjacentHTML('beforeend', rowHtml());
             recalc();
-        }
-    });
-    document.getElementById('garment-table').addEventListener('change', recalc);
-    document.getElementById('garment-table').addEventListener('input', recalc);
+        });
+    }
+    var table = document.getElementById('garment-table');
+    if (table) {
+        table.addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-row')) {
+                var rows = document.querySelectorAll('.garment-row');
+                if (rows.length > 1) e.target.closest('tr').remove();
+                recalc();
+            }
+        });
+        table.addEventListener('change', recalc);
+        table.addEventListener('input', recalc);
+    }
 
     var customer = document.getElementById('laundry-customer');
     if (customer) {
         customer.addEventListener('change', function () {
             var id = this.value;
-            document.getElementById('member-hint').textContent = '';
+            var hint = document.getElementById('member-hint');
+            if (hint) hint.textContent = '';
             if (!id) return;
             fetch('{{ route('laundry.customer-price') }}?customer_id=' + encodeURIComponent(id), { headers: { 'X-Requested-With': 'XMLHttpRequest' }})
                 .then(function (r) { return r.json(); })
@@ -159,7 +199,7 @@
                         priceMap[p.id] = p.unit_price;
                     });
                     var discounted = (data.products || []).some(function (p) { return p.unit_price < p.list_price; });
-                    document.getElementById('member-hint').textContent = discounted ? 'Member discount applied.' : '';
+                    if (hint) hint.textContent = discounted ? 'Member discount applied.' : '';
                     document.querySelectorAll('.garment-product option').forEach(function (opt) {
                         var pid = opt.value;
                         if (!pid || !priceMap[pid]) return;

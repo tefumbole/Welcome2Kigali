@@ -5,8 +5,9 @@
 <section class="forms">
     <div class="container-fluid">
         @include('laundry.partials.tabs')
-        <h1 class="mb-3">Laundry — Cleaning</h1>
+        <h1 class="mb-3">Laundry — Awaiting cleaning</h1>
         @include('laundry.partials.flash')
+        <p class="text-muted">When a dress is cleaned, click <strong>Cleaned</strong>. The client is notified and the ticket moves to Ready for collection.</p>
         <div class="card">
             <div class="card-body p-0">
                 <table class="table mb-0">
@@ -15,8 +16,7 @@
                             <th>Order</th>
                             <th>Customer</th>
                             <th>Items</th>
-                            <th>Status</th>
-                            <th>Duration</th>
+                            <th>Collect by</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -26,32 +26,19 @@
                             <td><a href="{{ route('laundry.show', $order->id) }}">{{ $order->reference_no }}</a></td>
                             <td>{{ optional($order->customer)->name }}</td>
                             <td>@include('laundry.partials.items')</td>
-                            <td><span class="badge badge-info">{{ $order->statusLabel() }}</span></td>
                             <td>
-                                @if($order->status === 'cleaning')
-                                    {{ $order->cleaning_duration_hours }} h
-                                    <div><small>since {{ optional($order->cleaning_started_at)->format('d M H:i') }}</small></div>
-                                @else
-                                    —
-                                @endif
+                                {{ optional($order->collect_at)->format('d M Y H:i') ?: '—' }}
+                                <div><small>started {{ optional($order->cleaning_started_at)->format('d M H:i') }}</small></div>
                             </td>
-                            <td style="white-space:nowrap;">
-                                @if($order->status === 'received')
-                                    <form method="POST" action="{{ route('laundry.cleaning.start', $order->id) }}" class="form-inline">
-                                        @csrf
-                                        <input type="number" name="hours" min="1" value="24" class="form-control form-control-sm mr-1" style="width:70px;" title="Hours">
-                                        <button class="btn btn-sm btn-primary">Accept</button>
-                                    </form>
-                                @else
-                                    <form method="POST" action="{{ route('laundry.ready.mark', $order->id) }}">
-                                        @csrf
-                                        <button class="btn btn-sm btn-success">Mark completed</button>
-                                    </form>
-                                @endif
+                            <td>
+                                <form method="POST" action="{{ route('laundry.ready.mark', $order->id) }}">
+                                    @csrf
+                                    <button class="btn btn-sm btn-success">Cleaned</button>
+                                </form>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6">No tickets in cleaning.</td></tr>
+                        <tr><td colspan="5">Nothing awaiting cleaning.</td></tr>
                     @endforelse
                     </tbody>
                 </table>

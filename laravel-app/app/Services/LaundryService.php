@@ -23,7 +23,7 @@ use Illuminate\Support\Str;
 
 class LaundryService
 {
-    public function createFromSale(Sale $sale, $notes = '', array $itemNotes = [], $startCleaning = true)
+    public function createFromSale(Sale $sale, $notes = '', array $itemNotes = [], $startCleaning = false)
     {
         if ((int) $sale->sale_status === 3) {
             return null;
@@ -203,19 +203,52 @@ class LaundryService
         return $order;
     }
 
-    public function startCleaning(LaundryOrder $order, $hours)
+    public function acceptForCleaning(LaundryOrder $order, $collectAt, array $itemCollectAts = [])
     {
         if ($order->status !== LaundryOrder::STATUS_RECEIVED) {
-            throw new \RuntimeException('Only received tickets can be sent to cleaning.');
+            throw new \RuntimeException('Only tickets awaiting acceptance can be sent to cleaning.');
         }
-        $hours = max(1, (int) $hours);
+        $when = $this->parseCollectAt($collectAt);
+        if (! $when) {
+            throw new \InvalidArgumentException('Set the collection date and time.');
+        }
+        foreach ($order->items as $item) {
+            $itemWhen = $this->parseCollectAt($itemCollectAts[$item->id] ?? $collectAt) ?: $when;
+            $item->collect_at = $itemWhen;
+            $item->save();
+        }
+        $hours = max(1, (int) ceil(($when->getTimestamp() - time()) / 3600));
         $order->status = LaundryOrder::STATUS_CLEANING;
+        $order->collect_at = $when;
         $order->cleaning_duration_hours = $hours;
         $order->cleaning_started_at = now();
         $order->save();
         $this->notify($order->fresh(['customer', 'items', 'sale']), 'cleaning');
 
         return $order;
+    }
+
+    public function startCleaning(LaundryOrder $order, $hours)
+    {
+        $when = now()->addHours(max(1, (int) $hours));
+
+        return $this->acceptForCleaning($order, $when->format('Y-m-d H:i:s'));
+    }
+
+    protected function parseCollectAt($value)
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return \Carbon\Carbon::instance($value);
+        }
+        $value = trim((string) $value);
+        if ($value === '') {
+            return null;
+        }
+        try {
+            return \Carbon\Carbon::parse(str_replace('T', ' ', $value));
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     public function markReady(LaundryOrder $order)
@@ -264,6 +297,11 @@ class LaundryService
 
     public function addCashPayment(LaundryOrder $order, $amount, $note = '')
     {
+        return $this->addPayment($order, $amount, 'Cash', $note);
+    }
+
+    public function addPayment(LaundryOrder $order, $amount, $method = 'Cash', $note = '')
+    {
         $sale = $order->sale;
         if (! $sale) {
             throw new \RuntimeException('This ticket has no sale to pay.');
@@ -287,6 +325,7 @@ class LaundryService
             ['warehouse_id', $sale->warehouse_id],
             ['status', true],
         ])->first();
+        $method = $method === 'MoMo' ? 'Momo/Orange' : ($method ?: 'Cash');
         $payment = new Payment();
         $payment->user_id = Auth::id();
         $payment->sale_id = $sale->id;
@@ -297,7 +336,7 @@ class LaundryService
         $payment->payment_reference = 'lndp-'.date('Ymd').'-'.date('His');
         $payment->amount = $amount;
         $payment->change = 0;
-        $payment->paying_method = 'Cash';
+        $payment->paying_method = $method;
         $payment->payment_note = $note !== '' ? $note : 'Laundry collection payment';
         $payment->save();
 
