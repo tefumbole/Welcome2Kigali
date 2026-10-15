@@ -287,6 +287,7 @@ FILES=(
   resources/views/components/image_paste_script.blade.php
   app/Http/Controllers/BrandController.php
   database/migrations/2026_10_15_130000_assign_laundry_product_images.php
+  database/migrations/2026_10_15_140000_add_item_pipeline_to_laundry.php
   app/Product.php
   app/Console/Commands/CompressPosImages.php
   app/Services/LaundryService.php
@@ -439,6 +440,7 @@ sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_15_100000_grant_laundry_permissions.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_15_110000_grant_site_content_permission.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_15_130000_assign_laundry_product_images.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_15_140000_add_item_pipeline_to_laundry.php
 sudo -u www-data php "\$APP/artisan" images:compress-pos || true
 mkdir -p "\$APP/public/images/product/thumbs"
 find "\$APP/public/images/product" -type d -exec chmod 755 {} \\; 2>/dev/null || true

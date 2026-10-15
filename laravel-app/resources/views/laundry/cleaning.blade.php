@@ -8,7 +8,7 @@
         <div class="laundry-hero">
             <p class="laundry-kicker">Laundry</p>
             <h1>Awaiting cleaning</h1>
-            <p>Open a customer. When a dress is done, click <strong>Cleaned</strong>. The client is notified and it moves to Ready for collection.</p>
+            <p>Select the dresses that are actually clean, then <strong>Mark selected cleaned</strong>. Only those leave this list. Uncleaned dresses stay here.</p>
         </div>
         @include('laundry.partials.flash')
         @include('laundry.partials.customer_list', [

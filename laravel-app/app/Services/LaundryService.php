@@ -58,6 +58,7 @@ class LaundryService
                 'unit_price' => $line->net_unit_price,
                 'total' => $line->total,
                 'note' => $itemNotes[$index] ?? ($itemNotes[$line->product_id] ?? null),
+                'status' => $startCleaning ? LaundryOrderItem::STATUS_CLEANING : LaundryOrderItem::STATUS_RECEIVED,
             ]);
         }
 
@@ -195,6 +196,7 @@ class LaundryService
                 'unit_price' => $row['unit_price'],
                 'total' => $row['total'],
                 'note' => $row['note'] !== '' ? $row['note'] : null,
+                'status' => LaundryOrderItem::STATUS_RECEIVED,
             ]);
         }
 
@@ -203,26 +205,41 @@ class LaundryService
         return $order;
     }
 
-    public function acceptForCleaning(LaundryOrder $order, $collectAt, array $itemCollectAts = [])
+    public function acceptForCleaning(LaundryOrder $order, $collectAt, array $itemCollectAts = [], array $itemIds = [])
     {
-        if ($order->status !== LaundryOrder::STATUS_RECEIVED) {
-            throw new \RuntimeException('Only tickets awaiting acceptance can be sent to cleaning.');
+        $order->loadMissing('items');
+        $ids = array_values(array_filter(array_map('intval', $itemIds)));
+        if (! $ids) {
+            throw new \InvalidArgumentException('Select at least one dress that is still awaiting acceptance.');
+        }
+        $targets = $order->items->filter(function ($item) use ($ids) {
+            $status = $item->status ?: LaundryOrderItem::STATUS_RECEIVED;
+
+            return $status === LaundryOrderItem::STATUS_RECEIVED && in_array((int) $item->id, $ids, true);
+        });
+        if ($targets->isEmpty()) {
+            throw new \InvalidArgumentException('Select at least one dress that is still awaiting acceptance.');
         }
         $when = $this->parseCollectAt($collectAt);
         if (! $when) {
             throw new \InvalidArgumentException('Set the collection date and time.');
         }
-        foreach ($order->items as $item) {
+        $userId = Auth::id();
+        foreach ($targets as $item) {
             $itemWhen = $this->parseCollectAt($itemCollectAts[$item->id] ?? $collectAt) ?: $when;
             $item->collect_at = $itemWhen;
+            $item->status = LaundryOrderItem::STATUS_CLEANING;
+            $item->accepted_at = now();
+            $item->accepted_by = $userId;
             $item->save();
         }
         $hours = max(1, (int) ceil(($when->getTimestamp() - time()) / 3600));
-        $order->status = LaundryOrder::STATUS_CLEANING;
         $order->collect_at = $when;
         $order->cleaning_duration_hours = $hours;
-        $order->cleaning_started_at = now();
-        $order->save();
+        if (! $order->cleaning_started_at) {
+            $order->cleaning_started_at = now();
+        }
+        $this->syncOrderStatus($order);
         $this->notify($order->fresh(['customer', 'items', 'sale']), 'cleaning');
 
         return $order;
@@ -251,21 +268,162 @@ class LaundryService
         }
     }
 
-    public function markReady(LaundryOrder $order)
+    public function markReady(LaundryOrder $order, array $itemIds = [])
     {
-        if ($order->status !== LaundryOrder::STATUS_CLEANING) {
-            throw new \RuntimeException('Only cleaning tickets can be marked ready.');
+        return $this->markItemsReady($itemIds, $order->id);
+    }
+
+    public function markItemsReady(array $itemIds, $orderId = null)
+    {
+        $ids = array_values(array_filter(array_map('intval', $itemIds)));
+        if (! $ids && ! $orderId) {
+            throw new \InvalidArgumentException('Select at least one dress that has been cleaned.');
         }
-        $order->status = LaundryOrder::STATUS_READY;
-        $order->ready_at = now();
+        $query = LaundryOrderItem::query()->where('status', LaundryOrderItem::STATUS_CLEANING);
+        if ($ids) {
+            $query->whereIn('id', $ids);
+        } elseif ($orderId) {
+            throw new \InvalidArgumentException('Select the dresses that have been cleaned.');
+        }
+        $items = $query->get();
+        if ($items->isEmpty()) {
+            throw new \InvalidArgumentException('Those dresses are not awaiting cleaning.');
+        }
+        $userId = Auth::id();
+        $orderIds = [];
+        foreach ($items as $item) {
+            $item->status = LaundryOrderItem::STATUS_READY;
+            $item->cleaned_at = now();
+            $item->cleaned_by = $userId;
+            $item->save();
+            $orderIds[$item->laundry_order_id] = true;
+        }
+        $notified = [];
+        foreach (array_keys($orderIds) as $oid) {
+            $order = LaundryOrder::with(['customer', 'items', 'sale'])->find($oid);
+            if (! $order) {
+                continue;
+            }
+            if (! $order->ready_at) {
+                $order->ready_at = now();
+            }
+            $this->syncOrderStatus($order);
+            $fresh = $order->fresh(['customer', 'items.cleanedBy', 'sale']);
+            $this->notify($fresh, 'ready');
+            $notified[] = $fresh;
+        }
+
+        return $notified;
+    }
+
+    public function ordersForStage($status)
+    {
+        $query = LaundryOrder::with(['customer', 'items.cleanedBy', 'items.acceptedBy', 'sale'])
+            ->whereHas('items', function ($q) use ($status) {
+                $q->where('status', $status);
+            })
+            ->orderBy('customer_id')
+            ->orderByDesc('id');
+        if ($status === LaundryOrderItem::STATUS_READY) {
+            $query->whereNotIn('status', [LaundryOrder::STATUS_AWAITING_SIGNATURE, LaundryOrder::STATUS_COLLECTED]);
+        } elseif ($status === LaundryOrderItem::STATUS_CLEANING) {
+            $query->whereNotIn('status', [LaundryOrder::STATUS_AWAITING_SIGNATURE, LaundryOrder::STATUS_COLLECTED]);
+        }
+
+        return $query;
+    }
+
+    public function stageCounts()
+    {
+        $empty = [
+            'received' => ['dresses' => 0, 'clients' => 0],
+            'cleaning' => ['dresses' => 0, 'clients' => 0],
+            'ready' => ['dresses' => 0, 'clients' => 0],
+            'collect' => ['dresses' => 0, 'clients' => 0],
+        ];
+        if (! \Illuminate\Support\Facades\Schema::hasTable('laundry_order_items')) {
+            return $empty;
+        }
+        $rows = LaundryOrderItem::query()
+            ->selectRaw('laundry_order_items.status as status, SUM(laundry_order_items.qty) as dresses, COUNT(DISTINCT laundry_orders.customer_id) as clients')
+            ->join('laundry_orders', 'laundry_orders.id', '=', 'laundry_order_items.laundry_order_id')
+            ->whereNotIn('laundry_orders.status', [LaundryOrder::STATUS_AWAITING_SIGNATURE, LaundryOrder::STATUS_COLLECTED])
+            ->whereIn('laundry_order_items.status', [
+                LaundryOrderItem::STATUS_RECEIVED,
+                LaundryOrderItem::STATUS_CLEANING,
+                LaundryOrderItem::STATUS_READY,
+            ])
+            ->groupBy('laundry_order_items.status')
+            ->get();
+        foreach ($rows as $row) {
+            $key = $row->status;
+            if (isset($empty[$key])) {
+                $empty[$key] = [
+                    'dresses' => (int) $row->dresses,
+                    'clients' => (int) $row->clients,
+                ];
+            }
+        }
+        $collect = LaundryOrder::query()
+            ->where('status', LaundryOrder::STATUS_AWAITING_SIGNATURE)
+            ->selectRaw('COUNT(DISTINCT customer_id) as clients')
+            ->first();
+        $collectDresses = LaundryOrderItem::query()
+            ->join('laundry_orders', 'laundry_orders.id', '=', 'laundry_order_items.laundry_order_id')
+            ->where('laundry_orders.status', LaundryOrder::STATUS_AWAITING_SIGNATURE)
+            ->sum('laundry_order_items.qty');
+        $empty['collect'] = [
+            'dresses' => (int) $collectDresses,
+            'clients' => (int) optional($collect)->clients,
+        ];
+
+        return $empty;
+    }
+
+    public function syncOrderStatus(LaundryOrder $order)
+    {
+        $order->load('items');
+        if (in_array($order->status, [LaundryOrder::STATUS_AWAITING_SIGNATURE, LaundryOrder::STATUS_COLLECTED], true)) {
+            $order->save();
+
+            return $order;
+        }
+        $hasReceived = false;
+        $hasCleaning = false;
+        $hasReady = false;
+        foreach ($order->items as $item) {
+            $status = $item->status ?: LaundryOrderItem::STATUS_RECEIVED;
+            if ($status === LaundryOrderItem::STATUS_RECEIVED) {
+                $hasReceived = true;
+            } elseif ($status === LaundryOrderItem::STATUS_CLEANING) {
+                $hasCleaning = true;
+            } elseif ($status === LaundryOrderItem::STATUS_READY) {
+                $hasReady = true;
+            }
+        }
+        if ($hasReceived) {
+            $order->status = LaundryOrder::STATUS_RECEIVED;
+        } elseif ($hasCleaning) {
+            $order->status = LaundryOrder::STATUS_CLEANING;
+        } elseif ($hasReady) {
+            $order->status = LaundryOrder::STATUS_READY;
+        }
         $order->save();
-        $this->notify($order->fresh(['customer', 'items', 'sale']), 'ready');
 
         return $order;
     }
 
     public function sendCollectLink(LaundryOrder $order)
     {
+        $order->loadMissing('items');
+        $stillOpen = $order->items->first(function ($item) {
+            $status = $item->status ?: LaundryOrderItem::STATUS_RECEIVED;
+
+            return in_array($status, [LaundryOrderItem::STATUS_RECEIVED, LaundryOrderItem::STATUS_CLEANING], true);
+        });
+        if ($stillOpen) {
+            throw new \RuntimeException('Some dresses are still awaiting cleaning. Mark them cleaned first.');
+        }
         if (! in_array($order->status, [LaundryOrder::STATUS_READY, LaundryOrder::STATUS_AWAITING_SIGNATURE], true)) {
             throw new \RuntimeException('Ticket is not ready for collection.');
         }
@@ -290,6 +448,7 @@ class LaundryService
         $order->collected_at = now();
         $order->collect_token = null;
         $order->save();
+        LaundryOrderItem::where('laundry_order_id', $order->id)->update(['status' => LaundryOrderItem::STATUS_COLLECTED]);
         $this->notify($order->fresh(['customer', 'items', 'sale']), 'signed');
 
         return $order;

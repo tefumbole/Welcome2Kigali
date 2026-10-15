@@ -82,21 +82,48 @@
         color: #7a6238;
         background: #fffdf8;
     }
+    .laundry-stamp {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: #0A0A0A;
+        background: #F7F1E8;
+        border: 1px dashed #C5A059;
+        padding: 3px 10px;
+        border-radius: 999px;
+        white-space: nowrap;
+    }
+    .laundry-stamp strong { color: #C5A059; font-weight: 700; }
+    .laundry-bulk-bar {
+        position: sticky;
+        bottom: 12px;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        background: #0A0A0A;
+        color: #F7F1E8;
+        border-radius: 14px;
+        padding: 12px 16px;
+        margin-top: 14px;
+        box-shadow: 0 12px 30px rgba(10,10,10,.18);
+    }
+    .laundry-bulk-bar .btn-gold {
+        background: #C5A059;
+        color: #0A0A0A;
+        border: 0;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 8px 18px;
+    }
+    .laundry-bulk-bar .btn-gold:disabled { opacity: .45; }
+    .laundry-check {
+        width: 18px;
+        height: 18px;
+        accent-color: #C5A059;
+    }
 </style>
-<ul class="nav nav-tabs mb-3">
-    <li class="nav-item">
-        <a class="nav-link {{ $tab === 'received' ? 'active' : '' }}" href="{{ route('laundry.received') }}">Awaiting Acceptance</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link {{ $tab === 'cleaning' ? 'active' : '' }}" href="{{ route('laundry.cleaning') }}">Awaiting cleaning</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link {{ $tab === 'ready' ? 'active' : '' }}" href="{{ route('laundry.ready') }}">Ready for Collection</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link {{ $tab === 'collect' ? 'active' : '' }}" href="{{ route('laundry.collect') }}">Collect</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="{{ route('help.index') }}#laundry">Help</a>
-    </li>
-</ul>

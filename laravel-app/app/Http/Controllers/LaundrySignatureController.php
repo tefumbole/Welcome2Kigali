@@ -52,7 +52,7 @@ class LaundrySignatureController extends Controller
 
     public function scan($token)
     {
-        $order = LaundryOrder::with(['customer', 'items', 'sale'])
+        $order = LaundryOrder::with(['customer', 'items.cleanedBy', 'sale'])
             ->where('qr_token', trim((string) $token))
             ->first();
         if (! $order) {

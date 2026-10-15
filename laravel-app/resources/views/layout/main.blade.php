@@ -1610,19 +1610,31 @@
                             </li>
                         @endif
                         @php
-                            $laundry_module_permission = \Spatie\Permission\Models\Permission::where('name', 'laundry_module')->first();
-                            $laundry_module_active = $role && $laundry_module_permission ? \DB::table('role_has_permissions')->where([
-                                ['permission_id', optional($laundry_module_permission)->id],
-                                ['role_id', $role->id]
-                            ])->first() : null;
+                            $canLaundryAny = \App\Support\StaffAccess::canAnyLaundry();
+                            $laundryCounts = [];
+                            if ($canLaundryAny) {
+                                try {
+                                    $laundryCounts = app(\App\Services\LaundryService::class)->stageCounts();
+                                } catch (\Throwable $e) {
+                                    $laundryCounts = [];
+                                }
+                            }
                         @endphp
-                        @if($laundry_module_active || \App\Support\StaffAccess::canManageSite())
+                        @if($canLaundryAny)
                             <li><a href="#laundry-module" data-nav-key="laundry" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-tint"></i><span>{{ __('sidebar.laundry') }}</span></a>
                                 <ul id="laundry-module" class="collapse list-unstyled ">
-                                    <li id="laundry-received-menu"><a href="{{ route('laundry.received') }}">{{ __('sidebar.laundry_received') }}</a></li>
-                                    <li id="laundry-cleaning-menu"><a href="{{ route('laundry.cleaning') }}">{{ __('sidebar.laundry_cleaning') }}</a></li>
-                                    <li id="laundry-ready-menu"><a href="{{ route('laundry.ready') }}">{{ __('sidebar.laundry_ready') }}</a></li>
-                                    <li id="laundry-collect-menu"><a href="{{ route('laundry.collect') }}">{{ __('sidebar.laundry_collect') }}</a></li>
+                                    @if(\App\Support\StaffAccess::canLaundry('laundry.received'))
+                                        <li id="laundry-received-menu"><a href="{{ route('laundry.received') }}">{{ __('sidebar.laundry_received') }}@if(!empty($laundryCounts['received']['dresses'])) <span class="badge badge-count" title="{{ $laundryCounts['received']['dresses'] }} dresses · {{ $laundryCounts['received']['clients'] }} clients">{{ $laundryCounts['received']['dresses'] }}</span>@endif</a></li>
+                                    @endif
+                                    @if(\App\Support\StaffAccess::canLaundry('laundry.cleaning'))
+                                        <li id="laundry-cleaning-menu"><a href="{{ route('laundry.cleaning') }}">{{ __('sidebar.laundry_cleaning') }}@if(!empty($laundryCounts['cleaning']['dresses'])) <span class="badge badge-count" title="{{ $laundryCounts['cleaning']['dresses'] }} dresses · {{ $laundryCounts['cleaning']['clients'] }} clients">{{ $laundryCounts['cleaning']['dresses'] }}</span>@endif</a></li>
+                                    @endif
+                                    @if(\App\Support\StaffAccess::canLaundry('laundry.ready'))
+                                        <li id="laundry-ready-menu"><a href="{{ route('laundry.ready') }}">{{ __('sidebar.laundry_ready') }}@if(!empty($laundryCounts['ready']['dresses'])) <span class="badge badge-count" title="{{ $laundryCounts['ready']['dresses'] }} dresses · {{ $laundryCounts['ready']['clients'] }} clients">{{ $laundryCounts['ready']['dresses'] }}</span>@endif</a></li>
+                                    @endif
+                                    @if(\App\Support\StaffAccess::canLaundry('laundry.collect'))
+                                        <li id="laundry-collect-menu"><a href="{{ route('laundry.collect') }}">{{ __('sidebar.laundry_collect') }}@if(!empty($laundryCounts['collect']['dresses'])) <span class="badge badge-count" title="{{ $laundryCounts['collect']['dresses'] }} dresses · {{ $laundryCounts['collect']['clients'] }} clients">{{ $laundryCounts['collect']['dresses'] }}</span>@endif</a></li>
+                                    @endif
                                 </ul>
                             </li>
                         @endif

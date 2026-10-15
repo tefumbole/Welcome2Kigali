@@ -73,6 +73,38 @@ class StaffAccess
         }
     }
 
+    /** Laundry stage pages: each tab needs its own permission (or a super role). */
+    public static function canLaundry($permission = 'laundry_module', $user = null)
+    {
+        if (self::canManageSite($user)) {
+            return true;
+        }
+        $user = $user ?: Auth::user();
+        if (! $user) {
+            return false;
+        }
+        try {
+            $role = SpatieRole::find($user->role_id);
+            if (! $role) {
+                return false;
+            }
+            return $role->hasPermissionTo($permission);
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    public static function canAnyLaundry($user = null)
+    {
+        foreach (['laundry_module', 'laundry.received', 'laundry.cleaning', 'laundry.ready', 'laundry.collect'] as $perm) {
+            if (self::canLaundry($perm, $user)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Attach every permission to Admin and System so menus and Spatie checks pass.
      */

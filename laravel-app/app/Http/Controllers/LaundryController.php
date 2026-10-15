@@ -41,11 +41,7 @@ class LaundryController extends Controller
     public function received()
     {
         $this->authorizeLaundry('laundry.received');
-        $orders = LaundryOrder::with(['customer', 'items', 'sale'])
-            ->where('status', LaundryOrder::STATUS_RECEIVED)
-            ->orderBy('customer_id')
-            ->orderByDesc('id')
-            ->paginate(30);
+        $orders = $this->laundry->ordersForStage(\App\LaundryOrderItem::STATUS_RECEIVED)->paginate(30);
 
         return view('laundry.received', compact('orders'));
     }
@@ -88,15 +84,15 @@ class LaundryController extends Controller
         $this->authorizeLaundry('laundry.received');
         $order = LaundryOrder::with('items')->findOrFail($id);
         $ids = $request->input('item_id', []);
-        if (! is_array($ids) || ! $ids) {
-            $ids = $order->items->pluck('id')->all();
+        if (! is_array($ids)) {
+            $ids = [];
         }
         $itemTimes = [];
         foreach ($ids as $itemId) {
             $itemTimes[$itemId] = $request->input('item_collect_at.'.$itemId, $request->input('collect_at'));
         }
         try {
-            $this->laundry->acceptForCleaning($order, $request->input('collect_at'), $itemTimes);
+            $this->laundry->acceptForCleaning($order, $request->input('collect_at'), $itemTimes, $ids);
         } catch (\Throwable $e) {
             return back()->with('not_permitted', $e->getMessage());
         }
@@ -107,11 +103,7 @@ class LaundryController extends Controller
     public function cleaning()
     {
         $this->authorizeLaundry('laundry.cleaning');
-        $orders = LaundryOrder::with(['customer', 'items', 'sale'])
-            ->where('status', LaundryOrder::STATUS_CLEANING)
-            ->orderBy('customer_id')
-            ->orderByDesc('id')
-            ->paginate(30);
+        $orders = $this->laundry->ordersForStage(\App\LaundryOrderItem::STATUS_CLEANING)->paginate(30);
 
         return view('laundry.cleaning', compact('orders'));
     }
@@ -119,9 +111,14 @@ class LaundryController extends Controller
     public function startCleaning(Request $request, $id)
     {
         $this->authorizeLaundry('laundry.cleaning');
-        $order = LaundryOrder::findOrFail($id);
+        $order = LaundryOrder::with('items')->findOrFail($id);
         try {
-            $this->laundry->acceptForCleaning($order, $request->input('collect_at'), $request->input('item_collect_at', []));
+            $this->laundry->acceptForCleaning(
+                $order,
+                $request->input('collect_at'),
+                $request->input('item_collect_at', []),
+                $request->input('item_id', [])
+            );
         } catch (\Throwable $e) {
             return back()->with('not_permitted', $e->getMessage());
         }
@@ -129,27 +126,36 @@ class LaundryController extends Controller
         return redirect()->route('laundry.cleaning')->with('message', $order->reference_no.' is awaiting cleaning.');
     }
 
-    public function markReady($id)
+    public function markReady(Request $request, $id)
     {
         $this->authorizeLaundry('laundry.cleaning');
-        $order = LaundryOrder::findOrFail($id);
+        $ids = $request->input('item_id', []);
         try {
-            $this->laundry->markReady($order);
+            $this->laundry->markItemsReady(is_array($ids) ? $ids : [], $id);
         } catch (\Throwable $e) {
             return back()->with('not_permitted', $e->getMessage());
         }
 
-        return redirect()->route('laundry.ready')->with('message', $order->reference_no.' is ready for collection.');
+        return redirect()->route('laundry.cleaning')->with('message', 'Selected dresses marked cleaned.');
+    }
+
+    public function markReadyBulk(Request $request)
+    {
+        $this->authorizeLaundry('laundry.cleaning');
+        $ids = $request->input('item_id', []);
+        try {
+            $this->laundry->markItemsReady(is_array($ids) ? $ids : []);
+        } catch (\Throwable $e) {
+            return back()->with('not_permitted', $e->getMessage());
+        }
+
+        return redirect()->route('laundry.cleaning')->with('message', 'Selected dresses marked cleaned.');
     }
 
     public function ready()
     {
         $this->authorizeLaundry('laundry.ready');
-        $orders = LaundryOrder::with(['customer', 'items', 'sale'])
-            ->where('status', LaundryOrder::STATUS_READY)
-            ->orderBy('customer_id')
-            ->orderByDesc('id')
-            ->paginate(30);
+        $orders = $this->laundry->ordersForStage(\App\LaundryOrderItem::STATUS_READY)->paginate(30);
 
         return view('laundry.ready', compact('orders'));
     }
@@ -201,8 +207,8 @@ class LaundryController extends Controller
 
     public function show($id)
     {
-        $this->authorizeLaundry();
-        $order = LaundryOrder::with(['customer', 'items', 'sale', 'user'])->findOrFail($id);
+        $this->authorizeLaundryAny();
+        $order = LaundryOrder::with(['customer', 'items.cleanedBy', 'items.acceptedBy', 'sale', 'user'])->findOrFail($id);
         $qr = LaundryQr::dataUri($order->qr_token);
 
         return view('laundry.show', compact('order', 'qr'));
@@ -228,24 +234,17 @@ class LaundryController extends Controller
 
     protected function authorizeLaundry($permission = 'laundry_module')
     {
-        if ($this->hasLaundryAccess($permission)) {
+        if (StaffAccess::canLaundry($permission)) {
+            return;
+        }
+        abort(403, 'You are not allowed to access this Laundry stage.');
+    }
+
+    protected function authorizeLaundryAny()
+    {
+        if (StaffAccess::canAnyLaundry()) {
             return;
         }
         abort(403, 'You are not allowed to access Laundry.');
-    }
-
-    protected function hasLaundryAccess($permission)
-    {
-        if (StaffAccess::canManageSite()) {
-            return true;
-        }
-        $role = Auth::user() ? Role::find(Auth::user()->role_id) : null;
-        $name = strtolower((string) optional($role)->name);
-        if (in_array($name, ['admin', 'owner', 'super admin', 'super_admin', 'system'], true)) {
-            return true;
-        }
-
-        return in_array('laundry_module', $this->all_permission, true)
-            || in_array($permission, $this->all_permission, true);
     }
 }

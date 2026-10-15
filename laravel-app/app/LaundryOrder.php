@@ -62,6 +62,15 @@ class LaundryOrder extends Model
         return $this->hasMany(LaundryOrderItem::class);
     }
 
+    public function itemsInStatus($status)
+    {
+        return $this->items->filter(function ($item) use ($status) {
+            $current = $item->status ?: LaundryOrderItem::STATUS_RECEIVED;
+
+            return $current === $status;
+        });
+    }
+
     public function statusLabel()
     {
         $map = [

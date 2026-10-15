@@ -2,8 +2,18 @@
     $stage = $stage ?? 'received';
     $empty = $empty ?? 'Nothing here.';
     $defaultCollect = $defaultCollect ?? now()->addDay()->setTime(17, 0)->format('Y-m-d\TH:i');
+    $stageStatus = $stage === 'awaiting' || $stage === 'collected' ? null : $stage;
     $groups = [];
     foreach ($orders as $order) {
+        $visible = $stageStatus
+            ? $order->items->filter(function ($item) use ($stageStatus) {
+                $status = $item->status ?: 'received';
+                return $status === $stageStatus;
+            })
+            : $order->items;
+        if ($visible->isEmpty()) {
+            continue;
+        }
         $key = $order->customer_id ? (string) $order->customer_id : 'order-'.$order->id;
         if (! isset($groups[$key])) {
             $groups[$key] = [
@@ -15,8 +25,9 @@
                 'collect_at' => null,
             ];
         }
+        $order->setRelation('stage_items', $visible);
         $groups[$key]['orders'][] = $order;
-        foreach ($order->items as $item) {
+        foreach ($visible as $item) {
             $groups[$key]['dresses'] += (float) $item->qty;
             if ($item->collect_at && ($groups[$key]['collect_at'] === null || $item->collect_at->lt($groups[$key]['collect_at']))) {
                 $groups[$key]['collect_at'] = $item->collect_at;
@@ -32,9 +43,14 @@
     }
     $accordionId = 'laundry-acc-'.$stage;
     $namesOnly = ! empty($namesOnly);
+    $wrapCleaning = $stage === 'cleaning';
 @endphp
 
 @if(count($groups))
+@if($wrapCleaning)
+<form method="POST" action="{{ route('laundry.ready.bulk') }}" id="laundry-clean-form">
+    @csrf
+@endif
 <div class="laundry-customer-list mb-3" id="{{ $accordionId }}">
     @foreach($groups as $key => $group)
         @php
@@ -67,6 +83,7 @@
             <div id="{{ $panelId }}" class="collapse" data-parent="#{{ $accordionId }}">
                 <div class="laundry-customer-body">
                     @foreach($group['orders'] as $order)
+                        @php $stageItems = $order->stage_items ?? $order->items; @endphp
                         <div class="laundry-order-block">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <a href="{{ route('laundry.show', $order->id) }}"><strong>{{ $order->reference_no }}</strong></a>
@@ -75,7 +92,7 @@
                                 @elseif($stage === 'awaiting')
                                     <span class="text-muted small">Link sent {{ optional($order->collect_sent_at)->format('d M Y H:i') ?: '—' }}</span>
                                 @elseif($stage === 'cleaning')
-                                    <span class="text-muted small">Started {{ optional($order->cleaning_started_at)->format('d M H:i') ?: '—' }}</span>
+                                    <span class="text-muted small">In cleaning since {{ optional($order->cleaning_started_at)->format('d M H:i') ?: '—' }}</span>
                                 @endif
                             </div>
 
@@ -87,22 +104,26 @@
                             <table class="table table-sm">
                                 <thead>
                                     <tr>
-                                        @if($stage === 'received')<th style="width:40px;">Select</th>@endif
+                                        @if(in_array($stage, ['received', 'cleaning'], true))<th style="width:40px;">Select</th>@endif
                                         <th>Dress</th>
                                         <th>Qty</th>
                                         <th>Price</th>
                                         <th>Note</th>
                                         <th>Collect by</th>
+                                        @if($stage === 'ready')<th>Cleaned by</th>@endif
                                     </tr>
                                 </thead>
                                 <tbody>
-                                @foreach($order->items as $item)
+                                @foreach($stageItems as $item)
                                     @php
                                         $collectValue = optional($item->collect_at)->format('Y-m-d\TH:i') ?: $defaultCollect;
+                                        $cleaner = $item->cleanedBy;
                                     @endphp
                                     <tr>
                                         @if($stage === 'received')
-                                            <td><input type="checkbox" name="item_id[]" value="{{ $item->id }}" checked></td>
+                                            <td><input class="laundry-check" type="checkbox" name="item_id[]" value="{{ $item->id }}" checked></td>
+                                        @elseif($stage === 'cleaning')
+                                            <td><input class="laundry-check laundry-clean-item" type="checkbox" name="item_id[]" value="{{ $item->id }}" checked></td>
                                         @endif
                                         <td>{{ $item->name }}</td>
                                         <td>{{ $item->qty + 0 }}</td>
@@ -115,6 +136,18 @@
                                                 {{ optional($item->collect_at ?: $order->collect_at)->format('d M Y H:i') ?: '—' }}
                                             @endif
                                         </td>
+                                        @if($stage === 'ready')
+                                            <td>
+                                                @if($cleaner || $item->cleaned_at)
+                                                    <span class="laundry-stamp" title="{{ optional($item->cleaned_at)->format('d M Y H:i') }}">
+                                                        <strong>{{ optional($cleaner)->name ?: 'Staff' }}</strong>
+                                                        {{ optional($item->cleaned_at)->format('d M H:i') }}
+                                                    </span>
+                                                @else
+                                                    <span class="text-muted">—</span>
+                                                @endif
+                                            </td>
+                                        @endif
                                     </tr>
                                 @endforeach
                                 </tbody>
@@ -137,14 +170,9 @@
                                             @endif
                                         </div>
                                         <div class="form-group col-md-4 mb-2 text-md-right">
-                                            <button type="submit" class="btn btn-primary">Accept &amp; send to cleaning</button>
+                                            <button type="submit" class="btn btn-primary">Accept selected for cleaning</button>
                                         </div>
                                     </div>
-                                </form>
-                            @elseif($stage === 'cleaning')
-                                <form method="POST" action="{{ route('laundry.ready.mark', $order->id) }}">
-                                    @csrf
-                                    <button class="btn btn-sm btn-success">Cleaned</button>
                                 </form>
                             @elseif($stage === 'ready')
                                 <div class="d-flex flex-wrap align-items-center" style="gap:8px;">
@@ -186,6 +214,13 @@
         </div>
     @endforeach
 </div>
+@if($wrapCleaning)
+    <div class="laundry-bulk-bar">
+        <span><span id="laundry-clean-count">0</span> dresses selected</span>
+        <button type="submit" class="btn-gold" id="laundry-clean-submit">Mark selected cleaned</button>
+    </div>
+</form>
+@endif
 @else
     <div class="laundry-empty">{{ $empty }}</div>
 @endif
@@ -201,6 +236,24 @@
         if (!block) return;
         block.querySelectorAll('.item-collect').forEach(function (el) { el.value = e.target.value; });
     });
+})();
+</script>
+@endif
+@if($stage === 'cleaning')
+<script>
+(function () {
+    var form = document.getElementById('laundry-clean-form');
+    if (!form || form.__bound) return;
+    form.__bound = true;
+    function refresh() {
+        var n = form.querySelectorAll('.laundry-clean-item:checked').length;
+        var el = document.getElementById('laundry-clean-count');
+        var btn = document.getElementById('laundry-clean-submit');
+        if (el) el.textContent = n;
+        if (btn) btn.disabled = n < 1;
+    }
+    form.addEventListener('change', refresh);
+    refresh();
 })();
 </script>
 @endif
