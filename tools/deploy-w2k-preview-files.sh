@@ -77,6 +77,7 @@ FILES=(
   app/Http/Controllers/CustomerController.php
   app/Http/Controllers/CashRegisterController.php
   app/Http/Controllers/SiteContentController.php
+  app/Http/Controllers/LeaderController.php
   app/Http/Controllers/ProductController.php
   app/Http/Controllers/CustomerGroupController.php
   app/Http/Controllers/CartController.php
