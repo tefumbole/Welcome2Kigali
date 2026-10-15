@@ -40,12 +40,12 @@ class PawaPayCallbackController extends Controller
         if ($deposit->purpose === 'membership' && $deposit->status === 'completed') {
             Session::put('membership_paid', optional(\App\MembershipPayment::find($deposit->purpose_id))->membership_id);
             $redirect = route('membership.paid');
-        }
-        if ($deposit->purpose === 'sale' && $deposit->status === 'completed') {
-            $redirect = url('sales/gen_invoice/'.$deposit->purpose_id);
-        }
-        if ($deposit->purpose === 'order' && $deposit->status === 'completed') {
-            $redirect = url('/menu');
+        } elseif ($deposit->status === 'completed' && ! $deposit->redirect_url) {
+            if ($deposit->purpose === 'sale') {
+                $redirect = url('sales/gen_invoice/'.$deposit->purpose_id);
+            } elseif ($deposit->purpose === 'order') {
+                $redirect = url('/menu');
+            }
         }
 
         return response()->json([

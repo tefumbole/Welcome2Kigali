@@ -163,16 +163,40 @@ class LaundryController extends Controller
     public function pay(Request $request, $id)
     {
         $this->authorizeLaundry('laundry.ready');
-        $order = LaundryOrder::with('sale')->findOrFail($id);
+        $order = LaundryOrder::with(['sale', 'customer'])->findOrFail($id);
         $amount = $request->input('amount', $order->dueAmount());
-        $method = $request->input('method') === 'momo' ? 'MoMo' : 'Cash';
+        if ($request->input('method') === 'momo') {
+            $pawapay = app(\App\Services\PawaPayPaymentService::class);
+            if (! $pawapay->isConfigured()) {
+                return back()->with('not_permitted', 'Mobile money is not configured. Add PAWAPAY_API_TOKEN to .env.');
+            }
+            $sale = $order->sale;
+            if (! $sale) {
+                return back()->with('not_permitted', 'This ticket has no sale to pay.');
+            }
+            $phone = $request->input('momo_phone') ?: optional($order->customer)->phone_number;
+            $result = $pawapay->start(
+                'sale',
+                $sale->id,
+                $amount,
+                $phone,
+                $request->input('momo_network', 'auto'),
+                'W2K Laundry',
+                route('laundry.ready')
+            );
+            if (empty($result['ok'])) {
+                return back()->with('not_permitted', $result['message'] ?? 'Could not start Mobile Money payment.');
+            }
+
+            return redirect()->route('pawapay.wait', $result['deposit']->deposit_id);
+        }
         try {
-            $this->laundry->addPayment($order, $amount, $method, 'Laundry '.$method.' payment');
+            $this->laundry->addPayment($order, $amount, 'Cash', 'Laundry Cash payment');
         } catch (\Throwable $e) {
             return back()->with('not_permitted', $e->getMessage());
         }
 
-        return back()->with('message', $method.' payment recorded for '.$order->reference_no.'.');
+        return back()->with('message', 'Cash payment recorded for '.$order->reference_no.'.');
     }
 
     public function sendCollect($id)

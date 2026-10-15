@@ -190,10 +190,11 @@
                                             <input type="hidden" name="method" value="cash">
                                             <button class="btn btn-sm btn-outline-success">Cash</button>
                                         </form>
-                                        <form method="POST" action="{{ route('laundry.pay', $order->id) }}" class="mb-0">
+                                        <form method="POST" action="{{ route('laundry.pay', $order->id) }}" class="mb-0 d-flex flex-wrap align-items-center" style="gap:6px;">
                                             @csrf
                                             <input type="hidden" name="amount" value="{{ $order->dueAmount() }}">
                                             <input type="hidden" name="method" value="momo">
+                                            <input type="text" name="momo_phone" class="form-control form-control-sm" style="width:150px;" value="{{ optional($order->customer)->phone_number }}" placeholder="MoMo number" required>
                                             <button class="btn btn-sm btn-outline-warning">MoMo</button>
                                         </form>
                                         <button class="btn btn-sm btn-secondary" disabled title="Pay first (cash or MoMo)">Collect</button>

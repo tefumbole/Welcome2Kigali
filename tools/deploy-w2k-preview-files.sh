@@ -312,6 +312,7 @@ FILES=(
   resources/views/laundry/partials/tabs.blade.php
   resources/views/laundry/partials/flash.blade.php
   resources/views/laundry/partials/items.blade.php
+  resources/views/laundry/partials/customer_list.blade.php
   public/uploads/membership/.gitkeep
   public/branding/footer-swoosh.svg
   public/branding/footer-wave.svg

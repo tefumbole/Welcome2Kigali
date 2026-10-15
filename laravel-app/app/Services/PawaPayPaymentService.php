@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Account;
 use App\CashRegister;
 use App\MembershipPayment;
 use App\Order;
@@ -41,19 +42,33 @@ class PawaPayPaymentService
             return ['ok' => false, 'message' => 'Please enter a valid MoMo phone number (e.g. 0793…).'];
         }
 
+        $intAmount = (int) round($amount);
+        if ($intAmount < 1) {
+            return ['ok' => false, 'message' => 'Payment amount must be at least 1.'];
+        }
+
+        $reusable = PawaPayDeposit::where('purpose', $purpose)
+            ->where('purpose_id', (int) $purposeId)
+            ->where('status', 'pending')
+            ->where('phone', $msisdn)
+            ->where('amount', $intAmount)
+            ->where('created_at', '>=', now()->subMinutes(15))
+            ->latest('id')
+            ->first();
+        if ($reusable) {
+            return ['ok' => true, 'deposit' => $reusable];
+        }
+
         $predicted = $this->api->predictProvider($msisdn);
         $provider = $predicted ?: MomoNetwork::provider($msisdn, $networkHint);
         $currency = isset($extra['currency']) ? $extra['currency'] : MomoNetwork::currencyForPhone($msisdn);
         $depositId = (string) Str::uuid();
-        $intAmount = (string) (int) round($amount);
-        if ((int) $intAmount < 1) {
-            return ['ok' => false, 'message' => 'Payment amount must be at least 1.'];
-        }
 
         $payload = [
             'depositId' => $depositId,
-            'amount' => $intAmount,
+            'amount' => (string) $intAmount,
             'currency' => $currency,
+            'callbackUrl' => $this->api->callbackUrl(),
             'payer' => [
                 'type' => 'MMO',
                 'accountDetails' => [
@@ -130,16 +145,8 @@ class PawaPayPaymentService
         if (! $depositId) {
             return null;
         }
-        $row = PawaPayDeposit::where('deposit_id', $depositId)->first();
-        if (! $row) {
-            Log::info('PawaPay callback for unknown deposit', ['deposit_id' => $depositId]);
 
-            return null;
-        }
-        $status = $this->api->extractStatus($payload);
-        $this->syncStatus($row, $status);
-
-        return $row->fresh();
+        return $this->refreshAndApply($depositId);
     }
 
     protected function syncStatus(PawaPayDeposit $row, $status)
@@ -210,15 +217,19 @@ class PawaPayPaymentService
             return;
         }
         $already = Payment::where('sale_id', $sale->id)
-            ->where('paying_method', $row->paying_method)
-            ->where('amount', $row->amount)
-            ->where('created_at', '>=', $row->created_at)
+            ->where('payment_note', 'like', '%'.$row->deposit_id.'%')
             ->first();
         if ($already) {
             return;
         }
 
-        $sale->paid_amount = $sale->paid_amount + $row->amount;
+        $due = max(0, (float) $sale->grand_total - (float) $sale->paid_amount);
+        $amount = min((float) $row->amount, $due);
+        if ($amount <= 0) {
+            return;
+        }
+
+        $sale->paid_amount = $sale->paid_amount + $amount;
         $balance = $sale->grand_total - $sale->paid_amount;
         $sale->payment_status = $this->salePaymentStatus($sale->paid_amount, $balance);
 
@@ -233,9 +244,10 @@ class PawaPayPaymentService
         if ($cashRegister) {
             $payment->cash_register_id = $cashRegister->id;
         }
-        $payment->account_id = 1;
+        $account = Account::where('is_active', 1)->orderByDesc('is_default')->first();
+        $payment->account_id = $account ? $account->id : 1;
         $payment->payment_reference = 'momo-'.date('Ymd-His').'-'.$sale->id;
-        $payment->amount = $row->amount;
+        $payment->amount = $amount;
         $payment->change = 0;
         $payment->paying_method = $row->paying_method ?: 'MTN MoMo';
         $payment->payment_note = 'PawaPay '.$row->deposit_id;

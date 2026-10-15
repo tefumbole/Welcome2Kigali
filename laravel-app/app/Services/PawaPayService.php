@@ -26,8 +26,24 @@ class PawaPayService
         return rtrim((string) config('services.pawapay.base_url', 'https://api.pawapay.io'), '/');
     }
 
+    public function callbackUrl()
+    {
+        $url = trim((string) config('services.pawapay.deposit_callback_url'));
+        if ($url === '' || strpos($url, '${') !== false || stripos($url, 'http') !== 0) {
+            $base = rtrim((string) config('app.url'), '/');
+
+            return $base.'/api/payments/pawapay/deposits/callback';
+        }
+
+        return $url;
+    }
+
     public function createDeposit(array $payload)
     {
+        if (empty($payload['callbackUrl'])) {
+            $payload['callbackUrl'] = $this->callbackUrl();
+        }
+
         return $this->request('POST', '/v2/deposits', $payload);
     }
 

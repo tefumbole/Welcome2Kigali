@@ -752,43 +752,27 @@ class SaleController extends Controller
                 $paying_method = 'Pay Later';
             }
             elseif ($data['paid_by_id'] == 8) {
-
-                $biller = Biller::find($request->biller_id);
-                $data['status'] = 0;
-
                 $mtn_number = $request->input('momo_phone') ?: $lims_customer_data->phone_number;
                 $networkHint = $request->input('momo_network', 'mtn');
                 $amount = $lims_sale_data->grand_total;
                 $pawapay = app(\App\Services\PawaPayPaymentService::class);
-                if ($pawapay->isConfigured()) {
-                    $result = $pawapay->start(
-                        'sale',
-                        $lims_sale_data->id,
-                        $amount,
-                        $mtn_number,
-                        $networkHint,
-                        'W2K POS',
-                        url('/pos')
-                    );
-                    if (empty($result['ok'])) {
-                        return back()->with('not_permitted', $result['message'] ?? 'Could not start Mobile Money payment.');
-                    }
-
-                    return redirect()->route('pawapay.wait', $result['deposit']->deposit_id);
+                if (! $pawapay->isConfigured()) {
+                    return back()->with('not_permitted', 'Mobile money is not configured. Add PAWAPAY_API_TOKEN to .env.');
+                }
+                $result = $pawapay->start(
+                    'sale',
+                    $lims_sale_data->id,
+                    $amount,
+                    $mtn_number,
+                    $networkHint,
+                    'W2K POS',
+                    url('/pos')
+                );
+                if (empty($result['ok'])) {
+                    return back()->with('not_permitted', $result['message'] ?? 'Could not start Mobile Money payment.');
                 }
 
-                $token = getenv("MOMO_TOKEN");
-                $route = route('pos.payment_check');
-                $link = $this->mobileMoneyRequestLink($token, $amount, $route, $lims_sale_data->id, $mtn_number);
-                if ($link == false) {
-                    $message = 'Phone Number is incorrect or There is any other issue in payment method';
-                    return back()->with('not_permitted', $message);
-                }
-                $this->sendWhatsappMsg($lims_customer_data, $lims_sale_data, $mail_data, $biller, 'Momo/Orange', $net_unit_price);
-                Session::put('data', $data);
-
-                header("Location: $link");
-                die();
+                return redirect()->route('pawapay.wait', $result['deposit']->deposit_id);
             }
             elseif ($data['paid_by_id'] == 12) {
                 $stripe = app(\App\Services\StripePaymentService::class);
@@ -2805,9 +2789,44 @@ class SaleController extends Controller
         return view('sale.invoice', compact('header', 'footer', 'water_mark', 'all_permission', 'lims_account_data_cradit', 'lims_account_data_debit', 'lims_sale_data', 'lims_product_sale_data', 'lims_biller_data', 'lims_warehouse_data', 'lims_customer_data', 'lims_payment_data', 'numberInWords'));
     }
 
+    protected function startSaleMomo(Request $request)
+    {
+        $sale = Sale::find($request->input('sale_id'));
+        if (! $sale) {
+            return redirect()->back()->with('not_permitted', 'Sale not found.');
+        }
+        $customer = Customer::find($sale->customer_id);
+        $amount = (float) $request->input('amount', 0);
+        if ($amount <= 0) {
+            $amount = max(0, (float) $sale->grand_total - (float) $sale->paid_amount);
+        }
+        $phone = $request->input('momo_phone') ?: optional($customer)->phone_number;
+        $pawapay = app(\App\Services\PawaPayPaymentService::class);
+        if (! $pawapay->isConfigured()) {
+            return redirect()->back()->with('not_permitted', 'Mobile money is not configured. Add PAWAPAY_API_TOKEN to .env.');
+        }
+        $result = $pawapay->start(
+            'sale',
+            $sale->id,
+            $amount,
+            $phone,
+            $request->input('momo_network', 'auto'),
+            'W2K Sale',
+            url('sales')
+        );
+        if (empty($result['ok'])) {
+            return redirect()->back()->with('not_permitted', $result['message'] ?? 'Could not start Mobile Money payment.');
+        }
+
+        return redirect()->route('pawapay.wait', $result['deposit']->deposit_id);
+    }
+
     public function addPayment(Request $request)
     {
         $data = $request->all();
+        if ((int) ($data['paid_by_id'] ?? 0) === 8) {
+            return $this->startSaleMomo($request);
+        }
         if (!$data['amount'])
             $data['amount'] = 0.00;
 

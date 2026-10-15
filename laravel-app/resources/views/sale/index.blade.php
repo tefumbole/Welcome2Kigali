@@ -208,6 +208,7 @@
                             <label>{{trans('file.Paid By')}}</label>
                             <select name="paid_by_id" class="form-control">
                                 <option value="1">Cash</option>
+                                <option value="8">MTN MoMo / Airtel</option>
                                 <option value="2">Gift Card</option>
 {{--                                <option value="3">Credit Card</option>--}}
                                 @if(in_array("JE-method", $all_permission))
@@ -248,6 +249,11 @@
                             <label>{{trans('file.Cheque Number')}} *</label>
                             <input type="text" name="cheque_no" class="form-control">
                         </div>
+                    </div>
+                    <div class="form-group momo-phone-section" style="display:none;">
+                        <label>MoMo number *</label>
+                        <input type="text" name="momo_phone" class="form-control" placeholder="0793… or 2507…">
+                        <small class="text-muted">Customer approves the PawaPay request on this phone.</small>
                     </div>
                     <div class="form-group">
                         <label> {{trans('file.Account')}}</label>
@@ -645,8 +651,10 @@
         $('select[name="paid_by_id"]').on("change", function() {
             var id = $(this).val();
             $('input[name="cheque_no"]').attr('required', false);
+            $('input[name="momo_phone"]').attr('required', false);
             $('#add-payment select[name="gift_card_id"]').attr('required', false);
             $(".payment-form").off("submit");
+            $('.momo-phone-section').hide();
             if(id == 2){
                 $(".gift-card").show();
                 $(".debit").hide();
@@ -669,6 +677,12 @@
                 $(".debit").hide();
                 $(".gift-card").hide();
                 $("#cheque").hide();
+            } else if (id == 8) {
+                $(".debit").hide();
+                $(".gift-card").hide();
+                $("#cheque").hide();
+                $('.momo-phone-section').show();
+                $('input[name="momo_phone"]').attr('required', true);
             } else {
                 $(".debit").hide();
                 $(".gift-card").hide();
