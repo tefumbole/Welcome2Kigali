@@ -28,11 +28,15 @@ class PawaPayService
 
     public function callbackUrl()
     {
+        $fallback = rtrim((string) config('app.url'), '/').'/api/payments/pawapay/deposits/callback';
         $url = trim((string) config('services.pawapay.deposit_callback_url'));
         if ($url === '' || strpos($url, '${') !== false || stripos($url, 'http') !== 0) {
-            $base = rtrim((string) config('app.url'), '/');
-
-            return $base.'/api/payments/pawapay/deposits/callback';
+            return $fallback;
+        }
+        $appHost = parse_url((string) config('app.url'), PHP_URL_HOST);
+        $callbackHost = parse_url($url, PHP_URL_HOST);
+        if ($appHost && $callbackHost && strcasecmp($appHost, $callbackHost) !== 0) {
+            return $fallback;
         }
 
         return $url;
