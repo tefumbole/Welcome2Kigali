@@ -154,6 +154,64 @@ class SiteMenu
         return self::ordered('landing_menu_order', self::landingItems());
     }
 
+    /** POS payment bar: default order Send to Laundry, Cash, MoMo, VISA, Deposit, Credit, Group. */
+    public static function posPaymentItems()
+    {
+        return [
+            'laundry'   => 'Send to Laundry',
+            'cash'      => 'Cash',
+            'momo'      => 'MoMo',
+            'visa'      => 'VISA',
+            'deposit'   => 'Deposit',
+            'credit'    => 'Credit',
+            'group'     => 'Group',
+            'pay_later' => 'Pay later',
+            'je'        => 'JE',
+            'cancel'    => 'Cancel',
+            'recent'    => 'Recent',
+        ];
+    }
+
+    public static function posPaymentOrder()
+    {
+        return self::ordered('pos_payments_order', self::posPaymentItems());
+    }
+
+    public static function posPaymentHidden()
+    {
+        $saved = SiteSetting::getValue('pos_payments_hidden', null);
+        if ($saved === null) {
+            return ['pay_later', 'je'];
+        }
+
+        return is_array($saved) ? array_values($saved) : [];
+    }
+
+    public static function posPaymentLabels()
+    {
+        return self::itemLabels('pos_payments_labels', self::posPaymentItems());
+    }
+
+    /** Visible POS payment buttons in saved (or default) order. */
+    public static function posPaymentButtons()
+    {
+        $items = self::posPaymentItems();
+        $hidden = self::posPaymentHidden();
+        $labels = self::posPaymentLabels();
+        $out = [];
+        foreach (self::posPaymentOrder() as $key) {
+            if (in_array($key, $hidden, true)) {
+                continue;
+            }
+            $out[] = [
+                'key' => $key,
+                'label' => $labels[$key] ?? $items[$key],
+            ];
+        }
+
+        return $out;
+    }
+
     public static function sideOrder()
     {
         return self::ordered('side_menu_order', self::sideItems());

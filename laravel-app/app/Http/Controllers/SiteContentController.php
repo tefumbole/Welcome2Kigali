@@ -40,6 +40,10 @@ class SiteContentController extends Controller
             'landingLabels' => SiteMenu::itemLabels('landing_menu_labels', SiteMenu::landingItems()),
             'sideHidden'    => SiteMenu::hiddenKeys('side_menu_hidden'),
             'sideLabels'    => SiteMenu::itemLabels('side_menu_labels', SiteMenu::sideItems()),
+            'posPayItems'   => SiteMenu::posPaymentItems(),
+            'posPayOrder'   => SiteMenu::posPaymentOrder(),
+            'posPayHidden'  => SiteMenu::posPaymentHidden(),
+            'posPayLabels'  => SiteMenu::posPaymentLabels(),
             'schema'       => SiteContent::orderedSchema(),
             'pageSchema'   => SiteContent::pageSchema($tab),
             'galleryItems' => $tab === 'gallery' ? GalleryItem::ordered()->get() : collect(),
@@ -91,6 +95,16 @@ class SiteContentController extends Controller
         $this->saveOrder($request, 'content_tabs_order', SiteContent::contentTabItems());
 
         return redirect('/admin/site-content?tab=content-tabs')->with('message', 'Content tab order saved.');
+    }
+
+    public function savePosPayments(Request $request)
+    {
+        $this->authorizeAdmin();
+        $this->saveOrder($request, 'pos_payments_order', SiteMenu::posPaymentItems());
+        $this->saveVisibility($request, 'pos_payments_hidden', SiteMenu::posPaymentItems());
+        $this->saveLabels($request, 'pos_payments_labels', SiteMenu::posPaymentItems());
+
+        return redirect('/admin/site-content?tab=pos-payments')->with('message', 'POS payment buttons saved.');
     }
 
     public function saveContent(Request $request, $page)

@@ -56,6 +56,7 @@
                         'people-menu'   => ['label' => 'People', 'tone' => 'tone-pink', 'icon' => 'dripicons-user'],
                         'settings-menu' => ['label' => 'Settings', 'tone' => 'tone-orange', 'icon' => 'dripicons-gear'],
                         'content-tabs'  => ['label' => 'Content Tabs', 'tone' => 'tone-teal', 'icon' => 'dripicons-toggles'],
+                        'pos-payments'  => ['label' => 'POS Payments', 'tone' => 'tone-gold', 'icon' => 'dripicons-card'],
                     ];
                     $pageTones = [
                         'home'     => 'tone-green',
@@ -125,7 +126,7 @@
                     </a>
                 </div>
 
-                @if(in_array($tab, ['landing-menu', 'side-menu', 'people-menu', 'settings-menu', 'content-tabs'], true))
+                @if(in_array($tab, ['landing-menu', 'side-menu', 'people-menu', 'settings-menu', 'content-tabs', 'pos-payments'], true))
                     @php
                         if ($tab == 'side-menu') {
                             $items = $side;
@@ -151,6 +152,12 @@
                             $action = route('site-content.content-tabs');
                             $heading = 'Content Tabs — Order';
                             $hint = 'Drag items to reorder Site Content page tabs (or use arrows). Click Save when done.';
+                        } elseif ($tab == 'pos-payments') {
+                            $items = $posPayItems;
+                            $order = $posPayOrder;
+                            $action = route('site-content.pos-payments');
+                            $heading = 'POS Payments';
+                            $hint = 'Show, hide, rename, and reorder the POS payment bar. Default order: Send to Laundry, Cash, MoMo, VISA, Deposit, Credit, Group. Send to Laundry still appears only when a laundry item is on the ticket.';
                         } else {
                             $items = $landing;
                             $order = $landingOrder;
@@ -161,7 +168,7 @@
                     @endphp
                     <h5 class="mb-1">{{ $heading }}</h5>
                     <p class="text-muted" style="font-size:13px;">{{ $hint }}</p>
-                    @if(in_array($tab, ['landing-menu', 'side-menu'], true))
+                    @if(in_array($tab, ['landing-menu', 'side-menu', 'pos-payments'], true))
                         <p class="text-info" style="font-size:13px;">Show or hide items, rename the label, and drag to reorder. These changes are website/menu only — they do not change products, members, or other business data.</p>
                     @endif
                     <form method="POST" action="{{ $action }}">
@@ -170,9 +177,9 @@
                             @foreach($order as $key)
                                 @if(isset($items[$key]))
                                     @php
-                                        $canEdit = in_array($tab, ['landing-menu', 'side-menu'], true);
-                                        $hiddenList = $tab === 'side-menu' ? ($sideHidden ?? []) : ($landingHidden ?? []);
-                                        $labelList = $tab === 'side-menu' ? ($sideLabels ?? []) : ($landingLabels ?? []);
+                                        $canEdit = in_array($tab, ['landing-menu', 'side-menu', 'pos-payments'], true);
+                                        $hiddenList = $tab === 'side-menu' ? ($sideHidden ?? []) : ($tab === 'pos-payments' ? ($posPayHidden ?? []) : ($landingHidden ?? []));
+                                        $labelList = $tab === 'side-menu' ? ($sideLabels ?? []) : ($tab === 'pos-payments' ? ($posPayLabels ?? []) : ($landingLabels ?? []));
                                         $locked = $tab === 'side-menu' && in_array($key, ['site-content', 'setting', 'help'], true);
                                     @endphp
                                     <li class="list-group-item d-flex justify-content-between align-items-center" data-key="{{ $key }}">

@@ -219,7 +219,7 @@
         <h3>5. POS and cafe orders</h3>
         <p>Click the gold <strong>POS</strong> button in the top bar (next to Help).</p>
         <img class="w2k-help-shot" src="{{ url('public/branding/help/pos.png') }}?v={{ $hv }}" alt="POS walk-in ticket with Cash Visa MoMo payment buttons">
-        <p class="w2k-help-cap">POS: Walk-in Customer on the left, product search, ticket columns Product / Batch No / Price / Quantity / SubTotal. Right side: Category, Brand, Featured. Payment row at the bottom: Pay later, Cash, Visa, Credit, Group, MoMo, Deposit. Cancel and Recent sit under that.</p>
+        <p class="w2k-help-cap">POS: Walk-in Customer on the left, product search, ticket columns Product / Batch No / Price / Quantity / SubTotal. Right side: Category, Brand, Featured. Payment row: Send to Laundry, Cash, MoMo, VISA, Deposit, Credit, Group. Reorder these under Site Content → POS Payments.</p>
         <ol>
             <li>Choose Walk-in Customer or pick a member.</li>
             <li>Search a drink by name/code, or tap Category / Brand / Featured and add lines to the ticket.</li>

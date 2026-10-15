@@ -1766,53 +1766,53 @@
                                         <small class="text-muted">Saved on the ticket. Staff see this when they accept the dresses.</small>
                                     </div>
                                     <div class="payment-options">
-                                        {{--                        <div class="column-5">--}}
-                                        {{--                            <button style="background: #0984e3" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="credit-card-btn"><i class="fa fa-credit-card"></i> Card</button>--}}
-                                        {{--                        </div>--}}
-                                        <div class="column-5" id="send-laundry-wrap" style="display:none;">
-                                            <button type="button" class="btn btn-custom" id="send-laundry-btn"><i class="fa fa-shower"></i> Send to Laundry</button>
-                                        </div>
-                                        <div class="column-5">
-                                            <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="pay-later-btn"><i class="fa fa-clock-o"></i> Pay later</button>
-                                        </div>
-
-                                            @if(in_array("JE-method", $all_permission))
+                                        @foreach(\App\Support\SiteMenu::posPaymentButtons() as $payBtn)
+                                            @if($payBtn['key'] === 'laundry')
+                                                <div class="column-5" id="send-laundry-wrap" style="display:none;">
+                                                    <button type="button" class="btn btn-custom" id="send-laundry-btn"><i class="fa fa-shower"></i> {{ $payBtn['label'] }}</button>
+                                                </div>
+                                            @elseif($payBtn['key'] === 'cash')
                                                 <div class="column-5">
-                                                    <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="credit-card-btn"><i class="fa fa-credit-card"></i> JE</button>
+                                                    <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="cash-btn"><i class="fa fa-money"></i> {{ $payBtn['label'] }}</button>
+                                                </div>
+                                            @elseif($payBtn['key'] === 'momo')
+                                                <div class="column-5">
+                                                    <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="momo-btn"><i class="fa fa-mobile"></i> {{ $payBtn['label'] }}</button>
+                                                </div>
+                                            @elseif($payBtn['key'] === 'visa')
+                                                <div class="column-5">
+                                                    <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="visa-btn"><i class="fa fa-credit-card"></i> {{ $payBtn['label'] }}</button>
+                                                </div>
+                                            @elseif($payBtn['key'] === 'deposit')
+                                                <div class="column-5">
+                                                    <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="deposit-btn"><i class="fa fa-university"></i> {{ $payBtn['label'] }}</button>
+                                                </div>
+                                            @elseif($payBtn['key'] === 'credit')
+                                                <div class="column-5">
+                                                    <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="credit-btn"><i class="fa fa-credit-card-alt"></i> {{ $payBtn['label'] }}</button>
+                                                </div>
+                                            @elseif($payBtn['key'] === 'group')
+                                                <div class="column-5">
+                                                    <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="group-credit-btn"><i class="fa fa-users"></i> {{ $payBtn['label'] }}</button>
+                                                </div>
+                                            @elseif($payBtn['key'] === 'pay_later')
+                                                <div class="column-5">
+                                                    <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="pay-later-btn"><i class="fa fa-clock-o"></i> {{ $payBtn['label'] }}</button>
+                                                </div>
+                                            @elseif($payBtn['key'] === 'je' && in_array('JE-method', $all_permission))
+                                                <div class="column-5">
+                                                    <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="credit-card-btn"><i class="fa fa-credit-card"></i> {{ $payBtn['label'] }}</button>
+                                                </div>
+                                            @elseif($payBtn['key'] === 'cancel')
+                                                <div class="column-5">
+                                                    <button type="button" class="btn btn-custom" id="cancel-btn" onclick="return confirmCancel()"><i class="fa fa-close"></i> {{ $payBtn['label'] }}</button>
+                                                </div>
+                                            @elseif($payBtn['key'] === 'recent')
+                                                <div class="column-5">
+                                                    <button type="button" class="btn btn-custom" data-toggle="modal" data-target="#recentTransaction"><i class="dripicons-clock"></i> {{ $payBtn['label'] }}</button>
                                                 </div>
                                             @endif
-                                            <div class="column-5">
-                                                <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="cash-btn"><i class="fa fa-money"></i> Cash</button>
-                                            </div>
-                                            <div class="column-5">
-                                                <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="visa-btn"><i class="fa fa-credit-card"></i> Visa</button>
-                                            </div>
-                                            <div class="column-5">
-                                                <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="credit-btn"><i class="fa fa-credit-card-alt"></i> Credit</button>
-                                            </div>
-                                            <div class="column-5">
-                                                <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="group-credit-btn"><i class="fa fa-users"></i> Group</button>
-                                            </div>
-                                            <div class="column-5">
-                                                <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="momo-btn"><i class="fa fa-mobile"></i> MoMo</button>
-                                            </div>
-                                            {{--                            <div class="column-5">--}}
-                                            {{--                                <button style="background-color: #5f27cd" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="gift-card-btn"><i class="fa fa-credit-card-alt"></i> GiftCard</button>--}}
-                                            {{--                            </div>--}}
-                                            <div class="column-5">
-                                                <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="deposit-btn"><i class="fa fa-university"></i> Deposit</button>
-                                            </div>
-                                            {{--                            @if($lims_reward_point_setting_data->is_active)--}}
-                                            {{--                                <div class="column-5">--}}
-                                            {{--                                    <button style="background-color: #319398" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="point-btn"><i class="dripicons-rocket"></i> Points</button>--}}
-                                            {{--                                </div>--}}
-                                            {{--                            @endif--}}
-                                            <div class="column-5">
-                                                <button type="button" class="btn btn-custom" id="cancel-btn" onclick="return confirmCancel()"><i class="fa fa-close"></i> Cancel</button>
-                                            </div>
-                                            <div class="column-5">
-                                                <button type="button" class="btn btn-custom" data-toggle="modal" data-target="#recentTransaction"><i class="dripicons-clock"></i> Recent</button>
-                                            </div>
+                                        @endforeach
                                     </div>
                                 </div>
                             </div>
