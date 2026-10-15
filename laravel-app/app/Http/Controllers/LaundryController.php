@@ -6,6 +6,7 @@ use App\Customer;
 use App\LaundryOrder;
 use App\Services\LaundryService;
 use App\Support\LaundryQr;
+use App\Support\StaffAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
@@ -45,10 +46,8 @@ class LaundryController extends Controller
             ->orderBy('customer_id')
             ->orderByDesc('id')
             ->paginate(30);
-        $customers = Customer::where('is_active', true)->orderBy('name')->get(['id', 'name', 'phone_number']);
-        $products = $this->laundry->laundryProducts();
 
-        return view('laundry.received', compact('orders', 'customers', 'products'));
+        return view('laundry.received', compact('orders'));
     }
 
     public function storeReceived(Request $request)
@@ -102,7 +101,7 @@ class LaundryController extends Controller
             return back()->with('not_permitted', $e->getMessage());
         }
 
-        return redirect()->route('laundry.cleaning')->with('message', $order->reference_no.' accepted and sent to awaiting cleaning. The client has been notified.');
+        return redirect()->route('laundry.received')->with('message', $order->reference_no.' accepted. The customer has left this list and the client has been notified.');
     }
 
     public function cleaning()
@@ -237,9 +236,12 @@ class LaundryController extends Controller
 
     protected function hasLaundryAccess($permission)
     {
+        if (StaffAccess::canManageSite()) {
+            return true;
+        }
         $role = Auth::user() ? Role::find(Auth::user()->role_id) : null;
         $name = strtolower((string) optional($role)->name);
-        if (in_array($name, ['admin', 'owner', 'super admin'], true) || optional($role)->id == 1) {
+        if (in_array($name, ['admin', 'owner', 'super admin', 'super_admin', 'system'], true)) {
             return true;
         }
 

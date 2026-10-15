@@ -1676,6 +1676,11 @@
                                     <div class="payment-amount">
                                         <h2>{{trans('file.grand total')}} <span id="grand-total">0.00</span></h2>
                                     </div>
+                                    <div id="laundry-notes-wrap" class="px-3 pb-3" style="display:none;">
+                                        <label class="mb-1" style="font-weight:700;">Laundry comments</label>
+                                        <textarea name="laundry_notes" class="form-control" rows="2" placeholder="Stain on collar, no starch, collect after 5pm…"></textarea>
+                                        <small class="text-muted">Saved on the ticket. Staff see this when they accept the dresses.</small>
+                                    </div>
                                     <div class="payment-options">
                                         {{--                        <div class="column-5">--}}
                                         {{--                            <button style="background: #0984e3" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="credit-card-btn"><i class="fa fa-credit-card"></i> Card</button>--}}
@@ -4188,10 +4193,18 @@
             var cols = '';
             temp_unit_name = (data[6]).split(',');
             pos = product_code.indexOf(data[1]);
+            var laundryCodes = window.POS_LAUNDRY_CODES || [];
+            var isLaundryLine = false;
+            for (var li = 0; li < laundryCodes.length; li++) {
+                if (String(laundryCodes[li]) === String(data[1])) { isLaundryLine = true; break; }
+            }
+            var laundryNoteHtml = isLaundryLine
+                ? '<input type="text" class="form-control form-control-sm mt-1 laundry-item-note" name="laundry_item_note[' + data[9] + ']" placeholder="Comment for this dress">'
+                : '<input type="hidden" class="laundry-item-note" name="laundry_item_note[' + data[9] + ']" value="">';
             @if(in_array("price-change", $all_permission))
-                cols += '<td class="col-sm-3 product-title"><strong>' + data[0] + '</strong><br>' + data[1] + '<a class="edit-product btn btn-link" data-toggle="modal" data-target="#editModal"><i class="fa fa-pencil-square"></i></a><p>In Stock: <span class="in-stock"></span></p></td>';
+                cols += '<td class="col-sm-3 product-title"><strong>' + data[0] + '</strong><br>' + data[1] + '<a class="edit-product btn btn-link" data-toggle="modal" data-target="#editModal"><i class="fa fa-pencil-square"></i></a><p>In Stock: <span class="in-stock"></span></p>' + laundryNoteHtml + '</td>';
             @else
-                cols += '<td class="col-sm-3 product-title"><button type="button" class="edit-product btn btn-link"><strong>' + data[0] + '</strong></button><br>' + data[1] + '<p>In Stock: <span class="in-stock"></span></p></td>';
+                cols += '<td class="col-sm-3 product-title"><button type="button" class="edit-product btn btn-link"><strong>' + data[0] + '</strong></button><br>' + data[1] + '<p>In Stock: <span class="in-stock"></span></p>' + laundryNoteHtml + '</td>';
             @endif
             if(data[12]) {
                 cols += '<td class="col-sm-2"><input type="text" title="'+product_expired_date[pos]+'" class="form-control batch-no product_expired_date" value="'+batch_no[pos]+'" required/> <input type="hidden" class="product-batch-id" name="product_batch_id[]" value="'+product_batch_id[pos]+'"/> </td>';
@@ -4608,8 +4621,10 @@
         function refreshLaundryButton() {
             if (cartHasLaundry()) {
                 $('#send-laundry-wrap').show();
+                $('#laundry-notes-wrap').show();
             } else {
                 $('#send-laundry-wrap').hide();
+                $('#laundry-notes-wrap').hide();
                 $('input[name="send_to_laundry"]').val(0);
             }
         }

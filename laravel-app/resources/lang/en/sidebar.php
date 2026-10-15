@@ -99,6 +99,7 @@ return [
     'help_quote' => 'Quotes',
     'help_contracts' => 'Contracts',
     'help_members' => 'Members',
+    'help_laundry' => 'Laundry',
     'help_expense' => 'Expenses',
     'help_orders' => 'Online orders',
     'help_assets' => 'Assets',

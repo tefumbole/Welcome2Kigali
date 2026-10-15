@@ -1007,9 +1007,14 @@ class SaleController extends Controller
         $laundryTicket = null;
         try {
             $itemNotes = $data['laundry_item_note'] ?? [];
+            $notes = trim((string) ($data['sale_note'] ?? ''));
+            $laundryNotes = trim((string) ($data['laundry_notes'] ?? ''));
+            if ($laundryNotes !== '') {
+                $notes = $notes === '' ? $laundryNotes : $notes."\n".$laundryNotes;
+            }
             $laundryTicket = app(\App\Services\LaundryService::class)->createFromSale(
                 $lims_sale_data->fresh('products'),
-                $data['sale_note'] ?? '',
+                $notes,
                 is_array($itemNotes) ? $itemNotes : [],
                 false
             );

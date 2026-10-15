@@ -5,9 +5,12 @@
 <section class="forms">
     <div class="container-fluid">
         @include('laundry.partials.tabs')
-        <h1 class="mb-3">Laundry — Ready for Collection</h1>
+        <div class="laundry-hero">
+            <p class="laundry-kicker">Laundry</p>
+            <h1>Ready for collection</h1>
+            <p>Open a customer. Take cash or MoMo if unpaid, then Collect. The client must sign to finish.</p>
+        </div>
         @include('laundry.partials.flash')
-        <p class="text-muted">Click a customer to see their dresses. Payment (cash or MoMo) must be taken before Collect.</p>
         @include('laundry.partials.customer_list', [
             'orders' => $orders,
             'stage' => 'ready',

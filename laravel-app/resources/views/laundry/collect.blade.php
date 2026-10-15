@@ -5,9 +5,12 @@
 <section class="forms">
     <div class="container-fluid">
         @include('laundry.partials.tabs')
-        <h1 class="mb-3">Laundry — Collect</h1>
+        <div class="laundry-hero">
+            <p class="laundry-kicker">Laundry</p>
+            <h1>Collect</h1>
+            <p>The client or nominee signs. After the signature is saved, the process is complete.</p>
+        </div>
         @include('laundry.partials.flash')
-        <p class="text-muted">Click a customer to see their dresses. The client (or nominee) must sign. When the signature is saved, the ticket is collected.</p>
 
         <h5>Awaiting signature</h5>
         @include('laundry.partials.customer_list', [

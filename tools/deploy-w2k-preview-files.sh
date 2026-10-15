@@ -283,6 +283,7 @@ FILES=(
   database/migrations/2026_10_14_181000_convert_laundry_category_products.php
   database/migrations/2026_10_14_190000_ensure_default_credit_debit_accounts.php
   database/migrations/2026_10_14_200000_add_collect_at_to_laundry.php
+  database/migrations/2026_10_15_100000_grant_laundry_permissions.php
   app/Http/Controllers/LaundryController.php
   app/Http/Controllers/LaundrySignatureController.php
   database/migrations/2026_10_14_120000_create_laundry_module.php
@@ -423,6 +424,7 @@ sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_14_181000_convert_laundry_category_products.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_14_190000_ensure_default_credit_debit_accounts.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_14_200000_add_collect_at_to_laundry.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_15_100000_grant_laundry_permissions.php
 sudo -u www-data php "\$APP/artisan" images:compress-pos || true
 sudo -u www-data php "\$APP/artisan" permission:cache-reset || true
 sudo -u www-data php "\$APP/artisan" view:clear

@@ -93,6 +93,7 @@
         <a href="#quotations">Quotations</a>
         <a href="#contracts">Contracts</a>
         <a href="#members">Membership</a>
+        <a href="#laundry">Laundry</a>
         <a href="#expenses">Expenses</a>
         <a href="#returns">Returns</a>
         <a href="#orders">Online orders</a>
@@ -223,6 +224,7 @@
             <li>Choose Walk-in Customer or pick a member.</li>
             <li>Search a drink by name/code, or tap Category / Brand / Featured and add lines to the ticket.</li>
             <li>Take Cash, Visa, Credit, Airtel Money, or MTN MoMo.</li>
+            <li>For a laundry dress, add a comment on the line, fill <strong>Laundry comments</strong>, then <strong>Send to Laundry</strong>. The ticket waits under Laundry → Awaiting Acceptance.</li>
             <li>Online cafe orders from /menu also appear under Sale / Online Order.</li>
         </ol>
         <div class="w2k-help-tip">If Add Cash Register opens first, enter 0 (or the cash in the drawer) and submit. Then POS loads.</div>
@@ -232,11 +234,11 @@
         <h3>6. Site Content (website words and menus)</h3>
         <p>Use <strong>Site Content</strong> in the sidebar for pages and menus. It does not change products, members, or sales.</p>
         <img class="w2k-help-shot" src="{{ url('public/branding/help/site-content.png') }}?v={{ $hv }}" alt="Site Content Home tab with page and menu pills">
-        <p class="w2k-help-cap">Site Content. Pages: Home, About, Services, Projects, Contact, Gallery, Menu, Events, Become a Member, Footer. Menus &amp; Order: Landing Menu, Side Bars, People, Admin settings order, Content Tabs. Admin modules: About Us Leaders, Digital Invitations, Internships, Reorder in Side Bars, Help last. Preview / View live page is on the right. Home — Content has Hero title and Hero subtitle.</p>
+        <p class="w2k-help-cap">Site Content. Pages: Home, About, Services, Projects, Contact, Gallery, Menu, Events, Become a Member, Footer. Menus &amp; Order: Landing Menu, Side Bars, People, Admin settings order, Content Tabs. Admin modules include About Us Leaders, Digital Invitations, Internships, Membership, and Laundry. Reorder them in Side Bars; Help stays last. Preview / View live page is on the right.</p>
         <ul>
             <li><strong>Pages</strong> — Home buttons, About vision/mission, Events title, Menu title, Become a Member, Footer.</li>
             <li><strong>Landing Menu</strong> — show, hide, rename, reorder Home / Menu / Events / About / Become a Member.</li>
-            <li><strong>Side Bars</strong> — same for the admin sidebar, including About Us Leaders, Digital Invitations, and Internships.</li>
+            <li><strong>Side Bars</strong> — same for the admin sidebar, including About Us Leaders, Digital Invitations, Internships, Membership, and <strong>Laundry</strong>.</li>
             <li>Press Save on a tab, then open <a href="{{ url('/') }}" target="_blank" rel="noopener">the public site</a> to check.</li>
         </ul>
     </div>
@@ -251,6 +253,19 @@
             <li>Approved members can sign in and use POS benefits if you enabled them on a product.</li>
         </ol>
         <p>Settings (units, brands, tax, warehouse) stay under the <strong>Settings</strong> hub — not Site Content.</p>
+    </div>
+
+    <div class="w2k-help-card" id="laundry">
+        <h3>Laundry</h3>
+        <p>Dresses sold on POS (Laundry category) open a ticket. Staff move it: <strong>Awaiting Acceptance</strong> → <strong>Awaiting cleaning</strong> → <strong>Ready for collection</strong> → <strong>Collect</strong> (signature). The client is WhatsApp’d at each step.</p>
+        <ol>
+            <li>On POS, add a laundry dress, write a comment (stain, no starch, …) on the line and in <strong>Laundry comments</strong>, then <strong>Send to Laundry</strong> or take cash / MoMo.</li>
+            <li>Open <strong>Laundry → Awaiting Acceptance</strong>. Only customer names are listed. Open the name, set collection date and time, then Accept. That customer leaves this screen.</li>
+            <li>On <strong>Awaiting cleaning</strong>, click <strong>Cleaned</strong> when the dress is done.</li>
+            <li>On <strong>Ready for collection</strong>, take remaining payment (cash or MoMo) if needed, then <strong>Collect</strong>. The client (or nominee) must sign. Signed tickets show as Collected.</li>
+        </ol>
+        <div class="w2k-help-tip">Clothes cannot be collected until the bill is paid. Walk-in drop-off is not used — all tickets start from POS.</div>
+        <p>Turn Laundry on for a role under <strong>Settings → Role Permission</strong> (Laundry Module, Awaiting Acceptance, Awaiting cleaning, Ready for collection, Collect). Reorder the Laundry sidebar item in <strong>Site Content → Side Bars</strong>.</p>
     </div>
 
     <div class="w2k-help-card" id="rental">

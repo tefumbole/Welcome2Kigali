@@ -99,6 +99,7 @@ return [
     'help_quote' => 'Igiciro cyasabwa',
     'help_contracts' => 'Amasezerano',
     'help_members' => 'Abanyamuryango',
+    'help_laundry' => 'Imyenda yo gukaraba',
     'help_expense' => 'Amafaranga yasohotse',
     'help_orders' => 'Ibitumiza ku mbuga',
     'help_assets' => 'Umutungo',

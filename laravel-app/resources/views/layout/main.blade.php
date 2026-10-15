@@ -1616,8 +1616,8 @@
                                 ['role_id', $role->id]
                             ])->first() : null;
                         @endphp
-                        @if($laundry_module_active || in_array(strtolower(optional($role)->name), ['admin', 'owner', 'super admin'], true))
-                            <li><a href="#laundry-module" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-tint"></i><span>{{ __('sidebar.laundry') }}</span></a>
+                        @if($laundry_module_active || \App\Support\StaffAccess::canManageSite())
+                            <li><a href="#laundry-module" data-nav-key="laundry" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-tint"></i><span>{{ __('sidebar.laundry') }}</span></a>
                                 <ul id="laundry-module" class="collapse list-unstyled ">
                                     <li id="laundry-received-menu"><a href="{{ route('laundry.received') }}">{{ __('sidebar.laundry_received') }}</a></li>
                                     <li id="laundry-cleaning-menu"><a href="{{ route('laundry.cleaning') }}">{{ __('sidebar.laundry_cleaning') }}</a></li>
@@ -2703,6 +2703,7 @@
                                     <li id="help-quote-menu"><a href="{{ route('help.index') }}#quotations">{{ __('sidebar.help_quote') }}</a></li>
                                     <li id="help-contracts-menu"><a href="{{ route('help.index') }}#contracts">{{ __('sidebar.help_contracts') }}</a></li>
                                     <li id="help-members-menu"><a href="{{ route('help.index') }}#members">{{ __('sidebar.help_members') }}</a></li>
+                                    <li id="help-laundry-menu"><a href="{{ route('help.index') }}#laundry">{{ __('sidebar.help_laundry') }}</a></li>
                                     <li id="help-expense-menu"><a href="{{ route('help.index') }}#expenses">{{ __('sidebar.help_expense') }}</a></li>
                                     <li id="help-orders-menu"><a href="{{ route('help.index') }}#orders">{{ __('sidebar.help_orders') }}</a></li>
                                     <li id="help-assets-menu"><a href="{{ route('help.index') }}#assets">{{ __('sidebar.help_assets') }}</a></li>

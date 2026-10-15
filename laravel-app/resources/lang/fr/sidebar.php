@@ -99,6 +99,7 @@ return [
     'help_quote' => 'Devis',
     'help_contracts' => 'Contrats',
     'help_members' => 'Membres',
+    'help_laundry' => 'Blanchisserie',
     'help_expense' => 'Dépenses',
     'help_orders' => 'Commandes en ligne',
     'help_assets' => 'Immobilisations',

@@ -31,6 +31,7 @@
         }
     }
     $accordionId = 'laundry-acc-'.$stage;
+    $namesOnly = ! empty($namesOnly);
 @endphp
 
 @if(count($groups))
@@ -46,19 +47,21 @@
         <div class="laundry-customer-row">
             <button type="button" class="laundry-customer-btn" data-toggle="collapse" data-target="#{{ $panelId }}" aria-expanded="false" aria-controls="{{ $panelId }}">
                 <span class="laundry-customer-name">{{ optional($customer)->name ?: 'Unknown customer' }}</span>
-                <span class="laundry-customer-meta">
-                    @if(optional($customer)->phone_number){{ $customer->phone_number }} · @endif
-                    {{ $dressLabel }} {{ $dressLabel == 1 ? 'dress' : 'dresses' }}
-                    @if($ticketCount > 1) · {{ $ticketCount }} tickets @endif
-                    @if($group['collect_at']) · collect {{ $group['collect_at']->format('d M H:i') }} @endif
-                </span>
-                @if(in_array($stage, ['received', 'ready'], true))
-                    @if($group['unpaid'])
-                        <span class="badge badge-warning">Due {{ number_format($group['due'], 0) }}</span>
-                    @else
-                        <span class="badge badge-success">Paid</span>
+                @unless($namesOnly)
+                    <span class="laundry-customer-meta">
+                        @if(optional($customer)->phone_number){{ $customer->phone_number }} · @endif
+                        {{ $dressLabel }} {{ $dressLabel == 1 ? 'dress' : 'dresses' }}
+                        @if($ticketCount > 1) · {{ $ticketCount }} tickets @endif
+                        @if($group['collect_at']) · collect {{ $group['collect_at']->format('d M H:i') }} @endif
+                    </span>
+                    @if(in_array($stage, ['received', 'ready'], true))
+                        @if($group['unpaid'])
+                            <span class="badge badge-warning">Due {{ number_format($group['due'], 0) }}</span>
+                        @else
+                            <span class="badge badge-success">Paid</span>
+                        @endif
                     @endif
-                @endif
+                @endunless
                 <i class="fa fa-chevron-down chev"></i>
             </button>
             <div id="{{ $panelId }}" class="collapse" data-parent="#{{ $accordionId }}">
@@ -117,7 +120,7 @@
                                 </tbody>
                             </table>
                             @if($order->notes)
-                                <p class="small text-muted mb-2"><strong>Note:</strong> {{ $order->notes }}</p>
+                                <div class="laundry-comment"><strong>Comment:</strong> {{ $order->notes }}</div>
                             @endif
 
                             @if($stage === 'received')
@@ -184,7 +187,7 @@
     @endforeach
 </div>
 @else
-    <div class="alert alert-light border">{{ $empty }}</div>
+    <div class="laundry-empty">{{ $empty }}</div>
 @endif
 
 @if($stage === 'received')
