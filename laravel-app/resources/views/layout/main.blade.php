@@ -89,8 +89,8 @@
         <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/buttons.colVis.min.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/buttons.html5.min.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/buttons.print.min.js') ?>"></script>
-        <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/pdfmake.min.js') ?>" defer></script>
-        <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/vfs_fonts.js') ?>" defer></script>
+        <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/pdfmake.min.js') ?>"></script>
+        <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/vfs_fonts.js') ?>"></script>
 
         <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/sum().js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/dataTables.checkboxes.min.js') ?>"></script>
@@ -1083,8 +1083,12 @@
                             $all_permission = [];
                         }
                         if (empty($all_permission) && $role) {
-                            foreach ($role->permissions as $permission) {
-                                $all_permission[] = $permission->name;
+                            try {
+                                foreach ($role->permissions as $permission) {
+                                    $all_permission[] = $permission->name;
+                                }
+                            } catch (\Throwable $e) {
+                                $all_permission = [];
                             }
                         }
                         $manageSite = \App\Support\StaffAccess::canManageSite();
@@ -1953,7 +1957,7 @@
                         ])->first();
                         ?>
                         @if($index_permission_active)
-                            <li><a href="#quotation" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document"></i><span>{{ __('sidebar.quotation') }}</span><span></a>
+                            <li><a href="#quotation" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document"></i><span>{{ __('sidebar.quotation') }}</span></a>
                                 <ul id="quotation" class="collapse list-unstyled ">
                                     <li id="quotation-list-menu"><a href="{{route('quotations.index')}}">{{trans('file.Quotation List')}}</a></li>
                                         <?php
@@ -2741,6 +2745,7 @@
                     @endphp
                     <script>
                     (function () {
+                      try {
                         var order = @json($__sideMenuOrder);
                         var hidden = @json($__sideMenuHidden);
                         var labels = @json($__sideMenuLabels);
@@ -2819,6 +2824,7 @@
                         if (map.help) {
                             ul.appendChild(map.help);
                         }
+                      } catch (err) {}
                     })();
                     (function () {
                         var order = @json($__settingsMenuOrder);
@@ -3387,7 +3393,7 @@
           </div>
           <!-- end supplier modal -->
 
-          <div id="content" class="animate-bottom" style="{{ $w2kIsPos ? 'display:block' : 'display:none' }}">
+          <div id="content" class="animate-bottom" style="display:block">
               <div class="container-fluid">
                   <div id="beyond-module-tabs" class="beyond-module-tabs">
                       <div id="beyond-module-tabs-label" class="beyond-module-tabs-label"></div>
@@ -3569,21 +3575,27 @@
             $("#due-report-form").submit();
           });
 
-          $(".daterangepicker-field").daterangepicker({
-              callback: function(startDate, endDate, period){
-                var start_date = startDate.format('YYYY-MM-DD');
-                var end_date = endDate.format('YYYY-MM-DD');
-                var title = start_date + ' To ' + end_date;
-                $(this).val(title);
-                $('#account-statement-modal input[name="start_date"]').val(start_date);
-                $('#account-statement-modal input[name="end_date"]').val(end_date);
+          try {
+              if ($.fn.daterangepicker) {
+                  $(".daterangepicker-field").daterangepicker({
+                      callback: function(startDate, endDate, period){
+                        var start_date = startDate.format('YYYY-MM-DD');
+                        var end_date = endDate.format('YYYY-MM-DD');
+                        var title = start_date + ' To ' + end_date;
+                        $(this).val(title);
+                        $('#account-statement-modal input[name="start_date"]').val(start_date);
+                        $('#account-statement-modal input[name="end_date"]').val(end_date);
+                      }
+                  });
               }
-          });
+          } catch (err) {}
 
-          $('.selectpicker').selectpicker({
-              style: 'btn-w2k-select',
-          });
-          $('.bootstrap-select > .dropdown-toggle').removeClass('btn-link').addClass('btn-w2k-select');
+          try {
+              $('.selectpicker').selectpicker({
+                  style: 'btn-w2k-select',
+              });
+              $('.bootstrap-select > .dropdown-toggle').removeClass('btn-link').addClass('btn-w2k-select');
+          } catch (err) {}
 
           (function () {
                   function isCustomerSelect($select) {
@@ -3661,6 +3673,8 @@
                   'courses-module': 'courses',
                   membership: 'members',
                   'membership-module': 'members',
+                  'laundry-module': 'laundry',
+                  laundry: 'laundry',
                   'timesheets-module': 'timesheets',
                   'timesheet-admin-module': 'timesheets',
                   order: 'orders',
@@ -3750,6 +3764,12 @@
                   'messaging-setting-menu': 'dripicons-message',
                   'sms-setting-menu': 'dripicons-message',
                   'pos-setting-menu': 'dripicons-cart',
+                  'laundry-received-menu': 'dripicons-inbox',
+                  'laundry-cleaning-menu': 'dripicons-clockwise',
+                  'laundry-ready-menu': 'dripicons-checkmark',
+                  'laundry-collect-menu': 'dripicons-user',
+                  'quotation-list-menu': 'dripicons-document',
+                  'quotation-create-menu': 'dripicons-plus',
                   'w2k-module-help': 'dripicons-question',
                   'hrm-setting-menu': 'dripicons-user-group',
                   'notification-menu': 'dripicons-bell'
@@ -3905,9 +3925,14 @@
 
               $('#side-main-menu > li > a[href^="#"]').on('click', function (e) {
                   e.preventDefault();
+                  e.stopImmediatePropagation();
                   var target = $(this).attr('href');
                   var $firstLink = $(target).find('> li > a[href]').filter(function () {
                       var href = $(this).attr('href');
+                      var $a = $(this);
+                      if ($a.is('[data-w2k-help-item]') || $a.closest('li').hasClass('w2k-module-help')) {
+                          return false;
+                      }
                       return href && href !== '#' && href.indexOf('javascript') !== 0;
                   }).first();
 

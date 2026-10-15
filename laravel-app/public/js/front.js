@@ -31,8 +31,9 @@ $(document).ready(function () {
             }
         }
     }
-    if(('#btnFullscreen').length > 0) {
-        document.getElementById('btnFullscreen').addEventListener('click', function() {
+    var btnFullscreen = document.getElementById('btnFullscreen');
+    if (btnFullscreen) {
+        btnFullscreen.addEventListener('click', function() {
             toggleFullscreen();
         });
     }

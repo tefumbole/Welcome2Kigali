@@ -137,6 +137,9 @@ class SiteMenu
         foreach ($defaults as $k => $label) {
             $custom = isset($saved[$k]) ? trim((string) $saved[$k]) : '';
             $stock = isset($english[$k]) ? $english[$k] : '';
+            if ($k === 'quotation' && strcasecmp($custom, 'Quotes') === 0) {
+                $custom = '';
+            }
             if ($custom !== '' && $stock !== '' && strcasecmp($custom, $stock) === 0) {
                 $custom = '';
             }

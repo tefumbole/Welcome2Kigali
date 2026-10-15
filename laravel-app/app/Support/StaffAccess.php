@@ -73,7 +73,10 @@ class StaffAccess
         }
     }
 
-    /** Laundry stage pages: each tab needs its own permission (or a super role). */
+    /**
+     * Laundry stage pages. Super roles always can.
+     * `laundry_module` unlocks every stage; otherwise the exact stage permission is required.
+     */
     public static function canLaundry($permission = 'laundry_module', $user = null)
     {
         if (self::canManageSite($user)) {
@@ -88,7 +91,21 @@ class StaffAccess
             if (! $role) {
                 return false;
             }
-            return $role->hasPermissionTo($permission);
+            $wanted = array_values(array_unique(array_filter([
+                $permission,
+                'laundry_module',
+            ])));
+            foreach ($wanted as $perm) {
+                try {
+                    if ($role->hasPermissionTo($perm)) {
+                        return true;
+                    }
+                } catch (\Throwable $e) {
+                    continue;
+                }
+            }
+
+            return false;
         } catch (\Throwable $e) {
             return false;
         }
