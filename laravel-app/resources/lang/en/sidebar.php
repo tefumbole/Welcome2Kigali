@@ -2,7 +2,7 @@
 
 return [
     'dashboard' => 'Home',
-    'site-content' => 'Website',
+    'site-content' => 'Site Content',
     'leaders' => 'Leadership',
     'invitations' => 'Invitations',
     'internships' => 'Interns',

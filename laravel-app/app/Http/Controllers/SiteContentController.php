@@ -15,7 +15,7 @@ class SiteContentController extends Controller
     /** Restrict Site Content management to Admin / Owner roles. */
     protected function authorizeAdmin()
     {
-        if (! \App\Support\StaffAccess::canManageSite()) {
+        if (! \App\Support\StaffAccess::canManageSiteContent()) {
             abort(403, 'You are not allowed to manage site content.');
         }
     }
@@ -24,7 +24,7 @@ class SiteContentController extends Controller
     {
         $this->authorizeAdmin();
 
-        $tab = $request->get('tab', 'home');
+        $tab = $request->get('tab', 'landing-menu');
 
         $data = [
             'tab'          => $tab,

@@ -12,9 +12,17 @@ class LeaderController extends Controller
 {
     protected function authorizeAdmin()
     {
-        if (! \App\Support\StaffAccess::canManageSite()) {
-            abort(403, 'You are not allowed to manage leadership profiles.');
+        if (\App\Support\StaffAccess::canManageSiteContent()) {
+            return;
         }
+        try {
+            $role = \Spatie\Permission\Models\Role::find(optional(Auth::user())->role_id);
+            if ($role && $role->hasPermissionTo('site_content.leaders')) {
+                return;
+            }
+        } catch (\Throwable $e) {
+        }
+        abort(403, 'You are not allowed to manage leadership profiles.');
     }
 
     public function index()

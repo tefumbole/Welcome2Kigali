@@ -1988,6 +1988,8 @@ class RoleController extends Controller
             'memberships.documents',
             'memberships.reports',
             'memberships.delete',
+            'site_content',
+            'site_content.leaders',
             'laundry_module',
             'laundry.received',
             'laundry.cleaning',

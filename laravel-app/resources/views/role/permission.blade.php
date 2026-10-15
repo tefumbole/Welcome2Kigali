@@ -1819,6 +1819,38 @@
                                 <tr class="permissions-header">
                                     <th colspan="5">
                                         <div class="checkbox">
+                                            <input type="checkbox" id="section-site-content" class="section-toggle">
+                                            <label for="section-site-content">Site Content</label>
+                                        </div>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>Site Content</td>
+                                    <td class="report-permissions" colspan="5">
+                                        @foreach([
+                                            'site_content' => 'Site Content (pages, menus, gallery — same as BeyondTechWorld)',
+                                            'site_content.leaders' => 'About Us Leaders',
+                                        ] as $perm => $label)
+                                        @php $pid = str_replace('.', '_', $perm); @endphp
+                                        <span>
+                                            <div class="checkbox">
+                                                @if(in_array($perm, $all_permission))
+                                                    <input type="checkbox" value="1" id="{{ $pid }}" name="{{ $perm }}" checked>
+                                                @else
+                                                    <input type="checkbox" value="1" id="{{ $pid }}" name="{{ $perm }}">
+                                                @endif
+                                                <label for="{{ $pid }}" class="padding05">{{ $label }}</label>
+                                            </div>
+                                        </span>
+                                        @endforeach
+                                    </td>
+                                </tr>
+                                <tr class="permission-section-end">
+                                    <th colspan="5">Site Content End</th>
+                                </tr>
+                                <tr class="permissions-header">
+                                    <th colspan="5">
+                                        <div class="checkbox">
                                             <input type="checkbox" id="section-laundry-module" class="section-toggle">
                                             <label for="section-laundry-module">Laundry</label>
                                         </div>

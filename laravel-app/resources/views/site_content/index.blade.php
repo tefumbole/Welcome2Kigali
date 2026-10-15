@@ -52,9 +52,9 @@
                 @php
                     $menuTabs = [
                         'landing-menu'  => ['label' => 'Landing Menu', 'tone' => 'tone-blue', 'icon' => 'dripicons-home'],
-                        'side-menu'     => ['label' => 'Side Bars', 'tone' => 'tone-purple', 'icon' => 'dripicons-view-list'],
+                        'side-menu'     => ['label' => 'Side Menu', 'tone' => 'tone-purple', 'icon' => 'dripicons-view-list'],
                         'people-menu'   => ['label' => 'People', 'tone' => 'tone-pink', 'icon' => 'dripicons-user'],
-                        'settings-menu' => ['label' => 'Admin settings order', 'tone' => 'tone-orange', 'icon' => 'dripicons-gear'],
+                        'settings-menu' => ['label' => 'Settings', 'tone' => 'tone-orange', 'icon' => 'dripicons-gear'],
                         'content-tabs'  => ['label' => 'Content Tabs', 'tone' => 'tone-teal', 'icon' => 'dripicons-toggles'],
                     ];
                     $pageTones = [
@@ -70,6 +70,15 @@
                         'footer'   => 'tone-gold',
                     ];
                 @endphp
+                <p class="text-muted mb-1" style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;">Menus &amp; order</p>
+                <div class="site-content-tabs-nav">
+                    @foreach($menuTabs as $k => $meta)
+                        <a class="beyond-module-tab {{ $meta['tone'] }} {{ $tab == $k ? 'is-active' : '' }}"
+                           href="{{ url('/admin/site-content?tab=' . $k) }}">
+                            <i class="{{ $meta['icon'] }}"></i> {{ $meta['label'] }}
+                        </a>
+                    @endforeach
+                </div>
                 <p class="text-muted mb-1" style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;">Pages</p>
                 <div class="site-content-tabs-nav">
                     @foreach($schema as $pageKey => $page)
@@ -80,15 +89,6 @@
                         <a class="beyond-module-tab {{ $tone }} {{ $tab == $pageKey ? 'is-active' : '' }}"
                            href="{{ url('/admin/site-content?tab=' . $pageKey) }}">
                             <i class="{{ $icon }}"></i> {{ $page['label'] }}
-                        </a>
-                    @endforeach
-                </div>
-                <p class="text-muted mb-1" style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;">Menus &amp; order</p>
-                <div class="site-content-tabs-nav">
-                    @foreach($menuTabs as $k => $meta)
-                        <a class="beyond-module-tab {{ $meta['tone'] }} {{ $tab == $k ? 'is-active' : '' }}"
-                           href="{{ url('/admin/site-content?tab=' . $k) }}">
-                            <i class="{{ $meta['icon'] }}"></i> {{ $meta['label'] }}
                         </a>
                     @endforeach
                 </div>
@@ -107,8 +107,18 @@
                             <i class="dripicons-user"></i> Internships
                         </a>
                     @endif
+                    @if(\Illuminate\Support\Facades\Route::has('membership.admin.dashboard'))
+                        <a class="beyond-module-tab tone-pink" href="{{ route('membership.admin.dashboard') }}">
+                            <i class="dripicons-user-id"></i> Membership
+                        </a>
+                    @endif
+                    @if(\Illuminate\Support\Facades\Route::has('laundry.received'))
+                        <a class="beyond-module-tab tone-gold" href="{{ route('laundry.received') }}">
+                            <i class="fa fa-tint"></i> Laundry
+                        </a>
+                    @endif
                     <a class="beyond-module-tab tone-purple" href="{{ url('/admin/site-content?tab=side-menu') }}">
-                        <i class="dripicons-view-list"></i> Reorder in Side Bars
+                        <i class="dripicons-view-list"></i> Reorder in Side Menu
                     </a>
                     <a class="beyond-module-tab tone-gold" href="{{ url('/admin/help') }}#content">
                         <i class="dripicons-question"></i> Help
@@ -121,8 +131,8 @@
                             $items = $side;
                             $order = $sideOrder;
                             $action = route('site-content.side-menu');
-                            $heading = 'Side Bars';
-                            $hint = 'Show, hide, rename, and reorder admin sidebar items, including About Us Leaders, Digital Invitations, and Internships. Site Content and Settings stay visible.';
+                            $heading = 'Side Menu';
+                            $hint = 'Show, hide, rename, and reorder admin sidebar items, including About Us Leaders, Digital Invitations, Internships, Membership, and Laundry. Site Content and Settings stay visible.';
                         } elseif ($tab == 'people-menu') {
                             $items = $people;
                             $order = $peopleOrder;

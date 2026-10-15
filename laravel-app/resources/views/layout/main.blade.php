@@ -1069,7 +1069,7 @@
                         @if(Auth::user()->role_id != 7)
                             <li><a href="{{ url('/admin') }}"> <i class="dripicons-meter"></i><span>{{ __('sidebar.dashboard') }}</span></a></li>
                         @endif
-                        @if(\App\Support\StaffAccess::canManageSite())
+                        @if(\App\Support\StaffAccess::canManageSiteContent())
                             <li><a href="{{ url('/admin/site-content') }}" data-nav-key="site-content"> <i class="dripicons-web"></i><span>{{ __('sidebar.site-content') }}</span></a></li>
                             <li><a href="{{ url('/admin/leaders') }}" data-nav-key="leaders"> <i class="dripicons-user-group"></i><span>{{ __('sidebar.leaders') }}</span></a></li>
                         @endif

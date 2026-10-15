@@ -53,6 +53,27 @@ class StaffAccess
     }
 
     /**
+     * Site Content admin (pages, menus, gallery, leaders) — same module as BeyondTechWorld.
+     * Super roles always can; other roles need the site_content permission.
+     */
+    public static function canManageSiteContent($user = null)
+    {
+        if (self::canManageSite($user)) {
+            return true;
+        }
+        $user = $user ?: Auth::user();
+        if (! $user) {
+            return false;
+        }
+        try {
+            $role = SpatieRole::find($user->role_id);
+            return $role && $role->hasPermissionTo('site_content');
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    /**
      * Attach every permission to Admin and System so menus and Spatie checks pass.
      */
     public static function grantAllToSuperRoles()

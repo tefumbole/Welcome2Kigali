@@ -232,7 +232,7 @@
 
     <div class="w2k-help-card" id="content">
         <h3>6. Site Content (website words and menus)</h3>
-        <p>Use <strong>Site Content</strong> in the sidebar for pages and menus. It does not change products, members, or sales.</p>
+        <p>Use <strong>Site Content</strong> in the sidebar (same module as BeyondTechWorld) for pages and menus. It does not change products, members, or sales. Grant it under <strong>Settings → Role Permission → Site Content</strong>.</p>
         <img class="w2k-help-shot" src="{{ url('public/branding/help/site-content.png') }}?v={{ $hv }}" alt="Site Content Home tab with page and menu pills">
         <p class="w2k-help-cap">Site Content. Pages: Home, About, Services, Projects, Contact, Gallery, Menu, Events, Become a Member, Footer. Menus &amp; Order: Landing Menu, Side Bars, People, Admin settings order, Content Tabs. Admin modules include About Us Leaders, Digital Invitations, Internships, Membership, and Laundry. Reorder them in Side Bars; Help stays last. Preview / View live page is on the right.</p>
         <ul>

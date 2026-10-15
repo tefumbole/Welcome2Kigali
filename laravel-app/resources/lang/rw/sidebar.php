@@ -2,7 +2,7 @@
 
 return [
     'dashboard' => 'Ahabanza',
-    'site-content' => 'Urubuga',
+    'site-content' => 'Ibirimo by’urubuga',
     'leaders' => 'Ubuyobozi',
     'invitations' => 'Imatangazo',
     'internships' => 'Amahugurwa',
