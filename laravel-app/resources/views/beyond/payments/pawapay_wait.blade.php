@@ -22,20 +22,20 @@
 <div class="box" x-data="pawapayWait()" x-init="start()">
     <p class="kicker">PawaPay · Mobile Money</p>
     <h1>Approve on your phone</h1>
-    <p class="muted" x-text="message">Approve the Mobile Money prompt on your phone.</p>
+    <p class="muted" x-text="message">Waiting for PawaPay to confirm the money.</p>
     <p class="muted">{{ $deposit->paying_method }} · {{ number_format($deposit->amount) }} {{ $deposit->currency }}</p>
     <p class="muted">{{ $deposit->phone }}</p>
     <div class="spin" x-show="status === 'pending'"></div>
-    <p class="ok" x-show="status === 'completed'" x-cloak>Payment received.</p>
-    <p class="bad" x-show="status === 'failed'" x-cloak>Payment was not completed.</p>
-    <a href="{{ $deposit->redirect_url ?: url('/') }}">Back</a>
+    <p class="ok" x-show="status === 'completed'" x-cloak>Payment received. Opening the invoice.</p>
+    <p class="bad" x-show="status === 'failed'" x-cloak>Payment was not completed. No money was taken.</p>
+    <a href="{{ $deposit->purpose === 'sale' ? url('/pos') : ($deposit->redirect_url ?: url('/')) }}">Back</a>
 </div>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script>
 function pawapayWait() {
     return {
-        status: @json($deposit->status),
-        message: 'Approve the Mobile Money prompt on your phone.',
+        status: 'pending',
+        message: 'Waiting for the customer to approve on the phone. This stays pending until PawaPay confirms the money.',
         start() {
             this.poll();
             this.timer = setInterval(() => this.poll(), 4000);
@@ -48,8 +48,17 @@ function pawapayWait() {
                 if (data.message) this.message = data.message;
                 if (data.status === 'completed' || data.status === 'failed') {
                     clearInterval(this.timer);
-                    if (data.status === 'completed' && data.redirect) {
-                        setTimeout(() => { window.location = data.redirect; }, 1200);
+                    if (data.status === 'completed') {
+                        try {
+                            if (data.clear_pos) {
+                                var keep = localStorage.getItem('pos-expend');
+                                localStorage.clear();
+                                if (keep !== null) localStorage.setItem('pos-expend', keep);
+                            }
+                        } catch (e) {}
+                        if (data.redirect) {
+                            setTimeout(function () { window.location = data.redirect; }, 800);
+                        }
                     }
                 }
             }).catch(() => {});

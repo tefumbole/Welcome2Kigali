@@ -437,7 +437,7 @@
         localStorage.clear();
         if (myItem !== null) localStorage.setItem('pos-expend', myItem);
     } catch (e) {}
-    @if(session()->has('message') || request()->boolean('autoprint'))
+    @if(session()->has('message') || request('autoprint'))
     setTimeout(function () { window.print(); }, 600);
     @endif
 </script>

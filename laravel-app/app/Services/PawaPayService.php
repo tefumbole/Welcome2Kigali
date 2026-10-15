@@ -163,23 +163,24 @@ class PawaPayService
         if (! is_array($payload)) {
             return 'PENDING';
         }
-        if (isset($payload[0]) && is_array($payload[0])) {
-            $payload = $payload[0];
+        $payload = $this->unwrapPayload($payload);
+        $candidates = [
+            $payload['data']['status'] ?? null,
+            $payload['deposit']['status'] ?? null,
+            $payload['depositStatus'] ?? null,
+        ];
+        $top = $payload['status'] ?? null;
+        if (! $this->isEnvelopeStatus($top)) {
+            $candidates[] = $top;
         }
-        $status = '';
-        if (! empty($payload['data']['status'])) {
-            $status = $payload['data']['status'];
-        } elseif (! empty($payload['deposit']['status'])) {
-            $status = $payload['deposit']['status'];
-        } elseif (! empty($payload['status'])) {
-            $status = $payload['status'];
-        }
-        $upper = strtoupper((string) $status);
-        if ($upper === '' || $upper === 'FOUND' || $upper === 'NOT_FOUND') {
-            return 'PENDING';
+        foreach ($candidates as $status) {
+            $upper = $this->normalizeStatus($status);
+            if ($upper !== 'PENDING') {
+                return $upper;
+            }
         }
 
-        return $upper;
+        return 'PENDING';
     }
 
     public function extractDepositId($payload)
@@ -187,19 +188,69 @@ class PawaPayService
         if (! is_array($payload)) {
             return null;
         }
-        if (isset($payload[0]) && is_array($payload[0])) {
-            $payload = $payload[0];
-        }
+        $payload = $this->unwrapPayload($payload);
         foreach (['depositId', 'deposit_id'] as $key) {
             if (! empty($payload[$key])) {
                 return (string) $payload[$key];
             }
-        }
-        if (! empty($payload['data']['depositId'])) {
-            return (string) $payload['data']['depositId'];
+            if (! empty($payload['data'][$key])) {
+                return (string) $payload['data'][$key];
+            }
+            if (! empty($payload['deposit'][$key])) {
+                return (string) $payload['deposit'][$key];
+            }
         }
 
         return null;
+    }
+
+    public function extractDepositedAmount($payload)
+    {
+        if (! is_array($payload)) {
+            return null;
+        }
+        $payload = $this->unwrapPayload($payload);
+        foreach (['depositedAmount', 'amount'] as $key) {
+            if (isset($payload['data'][$key]) && is_numeric($payload['data'][$key])) {
+                return (float) $payload['data'][$key];
+            }
+            if (isset($payload['deposit'][$key]) && is_numeric($payload['deposit'][$key])) {
+                return (float) $payload['deposit'][$key];
+            }
+            if (isset($payload[$key]) && is_numeric($payload[$key])) {
+                return (float) $payload[$key];
+            }
+        }
+
+        return null;
+    }
+
+    protected function unwrapPayload(array $payload)
+    {
+        if (isset($payload[0]) && is_array($payload[0])) {
+            return $payload[0];
+        }
+
+        return $payload;
+    }
+
+    protected function normalizeStatus($status)
+    {
+        $upper = strtoupper(trim((string) $status));
+        if ($upper === '' || $this->isEnvelopeStatus($upper)) {
+            return 'PENDING';
+        }
+
+        return $upper;
+    }
+
+    protected function isEnvelopeStatus($status)
+    {
+        $upper = strtoupper(trim((string) $status));
+
+        return $upper === ''
+            || is_numeric($upper)
+            || in_array($upper, ['FOUND', 'NOT_FOUND', 'OK'], true);
     }
 
     public function isSuccessStatus($status)

@@ -86,6 +86,11 @@ Route::get('/membership/payment/check', 'MembershipPublicController@paymentCheck
 Route::get('/membership/paid', 'MembershipPublicController@paid')->name('membership.paid');
 Route::get('/payments/pawapay/{depositId}/wait', 'PawaPayCallbackController@wait')->name('pawapay.wait');
 Route::get('/payments/pawapay/{depositId}/status', 'PawaPayCallbackController@status')->name('pawapay.status');
+Route::post('/payments/pawapay/deposits/callback', 'PawaPayCallbackController@handle');
+Route::post('/payments/pawapay/checkouts/callback', 'PawaPayCallbackController@handle');
+Route::post('/payments/pawapay/payouts/callback', 'PawaPayCallbackController@handle');
+Route::post('/payments/pawapay/refunds/callback', 'PawaPayCallbackController@handle');
+Route::post('/payments/pawapay/callback', 'PawaPayCallbackController@handle');
 Route::get('/payments/stripe/success', 'StripePaymentController@success')->name('stripe.success');
 Route::get('/payments/stripe/cancel', 'StripePaymentController@cancel')->name('stripe.cancel');
 Route::post('/payments/stripe/webhook', 'StripePaymentController@webhook')->name('stripe.webhook');

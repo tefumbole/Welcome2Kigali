@@ -774,7 +774,7 @@ class SaleController extends Controller
                     $mtn_number,
                     $networkHint,
                     'W2K POS',
-                    url('/pos')
+                    url('sales/gen_invoice/'.$lims_sale_data->id).'?autoprint=1'
                 );
                 if (empty($result['ok'])) {
                     return back()->with('not_permitted', $result['message'] ?? 'Could not start Mobile Money payment.');
@@ -2820,7 +2820,7 @@ class SaleController extends Controller
             $phone,
             $request->input('momo_network', 'auto'),
             'W2K Sale',
-            url('sales')
+            url('sales/gen_invoice/'.$sale->id).'?autoprint=1'
         );
         if (empty($result['ok'])) {
             return redirect()->back()->with('not_permitted', $result['message'] ?? 'Could not start Mobile Money payment.');

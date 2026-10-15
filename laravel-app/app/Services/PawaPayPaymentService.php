@@ -3,13 +3,20 @@
 namespace App\Services;
 
 use App\Account;
+use App\Biller;
 use App\CashRegister;
+use App\Customer;
 use App\MembershipPayment;
 use App\Order;
 use App\PawaPayDeposit;
 use App\Payment;
+use App\Product;
+use App\Product_Sale;
 use App\Sale;
+use App\Services\Messaging\NotificationRouter;
 use App\Support\MomoNetwork;
+use App\Support\VisitorLocale;
+use App\Support\WhatsAppMessage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -100,7 +107,7 @@ class PawaPayPaymentService
             'phone' => $msisdn,
             'provider' => $provider,
             'paying_method' => MomoNetwork::payingMethodLabel($provider),
-            'status' => $this->api->isSuccessStatus($status) ? 'completed' : 'pending',
+            'status' => 'pending',
             'raw_status' => $status,
             'redirect_url' => $redirectUrl,
             'user_id' => Auth::id(),
@@ -113,11 +120,11 @@ class PawaPayPaymentService
             ]);
         }
 
-        if ($row->status === 'completed') {
-            $this->apply($row);
+        if ($this->api->isSuccessStatus($status)) {
+            $this->syncStatus($row, $status, $response);
         }
 
-        return ['ok' => true, 'deposit' => $row];
+        return ['ok' => true, 'deposit' => $row->fresh()];
     }
 
     public function refreshAndApply($depositId)
@@ -126,9 +133,12 @@ class PawaPayPaymentService
         if (! $row) {
             return null;
         }
+        if ($row->applied_at) {
+            return $row;
+        }
         $remote = $this->api->getDeposit($depositId);
         $status = $this->api->extractStatus($remote);
-        $this->syncStatus($row, $status);
+        $this->syncStatus($row, $status, $remote);
 
         return $row->fresh();
     }
@@ -137,16 +147,57 @@ class PawaPayPaymentService
     {
         $depositId = $this->api->extractDepositId($payload);
         if (! $depositId) {
+            Log::warning('PawaPay callback missing depositId', ['payload' => $payload]);
+
             return null;
         }
+        $row = PawaPayDeposit::where('deposit_id', $depositId)->first();
+        if (! $row) {
+            Log::warning('PawaPay callback for unknown deposit', ['deposit_id' => $depositId]);
 
-        return $this->refreshAndApply($depositId);
+            return null;
+        }
+        if ($row->applied_at) {
+            return $row;
+        }
+
+        $callbackStatus = $this->api->extractStatus($payload);
+        $remote = $this->api->getDeposit($depositId);
+        $remoteStatus = $this->api->extractStatus($remote);
+        if ($this->api->isSuccessStatus($callbackStatus) && ! $this->api->isSuccessStatus($remoteStatus)) {
+            Log::warning('PawaPay callback said paid but GET did not confirm', [
+                'deposit_id' => $depositId,
+                'callback' => $callbackStatus,
+                'remote' => $remoteStatus,
+            ]);
+            $this->syncStatus($row, $remoteStatus ?: 'PENDING', $remote);
+
+            return $row->fresh();
+        }
+
+        $this->syncStatus($row, $remoteStatus ?: $callbackStatus, $remote ?: $payload);
+
+        return $row->fresh();
     }
 
-    protected function syncStatus(PawaPayDeposit $row, $status)
+    protected function syncStatus(PawaPayDeposit $row, $status, array $remote = null)
     {
+        if ($row->applied_at) {
+            return;
+        }
         $row->raw_status = $status;
         if ($this->api->isSuccessStatus($status)) {
+            $deposited = $this->api->extractDepositedAmount($remote);
+            if ($deposited !== null && $deposited < 1) {
+                Log::warning('PawaPay status completed but deposited amount is empty', [
+                    'deposit_id' => $row->deposit_id,
+                    'deposited' => $deposited,
+                ]);
+                $row->status = 'pending';
+                $row->save();
+
+                return;
+            }
             $row->status = 'completed';
             $row->save();
             $this->apply($row);
@@ -247,6 +298,55 @@ class PawaPayPaymentService
         $payment->payment_note = 'PawaPay '.$row->deposit_id;
         $payment->save();
         $sale->save();
+
+        try {
+            app(LaundryService::class)->createFromSale($sale->fresh('products'), '', [], false);
+        } catch (\Throwable $e) {
+            Log::warning('Laundry ticket after MoMo failed: '.$e->getMessage(), ['sale_id' => $sale->id]);
+        }
+        $this->notifySalePaid($sale->fresh(), $row);
+    }
+
+    protected function notifySalePaid(Sale $sale, PawaPayDeposit $row)
+    {
+        $customer = Customer::find($sale->customer_id);
+        if (! $customer || ! $customer->phone_number) {
+            return;
+        }
+        $lines = [];
+        foreach (Product_Sale::where('sale_id', $sale->id)->get() as $line) {
+            $product = Product::find($line->product_id);
+            $lines[] = [
+                'name' => $product ? $product->name : 'Item',
+                'qty' => $line->qty,
+                'unit_price' => $line->net_unit_price,
+                'total' => $line->total,
+            ];
+        }
+        $biller = Biller::find($sale->biller_id);
+        $orderDate = $sale->created_at;
+        if ($orderDate instanceof \DateTimeInterface) {
+            $orderDate = $orderDate->format('D, M d, Y H:i');
+        }
+        try {
+            $msg = WhatsAppMessage::withLocale(VisitorLocale::from($customer), function () use ($customer, $sale, $orderDate, $lines, $row, $biller) {
+                return WhatsAppMessage::saleConfirmation(
+                    $customer->name,
+                    $sale->reference_no,
+                    (string) $orderDate,
+                    $lines,
+                    $sale->grand_total,
+                    $row->paying_method ?: 'MoMo',
+                    $biller ? ($biller->name ?: $biller->company_name) : '',
+                    $biller ? $biller->address : '',
+                    $customer->address,
+                    $row->currency ?: ''
+                );
+            });
+            app(NotificationRouter::class)->sendWhatsAppText($customer->phone_number, $msg);
+        } catch (\Throwable $e) {
+            Log::warning('MoMo sale WhatsApp failed: '.$e->getMessage(), ['sale_id' => $sale->id]);
+        }
     }
 
     protected function applyOrders(PawaPayDeposit $row)
