@@ -277,6 +277,16 @@ FILES=(
   app/Support/LaundryQr.php
   app/Support/LaundryCatalog.php
   app/Support/PosProductImage.php
+  public/js/w2k-image-optimize.js
+  public/images/product/lnd-trouser.jpg
+  public/images/product/lnd-shirt.jpg
+  public/images/product/lnd-suit.jpg
+  public/images/product/thumbs/lnd-trouser.jpg
+  public/images/product/thumbs/lnd-shirt.jpg
+  public/images/product/thumbs/lnd-suit.jpg
+  resources/views/components/image_paste_script.blade.php
+  app/Http/Controllers/BrandController.php
+  database/migrations/2026_10_15_130000_assign_laundry_product_images.php
   app/Product.php
   app/Console/Commands/CompressPosImages.php
   app/Services/LaundryService.php
@@ -428,7 +438,12 @@ sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_14_200000_add_collect_at_to_laundry.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_15_100000_grant_laundry_permissions.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_15_110000_grant_site_content_permission.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_15_130000_assign_laundry_product_images.php
 sudo -u www-data php "\$APP/artisan" images:compress-pos || true
+mkdir -p "\$APP/public/images/product/thumbs"
+find "\$APP/public/images/product" -type d -exec chmod 755 {} \\; 2>/dev/null || true
+find "\$APP/public/images/product" -type f -exec chmod 644 {} \\; 2>/dev/null || true
+chown -R www-data:www-data "\$APP/public/images/product" 2>/dev/null || true
 sudo -u www-data php "\$APP/artisan" permission:cache-reset || true
 sudo -u www-data php "\$APP/artisan" view:clear
 sudo -u www-data php "\$APP/artisan" cache:clear

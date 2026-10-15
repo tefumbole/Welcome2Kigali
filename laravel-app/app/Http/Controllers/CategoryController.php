@@ -75,9 +75,9 @@ class CategoryController extends Controller
                 $nestedData['key'] = $key;
 
                 if($category->image)
-                    $nestedData['image'] = '<img src="'.url('public/images/category', $category->image).'" height="70" width="70">';
+                    $nestedData['image'] = '<img src="'.e(\App\Support\PosProductImage::catalogUrl('category', $category->image)).'" height="70" width="70">';
                 else
-                    $nestedData['image'] = '<img src="'.url('public/images/product/zummXD2dvAtI.png').'" height="80" width="80">';
+                    $nestedData['image'] = '<img src="'.e(\App\Support\PosProductImage::url('zummXD2dvAtI.png')).'" height="80" width="80">';
 
                 $nestedData['name'] = $category->name;
 
@@ -124,12 +124,10 @@ class CategoryController extends Controller
         ]);
         $image = $request->image;
         if ($image) {
-            $ext = pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
-            $imageName = date("Ymdhis");
-            $imageName = $imageName . '.' . $ext;
-            $image->move('public/images/category', $imageName);
-
-            $lims_category_data['image'] = $imageName;
+            $stored = \App\Support\PosProductImage::storeUpload($image, 'category');
+            if ($stored) {
+                $lims_category_data['image'] = $stored;
+            }
         }
         $lims_category_data['name'] = $request->name;
         $lims_category_data['parent_id'] = $request->parent_id;
@@ -162,11 +160,10 @@ class CategoryController extends Controller
         $input = $request->except('image');
         $image = $request->image;
         if ($image) {
-            $ext = pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
-            $imageName = date("Ymdhis");
-            $imageName = $imageName . '.' . $ext;
-            $image->move('public/images/category', $imageName);
-            $input['image'] = $imageName;
+            $stored = \App\Support\PosProductImage::storeUpload($image, 'category');
+            if ($stored) {
+                $input['image'] = $stored;
+            }
         }
         $lims_category_data = Category::findOrFail($request->category_id);
         $lims_category_data->update($input);

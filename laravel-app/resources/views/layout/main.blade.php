@@ -72,6 +72,7 @@
         <script type="text/javascript" src="<?php echo asset('public/vendor/daterange/js/daterangepicker.min.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/tinymce/js/tinymce/tinymce.min.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/js/dropzone.js') ?>"></script>
+        <script type="text/javascript" src="<?php echo asset('public/js/w2k-image-optimize.js') ?>"></script>
 
         <!-- table sorter js-->
         <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/pdfmake.min.js') ?>"></script>
@@ -1070,7 +1071,6 @@
                             <li><a href="{{ url('/admin') }}"> <i class="dripicons-meter"></i><span>{{ __('sidebar.dashboard') }}</span></a></li>
                         @endif
                         @if(\App\Support\StaffAccess::canManageSiteContent())
-                            <li><a href="{{ url('/admin/site-content') }}" data-nav-key="site-content"> <i class="dripicons-web"></i><span>{{ __('sidebar.site-content') }}</span></a></li>
                             <li><a href="{{ url('/admin/leaders') }}" data-nav-key="leaders"> <i class="dripicons-user-group"></i><span>{{ __('sidebar.leaders') }}</span></a></li>
                         @endif
                         <?php
@@ -2693,6 +2693,9 @@
                                 @endif
                             </ul>
                         </li>
+                        @if(\App\Support\StaffAccess::canManageSiteContent())
+                            <li><a href="{{ url('/admin/site-content') }}" data-nav-key="site-content"> <i class="dripicons-web"></i><span>{{ __('sidebar.site-content') }}</span></a></li>
+                        @endif
                             <li><a href="#help-module" data-nav-key="help" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-question"></i><span>{{ __('sidebar.help') }}</span></a>
                                 <ul id="help-module" class="collapse list-unstyled ">
                                     <li id="help-guide-menu"><a href="{{ route('help.index') }}">{{ __('sidebar.help_guide') }}</a></li>
@@ -2794,6 +2797,9 @@
                             var k = keyOf(li);
                             if (!k || !used[k]) ul.appendChild(li);
                         });
+                        if (map['site-content']) {
+                            ul.appendChild(map['site-content']);
+                        }
                         if (map.help) {
                             ul.appendChild(map.help);
                         }

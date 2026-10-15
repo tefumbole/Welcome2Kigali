@@ -152,11 +152,13 @@
         body.beyond-pos-active .pos-section .header .navbar i { color: #C5A059 !important; }
         body.beyond-pos-active .pos-section .product-img img {
             width: 100%;
+            height: 90px;
             max-height: 90px;
-            object-fit: contain;
+            object-fit: cover;
             display: block;
             margin: 0 auto;
             background: #F7F1E8;
+            border-radius: 8px;
         }
         body.beyond-pos-active .pos-section .product-img p {
             font-size: 12px;
@@ -2062,7 +2064,7 @@
                                                 @foreach($lims_category_list as $category)
                                                     <div class="col-md-3 category-img text-center" data-category="{{$category->id}}">
                                                         @if($category->image)
-                                                            <img  src="{{ asset('public/images/category/'.$category->image) }}" />
+                                                            <img  src="{{ \App\Support\PosProductImage::catalogUrl('category', $category->image) }}" onerror="this.onerror=null;this.src='{{ asset('public/images/product/zummXD2dvAtI.png') }}';" />
                                                         @else
                                                             <img  src="{{ asset('public/images/product/zummXD2dvAtI.png') }}" />
                                                         @endif
@@ -2084,7 +2086,7 @@
                                 @foreach($lims_brand_list as $brand)
                                     @if($brand->image)
                                         <div class="col-md-3 brand-img text-center" data-brand="{{$brand->id}}">
-                                            <img  src="{{asset('public/images/brand/'.$brand->image)}}" />
+                                            <img  src="{{ \App\Support\PosProductImage::catalogUrl('brand', $brand->image) }}" onerror="this.onerror=null;this.src='{{ asset('public/images/product/zummXD2dvAtI.png') }}';" />
                                             <p class="text-center">{{$brand->title}}</p>
                                         </div>
                                     @else
@@ -3358,21 +3360,24 @@
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;');
         }
-        function posProductImgSrc(filename) {
+        function posProductImgSrc(filename, url) {
+            if (url) { return url; }
             var name = String(filename || 'zummXD2dvAtI.png').split(',')[0].trim();
             if (!name) { name = 'zummXD2dvAtI.png'; }
             return window.POS_PRODUCT_THUMB_BASE + name;
         }
         function populateProduct(data) {
             var html = '<div id="pos-product-grid" class="pos-product-grid">';
+            var placeholder = window.POS_PRODUCT_IMAGE_BASE + 'zummXD2dvAtI.png';
             if (data && data.name && data.name.length) {
                 $.each(data.name, function(index) {
                     var name = data.name[index];
                     var code = data.code[index];
                     var img = data.image[index] || 'zummXD2dvAtI.png';
+                    var src = posProductImgSrc(img, data.url ? data.url[index] : '');
                     var product_info = code + ' (' + name + ')';
                     html += '<button type="button" class="product-img sound-btn pos-product-tile" title="'+posEscapeHtml(name)+'" data-product="'+posEscapeHtml(product_info)+'">';
-                    html += '<img loading="lazy" decoding="async" src="'+posProductImgSrc(img)+'" alt="" onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src=window.POS_PRODUCT_IMAGE_BASE+\''+posEscapeHtml(String(img).split(',')[0].trim())+'\';}else{this.src=window.POS_PRODUCT_IMAGE_BASE+\'zummXD2dvAtI.png\';}" />';
+                    html += '<img loading="lazy" decoding="async" src="'+posEscapeHtml(src)+'" alt="" onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src=window.POS_PRODUCT_IMAGE_BASE+\''+posEscapeHtml(String(img).split(',')[0].trim())+'\';}else{this.onerror=null;this.src=\''+placeholder+'\';}" />';
                     html += '<p>'+posEscapeHtml(name)+'</p><span>'+posEscapeHtml(code)+'</span></button>';
                 });
             } else {

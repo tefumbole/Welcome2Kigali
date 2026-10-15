@@ -215,8 +215,7 @@ class ProductController extends Controller
                 $nestedData['id'] = $product->id;
                 $nestedData['key'] = $key;
                 $product_image = explode(",", $product->image);
-                $product_image = htmlspecialchars($product_image[0]);
-                $nestedData['image'] = '<img src="'.url('public/images/product', $product_image).'" height="80" width="80">';
+                $nestedData['image'] = '<img src="'.e(\App\Support\PosProductImage::url($product_image[0])).'" height="80" width="80">';
                 $nestedData['name'] = $product->name;
                 $nestedData['code'] = $product->code;
                 $nestedData['brand_id'] = $product->brand_id;
@@ -457,8 +456,7 @@ class ProductController extends Controller
                 $nestedData['id'] = $product->id;
                 $nestedData['key'] = $key;
                 $product_image = explode(",", $product->image);
-                $product_image = htmlspecialchars($product_image[0]);
-                $nestedData['image'] = '<img src="'.url('public/images/product', $product_image).'" height="80" width="80">';
+                $nestedData['image'] = '<img src="'.e(\App\Support\PosProductImage::url($product_image[0])).'" height="80" width="80">';
                 $nestedData['name'] = $product->name;
                 $nestedData['code'] = $product->code;
                 $nestedData['brand_id'] = $product->brand_id;
@@ -614,21 +612,13 @@ class ProductController extends Controller
         $images = $request->image;
         $image_names = [];
         if($images) {
-            $imageDir = public_path('images/product');
-            if (! is_dir($imageDir)) {
-                @mkdir($imageDir, 0755, true);
+            if (! is_array($images)) {
+                $images = [$images];
             }
             foreach ($images as $key => $image) {
-                if (! $image || ! method_exists($image, 'getClientOriginalName')) {
-                    continue;
-                }
-                $imageName = $image->getClientOriginalName();
-                $image->move($imageDir, $imageName);
-                $image_names[] = $imageName;
-                try {
-                    \App\Support\PosProductImage::compressOriginal($imageDir.DIRECTORY_SEPARATOR.$imageName);
-                    \App\Support\PosProductImage::writeThumb($imageDir.DIRECTORY_SEPARATOR.$imageName, $imageName);
-                } catch (\Throwable $e) {
+                $stored = \App\Support\PosProductImage::storeUpload($image, 'product');
+                if ($stored) {
+                    $image_names[] = $stored;
                 }
             }
             $data['image'] = $image_names ? implode(",", $image_names) : 'zummXD2dvAtI.png';
@@ -793,15 +783,13 @@ class ProductController extends Controller
         $images = $request->image;
         $image_names = [];
         if($images) {
+            if (! is_array($images)) {
+                $images = [$images];
+            }
             foreach ($images as $key => $image) {
-                $imageName = $image->getClientOriginalName();
-                $image->move('public/images/product', $imageName);
-                $image_names[] = $imageName;
-                try {
-                    $saved = public_path('images/product/'.$imageName);
-                    \App\Support\PosProductImage::compressOriginal($saved);
-                    \App\Support\PosProductImage::writeThumb($saved, $imageName);
-                } catch (\Throwable $e) {
+                $stored = \App\Support\PosProductImage::storeUpload($image, 'product');
+                if ($stored) {
+                    $image_names[] = $stored;
                 }
             }
             if($lims_product_data->image != 'zummXD2dvAtI.png') {

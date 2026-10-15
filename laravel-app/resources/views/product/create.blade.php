@@ -1014,6 +1014,13 @@
         },
         acceptedFiles: "image/jpeg,image/jpg,image/png,image/gif,image/webp,.jpeg,.jpg,.png,.gif,.webp",
         dictDefaultMessage: "Drop images here or click — you can also paste (Ctrl+V / ⌘V)",
+        transformFile: function(file, done) {
+            if (window.w2kOptimizeImage) {
+                window.w2kOptimizeImage(file, 100000, 800).then(done).catch(function () { done(file); });
+            } else {
+                done(file);
+            }
+        },
         init: function () {
             var myDropzone = this;
             $('#submit-btn').on("click", function (e) {

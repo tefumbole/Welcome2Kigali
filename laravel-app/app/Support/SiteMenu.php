@@ -28,7 +28,6 @@ class SiteMenu
     {
         return [
             'dashboard'       => 'Dashboard',
-            'site-content'    => 'Site Content',
             'leaders'         => 'About Us Leaders',
             'invitations'     => 'Digital Invitations',
             'internships'     => 'Internships',
@@ -61,6 +60,7 @@ class SiteMenu
             'people'          => 'People',
             'report'          => 'Reports',
             'setting'         => 'Settings',
+            'site-content'    => 'Site Content',
             'help'            => 'Help',
         ];
     }
@@ -99,11 +99,16 @@ class SiteMenu
             }
         }
 
-        if ($settingKey === 'side_menu_order' && isset($items['help'])) {
+        if ($settingKey === 'side_menu_order') {
             $ordered = array_values(array_filter($ordered, function ($k) {
-                return $k !== 'help';
+                return $k !== 'help' && $k !== 'site-content';
             }));
-            $ordered[] = 'help';
+            if (isset($items['site-content'])) {
+                $ordered[] = 'site-content';
+            }
+            if (isset($items['help'])) {
+                $ordered[] = 'help';
+            }
         }
 
         return $ordered;

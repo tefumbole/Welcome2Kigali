@@ -33,11 +33,10 @@ class BrandController extends Controller
         $input['is_active'] = true;
         $image = $request->image;
         if ($image) {
-            $ext = pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
-            $imageName = date("Ymdhis");
-            $imageName = $imageName . '.' . $ext;
-            $image->move('public/images/brand', $imageName);
-            $input['image'] = $imageName;
+            $stored = \App\Support\PosProductImage::storeUpload($image, 'brand');
+            if ($stored) {
+                $input['image'] = $stored;
+            }
         }
         Brand::create($input);
         return redirect('brand');
@@ -65,11 +64,10 @@ class BrandController extends Controller
         $lims_brand_data->title = $request->title;
         $image = $request->image;
         if ($image) {
-            $ext = pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
-            $imageName = date("Ymdhis");
-            $imageName = $imageName . '.' . $ext;
-            $image->move('public/images/brand', $imageName);
-            $lims_brand_data->image = $imageName;
+            $stored = \App\Support\PosProductImage::storeUpload($image, 'brand');
+            if ($stored) {
+                $lims_brand_data->image = $stored;
+            }
         }
         $lims_brand_data->save();
         return redirect('brand');

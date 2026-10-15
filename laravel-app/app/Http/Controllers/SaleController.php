@@ -1848,6 +1848,7 @@ class SaleController extends Controller
                     $data['code'][$index] = $variant->pivot['item_code'];
                     $images = explode(",", $product->image);
                     $data['image'][$index] = $images[0];
+                    $data['url'][$index] = \App\Support\PosProductImage::url($images[0]);
                     $index++;
                 }
             }
@@ -1856,6 +1857,7 @@ class SaleController extends Controller
                 $data['code'][$index] = $product->code;
                 $images = explode(",", $product->image);
                 $data['image'][$index] = $images[0];
+                $data['url'][$index] = \App\Support\PosProductImage::url($images[0]);
                 $index++;
             }
         }
@@ -1883,6 +1885,7 @@ class SaleController extends Controller
                     $data['code'][$index] = $variant->pivot['item_code'];
                     $images = explode(",", $product->image);
                     $data['image'][$index] = $images[0];
+                    $data['url'][$index] = \App\Support\PosProductImage::url($images[0]);
                     $index++;
                 }
             }
@@ -1891,6 +1894,7 @@ class SaleController extends Controller
                 $data['code'][$index] = $product->code;
                 $images = explode(",", $product->image);
                 $data['image'][$index] = $images[0];
+                $data['url'][$index] = \App\Support\PosProductImage::url($images[0]);
                 $index++;
             }
         }

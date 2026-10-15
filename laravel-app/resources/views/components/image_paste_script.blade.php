@@ -26,9 +26,28 @@
         r.readAsDataURL(file);
     }
 
+    function limitsFor(inp) {
+        var name = ((inp && inp.getAttribute('name')) || '').toLowerCase();
+        if (name.indexOf('banner') >= 0 || name.indexOf('cover') >= 0 || name.indexOf('header') >= 0 || name.indexOf('footer') >= 0) {
+            return { bytes: 250000, edge: 1600 };
+        }
+        return { bytes: 100000, edge: 800 };
+    }
+
     function assign(inp, file) {
-        try { var dt = new DataTransfer(); dt.items.add(file); inp.files = dt.files; } catch (e) {}
-        showFile(inp, file);
+        if (!file) return;
+        var apply = function (ready) {
+            inp.__ipBusy = true;
+            try { var dt = new DataTransfer(); dt.items.add(ready); inp.files = dt.files; } catch (e) {}
+            showFile(inp, ready);
+            setTimeout(function () { inp.__ipBusy = false; }, 50);
+        };
+        var lim = limitsFor(inp);
+        if (window.w2kOptimizeImage) {
+            window.w2kOptimizeImage(file, lim.bytes, lim.edge).then(apply).catch(function () { apply(file); });
+        } else {
+            apply(file);
+        }
     }
 
     function enhance(inp) {
@@ -54,7 +73,10 @@
         inp.addEventListener('click', activate);
         hint.addEventListener('focus', activate);
         hint.addEventListener('click', activate);
-        inp.addEventListener('change', function () { if (inp.files && inp.files[0]) showFile(inp, inp.files[0]); });
+        inp.addEventListener('change', function () {
+            if (inp.__ipBusy) return;
+            if (inp.files && inp.files[0]) assign(inp, inp.files[0]);
+        });
         hint.addEventListener('dragover', function (e) { e.preventDefault(); });
         hint.addEventListener('drop', function (e) {
             e.preventDefault();
