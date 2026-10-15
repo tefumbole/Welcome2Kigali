@@ -221,16 +221,10 @@ class ProductController extends Controller
                 $nestedData['brand_id'] = $product->brand_id;
                 $nestedData['category_id'] = $product->category_id;
                 $nestedData['unit_id'] = $product->unit_id;
-                if($product->brand_id)
-                    $nestedData['brand'] = $product->brand->title;
-                else
-                    $nestedData['brand'] = "N/A";
+                $nestedData['brand'] = optional($product->brand)->title ?: 'N/A';
                 $nestedData['category'] = $product->category ? $product->category->name : 'N/A';
                 $nestedData['qty'] = $product->qty;
-                if($product->unit_id)
-                    $nestedData['unit'] = $product->unit->unit_name;
-                else
-                    $nestedData['unit'] = 'N/A';
+                $nestedData['unit'] = optional($product->unit)->unit_name ?: 'N/A';
 
                 $nestedData['price'] = $product->price;
                 $nestedData['cost'] = $product->cost;
@@ -462,16 +456,10 @@ class ProductController extends Controller
                 $nestedData['brand_id'] = $product->brand_id;
                 $nestedData['category_id'] = $product->category_id;
                 $nestedData['unit_id'] = $product->unit_id;
-                if($product->brand_id)
-                    $nestedData['brand'] = $product->brand->title;
-                else
-                    $nestedData['brand'] = "N/A";
+                $nestedData['brand'] = optional($product->brand)->title ?: 'N/A';
                 $nestedData['category'] = $product->category ? $product->category->name : 'N/A';
                 $nestedData['qty'] = $product->qty;
-                if($product->unit_id)
-                    $nestedData['unit'] = $product->unit->unit_name;
-                else
-                    $nestedData['unit'] = 'N/A';
+                $nestedData['unit'] = optional($product->unit)->unit_name ?: 'N/A';
 
                 $nestedData['price'] = $product->price;
                 $nestedData['cost'] = $product->cost;

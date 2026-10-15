@@ -112,8 +112,11 @@ class CustomerController extends Controller
         $lims_customer_data['address'] = $lims_customer_data['address'] ?? 'NAN';
         $lims_customer_data['city'] = $lims_customer_data['city'] ?? 'NAN';
         $lims_customer_data['credit_limit'] = $lims_customer_data['credit_limit'] ?? 0;
+        if (empty($lims_customer_data['customer_group_id'])) {
+            $lims_customer_data['customer_group_id'] = optional(CustomerGroup::orderBy('id')->first())->id;
+        }
 
-        if($lims_customer_data['email']) {
+        if (! empty($lims_customer_data['email'])) {
             try{
                 Mail::send( 'mail.customer_create', $lims_customer_data, function( $message ) use ($lims_customer_data)
                 {
@@ -260,7 +263,16 @@ class CustomerController extends Controller
                     $value=preg_replace('/\D/','',$value);
                 }
                $data= array_combine($escapedHeader, $columns);
-               $lims_customer_group_data = CustomerGroup::where('name', $data['customergroup'])->first();
+               $groupName = $data['customergroup'] ?? '';
+               $lims_customer_group_data = $groupName
+                    ? CustomerGroup::where('name', $groupName)->first()
+                    : null;
+               if (! $lims_customer_group_data) {
+                    $lims_customer_group_data = CustomerGroup::orderBy('id')->first();
+               }
+               if (! $lims_customer_group_data) {
+                    continue;
+               }
                $customer = Customer::firstOrNew(['name'=>$data['name']]);
                $customer->customer_group_id = $lims_customer_group_data->id;
                $customer->name = $data['name'];

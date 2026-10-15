@@ -79,7 +79,7 @@
     <div class="w2k-help-hero">
         <span class="w2k-help-kicker">Welcome 2 Kigali</span>
         <h2>Staff user guide</h2>
-        <p>How to run Welcome 2 Kigali — cafe, website, rentals, quotations, contracts, membership, and accounts. Open Help from the last tab on any module, or from the bottom of the sidebar.</p>
+        <p>How to run Welcome 2 Kigali — cafe, website, laundry, POS (Cash / MoMo / VISA), rentals, quotations, contracts, membership, and accounts. Open Help from the last tab on any module, or from the bottom of the sidebar.</p>
     </div>
 
     <div class="w2k-help-nav">
@@ -158,7 +158,7 @@
         <p class="w2k-help-cap">Club Events: search, Filter (Upcoming), Type (All types), Search. Empty state reads No Events Found — try a different filter or check back soon. Add events under Admin → Events and they appear here automatically.</p>
         <h4>Become a Member</h4>
         <img class="w2k-help-shot" src="{{ url('public/branding/help/register.png') }}?v={{ $hv }}" alt="Become a Member choose a plan cards">
-        <p class="w2k-help-cap">Become a Member → Choose a plan. Promotion: FREE membership for 90 days (0 FRW). Monthly 15,000 FRW, Quarterly 40,000 FRW, Annual 140,000 FRW. Members have 10% discount on all products. Tap a plan, then scan ID or passport to continue.</p>
+        <p class="w2k-help-cap">Become a Member → Choose a plan. Promotion Demo 0 FRW for 90 days, Monthly 15,000 FRW, Quarterly 40,000 FRW, Annual 140,000 FRW. Members have 10% discount on all products. Tap a plan, then scan ID or passport to continue.</p>
     </div>
 
     <div class="w2k-help-card" id="products">
@@ -218,27 +218,30 @@
     <div class="w2k-help-card" id="pos">
         <h3>5. POS and cafe orders</h3>
         <p>Click the gold <strong>POS</strong> button in the top bar (next to Help).</p>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/pos.png') }}?v={{ $hv }}" alt="POS walk-in ticket with Cash Visa MoMo payment buttons">
-        <p class="w2k-help-cap">POS: Walk-in Customer on the left, product search, ticket columns Product / Batch No / Price / Quantity / SubTotal. Right side: Category, Brand, Featured. Payment row: Send to Laundry, Cash, MoMo, VISA, Deposit, Credit, Group. Reorder these under Site Content → POS Payments.</p>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/pos.jpg') }}?v={{ $hv }}" alt="POS walk-in ticket with Cash Visa MoMo payment buttons">
+        <p class="w2k-help-cap">POS: customer on the left (Walk-in or a named client), product search, ticket columns Product / Batch No / Price / Quantity / SubTotal. Right side: Category, Brand, Featured. Payment bar (default): <strong>Send to Laundry, Cash, MoMo, VISA, Deposit, Credit, Group</strong>, then Cancel and Recent. Pay later and JE are hidden unless you turn them on. Reorder or rename these under <strong>Site Content → POS Payments</strong>.</p>
         <ol>
-            <li>Choose Walk-in Customer or pick a member.</li>
-            <li>Search a drink by name/code, or tap Category / Brand / Featured and add lines to the ticket.</li>
-            <li>Take Cash, Visa, Credit, or MoMo. MoMo detects MTN or Airtel from the phone number.</li>
+            <li>Choose Walk-in Customer or pick a member. Their phone is used for MoMo and WhatsApp.</li>
+            <li>Search a drink or dress by name/code, or tap Category / Brand / Featured and add lines to the ticket.</li>
+            <li>Take <strong>Cash</strong>, <strong>VISA</strong>, <strong>Credit</strong>, <strong>Deposit</strong>, or <strong>MoMo</strong>. There is one MoMo button — MTN (078 / 079) or Airtel (072 / 073) is detected from the number.</li>
             <li>For a laundry dress, add a comment on the line, fill <strong>Laundry comments</strong>, then <strong>Send to Laundry</strong>. The ticket waits under Laundry → Awaiting Acceptance.</li>
             <li>Online cafe orders from /menu also appear under Sale / Online Order.</li>
         </ol>
-        <div class="w2k-help-tip">If Add Cash Register opens first, enter 0 (or the cash in the drawer) and submit. Then POS loads.</div>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/pos-momo.png') }}?v={{ $hv }}" alt="Finalize Sale MoMo with customer number and Paying Amount">
+        <p class="w2k-help-cap">Finalize Sale → Paid By <strong>MoMo</strong>. The customer’s phone fills automatically and can be edited. Paying Amount can be less than Total (partial payment); the rest stays due. The client approves on the phone. The sale is marked paid only after PawaPay confirms the money — then the invoice opens for print and the client gets WhatsApp.</p>
+        <div class="w2k-help-tip">If Add Cash Register opens first, enter 0 (or the cash in the drawer) and submit. Then POS loads. Do not close the MoMo wait screen until it shows paid — ACCEPTED is not yet money received.</div>
     </div>
 
     <div class="w2k-help-card" id="content">
         <h3>6. Site Content (website words and menus)</h3>
         <p>Use <strong>Site Content</strong> in the sidebar (same module as BeyondTechWorld) for pages and menus. It does not change products, members, or sales. Grant it under <strong>Settings → Role Permission → Site Content</strong>.</p>
         <img class="w2k-help-shot" src="{{ url('public/branding/help/site-content.png') }}?v={{ $hv }}" alt="Site Content Home tab with page and menu pills">
-        <p class="w2k-help-cap">Site Content. Pages: Home, About, Services, Projects, Contact, Gallery, Menu, Events, Become a Member, Footer. Menus &amp; Order: Landing Menu, Side Bars, People, Admin settings order, Content Tabs. Admin modules include About Us Leaders, Digital Invitations, Internships, Membership, and Laundry. Reorder them in Side Bars; Site Content stays near the bottom and Help stays last. Preview / View live page is on the right.</p>
+        <p class="w2k-help-cap">Site Content. Pages: Home, About, Services, Projects, Contact, Gallery, Menu, Events, Become a Member, Footer. Menus &amp; Order: Landing Menu, Side Bars, People, Admin settings order, Content Tabs, and <strong>POS Payments</strong>. Admin modules include About Us Leaders, Digital Invitations, Internships, Membership, and Laundry. Reorder them in Side Bars; Site Content stays near the bottom and Help stays last. Preview / View live page is on the right.</p>
         <ul>
             <li><strong>Pages</strong> — Home buttons, About vision/mission, Events title, Menu title, Become a Member, Footer.</li>
             <li><strong>Landing Menu</strong> — show, hide, rename, reorder Home / Menu / Events / About / Become a Member.</li>
             <li><strong>Side Bars</strong> — same for the admin sidebar, including About Us Leaders, Digital Invitations, Internships, Membership, and <strong>Laundry</strong>.</li>
+            <li><strong>POS Payments</strong> — default order Send to Laundry, Cash, MoMo, VISA, Deposit, Credit, Group. Hide Pay later / JE unless you use them. Labels can be renamed.</li>
             <li>Press Save on a tab, then open <a href="{{ url('/') }}" target="_blank" rel="noopener">the public site</a> to check.</li>
         </ul>
     </div>
@@ -257,14 +260,17 @@
 
     <div class="w2k-help-card" id="laundry">
         <h3>Laundry</h3>
-        <p>Dresses sold on POS (Laundry category) open a ticket. Staff move it: <strong>Awaiting Acceptance</strong> → <strong>Awaiting cleaning</strong> → <strong>Ready for collection</strong> → <strong>Collect</strong> (signature). The client is WhatsApp’d at each step.</p>
+        <p>Dresses sold on POS (Laundry category) open a ticket. Staff move it: <strong>Awaiting Acceptance</strong> → <strong>Awaiting cleaning</strong> → <strong>Ready for collection</strong> → <strong>Collect</strong> (signature). The client is WhatsApp’d at each step. Sidebar badges show how many dresses are in each stage.</p>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/laundry.png') }}?v={{ $hv }}" alt="Laundry Ready for collection customer list">
+        <p class="w2k-help-cap">Ready for collection: one row per customer, with dress count, collection time, and Paid / Due. Open a name to take remaining cash or MoMo, then Collect. The client (or nominee) must sign.</p>
         <ol>
             <li>On POS, add a laundry dress, write a comment (stain, no starch, …) on the line and in <strong>Laundry comments</strong>, then <strong>Send to Laundry</strong> or take cash / MoMo.</li>
-            <li>Open <strong>Laundry → Awaiting Acceptance</strong>. Only customer names are listed. Open the name, set collection date and time, then Accept. That customer leaves this screen.</li>
-            <li>On <strong>Awaiting cleaning</strong>, click <strong>Cleaned</strong> when the dress is done.</li>
-            <li>On <strong>Ready for collection</strong>, take remaining payment (cash or MoMo) if needed, then <strong>Collect</strong>. The client (or nominee) must sign. Signed tickets show as Collected.</li>
+            <li>Open <strong>Laundry → Awaiting Acceptance</strong>. Only customer names are listed. Open the name, tick the dresses you are accepting, set collection date and time, then Accept. Unaccepted dresses stay here and never appear under Awaiting cleaning.</li>
+            <li>On <strong>Awaiting cleaning</strong>, tick the dresses that are actually clean (one or many), then <strong>Mark selected cleaned</strong>. Each cleaned line is stamped with the staff name who clicked it.</li>
+            <li>On <strong>Ready for collection</strong>, take remaining payment if needed, then <strong>Collect</strong>. Signed tickets leave this board.</li>
+            <li>The client Track / scan link shows item status and a countdown to the collection date.</li>
         </ol>
-        <div class="w2k-help-tip">Clothes cannot be collected until the bill is paid. Walk-in drop-off is not used — all tickets start from POS.</div>
+        <div class="w2k-help-tip">Clothes cannot be collected until the bill is paid. All tickets start from POS — do not use a separate walk-in form. MoMo on laundry follows the same PawaPay confirm-then-paid rule as POS.</div>
         <p>Turn Laundry on for a role under <strong>Settings → Role Permission</strong> (Laundry Module, Awaiting Acceptance, Awaiting cleaning, Ready for collection, Collect). Reorder the Laundry sidebar item in <strong>Site Content → Side Bars</strong>.</p>
     </div>
 
@@ -372,7 +378,7 @@
         <ol>
             <li>Open Sale → Awaiting Payment (or Payments in the sidebar).</li>
             <li>Find the customer and remaining Due.</li>
-            <li>Click Add Payment, choose Cash / MoMo / card, and save.</li>
+            <li>Click Add Payment, choose Cash / MoMo / VISA, and save. MoMo is one method (MTN or Airtel from the phone number).</li>
         </ol>
     </div>
 
@@ -409,7 +415,7 @@
         <h3>23. Tasks, jobs, announcements, courses, timesheets</h3>
         <ul>
             <li><strong>Task Manager</strong> — assign and track internal work. Help is the last tab on that module too.</li>
-            <li><strong>Job Board</strong> — public vacancies and applications.</li>
+            <li><strong>Job Board</strong> — public vacancies at <a href="{{ url('/apply-now') }}" target="_blank" rel="noopener">/apply-now</a> (admin jobs stay under Admin → Jobs).</li>
             <li><strong>Announcements</strong> — bulk WhatsApp messages.</li>
             <li><strong>Courses</strong> — course list, registrations, certificates.</li>
             <li><strong>TimeSheets</strong> — employees fill weeks; TimeSheet Admin reviews overtime.</li>
