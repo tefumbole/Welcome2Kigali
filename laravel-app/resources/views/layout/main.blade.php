@@ -1,6 +1,7 @@
     <!DOCTYPE html>
     <html>
       <head>
+        @php $w2kIsPos = optional(Route::current())->getName() === 'sale.pos'; @endphp
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <link rel="icon" type="image/png" href="{{url('public/logo', $general_setting->site_logo)}}" />
@@ -14,6 +15,10 @@
         <meta name="robots" content="all,follow">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <link rel="manifest" href="{{url('manifest.json')}}">
+        @unless($w2kIsPos)
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        @endunless
         <!-- Bootstrap CSS-->
         <link rel="stylesheet" href="<?php echo asset('public/vendor/bootstrap/css/bootstrap.min.css') ?>" type="text/css">
         <link rel="stylesheet" href="<?php echo asset('public/vendor/bootstrap-toggle/css/bootstrap-toggle.min.css') ?>" type="text/css">
@@ -25,20 +30,20 @@
         <link rel="stylesheet" href="<?php echo asset('public/vendor/font-awesome/css/font-awesome.min.css') ?>" type="text/css">
         <!-- Drip icon font-->
         <link rel="stylesheet" href="<?php echo asset('public/vendor/dripicons/webfont.css') ?>" type="text/css">
+        @unless($w2kIsPos)
         <!-- Google fonts - Roboto -->
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:400,500,700">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:400,500,700&display=swap">
+        @endunless
         <!-- jQuery Circle-->
         <link rel="stylesheet" href="<?php echo asset('public/css/grasp_mobile_progress_circle-1.0.0.min.css') ?>" type="text/css">
         <!-- Custom Scrollbar-->
         <link rel="stylesheet" href="<?php echo asset('public/vendor/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.css') ?>" type="text/css">
 
-        @if(optional(Route::current())->getName() != '/')
+        @if(! $w2kIsPos && optional(Route::current())->getName() != '/')
         <!-- date range stylesheet-->
         <link rel="stylesheet" href="<?php echo asset('public/vendor/daterange/css/daterangepicker.min.css') ?>" type="text/css">
         <!-- table sorter stylesheet-->
         <link rel="stylesheet" type="text/css" href="<?php echo asset('public/vendor/datatable/dataTables.bootstrap4.min.css') ?>">
-        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedheader/3.1.6/css/fixedHeader.bootstrap.min.css">
-        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.bootstrap.min.css">
         @endif
 
         <link rel="stylesheet" href="<?php echo asset('public/css/style.default.css') ?>" id="theme-stylesheet" type="text/css">
@@ -56,17 +61,19 @@
         <script type="text/javascript" src="<?php echo asset('public/vendor/bootstrap-toggle/js/bootstrap-toggle.min.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/bootstrap/js/bootstrap-select.min.js') ?>"></script>
 
-        <script type="text/javascript" src="<?php echo asset('public/js/grasp_mobile_progress_circle-1.0.0.min.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/jquery.cookie/jquery.cookie.js') ?>">
         </script>
+        @unless($w2kIsPos)
+        <script type="text/javascript" src="<?php echo asset('public/js/grasp_mobile_progress_circle-1.0.0.min.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/chart.js/Chart.min.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/js/charts-custom.js') ?>"></script>
+        @endunless
         <script type="text/javascript" src="<?php echo asset('public/vendor/jquery-validation/jquery.validate.min.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.concat.min.js')?>"></script>
 
         <script type="text/javascript" src="<?php echo asset('public/js/front.js') ?>"></script>
 
-        @if(optional(Route::current())->getName() != '/')
+        @if(! $w2kIsPos && optional(Route::current())->getName() != '/')
         <script type="text/javascript" src="<?php echo asset('public/vendor/daterange/js/moment.min.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/daterange/js/knockout-3.4.2.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/daterange/js/daterangepicker.min.js') ?>"></script>
@@ -75,8 +82,6 @@
         <script type="text/javascript" src="<?php echo asset('public/js/w2k-image-optimize.js') ?>"></script>
 
         <!-- table sorter js-->
-        <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/pdfmake.min.js') ?>"></script>
-        <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/vfs_fonts.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/jquery.dataTables.min.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/dataTables.bootstrap4.min.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/dataTables.buttons.min.js') ?>"></script>
@@ -84,12 +89,11 @@
         <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/buttons.colVis.min.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/buttons.html5.min.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/buttons.print.min.js') ?>"></script>
+        <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/pdfmake.min.js') ?>" defer></script>
+        <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/vfs_fonts.js') ?>" defer></script>
 
         <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/sum().js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/datatable/dataTables.checkboxes.min.js') ?>"></script>
-        <script type="text/javascript" src="https://cdn.datatables.net/fixedheader/3.1.6/js/dataTables.fixedHeader.min.js"></script>
-        <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
-        <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.3/js/responsive.bootstrap.min.js"></script>
         @endif
 
         <!-- Custom stylesheet - for your changes-->
@@ -1046,8 +1050,8 @@
         <link rel="stylesheet" href="<?php echo asset('public/css/w2k-mobile.css') ?>?v={{ \App\Support\AppVersion::label() }}" type="text/css">
       </head>
 
-      <body onload="myFunction()">
-        <div id="loader"></div>
+      <body @unless($w2kIsPos) onload="myFunction()" @endunless>
+        @unless($w2kIsPos)<div id="loader"></div>@endunless
           <!-- Side Navbar -->
           <nav class="side-navbar">
             <div class="side-navbar-wrapper">
@@ -1612,7 +1616,7 @@
                         @php
                             $canLaundryAny = \App\Support\StaffAccess::canAnyLaundry();
                             $laundryCounts = [];
-                            if ($canLaundryAny) {
+                            if ($canLaundryAny && empty($w2kIsPos)) {
                                 try {
                                     $laundryCounts = app(\App\Services\LaundryService::class)->stageCounts();
                                 } catch (\Throwable $e) {
@@ -3383,7 +3387,7 @@
           </div>
           <!-- end supplier modal -->
 
-          <div style="display:none" id="content" class="animate-bottom">
+          <div id="content" class="animate-bottom" style="{{ $w2kIsPos ? 'display:block' : 'display:none' }}">
               <div class="container-fluid">
                   <div id="beyond-module-tabs" class="beyond-module-tabs">
                       <div id="beyond-module-tabs-label" class="beyond-module-tabs-label"></div>
@@ -3405,7 +3409,9 @@
           </footer>
         </div>
         @yield('scripts')
+        @unless($w2kIsPos)
         @include('components.image_paste_script')
+        @endunless
         @include('components.whatsapp_phone_script')
         @include('components.activity_click_logger')
         <script>
@@ -3445,7 +3451,7 @@
               $('body').removeClass('w2k-nav-open');
           });
           function myFunction() {
-              setTimeout(showPage, 150);
+              showPage();
           }
           function showPage() {
             var loader = document.getElementById("loader");
@@ -3453,7 +3459,11 @@
             if (loader) loader.style.display = "none";
             if (content) content.style.display = "block";
           }
-          setTimeout(showPage, 3000);
+          if (document.readyState === 'loading') {
+              document.addEventListener('DOMContentLoaded', showPage);
+          } else {
+              showPage();
+          }
 
           if ($('meta[name="csrf-token"]').length) {
               $.ajaxSetup({

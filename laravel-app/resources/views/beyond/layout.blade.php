@@ -25,6 +25,9 @@
     <title>@yield('title', $siteTitle) | {{ $siteTitle }}</title>
     <meta name="description" content="@yield('meta_description', __('site.layout.meta'))">
     <link rel="icon" href="{{ $siteLogoUrl }}">
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -499,7 +502,7 @@
 </a>
 @endunless
 
-<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://unpkg.com/lucide@latest" defer></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script>
     window.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });

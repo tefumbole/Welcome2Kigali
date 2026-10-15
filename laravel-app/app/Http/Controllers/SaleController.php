@@ -38,6 +38,7 @@ use App\ProductBatch;
 use App\Purchase;
 use App\RewardPointSetting;
 use DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
@@ -1663,13 +1664,15 @@ class SaleController extends Controller
             if(empty($all_permission))
                 $all_permission[] = 'dummy text';
 
-            $lims_customer_list = Customer::select('id', 'name', 'phone_number', 'email', 'address', 'city', 'deposit', 'expense', 'points')->where('is_active', true)->get();
-            $customer_owing = \App\Sale::selectRaw('customer_id, SUM(grand_total - paid_amount) as owing')
-                ->where('payment_status', '!=', 4)
-                ->whereColumn('paid_amount', '<', 'grand_total')
-                ->groupBy('customer_id')
-                ->pluck('owing', 'customer_id')
-                ->toArray();
+            $lims_customer_list = Customer::select('id', 'name', 'phone_number', 'deposit', 'expense', 'points')->where('is_active', true)->orderBy('name')->get();
+            $customer_owing = Cache::remember('pos_customer_owing', 45, function () {
+                return Sale::selectRaw('customer_id, SUM(grand_total - paid_amount) as owing')
+                    ->where('payment_status', '!=', 4)
+                    ->whereColumn('paid_amount', '<', 'grand_total')
+                    ->groupBy('customer_id')
+                    ->pluck('owing', 'customer_id')
+                    ->toArray();
+            });
             $lims_account_list = Account::select('id', 'name', 'account_no', 'is_default', 'is_default_debit', 'is_active')->where('is_active', true)->get();
             $lims_customer_group_all = CustomerGroup::select('id', 'name')->where('is_active', true)->get();
             $lims_warehouse_list = Warehouse::select('id', 'name')->where('is_active', true)->get();
@@ -1738,13 +1741,6 @@ class SaleController extends Controller
             $default_biller_id = $general_setting_defaults->default_biller_id ?? null;
             // Prefer configured POS warehouse; then the General Settings default;
             // if missing/empty stock, use warehouse with most SKUs.
-            $richestWarehouseId = \DB::table('product_warehouse')
-                ->select('warehouse_id', \DB::raw('COUNT(DISTINCT product_id) as sku_count'), \DB::raw('SUM(qty) as total_qty'))
-                ->where('qty', '>', 0)
-                ->groupBy('warehouse_id')
-                ->orderByDesc('sku_count')
-                ->orderByDesc('total_qty')
-                ->value('warehouse_id');
             if (! $lims_pos_setting_data) {
                 $lims_pos_setting_data = new PosSetting();
             }
@@ -1760,6 +1756,13 @@ class SaleController extends Controller
                     ->value('c')
                 : 0;
             if (! $configuredWarehouseId || $configuredStock < 1) {
+                $richestWarehouseId = \DB::table('product_warehouse')
+                    ->select('warehouse_id', \DB::raw('COUNT(DISTINCT product_id) as sku_count'), \DB::raw('SUM(qty) as total_qty'))
+                    ->where('qty', '>', 0)
+                    ->groupBy('warehouse_id')
+                    ->orderByDesc('sku_count')
+                    ->orderByDesc('total_qty')
+                    ->value('warehouse_id');
                 if ($richestWarehouseId) {
                     $lims_pos_setting_data->warehouse_id = $richestWarehouseId;
                 } elseif ($lims_warehouse_list->count()) {
@@ -1775,18 +1778,18 @@ class SaleController extends Controller
             $lims_brand_list = Brand::select('id', 'title', 'image')->where('is_active', true)->get();
 
             if(Auth::user()->role_id > 2 && config('staff_access') == 'own') {
-                $recent_sale = Sale::where([
+                $recent_sale = Sale::with('customer:id,name')->where([
                     ['sale_status', 1],
                     ['user_id', Auth::id()]
                 ])->orderBy('id', 'desc')->take(10)->get();
-                $recent_draft = Sale::where([
+                $recent_draft = Sale::with('customer:id,name')->where([
                     ['sale_status', 3],
                     ['user_id', Auth::id()]
                 ])->orderBy('id', 'desc')->take(10)->get();
             }
             else {
-                $recent_sale = Sale::where('sale_status', 1)->orderBy('id', 'desc')->take(10)->get();
-                $recent_draft = Sale::where('sale_status', 3)->orderBy('id', 'desc')->take(10)->get();
+                $recent_sale = Sale::with('customer:id,name')->where('sale_status', 1)->orderBy('id', 'desc')->take(10)->get();
+                $recent_draft = Sale::with('customer:id,name')->where('sale_status', 3)->orderBy('id', 'desc')->take(10)->get();
             }
 
             $lims_account_default = Account::where('is_default', true)->first();
@@ -1814,7 +1817,7 @@ class SaleController extends Controller
                                     ['categories.parent_id', $category_id],
                                     ['products.is_active', true],
                                     ['brand_id', $brand_id]
-                                ])->select('products.name', 'products.code', 'products.image')->get();
+                                ])->select('products.name', 'products.code', 'products.image')->take(48)->get();
         }
         elseif(($category_id != 0) && ($brand_id == 0)){
             $lims_product_list = DB::table('products')
@@ -1825,7 +1828,7 @@ class SaleController extends Controller
                                 ])->orWhere([
                                     ['categories.parent_id', $category_id],
                                     ['products.is_active', true]
-                                ])->select('products.id', 'products.name', 'products.code', 'products.image', 'products.is_variant')->get();
+                                ])->select('products.id', 'products.name', 'products.code', 'products.image', 'products.is_variant')->take(48)->get();
         }
         elseif(($category_id == 0) && ($brand_id != 0)){
             $lims_product_list = Product::where([
@@ -1833,31 +1836,36 @@ class SaleController extends Controller
                                 ['is_active', true]
                             ])
                             ->select('products.id', 'products.name', 'products.code', 'products.image', 'products.is_variant')
+                            ->take(48)
                             ->get();
         }
-        else
-            $lims_product_list = Product::where('is_active', true)->get();
+        else {
+            $lims_product_list = Product::where([
+                ['is_active', true],
+                ['featured', true],
+            ])->select('id', 'name', 'code', 'image', 'is_variant')->orderBy('id', 'desc')->take(24)->get();
+        }
 
         $index = 0;
         foreach ($lims_product_list as $product) {
-            if($product->is_variant) {
-                $lims_product_data = Product::select('id')->find($product->id);
-                $lims_product_variant_data = $lims_product_data->variant()->orderBy('position')->get();
+            $images = explode(",", $product->image);
+            $img = $images[0];
+            if(!empty($product->is_variant)) {
+                $variants = Product::find($product->id);
+                $lims_product_variant_data = $variants ? $variants->variant()->orderBy('position')->get() : collect();
                 foreach ($lims_product_variant_data as $key => $variant) {
                     $data['name'][$index] = $product->name.' ['.$variant->name.']';
                     $data['code'][$index] = $variant->pivot['item_code'];
-                    $images = explode(",", $product->image);
-                    $data['image'][$index] = $images[0];
-                    $data['url'][$index] = \App\Support\PosProductImage::url($images[0]);
+                    $data['image'][$index] = $img;
+                    $data['url'][$index] = \App\Support\PosProductImage::url($img, false);
                     $index++;
                 }
             }
             else {
                 $data['name'][$index] = $product->name;
                 $data['code'][$index] = $product->code;
-                $images = explode(",", $product->image);
-                $data['image'][$index] = $images[0];
-                $data['url'][$index] = \App\Support\PosProductImage::url($images[0]);
+                $data['image'][$index] = $img;
+                $data['url'][$index] = \App\Support\PosProductImage::url($img, false);
                 $index++;
             }
         }
@@ -1885,7 +1893,7 @@ class SaleController extends Controller
                     $data['code'][$index] = $variant->pivot['item_code'];
                     $images = explode(",", $product->image);
                     $data['image'][$index] = $images[0];
-                    $data['url'][$index] = \App\Support\PosProductImage::url($images[0]);
+                    $data['url'][$index] = \App\Support\PosProductImage::url($images[0], false);
                     $index++;
                 }
             }
@@ -1894,7 +1902,7 @@ class SaleController extends Controller
                 $data['code'][$index] = $product->code;
                 $images = explode(",", $product->image);
                 $data['image'][$index] = $images[0];
-                $data['url'][$index] = \App\Support\PosProductImage::url($images[0]);
+                $data['url'][$index] = \App\Support\PosProductImage::url($images[0], false);
                 $index++;
             }
         }

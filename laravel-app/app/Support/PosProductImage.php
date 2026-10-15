@@ -8,10 +8,12 @@ class PosProductImage
     const THUMB_EDGE = 320;
     const ORIGINAL_EDGE = 800;
 
-    public static function url($filename)
+    public static function url($filename, $ensureThumb = false)
     {
         $filename = self::firstName($filename);
-        self::ensureThumb($filename);
+        if ($ensureThumb) {
+            self::ensureThumb($filename);
+        }
         $thumb = public_path('images/product/thumbs/'.$filename);
         if (is_file($thumb) && filesize($thumb) > 0) {
             return self::assetFile('images/product/thumbs/'.$filename);

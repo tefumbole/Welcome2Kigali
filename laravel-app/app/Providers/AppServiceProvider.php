@@ -77,7 +77,9 @@ class AppServiceProvider extends ServiceProvider
             ]);
         }
 
-        $alert_product = DB::table('products')->where('is_active', true)->whereColumn('alert_quantity', '>', 'qty')->count();
+        $alert_product = Cache::remember('alert_product_count', 120, function () {
+            return DB::table('products')->where('is_active', true)->whereColumn('alert_quantity', '>', 'qty')->count();
+        });
         View::share('alert_product', $alert_product);
 
         View::composer('frontend.layout.main', function ($view) {

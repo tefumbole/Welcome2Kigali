@@ -273,6 +273,16 @@
             font-size: 10px;
             color: #8a7a5a;
         }
+        body.beyond-pos-active #lims_productcodeSearch {
+            border: 1px solid #C5A059;
+            border-radius: 10px;
+            height: 42px;
+            font-size: 15px;
+        }
+        body.beyond-pos-active #lims_productcodeSearch:focus {
+            box-shadow: 0 0 0 3px rgba(197,160,89,.25);
+            outline: none;
+        }
         body.beyond-pos-active .pos-product-empty {
             grid-column: 1 / -1;
             text-align: center;
@@ -1544,7 +1554,7 @@
                                                         <input type="hidden" name="customer_id_hidden" value="{{$lims_pos_setting_data->customer_id}}">
                                                     @endif
                                                     <div class="input-group pos">
-                                                        <select required name="customer_id" id="customer_id" class="selectpicker form-control" data-live-search="true" title="Select customer...">
+                                                        <select required name="customer_id" id="customer_id" class="selectpicker form-control" data-live-search="true" data-size="8" title="Select customer...">
                                                             @foreach($lims_customer_list as $customer)
                                                                 @php
                                                                     $deposit[$customer->id] = $customer->deposit - $customer->expense;
@@ -1585,7 +1595,7 @@
                                                     <input type="text" name="product_code_name" id="click_productcodeSearch" placeholder="Please type product code and select..." class="form-control" />
                                                     <button class="btn btn-secondary" id="search_btn" href="javascript.void(0)"><i class="fa fa-search"></i></button>
                                                 @else
-                                                    <input type="text" name="product_code_name" id="lims_productcodeSearch" placeholder="Scan/Search product by name/code" class="form-control"  />
+                                                    <input type="text" name="product_code_name" id="lims_productcodeSearch" placeholder="Scan or type a product name / code" class="form-control" autofocus autocomplete="off" />
                                                 @endif
                                             </div>
                                         </div>
@@ -2311,11 +2321,10 @@
                                                             </thead>
                                                             <tbody>
                                                             @foreach($recent_sale as $sale)
-                                                                    <?php $customer = DB::table('customers')->find($sale->customer_id); ?>
                                                                 <tr>
                                                                     <td>{{date('d-m-Y', strtotime($sale->created_at))}}</td>
                                                                     <td>{{$sale->reference_no}}</td>
-                                                                    <td>{{$customer->name}}</td>
+                                                                    <td>{{ optional($sale->customer)->name }}</td>
                                                                     <td>{{$sale->grand_total}}</td>
                                                                     <td>
                                                                         <div class="btn-group">
@@ -2349,11 +2358,10 @@
                                                             </thead>
                                                             <tbody>
                                                             @foreach($recent_draft as $draft)
-                                                                    <?php $customer = DB::table('customers')->find($draft->customer_id); ?>
                                                                 <tr>
                                                                     <td>{{date('d-m-Y', strtotime($draft->created_at))}}</td>
                                                                     <td>{{$draft->reference_no}}</td>
-                                                                    <td>{{$customer->name}}</td>
+                                                                    <td>{{ optional($draft->customer)->name }}</td>
                                                                     <td>{{$draft->grand_total}}</td>
                                                                     <td>
                                                                         <div class="btn-group">
