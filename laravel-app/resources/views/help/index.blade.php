@@ -219,11 +219,11 @@
         <h3>5. POS and cafe orders</h3>
         <p>Click the gold <strong>POS</strong> button in the top bar (next to Help).</p>
         <img class="w2k-help-shot" src="{{ url('public/branding/help/pos.png') }}?v={{ $hv }}" alt="POS walk-in ticket with Cash Visa MoMo payment buttons">
-        <p class="w2k-help-cap">POS: Walk-in Customer on the left, product search, ticket columns Product / Batch No / Price / Quantity / SubTotal. Right side: Category, Brand, Featured. Payment row at the bottom: Send to Payment, Cash, Visa, Credit, Group Credit, Airtel Money, MTN MoMo, Deposit. Cancel and Recent transaction sit under that.</p>
+        <p class="w2k-help-cap">POS: Walk-in Customer on the left, product search, ticket columns Product / Batch No / Price / Quantity / SubTotal. Right side: Category, Brand, Featured. Payment row at the bottom: Pay later, Cash, Visa, Credit, Group, MoMo, Deposit. Cancel and Recent sit under that.</p>
         <ol>
             <li>Choose Walk-in Customer or pick a member.</li>
             <li>Search a drink by name/code, or tap Category / Brand / Featured and add lines to the ticket.</li>
-            <li>Take Cash, Visa, Credit, Airtel Money, or MTN MoMo.</li>
+            <li>Take Cash, Visa, Credit, or MoMo. MoMo detects MTN or Airtel from the phone number.</li>
             <li>For a laundry dress, add a comment on the line, fill <strong>Laundry comments</strong>, then <strong>Send to Laundry</strong>. The ticket waits under Laundry → Awaiting Acceptance.</li>
             <li>Online cafe orders from /menu also appear under Sale / Online Order.</li>
         </ol>

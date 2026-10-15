@@ -191,7 +191,7 @@ class MembershipPublicController extends Controller
             return $this->redirectToStripe($membership, $payment);
         }
 
-        return $this->redirectToMobileMoney($membership, $payment, $request->input('momo_network', 'mtn'), $request->input('momo_phone'));
+        return $this->redirectToMobileMoney($membership, $payment, $request->input('momo_network', 'auto'), $request->input('momo_phone'));
     }
 
     public function paymentCheck(Request $request)

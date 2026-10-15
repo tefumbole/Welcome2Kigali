@@ -753,7 +753,7 @@ class SaleController extends Controller
             }
             elseif ($data['paid_by_id'] == 8) {
                 $mtn_number = $request->input('momo_phone') ?: $lims_customer_data->phone_number;
-                $networkHint = $request->input('momo_network', 'mtn');
+                $networkHint = $request->input('momo_network', 'auto');
                 $amount = $lims_sale_data->grand_total;
                 $pawapay = app(\App\Services\PawaPayPaymentService::class);
                 if (! $pawapay->isConfigured()) {

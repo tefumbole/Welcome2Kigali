@@ -27,7 +27,7 @@
         body.beyond-pos-active .content-inner { min-height: 100vh; height: 100vh; overflow: hidden; }
         body.beyond-pos-active .content-inner > .page-content { padding-bottom: 0 !important; overflow: hidden; }
         body.beyond-pos-active .pos-section {
-            padding: 6px 8px 118px !important;
+            padding: 6px 8px 128px !important;
             height: 100%;
             overflow: hidden;
         }
@@ -88,37 +88,44 @@
             color: #0A0A0A !important;
         }
         body.beyond-pos-active .payment-options {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: stretch;
-            gap: 8px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(6.6rem, 1fr));
+            gap: 6px;
             left: 230px;
             right: 0;
-            width: auto;
-            padding: 10px 12px;
+            width: auto !important;
+            max-width: none;
+            padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
             background: #0A0A0A;
             border-top: 2px solid #C5A059;
             z-index: 40;
+            overflow: visible;
+        }
+        body.beyond-pos-active .page.active .payment-options {
+            left: 70px;
         }
         body.beyond-pos-active .payment-options .column-5 {
-            float: none;
-            flex: 1 1 8.6rem;
-            min-width: 8.2rem;
-            max-width: 14rem;
-            margin: 0;
-            padding: 0;
+            float: none !important;
+            width: auto !important;
+            min-width: 0 !important;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
         body.beyond-pos-active .payment-options .btn-custom {
             background: #16110c !important;
             color: #C5A059 !important;
             border: 1px solid #C5A059 !important;
             border-radius: 8px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
             letter-spacing: 0;
-            line-height: 1.25;
-            padding: 8px 8px;
+            line-height: 1.2;
+            padding: 8px 6px;
+            min-height: 40px;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         body.beyond-pos-active .payment-options .btn-custom:hover {
             background: #C5A059 !important;
@@ -129,7 +136,8 @@
             color: #0A0A0A !important;
             border-color: #C5A059 !important;
         }
-        body.beyond-pos-active #cash-btn {
+        body.beyond-pos-active #cash-btn,
+        body.beyond-pos-active #momo-btn {
             background: #C5A059 !important;
             color: #0A0A0A !important;
             border-color: #C5A059 !important;
@@ -303,12 +311,72 @@
         }
         body.beyond-pos-active .table-container {
             overflow-y: auto;
+            overflow-x: auto;
             -webkit-overflow-scrolling: touch;
         }
-        @media (max-width: 991px) {
-            body.beyond-pos-active .payment-options { left: 0; }
+        body.beyond-pos-active table.order-list.table-fixed,
+        body.beyond-pos-active table.order-list.table-fixed thead,
+        body.beyond-pos-active table.order-list.table-fixed tbody,
+        body.beyond-pos-active table.order-list.table-fixed tr,
+        body.beyond-pos-active table.order-list.table-fixed th,
+        body.beyond-pos-active table.order-list.table-fixed td {
+            display: revert !important;
+            float: none !important;
+        }
+        body.beyond-pos-active table.order-list.table-fixed {
+            table-layout: fixed;
+            width: 100%;
+            margin-bottom: 0;
+        }
+        body.beyond-pos-active table.order-list.table-fixed th,
+        body.beyond-pos-active table.order-list.table-fixed td {
+            vertical-align: middle;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 6px 6px;
+        }
+        body.beyond-pos-active table.order-list.table-fixed th:nth-child(1),
+        body.beyond-pos-active table.order-list.table-fixed td:nth-child(1) {
+            width: 28%;
+            white-space: normal;
+        }
+        body.beyond-pos-active table.order-list.table-fixed th:nth-child(2),
+        body.beyond-pos-active table.order-list.table-fixed td:nth-child(2) { width: 14%; }
+        body.beyond-pos-active table.order-list.table-fixed th:nth-child(3),
+        body.beyond-pos-active table.order-list.table-fixed td:nth-child(3) { width: 16%; }
+        body.beyond-pos-active table.order-list.table-fixed th:nth-child(4),
+        body.beyond-pos-active table.order-list.table-fixed td:nth-child(4) { width: 22%; }
+        body.beyond-pos-active table.order-list.table-fixed th:nth-child(5),
+        body.beyond-pos-active table.order-list.table-fixed td:nth-child(5) { width: 12%; }
+        body.beyond-pos-active table.order-list.table-fixed th:nth-child(6),
+        body.beyond-pos-active table.order-list.table-fixed td:nth-child(6) { width: 8%; }
+        body.beyond-pos-active table.order-list .input-group {
+            display: flex;
+            flex-wrap: nowrap;
+            width: 100%;
+        }
+        body.beyond-pos-active table.order-list .input-group .btn {
+            flex: 0 0 32px;
+            padding: 4px 0;
+        }
+        body.beyond-pos-active table.order-list input.qty,
+        body.beyond-pos-active table.order-list input.product_price_change,
+        body.beyond-pos-active table.order-list input.batch-no {
+            min-width: 0;
+            width: 100%;
+            max-width: none;
+            padding: 4px 6px;
+        }
+        body.beyond-pos-active table.order-list .laundry-item-note {
+            white-space: normal;
+            margin-top: 4px;
+        }
+        @media (max-width: 1199px) {
+            body.beyond-pos-active .payment-options,
+            body.beyond-pos-active .page.active .payment-options { left: 0; }
             body.beyond-pos-active .pos-section {
-                padding-bottom: 150px !important;
+                padding-bottom: 168px !important;
                 height: auto !important;
                 overflow: auto !important;
             }
@@ -322,6 +390,9 @@
             body.beyond-pos-active .products-side {
                 flex: 0 0 100%;
                 max-width: 100%;
+            }
+            body.beyond-pos-active .payment-options {
+                grid-template-columns: repeat(auto-fit, minmax(7.2rem, 1fr));
             }
             body.beyond-pos-active .pos-product-grid {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1605,11 +1676,12 @@
                                             <table id="myTable" class="table table-hover table-striped order-list table-fixed">
                                                 <thead>
                                                 <tr>
-                                                    <th class="col-sm-3">{{trans('file.product')}}</th>
-                                                    <th class="col-sm-2">{{trans('file.Batch No')}}</th>
-                                                    <th class="col-sm-2">{{trans('file.Price')}}</th>
-                                                    <th class="col-sm-2">{{trans('file.Quantity')}}</th>
-                                                    <th class="col-sm-3">{{trans('file.Subtotal')}}</th>
+                                                    <th>{{trans('file.product')}}</th>
+                                                    <th>{{trans('file.Batch No')}}</th>
+                                                    <th>{{trans('file.Price')}}</th>
+                                                    <th>{{trans('file.Quantity')}}</th>
+                                                    <th>{{trans('file.Subtotal')}}</th>
+                                                    <th></th>
                                                 </tr>
                                                 </thead>
                                                 <tbody id="tbody-id">
@@ -1701,38 +1773,34 @@
                                             <button type="button" class="btn btn-custom" id="send-laundry-btn"><i class="fa fa-shower"></i> Send to Laundry</button>
                                         </div>
                                         <div class="column-5">
-                                            <button style="background-color: #213170" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="pay-later-btn"><i class="fa fa-paypal"></i> Send to Payment</button>
+                                            <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="pay-later-btn"><i class="fa fa-clock-o"></i> Pay later</button>
                                         </div>
 
                                             @if(in_array("JE-method", $all_permission))
                                                 <div class="column-5">
-                                                    <button style="background: #0984e3" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="credit-card-btn"><i class="fa fa-credit-card"></i> JE </button>
+                                                    <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="credit-card-btn"><i class="fa fa-credit-card"></i> JE</button>
                                                 </div>
                                             @endif
                                             <div class="column-5">
-                                                <button style="background-color: #00cec9" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="cash-btn"><i class="fa fa-money"></i> Cash</button>
+                                                <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="cash-btn"><i class="fa fa-money"></i> Cash</button>
                                             </div>
                                             <div class="column-5">
-                                                <button style="background-color: #635BFF" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="visa-btn"><i class="fa fa-credit-card"></i> Visa</button>
+                                                <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="visa-btn"><i class="fa fa-credit-card"></i> Visa</button>
                                             </div>
                                             <div class="column-5">
-                                                <button style="background-color: #5f27cd" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="credit-btn"><i class="fa fa-credit-card-alt"></i> Credit</button>
+                                                <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="credit-btn"><i class="fa fa-credit-card-alt"></i> Credit</button>
                                             </div>
                                             <div class="column-5">
-                                                <button style="background-color: #45cd27" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="group-credit-btn"><i class="fa fa-credit-card-alt"></i> Group Credit</button>
+                                                <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="group-credit-btn"><i class="fa fa-users"></i> Group</button>
                                             </div>
                                             <div class="column-5">
-                                                {{--                                <button style="background-color: #e28d02" type="button" class="btn btn-custom" data-toggle="modal" data-target="#add-payment" id="><i class="dripicons-flag"></i> </button>--}}
-                                                <button style="background-color: #da7828" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="orange-btn"><i class="dripicons-flag"></i> Airtel Money</button>
-                                            </div>
-                                            <div class="column-5">
-                                                <button style="background-color: #fd7272" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="momo-btn"><i class="fa fa-money"></i> MTN MoMo</button>
+                                                <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="momo-btn"><i class="fa fa-mobile"></i> MoMo</button>
                                             </div>
                                             {{--                            <div class="column-5">--}}
                                             {{--                                <button style="background-color: #5f27cd" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="gift-card-btn"><i class="fa fa-credit-card-alt"></i> GiftCard</button>--}}
                                             {{--                            </div>--}}
                                             <div class="column-5">
-                                                <button style="background-color: #b33771" type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="deposit-btn"><i class="fa fa-university"></i> Deposit</button>
+                                                <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="deposit-btn"><i class="fa fa-university"></i> Deposit</button>
                                             </div>
                                             {{--                            @if($lims_reward_point_setting_data->is_active)--}}
                                             {{--                                <div class="column-5">--}}
@@ -1740,10 +1808,10 @@
                                             {{--                                </div>--}}
                                             {{--                            @endif--}}
                                             <div class="column-5">
-                                                <button style="background-color: #d63031;" type="button" class="btn btn-custom" id="cancel-btn" onclick="return confirmCancel()"><i class="fa fa-close"></i> Cancel</button>
+                                                <button type="button" class="btn btn-custom" id="cancel-btn" onclick="return confirmCancel()"><i class="fa fa-close"></i> Cancel</button>
                                             </div>
                                             <div class="column-5">
-                                                <button style="background-color: #ffc107;" type="button" class="btn btn-custom" data-toggle="modal" data-target="#recentTransaction"><i class="dripicons-clock"></i> Recent transaction</button>
+                                                <button type="button" class="btn btn-custom" data-toggle="modal" data-target="#recentTransaction"><i class="dripicons-clock"></i> Recent</button>
                                             </div>
                                     </div>
                                 </div>
@@ -1778,8 +1846,8 @@
                                                             <select name="paid_by_id_select" class="form-control selectpicker">
                                                                 <option value="1">Cash</option>
                                                                 <option value="12">Visa / Card</option>
-                                                                <option value="8">MTN MoMo / Airtel</option>
-                                                                <option value="9">Send to Payment</option>
+                                                                <option value="8">MoMo</option>
+                                                                <option value="9">Pay later</option>
                                                                 <option value="10">Credit</option>
                                                                 <option value="11">Group Credit</option>
                                                                 @if(in_array("JE-method", $all_permission))
@@ -1823,10 +1891,10 @@
                                                             <input type="text" name="cheque_no" class="form-control">
                                                         </div>
                                                         <div class="form-group col-md-12 momo-phone-section" style="display:none;">
-                                                            <input type="hidden" name="momo_network" value="mtn">
+                                                            <input type="hidden" name="momo_network" value="auto">
                                                             <label>MoMo number *</label>
-                                                            <input type="text" name="momo_phone" class="form-control" placeholder="0793… or 2507…">
-                                                            <small class="text-muted">Customer approves the PawaPay request on this phone.</small>
+                                                            <input type="text" name="momo_phone" class="form-control" placeholder="078… / 079… or 072… / 073…">
+                                                            <small class="text-muted">MTN or Airtel is detected from the number. Customer approves on the phone.</small>
                                                         </div>
                                                         <div class="form-group col-md-12 stripe-hint" style="display:none;">
                                                             <p class="mb-0">Customer will be redirected to Stripe to pay by Visa.</p>
@@ -3844,22 +3912,9 @@
             creditCard();
         });
 
-        $("#orange-btn").on("click",function() {
-            $('select[name="paid_by_id_select"]').val(8);
-            $('input[name="momo_network"]').val('airtel');
-            $('.momo-phone-section').show();
-            $('input[name="paid_amount"]').prop('readonly', false);
-            $('input[name="paying_amount"]').prop('readonly', false);
-            $('.selectpicker').selectpicker('refresh');
-            $('div.qc').show();
-            $('div.debit').hide();
-            $('div.credit').show();
-            hide();
-        });
-
         $("#momo-btn").on("click",function() {
             $('select[name="paid_by_id_select"]').val(8);
-            $('input[name="momo_network"]').val('mtn');
+            $('input[name="momo_network"]').val('auto');
             $('.momo-phone-section').show();
             $('input[name="paid_amount"]').prop('readonly', false);
             $('input[name="paying_amount"]').prop('readonly', false);
@@ -3982,7 +4037,13 @@
                 cheque();
             } else {
                 hide();
-                if(id == 1)
+                if(id == 8) {
+                    $('input[name="momo_network"]').val('auto');
+                    $('.momo-phone-section').show();
+                    $('div.qc').show();
+                    $('div.debit').hide();
+                }
+                else if(id == 1)
                     $('div.qc').show();
                 else if(id == 6) {
                     $('div.qc').hide();
@@ -4787,7 +4848,7 @@
                     }
                 }
                 if (!$('input[name="momo_phone"]').val()) {
-                    alert('Enter the MoMo / Airtel phone number');
+                    alert('Enter the MoMo phone number');
                     e.preventDefault();
                 }
             }

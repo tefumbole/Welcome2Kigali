@@ -298,11 +298,13 @@ button, a, [role="button"] {
     body.beyond-pos-active .payment-options {
         left: 0 !important;
         right: 0 !important;
+        width: auto !important;
+        grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
         padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     }
     body.beyond-pos-active .payment-options .column-5 {
-        flex: 1 1 46%;
-        min-width: 46%;
+        flex: none;
+        min-width: 0;
         max-width: none;
     }
 
@@ -318,9 +320,8 @@ button, a, [role="button"] {
 }
 
 @media (max-width: 479px) {
-    body.beyond-pos-active .payment-options .column-5 {
-        flex: 1 1 100%;
-        min-width: 100%;
+    body.beyond-pos-active .payment-options {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 

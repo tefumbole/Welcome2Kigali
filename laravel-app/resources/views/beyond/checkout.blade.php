@@ -75,17 +75,15 @@
                         <input type="radio" name="payment_method" value="COD" required x-model="pay"> {{ __('site.checkout.cash') }}
                     </label>
                     <label class="flex items-center gap-2 mb-2">
-                        <input type="radio" name="payment_method" value="MTN" x-model="pay"> {{ __('site.checkout.momo') }}
-                    </label>
-                    <label class="flex items-center gap-2 mb-2">
-                        <input type="radio" name="payment_method" value="AIRTEL" x-model="pay"> {{ __('site.checkout.airtel') }}
+                        <input type="radio" name="payment_method" value="MOMO" x-model="pay"> {{ __('site.checkout.momo') }}
                     </label>
                     <label class="flex items-center gap-2">
                         <input type="radio" name="payment_method" value="VISA" x-model="pay"> {{ __('site.checkout.visa') }}
                     </label>
-                    <div class="mt-3" x-show="pay === 'MTN' || pay === 'AIRTEL'" x-cloak>
+                    <div class="mt-3" x-show="pay === 'MOMO'" x-cloak>
+                        <input type="hidden" name="momo_network" value="auto">
                         <label class="block text-[11px] tracking-[0.2em] uppercase text-brand-gold mb-2">{{ __('site.checkout.momo_phone') }}</label>
-                        <input name="mtn_phone" type="text" placeholder="2507..."
+                        <input name="mtn_phone" type="text" placeholder="078… / 079… or 072… / 073…"
                                class="w-full bg-black border border-brand-gold/40 text-white px-4 py-3 focus:outline-none focus:border-brand-gold">
                         <p class="mt-2 text-xs text-white/50">{{ __('site.checkout.momo_hint') }}</p>
                     </div>

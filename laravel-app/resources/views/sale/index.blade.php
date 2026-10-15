@@ -208,7 +208,7 @@
                             <label>{{trans('file.Paid By')}}</label>
                             <select name="paid_by_id" class="form-control">
                                 <option value="1">Cash</option>
-                                <option value="8">MTN MoMo / Airtel</option>
+                                <option value="8">MoMo</option>
                                 <option value="2">Gift Card</option>
 {{--                                <option value="3">Credit Card</option>--}}
                                 @if(in_array("JE-method", $all_permission))
@@ -252,8 +252,9 @@
                     </div>
                     <div class="form-group momo-phone-section" style="display:none;">
                         <label>MoMo number *</label>
-                        <input type="text" name="momo_phone" class="form-control" placeholder="0793… or 2507…">
-                        <small class="text-muted">Customer approves the PawaPay request on this phone.</small>
+                        <input type="text" name="momo_phone" class="form-control" placeholder="078… / 079… or 072… / 073…">
+                        <input type="hidden" name="momo_network" value="auto">
+                        <small class="text-muted">MTN or Airtel is detected from the number. Customer approves on the phone.</small>
                     </div>
                     <div class="form-group">
                         <label> {{trans('file.Account')}}</label>

@@ -25,15 +25,13 @@
                 <div class="pt-2 space-y-3">
                     <label class="text-sm font-semibold">{{ __('site.checkout.payment') }}</label>
                     <div class="flex flex-col gap-2 text-sm">
-                        <label><input type="radio" name="pay_with" value="momo" checked> {{ __('site.checkout.momo') }} / {{ __('site.checkout.airtel') }}</label>
+                        <label><input type="radio" name="pay_with" value="momo" checked> {{ __('site.checkout.momo') }}</label>
                         <label><input type="radio" name="pay_with" value="visa"> {{ __('site.checkout.visa') }}</label>
                     </div>
                     <div class="momo-fields">
-                        <div class="mt-2 flex gap-4 text-sm">
-                            <label><input type="radio" name="momo_network" value="mtn" checked> MTN MoMo</label>
-                            <label><input type="radio" name="momo_network" value="airtel"> Airtel Money</label>
-                        </div>
-                        <input type="text" name="momo_phone" class="mt-2 w-full border rounded px-3 py-2" placeholder="0793… or 2507…" value="{{ optional($membership->customer)->phone_number }}">
+                        <input type="hidden" name="momo_network" value="auto">
+                        <input type="text" name="momo_phone" class="mt-2 w-full border rounded px-3 py-2" placeholder="078… / 079… or 072… / 073…" value="{{ optional($membership->customer)->phone_number }}">
+                        <p class="mt-1 text-xs text-gray-500">{{ __('site.checkout.momo_hint') }}</p>
                     </div>
                     @if(strtolower((string) config('services.stripe.mode', 'test')) !== 'live')
                         <p class="text-xs text-gray-500 visa-hint hidden">{{ __('site.checkout.visa_test') }}</p>

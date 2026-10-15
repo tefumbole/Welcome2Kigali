@@ -524,9 +524,9 @@ class CartController extends Controller
 
                 return redirect()->away($result['url']);
         }
-        if($data['payment_method'] == 'MTN' || $data['payment_method'] == 'AIRTEL') {
+        if(in_array($data['payment_method'], ['MTN', 'AIRTEL', 'MOMO'], true)) {
                 $pawapay = app(\App\Services\PawaPayPaymentService::class);
-                $hint = $data['payment_method'] == 'AIRTEL' ? 'airtel' : 'mtn';
+                $hint = 'auto';
                 if ($pawapay->isConfigured()) {
                     $result = $pawapay->start(
                         'order',
