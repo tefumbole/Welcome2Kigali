@@ -1631,7 +1631,7 @@
                                                                     $deposit[$customer->id] = $customer->deposit - $customer->expense;
                                                                     $points[$customer->id] = $customer->points;
                                                                 @endphp
-                                                                <option value="{{$customer->id}}">{{$customer->name . ' (' . $customer->phone_number . ')'}}</option>
+                                                                <option value="{{$customer->id}}" data-phone="{{ $customer->phone_number }}">{{$customer->name . ' (' . $customer->phone_number . ')'}}</option>
                                                             @endforeach
                                                         </select>
                                                         @if($customer_active)
@@ -1894,7 +1894,7 @@
                                                             <input type="hidden" name="momo_network" value="auto">
                                                             <label>MoMo number *</label>
                                                             <input type="text" name="momo_phone" class="form-control" placeholder="078… / 079… or 072… / 073…">
-                                                            <small class="text-muted">MTN or Airtel is detected from the number. Customer approves on the phone.</small>
+                                                            <small class="text-muted">Filled from the customer. You can edit it. MTN or Airtel is detected from the number. You can pay part of the total; the rest stays pending.</small>
                                                         </div>
                                                         <div class="form-group col-md-12 stripe-hint" style="display:none;">
                                                             <p class="mb-0">Customer will be redirected to Stripe to pay by Visa.</p>
@@ -3224,6 +3224,9 @@
         $('#customer_id').on('change', function(){
             var selected_customer_id = $(this).val();
             localStorage.setItem('customer_id', selected_customer_id);
+            if ($('select[name="paid_by_id_select"]').val() == '8') {
+                fillMomoFromCustomer();
+            }
         });
 
         // Ensure warehouse/biller are set before product lookup (defaults from richest stock).
@@ -3916,6 +3919,7 @@
             $('select[name="paid_by_id_select"]').val(8);
             $('input[name="momo_network"]').val('auto');
             $('.momo-phone-section').show();
+            fillMomoFromCustomer();
             $('input[name="paid_amount"]').prop('readonly', false);
             $('input[name="paying_amount"]').prop('readonly', false);
             $('.selectpicker').selectpicker('refresh');
@@ -4040,6 +4044,7 @@
                 if(id == 8) {
                     $('input[name="momo_network"]').val('auto');
                     $('.momo-phone-section').show();
+                    fillMomoFromCustomer();
                     $('div.qc').show();
                     $('div.debit').hide();
                 }
@@ -4720,6 +4725,25 @@
             $('.payment-form').submit();
         });
 
+        function fillMomoFromCustomer(overwrite) {
+            if (overwrite === undefined) overwrite = true;
+            var current = ($('input[name="momo_phone"]').val() || '').toString().trim();
+            if (current && !overwrite) {
+                return;
+            }
+            var phone = ($('#customer_id option:selected').attr('data-phone') || '').toString().trim();
+            if (!phone) {
+                var label = $('#customer_id option:selected').text() || '';
+                var m = label.match(/(\+?\d[\d\s]{7,})/);
+                if (m) {
+                    phone = m[1].replace(/\s/g, '');
+                }
+            }
+            if (phone) {
+                $('input[name="momo_phone"]').val(phone);
+            }
+        }
+
         function hide() {
             $(".card-element").hide();
             $(".card-errors").hide();
@@ -4840,17 +4864,24 @@
             $('input[name="credit"]').val($('select[name="credit_select"]').val());
             $('input[name="order_tax_rate"]').val($('#order-tax-rate-value').val());
             if ($('select[name="paid_by_id_select"]').val() == '8') {
-                if (!$('input[name="momo_phone"]').val()) {
-                    var label = $('#customer_id option:selected').text() || '';
-                    var m = label.match(/(\+?\d[\d\s]{7,})/);
-                    if (m) {
-                        $('input[name="momo_phone"]').val(m[1].replace(/\s/g, ''));
-                    }
-                }
+                fillMomoFromCustomer(false);
                 if (!$('input[name="momo_phone"]').val()) {
                     alert('Enter the MoMo phone number');
                     e.preventDefault();
+                    return;
                 }
+                var momoPaid = parseFloat($('input[name="paid_amount"]').val()) || 0;
+                var momoTotal = parseFloat($('#grand-total').text()) || 0;
+                if (momoPaid <= 0) {
+                    alert('Enter how much to collect by MoMo. The rest will stay pending.');
+                    e.preventDefault();
+                    return;
+                }
+                if (momoPaid > momoTotal) {
+                    $('input[name="paid_amount"]').val(momoTotal.toFixed(2));
+                    momoPaid = momoTotal;
+                }
+                $('input[name="paying_amount"]').val(momoPaid.toFixed(2));
             }
 
         });

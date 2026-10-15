@@ -551,6 +551,8 @@
             $('input[name="amount"]').val('');
             $('#add-payment .pending-amount').text(balance.toFixed(2));
             $('input[name="sale_id"]').val(sale_id);
+            var phone = ($(this).attr('data-phone') || $(this).closest('tr').find('.customer-phone').val() || '').toString().trim();
+            $('input[name="momo_phone"]').val(phone);
         });
 
         $(document).on("click", "table.sale-list tbody .get-payment", function(event) {

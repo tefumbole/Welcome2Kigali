@@ -44,11 +44,17 @@ class PawaPayService
 
     public function createDeposit(array $payload)
     {
-        if (empty($payload['callbackUrl'])) {
-            $payload['callbackUrl'] = $this->callbackUrl();
+        unset($payload['callbackUrl']);
+        $response = $this->request('POST', '/v2/deposits', $payload);
+        if (! is_array($response) || $this->isUnsupportedParameter($response)) {
+            Log::warning('PawaPay v2 deposit rejected, retrying v1', [
+                'code' => $this->failureCode($response),
+                'message' => $this->failureMessage($response),
+            ]);
+            $response = $this->request('POST', '/deposits', $this->v1DepositPayload($payload));
         }
 
-        return $this->request('POST', '/v2/deposits', $payload);
+        return $response;
     }
 
     public function getDeposit($depositId)
@@ -57,7 +63,88 @@ class PawaPayService
             return null;
         }
 
-        return $this->request('GET', '/v2/deposits/'.rawurlencode($depositId));
+        $response = $this->request('GET', '/v2/deposits/'.rawurlencode($depositId));
+        if (! is_array($response) || $this->shouldTryV1($response)) {
+            $response = $this->request('GET', '/deposits/'.rawurlencode($depositId));
+        }
+
+        return $response;
+    }
+
+    public function failureMessage($payload)
+    {
+        if (! is_array($payload)) {
+            return null;
+        }
+        if (! empty($payload['failureReason']['failureMessage'])) {
+            return (string) $payload['failureReason']['failureMessage'];
+        }
+        if (! empty($payload['failureMessage'])) {
+            return (string) $payload['failureMessage'];
+        }
+        if (! empty($payload['message']) && ! is_array($payload['message'])) {
+            return (string) $payload['message'];
+        }
+
+        return null;
+    }
+
+    public function failureCode($payload)
+    {
+        if (! is_array($payload)) {
+            return '';
+        }
+
+        return strtoupper((string) ($payload['failureReason']['failureCode'] ?? $payload['failureCode'] ?? ''));
+    }
+
+    protected function isUnsupportedParameter($payload)
+    {
+        return $this->failureCode($payload) === 'UNSUPPORTED_PARAMETER';
+    }
+
+    protected function shouldTryV1($payload)
+    {
+        if (! is_array($payload)) {
+            return true;
+        }
+        $code = $this->failureCode($payload);
+        if (in_array($code, ['UNSUPPORTED_PARAMETER', 'INVALID_SCHEMA', 'NOT_FOUND'], true)) {
+            return true;
+        }
+        $message = strtolower((string) $this->failureMessage($payload));
+
+        return strpos($message, 'callbackurl') !== false
+            || strpos($message, 'unsupported parameter') !== false;
+    }
+
+    protected function v1DepositPayload(array $payload)
+    {
+        $phone = '';
+        $provider = 'MTN_MOMO_RWA';
+        if (! empty($payload['payer']['accountDetails']['phoneNumber'])) {
+            $phone = (string) $payload['payer']['accountDetails']['phoneNumber'];
+        } elseif (! empty($payload['payer']['address']['value'])) {
+            $phone = (string) $payload['payer']['address']['value'];
+        }
+        if (! empty($payload['payer']['accountDetails']['provider'])) {
+            $provider = (string) $payload['payer']['accountDetails']['provider'];
+        } elseif (! empty($payload['correspondent'])) {
+            $provider = (string) $payload['correspondent'];
+        }
+
+        return [
+            'depositId' => $payload['depositId'],
+            'amount' => (string) $payload['amount'],
+            'currency' => $payload['currency'],
+            'correspondent' => $provider,
+            'payer' => [
+                'type' => 'MSISDN',
+                'address' => ['value' => $phone],
+            ],
+            'customerTimestamp' => gmdate('Y-m-d\TH:i:s\Z'),
+            'statementDescription' => $this->customerMessage($payload['customerMessage'] ?? 'W2K Payment'),
+        ];
     }
 
     public function predictProvider($phone)

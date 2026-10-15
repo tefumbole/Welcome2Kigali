@@ -273,7 +273,7 @@ class SaleController extends Controller
                 $nestedData['date'] = date(config('date_format'), strtotime($sale->created_at->toDateString()));
                 $nestedData['reference_no'] = $sale->reference_no;
                 $nestedData['biller'] = $sale->biller->name ?? 'NAN';
-                $nestedData['customer'] = $sale->customer->name.'<input type="hidden" class="deposit" value="'.($sale->customer->deposit - $sale->customer->expense).'" />'.'<input type="hidden" class="points" value="'.$sale->customer->points.'" />';
+                $nestedData['customer'] = $sale->customer->name.'<input type="hidden" class="deposit" value="'.($sale->customer->deposit - $sale->customer->expense).'" />'.'<input type="hidden" class="points" value="'.$sale->customer->points.'" />'.'<input type="hidden" class="customer-phone" value="'.e($sale->customer->phone_number).'" />';
 
                 if($sale->sale_status == 1){
                     $nestedData['sale_status'] = '<div class="badge badge-success">'.trans('file.Completed').'</div>';
@@ -322,7 +322,7 @@ class SaleController extends Controller
                 }
                 $nestedData['options'] .=
                     '<li>
-                        <button type="button" class="add-payment btn btn-link" data-id = "'.$sale->id.'" data-toggle="modal" data-target="#add-payment"><i class="fa fa-plus"></i> '.trans('file.Add Payment').'</button>
+                        <button type="button" class="add-payment btn btn-link" data-id = "'.$sale->id.'" data-phone="'.e($sale->customer->phone_number).'" data-toggle="modal" data-target="#add-payment"><i class="fa fa-plus"></i> '.trans('file.Add Payment').'</button>
                     </li>
                     <li>
                         <button type="button" class="get-payment btn btn-link" data-id = "'.$sale->id.'"><i class="fa fa-money"></i> '.trans('file.View Payment').'</button>
@@ -420,6 +420,7 @@ class SaleController extends Controller
 
             $balance = $data['grand_total'] - $data['paid_amount'];
             $data['payment_status'] = $this->paymentStatusForBalance($data['paid_amount'], $balance);
+            $data['momo_charge_amount'] = (float) ($data['paid_amount'] ?? 0);
 
             if($data['paid_by_id'] == 8 || $data['paid_by_id'] == 9 || $data['paid_by_id'] == 12) {
                 $data['payment_status'] = 1;
@@ -754,7 +755,14 @@ class SaleController extends Controller
             elseif ($data['paid_by_id'] == 8) {
                 $mtn_number = $request->input('momo_phone') ?: $lims_customer_data->phone_number;
                 $networkHint = $request->input('momo_network', 'auto');
-                $amount = $lims_sale_data->grand_total;
+                $due = max(0, (float) $lims_sale_data->grand_total);
+                $amount = (float) ($data['momo_charge_amount'] ?? 0);
+                if ($amount <= 0) {
+                    $amount = $due;
+                }
+                if ($amount > $due) {
+                    $amount = $due;
+                }
                 $pawapay = app(\App\Services\PawaPayPaymentService::class);
                 if (! $pawapay->isConfigured()) {
                     return back()->with('not_permitted', 'Mobile money is not configured. Add PAWAPAY_API_TOKEN to .env.');

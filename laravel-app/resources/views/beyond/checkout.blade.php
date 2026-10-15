@@ -84,6 +84,7 @@
                         <input type="hidden" name="momo_network" value="auto">
                         <label class="block text-[11px] tracking-[0.2em] uppercase text-brand-gold mb-2">{{ __('site.checkout.momo_phone') }}</label>
                         <input name="mtn_phone" type="text" placeholder="078… / 079… or 072… / 073…"
+                               value="{{ old('mtn_phone', old('phone', optional(auth()->user())->phone)) }}"
                                class="w-full bg-black border border-brand-gold/40 text-white px-4 py-3 focus:outline-none focus:border-brand-gold">
                         <p class="mt-2 text-xs text-white/50">{{ __('site.checkout.momo_hint') }}</p>
                     </div>

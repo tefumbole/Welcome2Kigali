@@ -68,7 +68,6 @@ class PawaPayPaymentService
             'depositId' => $depositId,
             'amount' => (string) $intAmount,
             'currency' => $currency,
-            'callbackUrl' => $this->api->callbackUrl(),
             'payer' => [
                 'type' => 'MMO',
                 'accountDetails' => [
@@ -76,18 +75,13 @@ class PawaPayPaymentService
                     'provider' => $provider,
                 ],
             ],
-            'clientReferenceId' => $purpose.'-'.$purposeId,
             'customerMessage' => $this->api->customerMessage($description),
-            'metadata' => [
-                ['purpose' => (string) $purpose],
-                ['purposeId' => (string) $purposeId],
-            ],
         ];
 
         $response = $this->api->createDeposit($payload);
         $status = $this->api->extractStatus($response);
         if (! $response || $this->api->isFailureStatus($status) || (! $this->api->isAcceptedStatus($status) && ! $this->api->isSuccessStatus($status))) {
-            $failure = isset($response['failureReason']['failureMessage']) ? $response['failureReason']['failureMessage'] : null;
+            $failure = $this->api->failureMessage($response);
             Log::warning('PawaPay deposit rejected', ['status' => $status, 'body' => $response]);
 
             return [

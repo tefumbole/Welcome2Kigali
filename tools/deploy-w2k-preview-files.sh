@@ -456,6 +456,7 @@ sudo -u www-data php "\$APP/artisan" cache:clear
 sudo -u www-data php "\$APP/artisan" config:clear
 sudo -u www-data php -r "require '\$APP/vendor/autoload.php'; \\\$app = require '\$APP/bootstrap/app.php'; \\\$app->make('Illuminate\\\\Contracts\\\\Console\\\\Kernel')->bootstrap(); echo App\\\\Support\\\\AppVersion::syncToSettings().PHP_EOL;"
 chown -R www-data:www-data "\$APP/storage" "\$APP/bootstrap/cache"
+chmod -R ug+rwx "\$APP/storage" "\$APP/bootstrap/cache"
 echo "Deployed W2K preview — \$(tr -d '[:space:]' < "\$APP/VERSION")"
 EOS
 
