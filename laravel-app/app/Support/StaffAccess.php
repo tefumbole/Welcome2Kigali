@@ -141,10 +141,17 @@ class StaffAccess
         foreach (['Admin', 'System', 'Owner', 'Super Admin'] as $name) {
             $role = SpatieRole::whereRaw('LOWER(name) = ?', [strtolower($name)])->first();
             if (! $role && in_array($name, ['Admin', 'System'], true)) {
-                $role = SpatieRole::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
-                if (\Illuminate\Support\Facades\Schema::hasColumn('roles', 'is_active') && empty($role->is_active)) {
-                    DB::table('roles')->where('id', $role->id)->update(['is_active' => 1]);
+                $payload = [
+                    'name' => $name,
+                    'guard_name' => 'web',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+                if (\Illuminate\Support\Facades\Schema::hasColumn('roles', 'is_active')) {
+                    $payload['is_active'] = 1;
                 }
+                $roleId = DB::table('roles')->insertGetId($payload);
+                $role = SpatieRole::find($roleId);
             }
             if ($role) {
                 $role->syncPermissions($all);
