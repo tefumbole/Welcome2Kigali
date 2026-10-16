@@ -6,7 +6,7 @@ class PosProductImage
 {
     // POS tiles draw the photo at about 70–120px. 240px is 2× that, so it stays sharp
     // on a retina screen and a JPEG stays well under 45KB.
-    const MAX_BYTES = 46080;
+    const MAX_BYTES = 17408;
     const THUMB_EDGE = 240;
     const ORIGINAL_EDGE = 240;
 

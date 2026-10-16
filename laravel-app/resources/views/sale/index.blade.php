@@ -90,7 +90,23 @@
         </div>
     </section>
 
-    <style>.w2k-mini-invoice{max-width:360px;margin:1.75rem auto;}</style>
+    <style>
+        .w2k-mini-invoice{max-width:360px;margin:1.75rem auto;}
+        .w2k-thermal-name{font-weight:700;margin-top:6px;}
+        .w2k-thermal-row{display:flex;justify-content:space-between;gap:12px;font-size:13px;line-height:1.45;}
+        .w2k-thermal-row span:last-child{white-space:nowrap;}
+        .w2k-thermal-rule{border:0;border-top:1px dashed #222;margin:8px 0;}
+        @media print {
+            body.w2k-print-invoice * { visibility: hidden; }
+            body.w2k-print-invoice #sale-details,
+            body.w2k-print-invoice #sale-details * { visibility: visible; }
+            body.w2k-print-invoice #sale-details {
+                position: absolute; left: 0; top: 0; width: 72mm; margin: 0;
+            }
+            body.w2k-print-invoice .modal-backdrop,
+            body.w2k-print-invoice .d-print-none { display: none !important; }
+        }
+    </style>
     <div id="sale-details" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
         <div role="document" class="modal-dialog {{ ($general_setting->invoice_format ?? '') === 'mini' ? 'w2k-mini-invoice' : 'modal-lg' }}">
             <div class="modal-content" id="sale-invoice-print">
@@ -520,30 +536,34 @@
             var printRoot = document.getElementById('sale-invoice-print');
             if (!printRoot) return;
             var isMini = {{ ($general_setting->invoice_format ?? '') === 'mini' ? 'true' : 'false' }};
-            var newWin = window.open('', 'Print-Window', isMini ? 'width=420,height=720' : 'width=900,height=720');
+            var css = '<style>' +
+                '@page{size:A4 portrait;margin:8mm}' +
+                'html,body{margin:0;padding:0;background:#fff;color:#111;font-family:Helvetica,Arial,sans-serif;font-size:12px}' +
+                (isMini ? '.thermal-print{width:72mm;max-width:72mm}' : '') +
+                '.d-print-none{display:none!important}' +
+                '.w2k-thermal-name{font-weight:700;margin-top:6px}' +
+                '.w2k-thermal-row{display:flex;justify-content:space-between;gap:12px}' +
+                '.w2k-thermal-rule{border:0;border-top:1px dashed #222;margin:8px 0}' +
+                'img{max-width:100%}' +
+                '</style>';
+            var markup = '<!DOCTYPE html><html><head><title>Invoice</title>' + css + '</head><body>' +
+                (isMini ? '<div class="thermal-print">' : '') + printRoot.innerHTML + (isMini ? '</div>' : '') +
+                '<script>window.onload=function(){window.focus();window.print();};<\/script></body></html>';
+            var newWin = window.open('', '_blank', isMini ? 'width=420,height=720' : 'width=900,height=720');
             if (!newWin) {
-                alert('Please allow pop-ups to print the invoice.');
+                $('body').addClass('w2k-print-invoice');
+                window.print();
+                $('body').removeClass('w2k-print-invoice');
                 return;
             }
-            var css = '<link rel="stylesheet" href="<?php echo asset('public/vendor/bootstrap/css/bootstrap.min.css') ?>" type="text/css">' +
-                '<style type="text/css">' +
-                (isMini ? '@page{size:A4 portrait;margin:0}html,body{margin:0;padding:0;background:#fff;width:210mm}.thermal-print{width:72mm;max-width:72mm;margin:0;padding:2mm 2.5mm 4mm;background:#fff;font-size:11px;color:#111}' : '@page{size:A4;margin:10mm}body{margin:10px;background:#fff;font-size:12px;color:#1f2a44}') +
-                '.d-print-none{display:none!important}' +
-                '.modal-content{border:0;box-shadow:none}' +
-                '.sale-letter-header{max-height:90px!important;object-fit:contain}' +
-                '.sale-letter-footer{max-height:70px!important;object-fit:contain}' +
-                '.sale-watermark{opacity:0.07!important}' +
-                'table.product-sale-list{font-size:11px}' +
-                'table.product-sale-list th,table.product-sale-list td{padding:4px 6px}' +
-                '</style>';
             newWin.document.open();
-            newWin.document.write('<!DOCTYPE html><html><head><title>Invoice</title>' + css + '</head><body>' + (isMini ? '<div class="thermal-print">' : '') + printRoot.innerHTML + (isMini ? '</div>' : '') + '</body></html>');
+            newWin.document.write(markup);
             newWin.document.close();
-            setTimeout(function(){
-                newWin.focus();
-                newWin.print();
-                setTimeout(function(){ try { newWin.close(); } catch (e) {} }, 400);
-            }, 450);
+            if ('onafterprint' in newWin) {
+                newWin.onafterprint = function () {
+                    try { newWin.close(); } catch (e) {}
+                };
+            }
         });
 
         $(document).on("click", "table.sale-list tbody .add-payment", function() {
@@ -1044,6 +1064,11 @@
         function saleDetails(sale){
             $("#sale-details input[name='sale_id']").val(sale[13]);
             if (isMiniInvoice) {
+                $('table.product-sale-list').hide();
+            } else {
+                $('table.product-sale-list').show();
+            }
+            if (isMiniInvoice) {
                 var sitePhone = String(sale[6] || '').trim();
                 if (sitePhone && sitePhone.toLowerCase() !== 'null') {
                     $('#sale-site-phone').text(sitePhone).show();
@@ -1091,6 +1116,60 @@
             }
 
             $.get('sales/product_sale/' + sale[13], function(data){
+                if (isMiniInvoice) {
+                    var money = function (n) {
+                        var v = parseSaleAmt(n);
+                        return v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    };
+                    var row = function (label, amount, bold) {
+                        var open = bold ? '<strong>' : '';
+                        var close = bold ? '</strong>' : '';
+                        return '<div class="w2k-thermal-row"><span>' + open + label + close + '</span><span>' + open + money(amount) + close + '</span></div>';
+                    };
+                    var html = '';
+                    var lineTax = 0;
+                    $.each(data[0] || [], function (index) {
+                        var qty = parseSaleAmt(data[1][index]);
+                        var total = parseSaleAmt(data[6][index]);
+                        var unit = qty ? (total / qty) : 0;
+                        var tax = parseSaleAmt(data[3][index]);
+                        var rate = parseSaleAmt(data[4][index]);
+                        lineTax += tax;
+                        html += '<div class="w2k-thermal-name">' + (data[0][index] || '') + '</div>';
+                        html += row((qty + 0) + ' × ' + money(unit), total, false);
+                        html += row('{{ trans('file.Tax') }}' + (rate > 0 ? ' (' + rate + '%)' : ''), tax, false);
+                    });
+                    html += '<hr class="w2k-thermal-rule">';
+                    html += row('{{ trans('file.Discount') }}', parseSaleAmt(sale[19]) + parseSaleAmt(sale[29]), false);
+                    var orderTax = parseSaleAmt(sale[17]);
+                    var orderRate = parseSaleAmt(sale[18]);
+                    html += row('{{ trans('file.Tax') }}' + (orderTax > 0 && orderRate > 0 ? ' (' + orderRate + '%)' : ''), lineTax + orderTax, false);
+                    html += row('{{ trans('file.Total') }}', sale[21], true);
+                    html += row('{{ trans('file.Paying Amount') }}', sale[22], false);
+                    html += row('{{ trans('file.Pending Amount') }}', Math.max(0, parseSaleAmt(sale[21]) - parseSaleAmt(sale[22])), false);
+                    var meta = data.meta || {};
+                    $.each(meta.payments || [], function (_, pay) {
+                        html += row(pay.method || '', pay.amount, false);
+                    });
+                    html += '<div class="w2k-thermal-row"><span>{{ trans('file.Payment Status') }}</span><span>' + (meta.payment_status || '') + '</span></div>';
+                    if (meta.words) {
+                        html += '<div style="margin-top:8px;"><strong>{{ trans('file.In Words') }}:</strong> ' + (meta.currency ? meta.currency + ' ' : '') + meta.words + '</div>';
+                    }
+                    if (meta.when) {
+                        $('#sale-ref-line').html(
+                            '<strong>{{trans("file.reference")}}:</strong> ' + (sale[1] || '') + '<br>' +
+                            '<strong>{{trans("file.Date")}}:</strong> ' + meta.when + '<br>' +
+                            '<strong>{{trans("file.Sale Status")}}:</strong> ' + (sale[2] || '') + '<br>' +
+                            '<strong>{{trans("file.customer")}}:</strong> ' + (sale[9] || '') + '<br>' +
+                            '<strong>{{trans("file.Phone Number")}}:</strong> ' + (sale[10] || '') + '<br>' +
+                            '<strong>{{trans("file.City")}}:</strong> ' + (sale[12] || '')
+                        );
+                    }
+                    $('#sale-content').html(html);
+                    $('table.product-sale-list').hide();
+                    return;
+                }
+                $('table.product-sale-list').show();
                 $(".product-sale-list tbody").remove();
                 var name_code = data[0];
                 var qty = data[1];

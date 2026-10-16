@@ -281,6 +281,8 @@
                     $lineTotal = (float) ($product_sale_data->total ?? 0);
                     $qty = (float) ($product_sale_data->qty ?: 0);
                     $unit_price = $qty ? ($lineTotal / $qty) : 0;
+                    $lineTax = (float) ($product_sale_data->tax ?? 0);
+                    $lineTaxRate = (float) ($product_sale_data->tax_rate ?? 0);
                 @endphp
                 <tr>
                     <td colspan="2" class="thermal-name">{{ $product_name }}</td>
@@ -289,13 +291,28 @@
                     <td>{{ $qty + 0 }} × {{ number_format($unit_price, 2) }}</td>
                     <td class="amt">{{ number_format($lineTotal, 2) }}</td>
                 </tr>
+                <tr>
+                    <td>{{ trans('file.Tax') }}@if($lineTaxRate > 0) ({{ rtrim(rtrim(number_format($lineTaxRate, 2), '0'), '.') }}%)@endif</td>
+                    <td class="amt">{{ number_format($lineTax, 2) }}</td>
+                </tr>
             @endforeach
         </table>
         <hr class="thermal-rule">
         <table class="thermal-lines">
+            @php
+                $lineTaxTotal = 0;
+                foreach ($lims_product_sale_data as $taxLine) {
+                    $lineTaxTotal += (float) ($taxLine->tax ?? 0);
+                }
+                $taxTotal = $lineTaxTotal + $orderTax;
+            @endphp
             <tr>
                 <td>{{ trans('file.Discount') }}</td>
                 <td class="amt">{{ number_format($orderDiscount + $couponDiscount, 2) }}</td>
+            </tr>
+            <tr>
+                <td>{{ trans('file.Tax') }}@if($orderTax > 0 && (float) ($lims_sale_data->order_tax_rate ?? 0) > 0) ({{ rtrim(rtrim(number_format((float) $lims_sale_data->order_tax_rate, 2), '0'), '.') }}%)@endif</td>
+                <td class="amt">{{ number_format($taxTotal, 2) }}</td>
             </tr>
             <tr>
                 <td><strong>{{ trans('file.Total') }}</strong></td>

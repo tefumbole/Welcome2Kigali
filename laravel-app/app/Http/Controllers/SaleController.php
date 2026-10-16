@@ -2275,6 +2275,54 @@ class SaleController extends Controller
             $product_sale[5][$key] = $product_sale_data->discount;
             $product_sale[6][$key] = $product_sale_data->total;
         }
+        if (! isset($product_sale)) {
+            $product_sale = [[], [], [], [], [], [], [], []];
+        }
+        $saleRow = Sale::find($id);
+        $payments = [];
+        $paymentStatus = '';
+        $words = '';
+        $currencyCode = '';
+        if ($saleRow) {
+            foreach (Payment::where('sale_id', $id)->get() as $payment) {
+                $payments[] = [
+                    'method' => (string) $payment->paying_method,
+                    'amount' => (float) $payment->amount,
+                ];
+            }
+            if ((int) $saleRow->payment_status === 1) {
+                $paymentStatus = trans('file.Pending');
+            } elseif ((int) $saleRow->payment_status === 2) {
+                $paymentStatus = trans('file.Due');
+            } elseif ((int) $saleRow->payment_status === 3) {
+                $paymentStatus = trans('file.Partial');
+            } else {
+                $paymentStatus = trans('file.Paid');
+            }
+            try {
+                $numberToWords = new NumberToWords();
+                $locale = \App::getLocale();
+                if (in_array($locale, ['ar', 'hi', 'vi', 'en-gb'], true)) {
+                    $locale = 'en';
+                }
+                $words = str_replace('-', ' ', $numberToWords->getNumberTransformer($locale)->toWords($saleRow->grand_total));
+            } catch (\Throwable $e) {
+                $words = '';
+            }
+            try {
+                $currencyCode = optional(\App\Currency::find(optional(GeneralSetting::first())->currency))->code ?: '';
+            } catch (\Throwable $e) {
+                $currencyCode = '';
+            }
+        }
+        $product_sale['meta'] = [
+            'payments' => $payments,
+            'payment_status' => $paymentStatus,
+            'words' => $words,
+            'currency' => $currencyCode,
+            'when' => $saleRow && $saleRow->created_at ? $saleRow->created_at->format('d-m-Y H:i') : '',
+        ];
+
         return $product_sale;
     }
 

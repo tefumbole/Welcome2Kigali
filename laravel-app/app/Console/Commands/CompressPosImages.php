@@ -28,6 +28,29 @@ class CompressPosImages extends Command
             }
         }
 
+        $placeholder = public_path('images/product/zummXD2dvAtI.png');
+        if (is_file($placeholder) && filesize($placeholder) > PosProductImage::MAX_BYTES && function_exists('imagecreatefrompng')) {
+            $src = @imagecreatefrompng($placeholder);
+            if ($src) {
+                $ow = imagesx($src);
+                $oh = imagesy($src);
+                $edge = 160;
+                $scale = ($ow > $edge || $oh > $edge) ? $edge / max($ow, $oh) : 1;
+                $nw = max(1, (int) round($ow * $scale));
+                $nh = max(1, (int) round($oh * $scale));
+                $dst = imagecreatetruecolor($nw, $nh);
+                imagealphablending($dst, false);
+                imagesavealpha($dst, true);
+                $clear = imagecolorallocatealpha($dst, 0, 0, 0, 127);
+                imagefilledrectangle($dst, 0, 0, $nw, $nh, $clear);
+                imagecopyresampled($dst, $src, 0, 0, 0, 0, $nw, $nh, $ow, $oh);
+                imagepng($dst, $placeholder, 9);
+                imagedestroy($dst);
+                imagedestroy($src);
+                @chmod($placeholder, 0644);
+            }
+        }
+
         $roots = [
             public_path('images/product'),
             public_path('images/category'),
