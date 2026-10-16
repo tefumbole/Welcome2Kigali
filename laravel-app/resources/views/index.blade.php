@@ -103,7 +103,9 @@
             ['role_id', $role->id],
         ])->first()
         : null;
-    if (! $dashboard_active && (int) Auth::user()->role_id <= 2) {
+    $roleLabel = strtolower((string) ($role->name ?? ''));
+    // W2K Admin is role 4 and Owner is role 5. role_id 1–2 are internship roles.
+    if (! $dashboard_active && in_array($roleLabel, ['admin', 'owner'], true)) {
         $dashboard_active = true;
     }
  @endphp
@@ -226,7 +228,7 @@
           <p>Frequently used management tools</p>
         </div>
         <div class="beyond-quick-grid">
-          @if(Auth::user()->role_id <= 2)
+          @if(in_array(strtolower((string) optional($role)->name), ['admin', 'owner'], true))
           <a href="{{ route('user.index') }}" class="beyond-quick-card">
             <div class="icon-wrap blue" style="background:rgba(11,63,144,.12);color:#0b3f90;"><i class="dripicons-user-group"></i></div>
             <div>
