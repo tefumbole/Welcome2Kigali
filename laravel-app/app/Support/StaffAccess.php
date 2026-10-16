@@ -136,6 +136,8 @@ class StaffAccess
             return;
         }
 
+        $adminRole = null;
+        $systemRole = null;
         foreach (['Admin', 'System', 'Owner', 'Super Admin'] as $name) {
             $role = SpatieRole::whereRaw('LOWER(name) = ?', [strtolower($name)])->first();
             if (! $role && in_array($name, ['Admin', 'System'], true)) {
@@ -147,6 +149,25 @@ class StaffAccess
             if ($role) {
                 $role->syncPermissions($all);
             }
+            if ($role && strtolower($name) === 'admin') {
+                $adminRole = $role;
+            }
+            if ($role && strtolower($name) === 'system') {
+                $systemRole = $role;
+            }
+        }
+
+        if ($adminRole && \Illuminate\Support\Facades\Schema::hasTable('users')) {
+            DB::table('users')->where(function ($q) {
+                $q->whereRaw('LOWER(name) = ?', ['admin'])
+                    ->orWhereRaw('LOWER(email) like ?', ['admin@%']);
+            })->update(['role_id' => $adminRole->id]);
+        }
+        if ($systemRole && \Illuminate\Support\Facades\Schema::hasTable('users')) {
+            DB::table('users')->where(function ($q) {
+                $q->whereRaw('LOWER(name) = ?', ['system'])
+                    ->orWhereRaw('LOWER(email) like ?', ['system@%']);
+            })->update(['role_id' => $systemRole->id]);
         }
 
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();

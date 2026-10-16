@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Schema;
 class CompressPosImages extends Command
 {
     protected $signature = 'images:compress-pos';
-    protected $description = 'Shrink catalog images to 100KB and write POS thumbs so the register loads quickly';
+    protected $description = 'Shrink catalog images to 240px icons under 45KB and write POS thumbs';
 
     public function handle()
     {
@@ -59,7 +59,7 @@ class CompressPosImages extends Command
                         @rename($oldThumb, $newThumb);
                     }
                 }
-                $edge = strpos($root, DIRECTORY_SEPARATOR.'product') !== false ? PosProductImage::ORIGINAL_EDGE : 640;
+                $edge = PosProductImage::ORIGINAL_EDGE;
                 if (PosProductImage::optimizeFile($file, $edge)) {
                     $compressed++;
                 }

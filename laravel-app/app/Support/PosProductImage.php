@@ -4,9 +4,11 @@ namespace App\Support;
 
 class PosProductImage
 {
-    const MAX_BYTES = 102400;
-    const THUMB_EDGE = 320;
-    const ORIGINAL_EDGE = 800;
+    // POS tiles draw the photo at about 70–120px. 240px is 2× that, so it stays sharp
+    // on a retina screen and a JPEG stays well under 45KB.
+    const MAX_BYTES = 46080;
+    const THUMB_EDGE = 240;
+    const ORIGINAL_EDGE = 240;
 
     public static function url($filename, $ensureThumb = false)
     {
@@ -100,7 +102,9 @@ class PosProductImage
             return false;
         }
         $thumb = public_path('images/product/thumbs/'.$filename);
-        if (is_file($thumb) && filesize($thumb) > 0 && filesize($thumb) <= self::MAX_BYTES) {
+        $thumbInfo = is_file($thumb) ? @getimagesize($thumb) : false;
+        $thumbWide = $thumbInfo ? max((int) $thumbInfo[0], (int) $thumbInfo[1]) : 0;
+        if (is_file($thumb) && filesize($thumb) > 0 && filesize($thumb) <= self::MAX_BYTES && $thumbWide > 0 && $thumbWide <= self::THUMB_EDGE) {
             return true;
         }
         $orig = public_path('images/product/'.$filename);
@@ -199,7 +203,15 @@ class PosProductImage
         if (! in_array($destExt, ['jpg', 'jpeg'], true)) {
             $destPath = preg_replace('/\.[^.]+$/', '.jpg', $destPath);
         }
-        $edges = [(int) $maxEdge, 640, 480, 320, 240];
+        $edges = [];
+        foreach ([(int) $maxEdge, 200, 160, 120] as $edge) {
+            if ($edge > 0 && $edge <= (int) $maxEdge && ! in_array($edge, $edges, true)) {
+                $edges[] = $edge;
+            }
+        }
+        if (! $edges) {
+            $edges = [240];
+        }
         $qualities = [(int) $startQuality, 74, 66, 58, 50, 42];
         $ok = false;
         foreach ($edges as $edge) {

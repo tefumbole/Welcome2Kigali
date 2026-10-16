@@ -1121,6 +1121,17 @@
                             ['permission_id', $adjustment->id],
                             ['role_id', $roleId]
                         ])->first() : null;
+                        if (\App\Support\StaffAccess::isSuperAdmin()) {
+                            try {
+                                $all_permission = \Spatie\Permission\Models\Permission::pluck('name')->all();
+                            } catch (\Throwable $e) {
+                            }
+                            $category_permission_active = $category_permission_active ?: true;
+                            $index_permission_active = $index_permission_active ?: true;
+                            $print_barcode_active = $print_barcode_active ?: true;
+                            $stock_count_active = $stock_count_active ?: true;
+                            $adjustment_active = $adjustment_active ?: true;
+                        }
                         ?>
                         @if($category_permission_active || $index_permission_active || $print_barcode_active || $stock_count_active || $adjustment_active || $manageSite)
                             <li><a href="#product" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-list"></i><span>{{ __('sidebar.product') }}</span><span></a>
@@ -2935,7 +2946,7 @@
                         </ul>
                     </li>
                     <li class="nav-item"><a id="btnFullscreen" data-toggle="tooltip" title="{{trans('file.Full Screen')}}"><i class="dripicons-expand"></i></a></li>
-                    @if(\Auth::user()->role_id <= 2)
+                    @if(\App\Support\StaffAccess::isSuperAdmin() || \Auth::user()->role_id <= 2)
                       <li class="nav-item"><a href="{{route('cashRegister.index')}}" data-toggle="tooltip" title="{{trans('file.Cash Register List')}}"><i class="dripicons-archive"></i></a></li>
                     @endif
                     @if($product_qty_alert_active)
