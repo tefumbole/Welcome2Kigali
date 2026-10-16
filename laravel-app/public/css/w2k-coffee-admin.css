@@ -470,3 +470,53 @@ body:has(.site-content-tabs-nav) #beyond-module-tabs {
     border-color: #C5A059 !important;
     box-shadow: 0 0 0 0.12rem rgba(197, 160, 89, 0.25) !important;
 }
+
+.w2k-dash-shortcuts {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    gap: 16px;
+    margin: 0 0 24px;
+}
+.w2k-dash-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 132px;
+    padding: 18px 12px;
+    background: #fff;
+    border: 1px solid #eee4d0;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(10, 10, 10, 0.05);
+    text-decoration: none !important;
+    color: #0A0A0A !important;
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.w2k-dash-icon:hover {
+    transform: translateY(-2px);
+    border-color: #C5A059;
+    box-shadow: 0 12px 28px rgba(10, 10, 10, 0.1);
+    color: #0A0A0A !important;
+}
+.w2k-dash-icon-mark {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+    background: rgba(197, 160, 89, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.w2k-dash-icon-mark i,
+.w2k-dash-icon-mark i::before {
+    font-size: 26px;
+    color: #C5A059 !important;
+    line-height: 1;
+}
+.w2k-dash-icon-label {
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.25;
+}

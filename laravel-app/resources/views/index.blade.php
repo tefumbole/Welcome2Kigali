@@ -103,6 +103,9 @@
             ['role_id', $role->id],
         ])->first()
         : null;
+    if (! $dashboard_active && (int) Auth::user()->role_id <= 2) {
+        $dashboard_active = true;
+    }
  @endphp
 @if($dashboard_active)
 @php
@@ -145,6 +148,8 @@
       @endif
     </div>
   </div>
+
+  <div id="w2k-dash-icons" class="w2k-dash-shortcuts"></div>
 
   <div class="row">
     <div class="col-xl-9">
@@ -626,6 +631,15 @@
         </div>
       </section>
   </div>
+</div>
+@else
+<div class="beyond-dashboard">
+  <div class="beyond-dashboard-hero">
+    <div>
+      <h1>{{ __('sidebar.dashboard') }}</h1>
+    </div>
+  </div>
+  <div id="w2k-dash-icons" class="w2k-dash-shortcuts"></div>
 </div>
 @endif
 

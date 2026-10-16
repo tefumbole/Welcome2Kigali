@@ -1072,7 +1072,7 @@
                 <div class="main-menu">
                     <ul id="side-main-menu" class="side-menu list-unstyled">
                         @if(Auth::user()->role_id != 7)
-                            <li><a href="{{ url('/admin') }}"> <i class="dripicons-meter"></i><span>{{ __('sidebar.dashboard') }}</span></a></li>
+                            <li class="{{ request()->is('admin') ? 'active' : '' }}"><a href="{{ url('/admin') }}" data-nav-key="dashboard"> <i class="dripicons-graph-bar"></i><span>{{ __('sidebar.dashboard') }}</span></a></li>
                         @endif
                         @if(\App\Support\StaffAccess::canManageSiteContent())
                             <li><a href="{{ url('/admin/leaders') }}" data-nav-key="leaders"> <i class="dripicons-user-group"></i><span>{{ __('sidebar.leaders') }}</span></a></li>
@@ -3852,16 +3852,68 @@
                   });
               }
 
+              function firstRealHref($root) {
+                  var href = '';
+                  $root.find('> li > a').each(function () {
+                      if (href) return;
+                      var $link = $(this);
+                      if ($link.is('[data-w2k-help-item]') || $link.closest('li').hasClass('w2k-module-help')) return;
+                      var candidate = $link.attr('href') || '';
+                      if (candidate && candidate !== '#' && candidate.indexOf('javascript') !== 0) {
+                          href = candidate;
+                      }
+                  });
+                  return href;
+              }
+
+              function sidebarShortcutItems() {
+                  var items = [];
+                  $('#side-main-menu > li').each(function () {
+                      var $li = $(this);
+                      if ($li.css('display') === 'none') return;
+                      var $link = $li.children('a').first();
+                      if (!$link.length) return;
+                      var label = $.trim($link.find('span').first().text());
+                      if (!label) return;
+                      var href = $link.attr('href') || '';
+                      if (/\/admin\/?$/.test(href) || /\/home\/?$/.test(href) || /\/dashboard\/?$/.test(href)) return;
+                      if (href.charAt(0) === '#') {
+                          href = firstRealHref($(href));
+                      }
+                      if (!href || href === '#') return;
+                      items.push({
+                          label: label,
+                          href: href,
+                          icon: $link.find('i').first().attr('class') || 'dripicons-link'
+                      });
+                  });
+                  return items;
+              }
+
+              function fillDashboardIcons() {
+                  var $host = $('#w2k-dash-icons');
+                  if (!$host.length) return;
+                  $host.empty();
+                  sidebarShortcutItems().forEach(function (item) {
+                      var $card = $('<a>', { 'class': 'w2k-dash-icon', href: item.href });
+                      $card.append($('<span>', { 'class': 'w2k-dash-icon-mark' }).append($('<i>', { 'class': item.icon })));
+                      $card.append($('<span>', { 'class': 'w2k-dash-icon-label', text: item.label }));
+                      $host.append($card);
+                  });
+              }
+
               function buildModuleTabs() {
                   appendHelpLinksToSubmenus();
                   var path = window.location.pathname || '';
                   var onHelpPage = path.indexOf('/admin/help') !== -1;
                   var onBookingRequest = path.indexOf('/bookings/requests') !== -1;
+                  var onDashboard = /\/admin\/?$/.test(path) || /\/home\/?$/.test(path);
                   var $nav = $('#beyond-module-tabs-nav');
                   var $subNav = $('#beyond-module-subtabs-nav');
                   var $tabsWrap = $('#beyond-module-tabs');
 
                   $subNav.empty().removeClass('is-visible');
+                  fillDashboardIcons();
 
                   if ($('.tm-nav, .mm-nav, .site-content-tabs-nav').length) {
                       $nav.empty();
@@ -3877,8 +3929,20 @@
                   }
 
                   if (!$activeItem.length) {
-                      $('#beyond-module-tabs-label').text('Guide');
+                      $('#beyond-module-tabs-label').text(onDashboard ? 'Dashboard' : 'Guide');
                       $nav.empty();
+                      if (onDashboard) {
+                          var tones = ['tone-blue', 'tone-gold', 'tone-purple', 'tone-pink', 'tone-green', 'tone-orange', 'tone-teal', 'tone-red'];
+                          sidebarShortcutItems().forEach(function (item, index) {
+                              var $tab = $('<a>', {
+                                  'class': 'beyond-module-tab ' + tones[index % tones.length],
+                                  href: item.href
+                              });
+                              $tab.append($('<i>', { 'class': item.icon }));
+                              $tab.append($('<span>').text(item.label));
+                              $nav.append($tab);
+                          });
+                      }
                       appendHelpTab($nav, helpUrl, onHelpPage);
                       $tabsWrap.addClass('is-visible');
                       return;

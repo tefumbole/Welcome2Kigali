@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'dashboard' => 'Ahabanza',
+    'dashboard' => 'Dashibodi',
     'site-content' => 'Ibirimo by’urubuga',
     'leaders' => 'Ubuyobozi',
     'invitations' => 'Imatangazo',

@@ -51,8 +51,43 @@
         .btn-info { background: #6c757d; }
         .btn-primary { background: #6449e7; }
         .btn-danger { background: #c0392b; }
-        @page { size: {{ $isMini ? '80mm auto' : 'A4' }}; margin: {{ $isMini ? '4mm' : '8mm' }}; }
-        .sheet { position: relative; margin: 0 auto; padding: {{ $isBeyond ? '0' : '10px' }}; max-width: {{ $isBeyond ? '210mm' : ($isMini ? '80mm' : '400px') }}; }
+        @page { size: A4 portrait; margin: {{ $isMini ? '0' : '8mm' }}; }
+        .sheet { position: relative; margin: 0 auto; padding: {{ $isBeyond ? '0' : '10px' }}; max-width: {{ $isBeyond ? '210mm' : '400px' }}; }
+        @if($isMini)
+        body { background: #ece7df; }
+        .sheet.thermal-sheet {
+            width: 72mm;
+            max-width: 72mm;
+            margin: 16px auto;
+            padding: 3mm 3mm 5mm;
+            background: #fff;
+            box-shadow: 0 8px 22px rgba(0,0,0,.14);
+        }
+        .thermal-logo { display: block; height: 16mm; width: auto; max-width: 32mm; margin: 0 auto 2mm; object-fit: contain; }
+        .thermal-brand { margin: 0; text-align: center; font-size: 13px; font-weight: 700; line-height: 1.25; }
+        .thermal-sub { margin: 1mm 0 0; text-align: center; font-size: 10px; }
+        .thermal-rule { border: 0; border-top: 1px dashed #222; margin: 2.2mm 0; }
+        .thermal-meta { font-size: 10.5px; line-height: 1.35; }
+        table.thermal-lines { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+        table.thermal-lines td { padding: 0.6mm 0; vertical-align: top; }
+        table.thermal-lines .amt { text-align: right; white-space: nowrap; padding-left: 2mm; }
+        .thermal-name { font-weight: 700; }
+        .thermal-thanks { text-align: center; font-size: 10px; margin: 2mm 0; }
+        .thermal-qr, .thermal-bar { text-align: center; }
+        .thermal-qr img { width: 28mm; height: 28mm; }
+        .thermal-bar img { width: 62mm; height: 11mm; }
+        @media print {
+            .hidden-print { display: none !important; }
+            html, body { width: 210mm; margin: 0 !important; padding: 0 !important; background: #fff !important; }
+            .sheet.thermal-sheet {
+                width: 72mm !important;
+                max-width: 72mm !important;
+                margin: 0 !important;
+                padding: 2mm 2.5mm 4mm !important;
+                box-shadow: none !important;
+            }
+        }
+        @endif
         .letter-header {
             display: block;
             width: 100%;
@@ -165,6 +200,7 @@
         .centered { text-align: center; }
         @media print {
             .hidden-print { display: none !important; }
+            @if(! $isMini)
             @page { size: A4; margin: 0; }
             body { font-size: 10.5px; margin: 0; }
             .sheet { max-width: none; width: 100%; padding: 0; }
@@ -185,6 +221,7 @@
             }
             .content-pad { padding: 8px 12mm 78px; }
             .watermark { opacity: 0.06; }
+            @endif
         }
     </style>
 </head>
@@ -205,7 +242,103 @@
     </table>
 </div>
 
-<div class="sheet">
+<div class="sheet{{ $isMini ? ' thermal-sheet' : '' }}">
+@if($isMini)
+    <div class="content">
+        <img class="thermal-logo" src="{{ \App\Support\SiteBrand::logoUrl($general_setting) }}" alt="{{ $general_setting->site_title }}">
+        <p class="thermal-brand">{{ $general_setting->site_title }}</p>
+        @if(!empty($lims_biller_data->company_name))
+            <p class="thermal-sub">{{ $lims_biller_data->company_name }}</p>
+        @endif
+        <p class="thermal-sub">Sales receipt</p>
+        <hr class="thermal-rule">
+        <div class="thermal-meta">
+            <div><strong>{{ trans('file.reference') }}:</strong> {{ $lims_sale_data->reference_no }}</div>
+            <div><strong>{{ trans('file.Date') }}:</strong> {{ $lims_sale_data->created_at->format('d-m-Y H:i') }}</div>
+            <div><strong>{{ trans('file.To') }}:</strong> {{ @$lims_customer_data->name }}</div>
+            @if(@$lims_customer_data->phone_number)<div>{{ $lims_customer_data->phone_number }}</div>@endif
+            @if(@$lims_customer_data->email)<div>{{ $lims_customer_data->email }}</div>@endif
+            @if(@$lims_warehouse_data->name)<div><strong>{{ trans('file.Warehouse') }}:</strong> {{ $lims_warehouse_data->name }}</div>@endif
+            <div><strong>{{ trans('file.Sale Status') }}:</strong> {{ $saleStatus }}</div>
+        </div>
+        <hr class="thermal-rule">
+        <table class="thermal-lines">
+            @foreach($lims_product_sale_data as $product_sale_data)
+                @php
+                    $lims_product_data = \App\Product::find($product_sale_data->product_id);
+                    $product_name = $lims_product_data->name ?? 'Item';
+                    if ($product_sale_data->variant_id) {
+                        $variant_data = \App\Variant::find($product_sale_data->variant_id);
+                        if (!empty($variant_data->name)) {
+                            $product_name .= ' ['.$variant_data->name.']';
+                        }
+                    }
+                    $lineTotal = (float) ($product_sale_data->total ?? 0);
+                    $qty = (float) ($product_sale_data->qty ?: 0);
+                    $unit_price = $qty ? ($lineTotal / $qty) : 0;
+                @endphp
+                <tr>
+                    <td colspan="2" class="thermal-name">{{ $product_name }}</td>
+                </tr>
+                <tr>
+                    <td>{{ $qty + 0 }} × {{ number_format($unit_price, 2) }}</td>
+                    <td class="amt">{{ number_format($lineTotal, 2) }}</td>
+                </tr>
+            @endforeach
+        </table>
+        <hr class="thermal-rule">
+        <table class="thermal-lines">
+            <tr>
+                <td><strong>{{ trans('file.grand total') }}</strong></td>
+                <td class="amt"><strong>{{ number_format((float) $lims_sale_data->grand_total, 2) }}</strong></td>
+            </tr>
+            <tr>
+                <td>{{ trans('file.Paying Amount') }}</td>
+                <td class="amt">{{ number_format($paidAmount, 2) }}</td>
+            </tr>
+            <tr>
+                <td>{{ trans('file.Pending Amount') }}</td>
+                <td class="amt">{{ number_format(max(0, $dueAmount), 2) }}</td>
+            </tr>
+            @foreach($lims_payment_data as $payment_data)
+                <tr>
+                    <td>{{ $payment_data->paying_method }}</td>
+                    <td class="amt">{{ number_format((float) $payment_data->amount, 2) }}</td>
+                </tr>
+            @endforeach
+            <tr>
+                <td>{{ trans('file.Payment Status') }}</td>
+                <td class="amt">
+                    @if($lims_sale_data->payment_status == 1) {{ trans('file.Pending') }}
+                    @elseif($lims_sale_data->payment_status == 2) {{ trans('file.Due') }}
+                    @elseif($lims_sale_data->payment_status == 3) {{ trans('file.Partial') }}
+                    @else {{ trans('file.Paid') }}
+                    @endif
+                </td>
+            </tr>
+        </table>
+        <div class="thermal-meta" style="margin-top:2mm;">
+            <strong>{{ trans('file.In Words') }}:</strong>
+            @if($general_setting->currency_position == 'prefix')
+                {{ $currency->code }} {{ str_replace('-', ' ', $numberInWords) }}
+            @else
+                {{ str_replace('-', ' ', $numberInWords) }} {{ $currency->code }}
+            @endif
+        </div>
+        <p class="thermal-thanks">{{ trans('file.Thank you for shopping with us. Please come again') }}</p>
+        @include('pdf.partials._created_by_signature', [
+            'createdUser' => $lims_sale_data->user ?? null,
+            'stampDate' => $lims_sale_data->created_at ?? null,
+            'createdClass' => 'created-by',
+        ])
+        <div class="thermal-qr">
+            <img src="{{ \App\Support\SaleInvoiceQr::dataUri($lims_sale_data, true) }}" alt="qrcode">
+        </div>
+        <div class="thermal-bar">
+            <?php echo '<img src="data:image/png;base64,'.DNS1D::getBarcodePNG($lims_sale_data->reference_no, 'C128').'" alt="barcode">'; ?>
+        </div>
+    </div>
+@else
     @if($isBeyond && $headerFile)
         <img class="letter-header" src="{{ url('public/logo', $headerFile) }}" alt="">
     @endif
@@ -431,6 +564,7 @@
     @if($isBeyond && $footerFile)
         <img class="letter-footer" id="print-footer" src="{{ url('public/logo', $footerFile) }}" alt="">
     @endif
+@endif
 </div>
 
 <script type="text/javascript">

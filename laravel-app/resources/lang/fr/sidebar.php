@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'dashboard' => 'Accueil',
+    'dashboard' => 'Tableau de bord',
     'site-content' => 'Contenu du site',
     'leaders' => 'Direction',
     'invitations' => 'Invitations',

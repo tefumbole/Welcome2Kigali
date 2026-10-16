@@ -140,6 +140,9 @@ class SiteMenu
             if ($k === 'quotation' && strcasecmp($custom, 'Quotes') === 0) {
                 $custom = '';
             }
+            if ($k === 'dashboard' && in_array(strtolower($custom), ['home', 'accueil', 'ahabanza'], true)) {
+                $custom = '';
+            }
             if ($custom !== '' && $stock !== '' && strcasecmp($custom, $stock) === 0) {
                 $custom = '';
             }

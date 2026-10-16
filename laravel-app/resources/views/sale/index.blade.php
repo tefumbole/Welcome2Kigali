@@ -117,6 +117,9 @@
                         <img src="{{url('public/logo', $general_setting->email_header)}}" alt="" class="sale-letter-header" style="display:block;width:100%;max-height:90px;object-fit:contain;margin:0 0 6px;">
                         <img src="{{url('public/logo', $general_setting->email_water_mark)}}" alt="" class="sale-watermark" style="width:42%;position:absolute;left:29%;top:34%;opacity:0.07;pointer-events:none;z-index:0;">
                     @else
+                        @if(($general_setting->invoice_format ?? '') === 'mini')
+                            <img src="{{ \App\Support\SiteBrand::logoUrl($general_setting) }}" alt="{{ $general_setting->site_title }}" style="display:block;height:16mm;width:auto;max-width:32mm;object-fit:contain;margin:0 auto 4px;">
+                        @endif
                         <h3 class="modal-title text-center">{{$general_setting->site_title}}</h3>
                     @endif
                     <div class="mb-2" style="position:relative;z-index:1;">
@@ -516,7 +519,7 @@
             }
             var css = '<link rel="stylesheet" href="<?php echo asset('public/vendor/bootstrap/css/bootstrap.min.css') ?>" type="text/css">' +
                 '<style type="text/css">' +
-                (isMini ? '@page{size:80mm auto;margin:4mm}body{margin:0 auto;width:72mm;background:#fff;font-size:11px;color:#1f2a44}' : '@page{size:A4;margin:10mm}body{margin:10px;background:#fff;font-size:12px;color:#1f2a44}') +
+                (isMini ? '@page{size:A4 portrait;margin:0}html,body{margin:0;padding:0;background:#fff;width:210mm}.thermal-print{width:72mm;max-width:72mm;margin:0;padding:2mm 2.5mm 4mm;background:#fff;font-size:11px;color:#111}' : '@page{size:A4;margin:10mm}body{margin:10px;background:#fff;font-size:12px;color:#1f2a44}') +
                 '.d-print-none{display:none!important}' +
                 '.modal-content{border:0;box-shadow:none}' +
                 '.sale-letter-header{max-height:90px!important;object-fit:contain}' +
@@ -526,7 +529,7 @@
                 'table.product-sale-list th,table.product-sale-list td{padding:4px 6px}' +
                 '</style>';
             newWin.document.open();
-            newWin.document.write('<!DOCTYPE html><html><head><title>Invoice</title>' + css + '</head><body>' + printRoot.innerHTML + '</body></html>');
+            newWin.document.write('<!DOCTYPE html><html><head><title>Invoice</title>' + css + '</head><body>' + (isMini ? '<div class="thermal-print">' : '') + printRoot.innerHTML + (isMini ? '</div>' : '') + '</body></html>');
             newWin.document.close();
             setTimeout(function(){
                 newWin.focus();
