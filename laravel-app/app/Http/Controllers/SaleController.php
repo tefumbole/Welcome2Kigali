@@ -1441,7 +1441,7 @@ class SaleController extends Controller
      */
     protected function buildSaleInvoicePdfBinary($id)
     {
-        $lims_sale_data = Sale::find($id);
+        $lims_sale_data = Sale::with('user')->find($id);
         if (! $lims_sale_data) {
             throw new \RuntimeException('Sale not found');
         }
@@ -1475,8 +1475,10 @@ class SaleController extends Controller
             'numberInWords' => $numberInWords,
         ];
         if ($format === 'mini') {
-            $height = 320 + (max(1, $lims_product_sale_data->count()) * 28);
-            $pdf = PDF::loadView('pdf.sale_mini', $viewData)->setPaper([0, 0, 226.77, $height], 'portrait');
+            // Wide enough for the same table shown in the sales invoice modal.
+            // The old 80mm page plus DomPDF's default margin clipped the amounts.
+            $height = 460 + (max(1, $lims_product_sale_data->count()) * 48);
+            $pdf = PDF::loadView('pdf.sale_mini', $viewData)->setPaper([0, 0, 300, $height], 'portrait');
         } else {
             $pdf = PDF::loadView('pdf.sale_pdf', $viewData)->setPaper('a4', 'portrait');
         }

@@ -149,8 +149,6 @@
     </div>
   </div>
 
-  <div id="w2k-dash-icons" class="w2k-dash-shortcuts"></div>
-
   <div class="row">
     <div class="col-xl-9">
       <div class="beyond-stat-grid">
@@ -631,15 +629,6 @@
         </div>
       </section>
   </div>
-</div>
-@else
-<div class="beyond-dashboard">
-  <div class="beyond-dashboard-hero">
-    <div>
-      <h1>{{ __('sidebar.dashboard') }}</h1>
-    </div>
-  </div>
-  <div id="w2k-dash-icons" class="w2k-dash-shortcuts"></div>
 </div>
 @endif
 

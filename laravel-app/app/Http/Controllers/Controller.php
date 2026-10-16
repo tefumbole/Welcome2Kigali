@@ -681,22 +681,16 @@ class Controller extends BaseController
                 $wa_path = $this->resolveWhatsAppDocumentUrl($path);
             }
 
-            $customerName = $lims_customer_data->name ?? 'Customer';
-            $caption = $captionOverride !== null && $captionOverride !== ''
-                ? $captionOverride
-                : \App\Support\WhatsAppMessage::forRecipient($lims_customer_data, function () use ($customerName, $filename) {
-                    return \App\Support\WhatsAppMessage::statusBlock('📄', \App\Support\WhatsAppMessage::t('document_attached'))
-                        .\App\Support\WhatsAppMessage::greeting($customerName)
-                        .\App\Support\WhatsAppMessage::t('document_please_find', ['file' => $filename])
-                        .\App\Support\WhatsAppMessage::footer();
-                });
-
-            try {
-                $this->sendWasenderTextMessage(
-                    $lims_customer_data->phone_number ?? $lims_customer_data->phone,
-                    $caption
-                );
-            } catch (\Exception $e) {
+            // Send the file only. A separate "document attached" text is not sent.
+            // Callers that pass their own caption (for example a letter CC note) still get that text.
+            if ($captionOverride !== null && $captionOverride !== '') {
+                try {
+                    $this->sendWasenderTextMessage(
+                        $lims_customer_data->phone_number ?? $lims_customer_data->phone,
+                        $captionOverride
+                    );
+                } catch (\Exception $e) {
+                }
             }
 
             return $this->wasenderAttachment($path, $lims_customer_data, $wa_path, $filename);
