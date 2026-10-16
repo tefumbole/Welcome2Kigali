@@ -989,6 +989,7 @@ class SaleController extends Controller
             $paying_method = 'Group Credit';
 
         $message = $this->sendWhatsappMsg($lims_customer_data, $lims_sale_data, $mail_data, $biller, $paying_method, $net_unit_price);
+        $this->sendLaundryCategoryInvoice($lims_sale_data);
 
         $role = Role::find(Auth::user()->role_id);
         if ($role) {
@@ -1205,6 +1206,92 @@ class SaleController extends Controller
         }
 
         return redirect('sales/gen_invoice/' . $lims_sale_data->id)->with('message', $message);
+    }
+
+    /**
+     * Laundry-category sales email and WhatsApp the invoice PDF to the client.
+     */
+    public function sendLaundryCategoryInvoice($sale)
+    {
+        try {
+            if (! $sale || empty($sale->id)) {
+                return;
+            }
+            $lines = Product_Sale::where('sale_id', $sale->id)->get();
+            $isLaundry = false;
+            foreach ($lines as $line) {
+                if (\App\Support\LaundryCatalog::isLaundryProduct(Product::find($line->product_id))) {
+                    $isLaundry = true;
+                    break;
+                }
+            }
+            if (! $isLaundry) {
+                return;
+            }
+            $customer = Customer::find($sale->customer_id);
+            if (! $customer) {
+                return;
+            }
+            $pdfBinary = $this->buildSaleInvoicePdfBinary($sale->id);
+            $filename = $sale->reference_no.'.pdf';
+
+            if (! empty($customer->email)) {
+                $mail_data = [
+                    'email' => $customer->email,
+                    'reference_no' => $sale->reference_no,
+                    'sale_status' => $sale->sale_status,
+                    'payment_status' => $sale->payment_status,
+                    'total_qty' => $sale->total_qty,
+                    'total_price' => $sale->total_price,
+                    'order_tax' => $sale->order_tax,
+                    'order_tax_rate' => $sale->order_tax_rate,
+                    'order_discount' => $sale->order_discount,
+                    'shipping_cost' => $sale->shipping_cost,
+                    'grand_total' => $sale->grand_total,
+                    'paid_amount' => $sale->paid_amount,
+                    'products' => [],
+                    'file' => [],
+                    'unit' => [],
+                    'qty' => [],
+                    'total' => [],
+                ];
+                foreach ($lines as $key => $line) {
+                    $product = Product::find($line->product_id);
+                    $mail_data['products'][$key] = $product ? $product->name : 'Item';
+                    $mail_data['file'][$key] = '';
+                    $unit = $line->sale_unit_id ? Unit::find($line->sale_unit_id) : null;
+                    $mail_data['unit'][$key] = $unit ? $unit->unit_code : '';
+                    $mail_data['qty'][$key] = $line->qty;
+                    $mail_data['total'][$key] = $line->total;
+                }
+                try {
+                    Mail::send('mail.sale_details', $mail_data, function ($message) use ($mail_data, $pdfBinary, $filename) {
+                        $message->to($mail_data['email'])->subject('Sales Invoice '.$mail_data['reference_no']);
+                        if ($pdfBinary) {
+                            $message->attachData($pdfBinary, $filename, ['mime' => 'application/pdf']);
+                        }
+                    });
+                } catch (\Throwable $e) {
+                    \Log::warning('Laundry invoice email failed: '.$e->getMessage(), ['sale_id' => $sale->id]);
+                }
+            }
+
+            if (! empty($customer->phone_number) && $pdfBinary) {
+                $dir = storage_path('app/public/sale');
+                if (! is_dir($dir)) {
+                    @mkdir($dir, 0755, true);
+                }
+                $path = $dir.DIRECTORY_SEPARATOR.'laundry-'.$sale->id.'.pdf';
+                file_put_contents($path, $pdfBinary);
+                try {
+                    $this->wpPDFMessage($path, $customer, $filename);
+                } catch (\Throwable $e) {
+                    \Log::warning('Laundry invoice WhatsApp failed: '.$e->getMessage(), ['sale_id' => $sale->id]);
+                }
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('Laundry invoice send failed: '.$e->getMessage(), ['sale_id' => $sale->id ?? null]);
+        }
     }
 
     public function sendWhatsappMsg($lims_customer_data, $lims_sale_data, $mail_data, $biller, $paying_method, $net_unit_price){
@@ -1680,7 +1767,7 @@ class SaleController extends Controller
             $lims_reward_point_setting_data = RewardPointSetting::latest()->first();
             $lims_tax_list = Tax::select('id', 'name', 'rate')->where('is_active', true)->get();
             $lims_unit_list = Unit::select('id', 'unit_name', 'unit_code')->where('is_active', true)->get();
-            $lims_category_list = Category::select('id', 'name', 'parent_id')->where('is_active', true)->get();
+            $lims_category_list = Category::select('id', 'name', 'parent_id', 'image')->where('is_active', true)->get();
 
             $canSearchAllProducts = $role->hasPermissionTo('search_all_products');
             $baseProductsLimit = 24;

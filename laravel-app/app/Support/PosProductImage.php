@@ -194,6 +194,11 @@ class PosProductImage
         }
         $origW = imagesx($src);
         $origH = imagesy($src);
+        $requestedDest = $destPath;
+        $destExt = strtolower(pathinfo($destPath, PATHINFO_EXTENSION));
+        if (! in_array($destExt, ['jpg', 'jpeg'], true)) {
+            $destPath = preg_replace('/\.[^.]+$/', '.jpg', $destPath);
+        }
         $edges = [(int) $maxEdge, 640, 480, 320, 240];
         $qualities = [(int) $startQuality, 74, 66, 58, 50, 42];
         $ok = false;
@@ -227,9 +232,45 @@ class PosProductImage
         imagedestroy($src);
         if ($ok) {
             @chmod($destPath, 0644);
+            if ($requestedDest !== $destPath && is_file($requestedDest)) {
+                @unlink($requestedDest);
+            }
         }
 
         return $ok;
+    }
+
+    /**
+     * JPEG bytes saved as .png/.gif/.webp will not paint in Safari. Rename them to .jpg.
+     */
+    public static function ensureJpegName($path)
+    {
+        if (! is_file($path)) {
+            return null;
+        }
+        $handle = @fopen($path, 'rb');
+        $magic = $handle ? fread($handle, 3) : '';
+        if ($handle) {
+            fclose($handle);
+        }
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $base = basename($path);
+        if ($magic !== "\xFF\xD8\xFF" || in_array($ext, ['jpg', 'jpeg'], true)) {
+            return $base;
+        }
+        $dest = preg_replace('/\.[^.]+$/', '.jpg', $path);
+        if ($dest === $path) {
+            return $base;
+        }
+        if (is_file($dest)) {
+            $dest = preg_replace('/\.jpg$/', '-'.substr(md5($path), 0, 4).'.jpg', $dest);
+        }
+        if (! @rename($path, $dest)) {
+            return $base;
+        }
+        @chmod($dest, 0644);
+
+        return basename($dest);
     }
 
     public static function writeLabeledIcon($path, $kind, $label)

@@ -304,7 +304,13 @@ class PawaPayPaymentService
         } catch (\Throwable $e) {
             Log::warning('Laundry ticket after MoMo failed: '.$e->getMessage(), ['sale_id' => $sale->id]);
         }
-        $this->notifySalePaid($sale->fresh(), $row);
+        $fresh = $sale->fresh();
+        $this->notifySalePaid($fresh, $row);
+        try {
+            app(\App\Http\Controllers\SaleController::class)->sendLaundryCategoryInvoice($fresh);
+        } catch (\Throwable $e) {
+            Log::warning('Laundry invoice after MoMo failed: '.$e->getMessage(), ['sale_id' => $sale->id]);
+        }
     }
 
     protected function notifySalePaid(Sale $sale, PawaPayDeposit $row)

@@ -35,6 +35,7 @@ class CompressPosImages extends Command
         ];
         $compressed = 0;
         $thumbs = 0;
+        $renames = [];
         foreach ($roots as $root) {
             if (! is_dir($root)) {
                 continue;
@@ -48,11 +49,46 @@ class CompressPosImages extends Command
                 if (stripos($name, 'zummXD2dvAtI') !== false) {
                     continue;
                 }
-                if (PosProductImage::optimizeFile($file, strpos($root, DIRECTORY_SEPARATOR.'product') !== false ? PosProductImage::ORIGINAL_EDGE : 640)) {
+                $renamed = PosProductImage::ensureJpegName($file);
+                if ($renamed && $renamed !== $name) {
+                    $renames[$name] = $renamed;
+                    $file = $root.DIRECTORY_SEPARATOR.$renamed;
+                    $oldThumb = public_path('images/product/thumbs/'.$name);
+                    $newThumb = public_path('images/product/thumbs/'.$renamed);
+                    if (is_file($oldThumb) && ! is_file($newThumb)) {
+                        @rename($oldThumb, $newThumb);
+                    }
+                }
+                $edge = strpos($root, DIRECTORY_SEPARATOR.'product') !== false ? PosProductImage::ORIGINAL_EDGE : 640;
+                if (PosProductImage::optimizeFile($file, $edge)) {
                     $compressed++;
                 }
-                if (strpos($root, DIRECTORY_SEPARATOR.'product') !== false && PosProductImage::writeThumb($file, $name)) {
+                if (strpos($root, DIRECTORY_SEPARATOR.'product') !== false && PosProductImage::writeThumb($file, basename($file))) {
                     $thumbs++;
+                }
+            }
+        }
+        foreach ($renames as $old => $new) {
+            if (Schema::hasTable('categories') && Schema::hasColumn('categories', 'image')) {
+                DB::table('categories')->where('image', $old)->update(['image' => $new]);
+            }
+            if (Schema::hasTable('brands') && Schema::hasColumn('brands', 'image')) {
+                DB::table('brands')->where('image', $old)->update(['image' => $new]);
+            }
+            if (Schema::hasTable('products') && Schema::hasColumn('products', 'image')) {
+                $rows = DB::table('products')->where('image', 'like', '%'.$old.'%')->get(['id', 'image']);
+                foreach ($rows as $row) {
+                    $parts = array_map('trim', explode(',', (string) $row->image));
+                    $changed = false;
+                    foreach ($parts as $i => $part) {
+                        if ($part === $old) {
+                            $parts[$i] = $new;
+                            $changed = true;
+                        }
+                    }
+                    if ($changed) {
+                        DB::table('products')->where('id', $row->id)->update(['image' => implode(',', $parts)]);
+                    }
                 }
             }
         }
