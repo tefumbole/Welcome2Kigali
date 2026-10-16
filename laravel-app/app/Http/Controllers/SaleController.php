@@ -2749,6 +2749,29 @@ class SaleController extends Controller
         return response($png, 200)->header('Content-Type', 'image/png')->header('Cache-Control', 'public, max-age=86400');
     }
 
+    public function signaturePng($id)
+    {
+        $sale = Sale::find($id);
+        if (! $sale) {
+            abort(404);
+        }
+        $sign = \App\Support\LetterSignature::invoiceSignatureForUser($sale->user, $sale->created_at);
+        $src = $sign['src'] ?? '';
+        if ($src === '') {
+            abort(404);
+        }
+        if (strpos($src, 'data:image') === 0) {
+            $raw = base64_decode(substr($src, strpos($src, ',') + 1));
+            if ($raw === false || $raw === '') {
+                abort(404);
+            }
+
+            return response($raw, 200)->header('Content-Type', 'image/png')->header('Cache-Control', 'private, max-age=300');
+        }
+
+        return redirect($src);
+    }
+
     public function qrcodePng($id)
     {
         $sale = Sale::find($id);

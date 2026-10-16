@@ -73,8 +73,14 @@
         table.thermal-lines .amt { text-align: right; white-space: nowrap; padding-left: 2mm; }
         .thermal-name { font-weight: 700; }
         .thermal-thanks { text-align: center; font-size: 10px; margin: 2mm 0; }
+        .thermal-sign-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 2mm; }
+        .thermal-sign-row .created-by { flex: 1; min-width: 0; font-size: 10px; }
+        .thermal-sign-row .inv-created-email { display: none; }
+        .thermal-sign-row .inv-admin-sign img,
+        .thermal-sign-row .inv-user-sign img { max-width: 32mm; height: 14mm; }
         .thermal-qr, .thermal-bar { text-align: center; }
-        .thermal-qr img { width: 28mm; height: 28mm; }
+        .thermal-sign-row .thermal-qr { flex: 0 0 auto; }
+        .thermal-qr img { width: 24mm; height: 24mm; }
         .thermal-bar img { width: 62mm; height: 11mm; }
         @media print {
             .hidden-print { display: none !important; }
@@ -247,19 +253,18 @@
     <div class="content">
         <img class="thermal-logo" src="{{ \App\Support\SiteBrand::logoUrl($general_setting) }}" alt="{{ $general_setting->site_title }}">
         <p class="thermal-brand">{{ $general_setting->site_title }}</p>
-        @if(!empty($lims_biller_data->company_name))
-            <p class="thermal-sub">{{ $lims_biller_data->company_name }}</p>
+        @if(!empty($lims_biller_data->phone_number))
+            <p class="thermal-sub">{{ $lims_biller_data->phone_number }}</p>
         @endif
-        <p class="thermal-sub">Sales receipt</p>
+        <p class="thermal-sub" style="font-weight:700;color:#111;">Sales Invoice</p>
         <hr class="thermal-rule">
         <div class="thermal-meta">
             <div><strong>{{ trans('file.reference') }}:</strong> {{ $lims_sale_data->reference_no }}</div>
             <div><strong>{{ trans('file.Date') }}:</strong> {{ $lims_sale_data->created_at->format('d-m-Y H:i') }}</div>
-            <div><strong>{{ trans('file.To') }}:</strong> {{ @$lims_customer_data->name }}</div>
-            @if(@$lims_customer_data->phone_number)<div>{{ $lims_customer_data->phone_number }}</div>@endif
-            @if(@$lims_customer_data->email)<div>{{ $lims_customer_data->email }}</div>@endif
-            @if(@$lims_warehouse_data->name)<div><strong>{{ trans('file.Warehouse') }}:</strong> {{ $lims_warehouse_data->name }}</div>@endif
             <div><strong>{{ trans('file.Sale Status') }}:</strong> {{ $saleStatus }}</div>
+            <div><strong>{{ trans('file.customer') }}:</strong> {{ @$lims_customer_data->name }}</div>
+            <div><strong>{{ trans('file.Phone Number') }}:</strong> {{ @$lims_customer_data->phone_number }}</div>
+            <div><strong>{{ trans('file.City') }}:</strong> {{ @$lims_customer_data->city }}</div>
         </div>
         <hr class="thermal-rule">
         <table class="thermal-lines">
@@ -289,7 +294,11 @@
         <hr class="thermal-rule">
         <table class="thermal-lines">
             <tr>
-                <td><strong>{{ trans('file.grand total') }}</strong></td>
+                <td>{{ trans('file.Discount') }}</td>
+                <td class="amt">{{ number_format($orderDiscount + $couponDiscount, 2) }}</td>
+            </tr>
+            <tr>
+                <td><strong>{{ trans('file.Total') }}</strong></td>
                 <td class="amt"><strong>{{ number_format((float) $lims_sale_data->grand_total, 2) }}</strong></td>
             </tr>
             <tr>
@@ -326,13 +335,17 @@
             @endif
         </div>
         <p class="thermal-thanks">{{ trans('file.Thank you for shopping with us. Please come again') }}</p>
-        @include('pdf.partials._created_by_signature', [
-            'createdUser' => $lims_sale_data->user ?? null,
-            'stampDate' => $lims_sale_data->created_at ?? null,
-            'createdClass' => 'created-by',
-        ])
-        <div class="thermal-qr">
-            <img src="{{ \App\Support\SaleInvoiceQr::dataUri($lims_sale_data, true) }}" alt="qrcode">
+        <div class="thermal-sign-row">
+            <div>
+                @include('pdf.partials._created_by_signature', [
+                    'createdUser' => $lims_sale_data->user ?? null,
+                    'stampDate' => $lims_sale_data->created_at ?? null,
+                    'createdClass' => 'created-by',
+                ])
+            </div>
+            <div class="thermal-qr">
+                <img src="{{ \App\Support\SaleInvoiceQr::dataUri($lims_sale_data, true) }}" alt="qrcode">
+            </div>
         </div>
         <div class="thermal-bar">
             <?php echo '<img src="data:image/png;base64,'.DNS1D::getBarcodePNG($lims_sale_data->reference_no, 'C128').'" alt="barcode">'; ?>

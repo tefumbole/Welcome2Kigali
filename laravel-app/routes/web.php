@@ -806,6 +806,7 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
 	Route::get('sales/gen_invoice/{id}', 'SaleController@genInvoice')->name('sale.invoice');
 	Route::get('sales/barcode/{ref}', 'SaleController@barcodePng')->name('sale.barcode');
 	Route::get('sales/qrcode/{id}', 'SaleController@qrcodePng')->name('sale.qrcode');
+	Route::get('sales/signature/{id}', 'SaleController@signaturePng')->name('sale.signature');
 	Route::post('sales/add_payment', 'SaleController@addPayment')->name('sale.add-payment');
 	Route::get('sales/getpayment/{id}', 'SaleController@getPayment')->name('sale.get-payment');
 	Route::post('sales/updatepayment', 'SaleController@updatePayment')->name('sale.update-payment');

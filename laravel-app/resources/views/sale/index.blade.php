@@ -123,6 +123,7 @@
                         <h3 class="modal-title text-center">{{$general_setting->site_title}}</h3>
                     @endif
                     <div class="mb-2" style="position:relative;z-index:1;">
+                        <div id="sale-site-phone" class="text-center" style="font-size:13px;display:none;"></div>
                         <div class="text-center"><strong style="font-size:16px;">Sales Invoice</strong></div>
                         <div id="sale-ref-line" style="font-size:12px;line-height:1.45;text-align:left;color:#1f2a44;"></div>
                     </div>
@@ -140,14 +141,21 @@
                         <tbody></tbody>
                     </table>
                     <div class="text-center text-muted mb-2" style="position:relative;z-index:1;">{{trans('file.Thank you for shopping with us. Please come again')}}</div>
+                    @if(($general_setting->invoice_format ?? '') === 'mini')
+                    <div class="mini-sign-qr" style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;position:relative;z-index:1;margin-bottom:8px;">
+                        <div id="sale-footer" class="text-left" style="flex:1;min-width:0;"></div>
+                        <img id="sale-qrcode" src="" alt="qrcode" height="96" width="96" style="flex:0 0 auto;">
+                    </div>
+                    @else
                     <div id="sale-footer" class="modal-body p-0 text-left mb-2" style="position:relative;z-index:1;"></div>
                     <div class="text-center mb-2" style="position:relative;z-index:1;">
                         <div style="margin:0 0 6px;">
-                            <img id="sale-qrcode" src="" alt="qrcode" height="{{ ($general_setting->invoice_format ?? '') === 'mini' ? 96 : 56 }}" width="{{ ($general_setting->invoice_format ?? '') === 'mini' ? 96 : 56 }}">
+                            <img id="sale-qrcode" src="" alt="qrcode" height="56" width="56">
                         </div>
-                        <div>
-                            <img id="sale-barcode" src="" alt="barcode" height="28" style="max-width:220px;">
-                        </div>
+                    </div>
+                    @endif
+                    <div class="text-center mb-2" style="position:relative;z-index:1;">
+                        <img id="sale-barcode" src="" alt="barcode" height="28" style="max-width:220px;">
                     </div>
                     @if($general_setting->invoice_format == 'beyond_a4')
                         <img src="{{url('public/logo', $general_setting->email_footer)}}" alt="" class="sale-letter-footer" style="display:block;width:100%;max-height:70px;object-fit:contain;margin-top:8px;">
@@ -1031,12 +1039,32 @@
             return isNaN(n) ? 0 : n;
         }
 
+        var isMiniInvoice = {{ ($general_setting->invoice_format ?? '') === 'mini' ? 'true' : 'false' }};
+
         function saleDetails(sale){
             $("#sale-details input[name='sale_id']").val(sale[13]);
-            $('#sale-ref-line').html(
-                '<strong>{{trans("file.reference")}}:</strong> ' + (sale[1] || '') + '<br>' +
-                '<strong>{{trans("file.Date")}}:</strong> ' + (sale[0] || '')
-            );
+            if (isMiniInvoice) {
+                var sitePhone = String(sale[6] || '').trim();
+                if (sitePhone && sitePhone.toLowerCase() !== 'null') {
+                    $('#sale-site-phone').text(sitePhone).show();
+                } else {
+                    $('#sale-site-phone').text('').hide();
+                }
+                $('#sale-ref-line').html(
+                    '<strong>{{trans("file.reference")}}:</strong> ' + (sale[1] || '') + '<br>' +
+                    '<strong>{{trans("file.Date")}}:</strong> ' + (sale[0] || '') + '<br>' +
+                    '<strong>{{trans("file.Sale Status")}}:</strong> ' + (sale[2] || '') + '<br>' +
+                    '<strong>{{trans("file.customer")}}:</strong> ' + (sale[9] || '') + '<br>' +
+                    '<strong>{{trans("file.Phone Number")}}:</strong> ' + (sale[10] || '') + '<br>' +
+                    '<strong>{{trans("file.City")}}:</strong> ' + (sale[12] || '')
+                );
+            } else {
+                $('#sale-site-phone').text('').hide();
+                $('#sale-ref-line').html(
+                    '<strong>{{trans("file.reference")}}:</strong> ' + (sale[1] || '') + '<br>' +
+                    '<strong>{{trans("file.Date")}}:</strong> ' + (sale[0] || '')
+                );
+            }
 
             var refSafe = encodeURIComponent(String(sale[1] || '').replace(/[^A-Za-z0-9\-_]/g, ''));
             $('#sale-barcode').attr('src', '{{ url("sales/barcode") }}/' + refSafe);
@@ -1046,18 +1074,21 @@
                 return v && String(v).trim() !== '' && String(v).trim().toLowerCase() !== 'null';
             }).join('<br>');
 
-            var htmltext = '<table class="table table-sm table-bordered mb-2" style="font-size:12px;">' +
-                '<tr>' +
-                '<td style="width:50%;vertical-align:top;background:#f8f9fc;">' +
-                '<strong>{{trans("file.reference")}}:</strong> ' + sale[1] + '<br>' +
-                '<strong>{{trans("file.Date")}}:</strong> ' + sale[0] + '<br>' +
-                '<strong>{{trans("file.Warehouse")}}:</strong> ' + sale[27] + '<br>' +
-                '<strong>{{trans("file.Sale Status")}}:</strong> ' + sale[2] +
-                '</td>' +
-                '<td style="width:50%;vertical-align:top;background:#f8f9fc;">' +
-                '<strong>{{trans("file.To")}}</strong><br>' + customerLines +
-                '</td>' +
-                '</tr></table>';
+            var htmltext = '';
+            if (!isMiniInvoice) {
+                htmltext = '<table class="table table-sm table-bordered mb-2" style="font-size:12px;">' +
+                    '<tr>' +
+                    '<td style="width:50%;vertical-align:top;background:#f8f9fc;">' +
+                    '<strong>{{trans("file.reference")}}:</strong> ' + sale[1] + '<br>' +
+                    '<strong>{{trans("file.Date")}}:</strong> ' + sale[0] + '<br>' +
+                    '<strong>{{trans("file.Warehouse")}}:</strong> ' + sale[27] + '<br>' +
+                    '<strong>{{trans("file.Sale Status")}}:</strong> ' + sale[2] +
+                    '</td>' +
+                    '<td style="width:50%;vertical-align:top;background:#f8f9fc;">' +
+                    '<strong>{{trans("file.To")}}</strong><br>' + customerLines +
+                    '</td>' +
+                    '</tr></table>';
+            }
 
             $.get('sales/product_sale/' + sale[13], function(data){
                 $(".product-sale-list tbody").remove();
@@ -1070,7 +1101,10 @@
                 var subtotal = data[6];
                 var batch_no = data[7];
                 var newBody = $("<tbody>");
-                var newHead = "<tr> <th>#</th> <th>{{trans('file.product')}}</th> <th>{{trans('file.Qty')}}</th> <th>{{trans('file.Unit Price')}}</th> <th>{{trans('file.Tax')}}</th> <th>{{trans('file.Discount')}}</th> <th>{{trans('file.Subtotal')}}</th> </tr>";
+                var summarySpan = isMiniInvoice ? 5 : 6;
+                var newHead = isMiniInvoice
+                    ? "<tr> <th>#</th> <th>{{trans('file.product')}}</th> <th>{{trans('file.Qty')}}</th> <th>{{trans('file.Unit Price')}}</th> <th>{{trans('file.Tax')}}</th> <th>{{trans('file.Subtotal')}}</th> </tr>"
+                    : "<tr> <th>#</th> <th>{{trans('file.product')}}</th> <th>{{trans('file.Qty')}}</th> <th>{{trans('file.Unit Price')}}</th> <th>{{trans('file.Tax')}}</th> <th>{{trans('file.Discount')}}</th> <th>{{trans('file.Subtotal')}}</th> </tr>";
                 newBody.append(newHead);
                 $.each(name_code, function(index){
                     var newRow = $("<tr class='" + (index % 2 === 1 ? 'sale-alt' : '') + "'>");
@@ -1080,40 +1114,55 @@
                     cols += '<td>' + qty[index] + '</td>';
                     cols += '<td>' + numberWithCommas(subtotal[index] / qty[index]) +'</td>';
                     cols += '<td>' + tax[index] + '(' + tax_rate[index] + '%)' + '</td>';
-                    cols += '<td>' + discount[index] + '</td>';
+                    if (!isMiniInvoice) {
+                        cols += '<td>' + discount[index] + '</td>';
+                    }
                     cols += '<td>' + numberWithCommas(subtotal[index]) + '</td>';
                     newRow.append(cols);
                     newBody.append(newRow);
                 });
 
-                var newRow = $("<tr class='sale-total'>");
-                var cols = '';
+                var newRow;
+                var cols;
+                if (isMiniInvoice) {
+                    var generalDiscount = parseSaleAmt(sale[19]) + parseSaleAmt(sale[29]);
+                    newRow = $("<tr>");
+                    cols = '<td colspan="' + summarySpan + '"><strong>{{trans("file.Discount")}}:</strong></td>';
+                    cols += '<td>' + numberWithCommas(generalDiscount) + '</td>';
+                    newRow.append(cols);
+                    newBody.append(newRow);
+                }
+
+                newRow = $("<tr class='sale-total'>");
+                cols = '';
                 cols += '<td colspan=4 style="text-align:right;"><strong>{{trans("file.Total")}}:</strong></td>';
                 cols += '<td>' + numberWithCommas(sale[14]) + '</td>';
-                cols += '<td>' + numberWithCommas(sale[15]) + '</td>';
+                if (!isMiniInvoice) {
+                    cols += '<td>' + numberWithCommas(sale[15]) + '</td>';
+                }
                 cols += '<td>' + numberWithCommas(sale[16]) + '</td>';
                 newRow.append(cols);
                 newBody.append(newRow);
 
                 if (parseSaleAmt(sale[17]) > 0) {
                     newRow = $("<tr>");
-                    cols = '<td colspan=6><strong>{{trans("file.Order Tax")}}:</strong></td>';
+                    cols = '<td colspan="' + summarySpan + '"><strong>{{trans("file.Order Tax")}}:</strong></td>';
                     cols += '<td>' + sale[17] + '(' + sale[18] + '%)' + '</td>';
                     newRow.append(cols);
                     newBody.append(newRow);
                 }
 
-                if (parseSaleAmt(sale[19]) > 0) {
+                if (!isMiniInvoice && parseSaleAmt(sale[19]) > 0) {
                     newRow = $("<tr>");
-                    cols = '<td colspan=6><strong>{{trans("file.Order Discount")}}:</strong></td>';
+                    cols = '<td colspan="' + summarySpan + '"><strong>{{trans("file.Order Discount")}}:</strong></td>';
                     cols += '<td>' + sale[19] + '</td>';
                     newRow.append(cols);
                     newBody.append(newRow);
                 }
 
-                if (sale[28] && parseSaleAmt(sale[29]) > 0) {
+                if (!isMiniInvoice && sale[28] && parseSaleAmt(sale[29]) > 0) {
                     newRow = $("<tr>");
-                    cols = '<td colspan=6><strong>{{trans("file.Coupon Discount")}} ['+sale[28]+']:</strong></td>';
+                    cols = '<td colspan="' + summarySpan + '"><strong>{{trans("file.Coupon Discount")}} ['+sale[28]+']:</strong></td>';
                     cols += '<td>' + sale[29] + '</td>';
                     newRow.append(cols);
                     newBody.append(newRow);
@@ -1121,27 +1170,27 @@
 
                 if (parseSaleAmt(sale[20]) > 0) {
                     newRow = $("<tr>");
-                    cols = '<td colspan=6><strong>{{trans("file.Shipping Cost")}}:</strong></td>';
+                    cols = '<td colspan="' + summarySpan + '"><strong>{{trans("file.Shipping Cost")}}:</strong></td>';
                     cols += '<td>' + sale[20] + '</td>';
                     newRow.append(cols);
                     newBody.append(newRow);
                 }
 
                 newRow = $("<tr>");
-                cols = '<td colspan=6><strong>{{trans("file.grand total")}}:</strong></td>';
+                cols = '<td colspan="' + summarySpan + '"><strong>{{trans("file.grand total")}}:</strong></td>';
                 cols += '<td>' + numberWithCommas(sale[21]) + '</td>';
                 newRow.append(cols);
                 newBody.append(newRow);
 
                 newRow = $("<tr>");
-                cols = '<td colspan=6><strong>Amount Paid:</strong></td>';
+                cols = '<td colspan="' + summarySpan + '"><strong>Amount Paid:</strong></td>';
                 cols += '<td>' + numberWithCommas(sale[22]) + '</td>';
                 newRow.append(cols);
                 newBody.append(newRow);
 
                 var pendingAmt = Math.max(0, parseSaleAmt(sale[21]) - parseSaleAmt(sale[22]));
                 newRow = $("<tr>");
-                cols = '<td colspan=6><strong>Amount Pending:</strong></td>';
+                cols = '<td colspan="' + summarySpan + '"><strong>Amount Pending:</strong></td>';
                 cols += '<td>' + numberWithCommas(pendingAmt) + '</td>';
                 newRow.append(cols);
                 newBody.append(newRow);
@@ -1158,7 +1207,10 @@
             if (staffNote && staffNote.toLowerCase() !== 'null') {
                 htmlfooter += '<p class="mb-1"><strong>{{trans("file.Staff Note")}}:</strong> ' + staffNote + '</p>';
             }
-            htmlfooter += '<p class="mb-0 text-left" style="font-size:12px;line-height:1.4;text-align:left;"><strong>{{trans("file.Created By")}}:</strong> ' + sale[25] + (sale[26] ? '<br>' + sale[26] : '') + '</p>';
+            htmlfooter += '<p class="mb-0 text-left" style="font-size:12px;line-height:1.4;text-align:left;"><strong>{{trans("file.Created By")}}:</strong> ' + sale[25] + (isMiniInvoice ? '' : (sale[26] ? '<br>' + sale[26] : '')) + '</p>';
+            if (isMiniInvoice) {
+                htmlfooter += '<img alt="Signature" style="display:block;height:48px;width:auto;max-width:130px;margin-top:4px;" src="{{ url('sales/signature') }}/' + sale[13] + '" onerror="this.style.display=\'none\'">';
+            }
             $('#sale-content').html(htmltext);
             $('#sale-footer').html(htmlfooter);
             $('#sale-details').modal('show');

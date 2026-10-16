@@ -35,17 +35,19 @@
             <img class="logo" src="{{ $logoPath }}" alt="">
         @endif
         <h1>{{ $general_setting->site_title ?? 'Welcome 2 Kigali' }}</h1>
-        @if(!empty($lims_biller_data->company_name))
-            <p class="muted">{{ $lims_biller_data->company_name }}</p>
+        @if(!empty($lims_biller_data->phone_number))
+            <p class="muted">{{ $lims_biller_data->phone_number }}</p>
         @endif
-        <p class="muted">Sales receipt</p>
+        <p class="muted" style="font-weight:bold;color:#111;">Sales Invoice</p>
     </div>
     <div class="line"></div>
     <div>
-        <strong>{{ $lims_sale_data->reference_no }}</strong><br>
-        {{ $lims_sale_data->created_at->format('d-m-Y H:i') }}<br>
-        {{ optional($lims_customer_data)->name }}
-        @if(optional($lims_customer_data)->phone_number)<br>{{ $lims_customer_data->phone_number }}@endif
+        <strong>Reference:</strong> {{ $lims_sale_data->reference_no }}<br>
+        <strong>Date:</strong> {{ $lims_sale_data->created_at->format('d-m-Y H:i') }}<br>
+        <strong>Sale status:</strong> {{ (int) $lims_sale_data->sale_status === 1 ? 'Completed' : ((int) $lims_sale_data->sale_status === 2 ? 'Pending' : 'Draft') }}<br>
+        <strong>Client:</strong> {{ optional($lims_customer_data)->name }}<br>
+        <strong>Phone:</strong> {{ optional($lims_customer_data)->phone_number }}<br>
+        <strong>City:</strong> {{ optional($lims_customer_data)->city }}
     </div>
     <div class="line"></div>
     <table>
@@ -67,6 +69,10 @@
     </table>
     <div class="line"></div>
     <table>
+        <tr>
+            <td>Discount</td>
+            <td class="amt">{{ number_format((float) ($lims_sale_data->order_discount ?? 0) + (float) ($lims_sale_data->coupon_discount ?? 0), 2) }}</td>
+        </tr>
         <tr><td><strong>Total</strong></td><td class="amt"><strong>{{ number_format((float) $lims_sale_data->grand_total, 2) }}</strong></td></tr>
         <tr><td>Paid</td><td class="amt">{{ number_format($paidAmount, 2) }}</td></tr>
         <tr><td>Due</td><td class="amt">{{ number_format($dueAmount, 2) }}</td></tr>
@@ -75,7 +81,18 @@
         @endforeach
     </table>
     <p class="muted" style="margin-top:3mm;">Thank you. Please come again.</p>
-    <div class="center qr"><img src="{{ $qr }}" alt="qrcode"></div>
+    <table>
+        <tr>
+            <td style="width:58%;vertical-align:bottom;">
+                @include('pdf.partials._created_by_signature', [
+                    'createdUser' => $lims_sale_data->user ?? null,
+                    'stampDate' => $lims_sale_data->created_at ?? null,
+                    'createdClass' => 'created-by',
+                ])
+            </td>
+            <td class="center qr" style="width:42%;vertical-align:bottom;"><img src="{{ $qr }}" alt="qrcode"></td>
+        </tr>
+    </table>
 </div>
 </body>
 </html>
