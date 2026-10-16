@@ -30,7 +30,10 @@ class QRController extends Controller
         $lims_warehouse_data = Warehouse::find($lims_sale_data->warehouse_id);
         $lims_customer_data = Customer::find($lims_sale_data->customer_id);
         $lims_payment_data = Payment::where('sale_id', $lims_sale_data->id)->get();
-        $lims_payment_debit_data = Payment::where('debit_sale_id', $lims_sale_data->id)->get();
+        $lims_payment_debit_data = collect();
+        if (\Illuminate\Support\Facades\Schema::hasColumn('payments', 'debit_sale_id')) {
+            $lims_payment_debit_data = Payment::where('debit_sale_id', $lims_sale_data->id)->get();
+        }
         $lims_account_data = null;
         $lims_account_data_debit = null;
         $lims_account_data_cradit = null;

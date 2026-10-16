@@ -591,8 +591,14 @@ class ProductController extends Controller
             $data['featured'] = 1;
             $data['barcode_symbology'] = $data['barcode_symbology'] ?? 'C128';
         }
-        elseif(($data['type'] ?? '') == 'digital')
-            $data['cost'] = $data['unit_id'] = $data['purchase_unit_id'] = $data['sale_unit_id'] = 0;
+        elseif(($data['type'] ?? '') == 'digital') {
+            $data['qty'] = 0;
+            $data['alert_quantity'] = 0;
+            if (! empty($data['unit_id'])) {
+                $data['sale_unit_id'] = $data['sale_unit_id'] ?? $data['unit_id'];
+                $data['purchase_unit_id'] = $data['purchase_unit_id'] ?? $data['unit_id'];
+            }
+        }
 
         $data = $this->applyProductCatalogDefaults($data);
         $data = $this->normalizeProductPayload($data);
@@ -731,8 +737,14 @@ class ProductController extends Controller
             $data['price_list'] = implode(",", $data['unit_price']);
             $data['cost'] = $data['unit_id'] = $data['purchase_unit_id'] = $data['sale_unit_id'] = 0;
         }
-        elseif($data['type'] == 'digital')
-            $data['cost'] = $data['unit_id'] = $data['purchase_unit_id'] = $data['sale_unit_id'] = 0;
+        elseif($data['type'] == 'digital') {
+            $data['qty'] = 0;
+            $data['alert_quantity'] = 0;
+            if (! empty($data['unit_id'])) {
+                $data['sale_unit_id'] = $data['sale_unit_id'] ?? $data['unit_id'];
+                $data['purchase_unit_id'] = $data['purchase_unit_id'] ?? $data['unit_id'];
+            }
+        }
         elseif($data['type'] == 'laundry' || $data['type'] == 'service') {
             $data['type'] = 'laundry';
             $laundry = $this->laundryCatalog();

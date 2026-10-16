@@ -565,15 +565,14 @@ class SaleController extends Controller
                 }
             }
 
-            if($sale_unit[$i] != 'n/a') {
-                $lims_sale_unit_data  = Unit::where('unit_name', $sale_unit[$i])->first();
+            if($sale_unit[$i] != 'n/a' && ($lims_sale_unit_data = Unit::where('unit_name', $sale_unit[$i])->first())) {
                 $sale_unit_id = $lims_sale_unit_data->id;
                 if($lims_product_data->is_variant) {
                     $lims_product_variant_data = ProductVariant::select('id', 'variant_id', 'qty')->FindExactProductWithCode($id, $product_code[$i])->first();
                     $product_sale['variant_id'] = $lims_product_variant_data->variant_id;
                 }
 
-                if($data['sale_status'] == 1) {
+                if($data['sale_status'] == 1 && $lims_product_data->type !== 'digital') {
                     if($lims_sale_unit_data->operator == '*')
                         $quantity = $qty[$i] * $lims_sale_unit_data->operation_value;
                     elseif($lims_sale_unit_data->operator == '/')
@@ -699,7 +698,9 @@ class SaleController extends Controller
             $product_sale['tax_rate'] = $tax_rate[$i];
             $product_sale['tax'] = $tax[$i];
             $product_sale['total'] = $mail_data['total'][$i] = $total[$i];
-            $this->stockDurationSave($lims_product_data->id, $lims_product_data->qty);
+            if ($lims_product_data->type !== 'digital') {
+                $this->stockDurationSave($lims_product_data->id, $lims_product_data->qty);
+            }
             Product_Sale::create(\App\Support\SchemaColumns::forTable('product_sales', $product_sale));
             if (! empty($data['membership_benefit'][$i])) {
                 $membershipService = app(\App\Services\MembershipService::class);
@@ -1373,7 +1374,8 @@ class SaleController extends Controller
         }
         $numberInWords = $numberTransformer->toWords($lims_sale_data->grand_total);
 
-        $pdf = PDF::loadView('pdf.sale_pdf', [
+        $format = $setting->invoice_format ?? 'standard';
+        $viewData = [
             'header' => $setting->email_header,
             'footer' => $setting->email_footer,
             'water_mark' => $setting->email_water_mark,
@@ -1384,7 +1386,13 @@ class SaleController extends Controller
             'lims_customer_data' => $lims_customer_data,
             'lims_payment_data' => $lims_payment_data,
             'numberInWords' => $numberInWords,
-        ])->setPaper('A4', 'portrait');
+        ];
+        if ($format === 'mini') {
+            $height = 320 + (max(1, $lims_product_sale_data->count()) * 28);
+            $pdf = PDF::loadView('pdf.sale_mini', $viewData)->setPaper([0, 0, 226.77, $height], 'portrait');
+        } else {
+            $pdf = PDF::loadView('pdf.sale_pdf', $viewData)->setPaper('a4', 'portrait');
+        }
 
         return $pdf->output();
     }
@@ -2048,7 +2056,7 @@ class SaleController extends Controller
             $product[] = 'No Tax';
         }
         $product[] = $lims_product_data->tax_method;
-        if($lims_product_data->type == 'standard'){
+        if(in_array($lims_product_data->type, ['standard', 'digital'], true) && $lims_product_data->unit_id){
             $units = Unit::where("base_unit", $lims_product_data->unit_id)
                     ->orWhere('id', $lims_product_data->unit_id)
                     ->get();
@@ -2747,8 +2755,8 @@ class SaleController extends Controller
         if (! $sale) {
             abort(404);
         }
-        $url = \App\Support\SaleInvoiceQr::scanUrl($sale);
-        $png = base64_decode(\DNS2D::getBarcodePNG($url, 'QRCODE'));
+        $withLogo = (optional(\App\GeneralSetting::first())->invoice_format ?? '') === 'mini';
+        $png = \App\Support\SaleInvoiceQr::png($sale, $withLogo);
 
         return response($png, 200)->header('Content-Type', 'image/png')->header('Cache-Control', 'public, max-age=3600');
     }
@@ -2770,7 +2778,10 @@ class SaleController extends Controller
         $lims_warehouse_data = Warehouse::find($lims_sale_data->warehouse_id);
         $lims_customer_data = Customer::find($lims_sale_data->customer_id);
         $lims_payment_data = Payment::where('sale_id', $id)->get();
-        $lims_payment_debit_data = Payment::where('debit_sale_id', $id)->get();
+        $lims_payment_debit_data = collect();
+        if (\Illuminate\Support\Facades\Schema::hasColumn('payments', 'debit_sale_id')) {
+            $lims_payment_debit_data = Payment::where('debit_sale_id', $id)->get();
+        }
         $lims_account_data = null;
         $lims_account_data_debit = null;
         $lims_account_data_cradit = null;

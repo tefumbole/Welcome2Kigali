@@ -90,8 +90,9 @@
         </div>
     </section>
 
+    <style>.w2k-mini-invoice{max-width:360px;margin:1.75rem auto;}</style>
     <div id="sale-details" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
-        <div role="document" class="modal-dialog modal-lg">
+        <div role="document" class="modal-dialog {{ ($general_setting->invoice_format ?? '') === 'mini' ? 'w2k-mini-invoice' : 'modal-lg' }}">
             <div class="modal-content" id="sale-invoice-print">
                 <div class="container mt-2 pb-2 border-bottom d-print-none">
                     <div class="row align-items-center">
@@ -139,7 +140,7 @@
                     <div id="sale-footer" class="modal-body p-0 text-left mb-2" style="position:relative;z-index:1;"></div>
                     <div class="text-center mb-2" style="position:relative;z-index:1;">
                         <div style="margin:0 0 6px;">
-                            <img id="sale-qrcode" src="" alt="qrcode" height="56" width="56">
+                            <img id="sale-qrcode" src="" alt="qrcode" height="{{ ($general_setting->invoice_format ?? '') === 'mini' ? 96 : 56 }}" width="{{ ($general_setting->invoice_format ?? '') === 'mini' ? 96 : 56 }}">
                         </div>
                         <div>
                             <img id="sale-barcode" src="" alt="barcode" height="28" style="max-width:220px;">
@@ -507,15 +508,15 @@
         $("#print-btn").on("click", function(){
             var printRoot = document.getElementById('sale-invoice-print');
             if (!printRoot) return;
-            var newWin = window.open('', 'Print-Window', 'width=900,height=720');
+            var isMini = {{ ($general_setting->invoice_format ?? '') === 'mini' ? 'true' : 'false' }};
+            var newWin = window.open('', 'Print-Window', isMini ? 'width=420,height=720' : 'width=900,height=720');
             if (!newWin) {
                 alert('Please allow pop-ups to print the invoice.');
                 return;
             }
             var css = '<link rel="stylesheet" href="<?php echo asset('public/vendor/bootstrap/css/bootstrap.min.css') ?>" type="text/css">' +
                 '<style type="text/css">' +
-                '@page{size:A4;margin:10mm}' +
-                'body{margin:10px;background:#fff;font-size:12px;color:#1f2a44}' +
+                (isMini ? '@page{size:80mm auto;margin:4mm}body{margin:0 auto;width:72mm;background:#fff;font-size:11px;color:#1f2a44}' : '@page{size:A4;margin:10mm}body{margin:10px;background:#fff;font-size:12px;color:#1f2a44}') +
                 '.d-print-none{display:none!important}' +
                 '.modal-content{border:0;box-shadow:none}' +
                 '.sale-letter-header{max-height:90px!important;object-fit:contain}' +

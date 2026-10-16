@@ -35,6 +35,13 @@ class MembershipService
 
     public function memberGroup()
     {
+        $named = CustomerGroup::whereRaw('LOWER(TRIM(name)) = ?', ['members'])->first();
+        if ($named) {
+            MembershipSetting::put('member_group_id', (string) $named->id);
+
+            return $named;
+        }
+
         $id = MembershipSetting::get('member_group_id');
         if ($id) {
             $group = CustomerGroup::find($id);

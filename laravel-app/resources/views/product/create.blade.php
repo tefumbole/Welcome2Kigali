@@ -580,6 +580,9 @@
             $("select[name='unit_id']").prop('required',false);
             // $("input[name='file']").prop('required',true);
             hide();
+            $("#unit").show(300);
+            $(".qty").hide();
+            $("input[name='qty']").prop('required', false).val(0);
             $("#digital").show(300);
             $("#combo").hide(300);
             $("input[name='price']").prop('disabled',false);
@@ -593,6 +596,8 @@
             $("input[name='file']").prop('required',false);
             $("#cost").show(300);
             $("#unit").show(300);
+            $(".qty").show();
+            $("input[name='qty']").prop('required', true);
             $("#alert-qty").show(300);
             $("#variant-option").show(300);
             $("#diffPrice-option").show(300);
@@ -1023,6 +1028,16 @@
         },
         init: function () {
             var myDropzone = this;
+            myDropzone.on('addedfile', function (file) {
+                if (file.__w2kOpt || !window.w2kOptimizeImage || !file.type || file.type.indexOf('image/') !== 0) return;
+                file.__w2kOpt = true;
+                window.w2kOptimizeImage(file, 100000, 800).then(function (ready) {
+                    if (!ready || ready === file) return;
+                    ready.__w2kOpt = true;
+                    myDropzone.removeFile(file);
+                    myDropzone.addFile(ready);
+                });
+            });
             $('#submit-btn').on("click", function (e) {
                 e.preventDefault();
                 $("#image-error").text('');

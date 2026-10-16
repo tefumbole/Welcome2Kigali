@@ -255,6 +255,9 @@ FILES=(
   resources/views/pdf/booking_pdf.blade.php
   resources/views/pdf/rent_pdf.blade.php
   resources/views/pdf/sale_pdf.blade.php
+  resources/views/pdf/sale_mini.blade.php
+  app/Support/SaleInvoiceQr.php
+  app/Http/Controllers/QRController.php
   resources/views/pdf/letter_pdf.blade.php
   resources/views/pdf/letter_download_pdf.blade.php
   resources/views/pdf/cc_letter_pdf.blade.php
@@ -294,6 +297,7 @@ FILES=(
   app/Services/LaundryService.php
   database/migrations/2026_10_15_160000_add_change_to_payments_table.php
   database/migrations/2026_10_15_180000_add_multi_product_batch_to_product_sales.php
+  database/migrations/2026_10_16_120000_cash_invoice_members_and_digital_menu.php
   database/migrations/2026_10_14_180000_rename_services_category_to_laundry.php
   database/migrations/2026_10_14_181000_convert_laundry_category_products.php
   database/migrations/2026_10_14_190000_ensure_default_credit_debit_accounts.php
@@ -447,6 +451,7 @@ sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_15_140000_add_item_pipeline_to_laundry.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_15_160000_add_change_to_payments_table.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_15_180000_add_multi_product_batch_to_product_sales.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_16_120000_cash_invoice_members_and_digital_menu.php
 sudo -u www-data php "\$APP/artisan" images:compress-pos || true
 mkdir -p "\$APP/public/images/product/thumbs"
 find "\$APP/public/images/product" -type d -exec chmod 755 {} \\; 2>/dev/null || true

@@ -4280,10 +4280,11 @@
             var laundryNoteHtml = isLaundryLine
                 ? '<input type="text" class="form-control form-control-sm mt-1 laundry-item-note" name="laundry_item_note[' + data[9] + ']" placeholder="Comment for this dress">'
                 : '<input type="hidden" class="laundry-item-note" name="laundry_item_note[' + data[9] + ']" value="">';
+            var stockHtml = (product_type[pos] === 'digital') ? '' : '<p>In Stock: <span class="in-stock"></span></p>';
             @if(in_array("price-change", $all_permission))
-                cols += '<td class="col-sm-3 product-title"><strong>' + data[0] + '</strong><br>' + data[1] + '<a class="edit-product btn btn-link" data-toggle="modal" data-target="#editModal"><i class="fa fa-pencil-square"></i></a><p>In Stock: <span class="in-stock"></span></p>' + laundryNoteHtml + '</td>';
+                cols += '<td class="col-sm-3 product-title"><strong>' + data[0] + '</strong><br>' + data[1] + '<a class="edit-product btn btn-link" data-toggle="modal" data-target="#editModal"><i class="fa fa-pencil-square"></i></a>' + stockHtml + laundryNoteHtml + '</td>';
             @else
-                cols += '<td class="col-sm-3 product-title"><button type="button" class="edit-product btn btn-link"><strong>' + data[0] + '</strong></button><br>' + data[1] + '<p>In Stock: <span class="in-stock"></span></p>' + laundryNoteHtml + '</td>';
+                cols += '<td class="col-sm-3 product-title"><button type="button" class="edit-product btn btn-link"><strong>' + data[0] + '</strong></button><br>' + data[1] + stockHtml + laundryNoteHtml + '</td>';
             @endif
             if(data[12]) {
                 cols += '<td class="col-sm-2"><input type="text" title="'+product_expired_date[pos]+'" class="form-control batch-no product_expired_date" value="'+batch_no[pos]+'" required/> <input type="hidden" class="product-batch-id" name="product_batch_id[]" value="'+product_batch_id[pos]+'"/> </td>';

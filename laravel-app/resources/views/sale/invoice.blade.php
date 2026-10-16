@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @php
         $isBeyond = ($general_setting->invoice_format ?? '') === 'beyond_a4';
+        $isMini = ($general_setting->invoice_format ?? '') === 'mini';
         $letterhead = \App\Support\Letterhead::ensureSynced();
         $headerFile = $header ?? ($letterhead['header_file'] ?? $general_setting->email_header);
         $footerFile = $footer ?? ($letterhead['footer_file'] ?? $general_setting->email_footer);
@@ -50,7 +51,8 @@
         .btn-info { background: #6c757d; }
         .btn-primary { background: #6449e7; }
         .btn-danger { background: #c0392b; }
-        .sheet { position: relative; margin: 0 auto; padding: {{ $isBeyond ? '0' : '10px' }}; max-width: {{ $isBeyond ? '210mm' : '400px' }}; }
+        @page { size: {{ $isMini ? '80mm auto' : 'A4' }}; margin: {{ $isMini ? '4mm' : '8mm' }}; }
+        .sheet { position: relative; margin: 0 auto; padding: {{ $isBeyond ? '0' : '10px' }}; max-width: {{ $isBeyond ? '210mm' : ($isMini ? '80mm' : '400px') }}; }
         .letter-header {
             display: block;
             width: 100%;
@@ -418,7 +420,7 @@
                 'createdClass' => 'created-by',
             ])
             <div class="code-media" style="margin:0 0 6px;">
-                <?php echo '<img src="data:image/png;base64,'.DNS2D::getBarcodePNG($invoiceQrUrl, 'QRCODE').'" height="48" width="48" alt="qrcode">'; ?>
+                <img src="{{ \App\Support\SaleInvoiceQr::dataUri($lims_sale_data, $isMini) }}" height="{{ $isMini ? 92 : 48 }}" width="{{ $isMini ? 92 : 48 }}" alt="qrcode">
             </div>
             <div class="code-media">
                 <?php echo '<img src="data:image/png;base64,'.DNS1D::getBarcodePNG($lims_sale_data->reference_no, 'C128').'" height="28" width="160" alt="barcode">'; ?>
