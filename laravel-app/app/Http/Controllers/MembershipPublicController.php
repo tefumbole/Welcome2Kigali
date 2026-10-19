@@ -50,12 +50,21 @@ class MembershipPublicController extends Controller
         $scanUrl = \App\Support\MembershipIdScan::url($scanToken);
         $scanQrNational = \App\Support\OnlineInvitationQr::dataUri($scanUrl.'?type=national_id', 280);
         $scanQrPassport = \App\Support\OnlineInvitationQr::dataUri($scanUrl.'?type=passport', 280);
+        $faceToken = Session::get('membership_face_scan_token');
+        if (! $faceToken) {
+            $faceToken = \App\Support\MembershipFaceScan::makeToken();
+            Session::put('membership_face_scan_token', $faceToken);
+        }
+        \App\Support\MembershipFaceScan::touch($faceToken);
+        $faceUrl = \App\Support\MembershipFaceScan::url($faceToken);
+        $faceQr = \App\Support\OnlineInvitationQr::dataUri($faceUrl, 280);
         $priorityCountries = \App\Support\MembershipCountries::priority();
         $otherCountries = \App\Support\MembershipCountries::others();
 
         return view('beyond.membership.apply', compact(
             'plans', 'promo', 'agreement', 'idTypes', 'discount', 'beyond',
             'scanToken', 'scanUrl', 'scanQrNational', 'scanQrPassport',
+            'faceToken', 'faceUrl', 'faceQr',
             'priorityCountries', 'otherCountries'
         ));
     }
@@ -71,10 +80,12 @@ class MembershipPublicController extends Controller
             'phone' => 'required|string|max:40',
             'id_type' => 'required|in:'.implode(',', $idTypes),
             'id_number' => 'required|string|max:64',
-            'id_expires_on' => 'nullable|date',
+            'id_expires_on' => 'required|date',
+            'id_issued_on' => 'required|date',
+            'id_scanned_name' => 'required|string|max:191',
             'nationality' => 'required|string|max:80',
-            'selfie' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:8192',
-            'selfie_data' => 'nullable|string',
+            'selfie_data' => 'required|string',
+            'selfie_live' => 'required|in:1',
             'accept_agreement' => 'accepted',
             'signature' => 'required|string',
         ];
@@ -84,7 +95,10 @@ class MembershipPublicController extends Controller
         MembershipAgreement::ensureCurrent();
         $data = $request->validate($rules);
 
-        $selfieFile = $request->file('selfie') ?: $this->uploadedFromDataUrl($request->input('selfie_data'), 'selfie');
+        if (! \App\Support\MembershipIdScan::namesMatch($data['id_scanned_name'], $data['full_name'])) {
+            return back()->withInput()->withErrors(['full_name' => __('site.membership.id_name_mismatch')]);
+        }
+        $selfieFile = $this->uploadedFromDataUrl($request->input('selfie_data'), 'selfie');
         if (! $selfieFile) {
             return back()->withInput()->withErrors(['selfie' => __('site.membership.selfie_required')]);
         }
@@ -118,6 +132,7 @@ class MembershipPublicController extends Controller
             'id_type' => $data['id_type'],
             'id_number' => $data['id_number'] ?? null,
             'id_expires_on' => $data['id_expires_on'] ?? null,
+            'id_issued_on' => $data['id_issued_on'] ?? null,
             'nationality' => $data['nationality'] ?? null,
             'beyond_user_id' => $beyond ? $beyond->id : null,
             'submitted_ip' => $request->ip(),
@@ -356,28 +371,92 @@ class MembershipPublicController extends Controller
             $idType = '';
         }
 
-        return view('beyond.membership.id-scan', ['token' => $token, 'idType' => $idType]);
+        $row = \App\Support\MembershipIdScan::get($token);
+
+        return view('beyond.membership.id-scan', [
+            'token' => $token,
+            'idType' => $idType,
+            'expectedName' => is_array($row) ? (string) ($row['expected_name'] ?? '') : '',
+        ]);
     }
 
     public function idScanStore(Request $request, $token)
     {
         $token = preg_replace('/[^A-Za-z0-9]/', '', (string) $token);
-        if (strlen($token) < 16) {
+        if (strlen($token) < 16 || ! \App\Support\MembershipIdScan::get($token)) {
             abort(404);
         }
-        \App\Support\MembershipIdScan::complete($token, [
+        $status = \App\Support\MembershipIdScan::complete($token, [
             'full_name' => trim((string) $request->input('full_name')),
             'id_number' => trim((string) $request->input('id_number')),
             'id_type' => $request->input('id_type'),
+            'issued_on' => trim((string) $request->input('issued_on')),
             'expires_on' => trim((string) $request->input('expires_on')),
             'nationality' => trim((string) $request->input('nationality')),
         ]);
+
+        if ($status === 'incomplete') {
+            $message = __('site.membership.id_dates_required');
+            if ($request->expectsJson()) {
+                return response()->json(['status' => 'incomplete', 'message' => $message], 422);
+            }
+
+            return redirect()->route('membership.id-scan', $token)->with('not_permitted', $message);
+        }
+
+        if ($status === 'mismatch') {
+            $message = __('site.membership.id_name_mismatch');
+            if ($request->expectsJson()) {
+                return response()->json(['status' => 'mismatch', 'message' => $message], 422);
+            }
+
+            return redirect()->route('membership.id-scan', $token)->with('not_permitted', $message);
+        }
 
         if ($request->expectsJson()) {
             return response()->json(['status' => 'ready']);
         }
 
         return view('beyond.membership.id-scan-done');
+    }
+
+    public function faceScanPage($token)
+    {
+        $token = preg_replace('/[^A-Za-z0-9]/', '', (string) $token);
+        $row = \App\Support\MembershipFaceScan::touch($token);
+        if (! $row) {
+            abort(404);
+        }
+
+        return view('beyond.membership.face-scan', ['token' => $token]);
+    }
+
+    public function faceScanStore(Request $request, $token)
+    {
+        $token = preg_replace('/[^A-Za-z0-9]/', '', (string) $token);
+        if (strlen($token) < 16 || ! \App\Support\MembershipFaceScan::get($token)) {
+            abort(404);
+        }
+        $ok = \App\Support\MembershipFaceScan::complete($token, $request->input('image'));
+        if (! $ok) {
+            return response()->json(['status' => 'invalid'], 422);
+        }
+        if ($request->expectsJson()) {
+            return response()->json(['status' => 'ready']);
+        }
+
+        return view('beyond.membership.id-scan-done');
+    }
+
+    public function faceScanStatus($token)
+    {
+        $token = preg_replace('/[^A-Za-z0-9]/', '', (string) $token);
+        $row = \App\Support\MembershipFaceScan::get($token);
+        if (! is_array($row)) {
+            return response()->json(['status' => 'missing'], 404);
+        }
+
+        return response()->json($row);
     }
 
     public function idScanStatus($token)

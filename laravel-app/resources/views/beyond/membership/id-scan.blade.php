@@ -85,6 +85,7 @@
         body.set('full_name', result.full_name || '');
         body.set('id_number', result.id_number || '');
         body.set('id_type', result.id_type || @json($idType));
+        body.set('issued_on', result.issued_on || '');
         body.set('expires_on', result.expires_on || '');
         body.set('nationality', result.nationality || '');
         return fetch(@json(url('/membership/id-scan/'.$token)), {
@@ -94,11 +95,38 @@
         });
     }
 
+    var expectedName = @json($expectedName ?? '');
+
+    function namesClose(a, b) {
+        function tokens(s) {
+            s = String(s || '').toLowerCase();
+            if (s.normalize) s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            return s.replace(/[^a-z\s]/g, ' ').split(/\s+/).filter(function (t) { return t.length >= 2; });
+        }
+        var left = tokens(a);
+        var right = tokens(b);
+        if (!left.length || !right.length) return false;
+        var short = left.length <= right.length ? left : right;
+        var long = left.length <= right.length ? right : left;
+        return short.every(function (token) {
+            return long.some(function (other) { return other === token || (token.length >= 4 && other.length >= 4 && Math.abs(token.length - other.length) <= 1 && (token.indexOf(other) === 0 || other.indexOf(token) === 0)); });
+        });
+    }
+
     function finish(result) {
+        if (!window.w2kIdRead.isComplete(result)) {
+            stopCamera();
+            setStatus(@json(__('site.membership.id_dates_required')));
+            return Promise.resolve();
+        }
+        if (expectedName && !namesClose(expectedName, result.full_name)) {
+            stopCamera();
+            setStatus(@json(__('site.membership.id_name_mismatch')));
+            return Promise.resolve();
+        }
         var bits = [];
         if (result.full_name) bits.push(result.full_name);
-        if (result.id_number) bits.push(result.id_number);
-        if (result.nationality) bits.push(result.nationality);
+        if (result.issued_on) bits.push(result.issued_on);
         if (result.expires_on) bits.push(result.expires_on);
         if (bits.length) {
             nameEl.textContent = bits.join(' · ');
@@ -106,8 +134,10 @@
         }
         stopCamera();
         return sendResult(result).then(function (res) {
-            if (!res.ok) throw new Error('save');
-            setStatus(@json(__('site.membership.id_scan_done')));
+            return res.json().catch(function () { return {}; }).then(function (body) {
+                if (!res.ok) throw new Error((body && body.message) || 'save');
+                setStatus(@json(__('site.membership.id_scan_done')));
+            });
         });
     }
 
@@ -137,9 +167,9 @@
                 return window.w2kIdRead.scanLive(video, setStatus, function () { return cancelled; });
             }).then(function (result) {
                 return finish(result);
-            }).catch(function () {
-                if (cancelled) return;
-                setStatus(@json(__('site.membership.id_read_fail')));
+            }).catch(function (err) {
+                if (cancelled || (err && err.message === 'stopped')) return;
+                setStatus((err && err.message && err.message !== 'save' && err.message !== 'stopped') ? err.message : @json(__('site.membership.id_read_fail')));
                 stopCamera();
             });
     }

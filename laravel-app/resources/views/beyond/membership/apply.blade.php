@@ -103,6 +103,8 @@
                 @csrf
                 <input type="hidden" name="plan_choice" x-model="plan">
                 <input type="hidden" name="selfie_data" id="selfie-data">
+                <input type="hidden" name="selfie_live" id="selfie-live" value="">
+                <input type="hidden" name="id_scanned_name" id="id-scanned-name" value="{{ old('id_scanned_name') }}">
                 <input type="hidden" name="signature" id="membership-signature">
 
                 <div x-show="step === 1">
@@ -239,9 +241,13 @@
                                             </optgroup>
                                         </select>
                                     </div>
-                                    <div class="md:col-span-2">
+                                    <div>
+                                        <label class="text-sm font-semibold text-gray-700">{{ __('site.membership.id_issued_on') }}</label>
+                                        <input required name="id_issued_on" id="id-issued-field" value="{{ old('id_issued_on') }}" type="date" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2 bg-white">
+                                    </div>
+                                    <div>
                                         <label class="text-sm font-semibold text-gray-700">{{ __('site.membership.id_expires_on') }}</label>
-                                        <input name="id_expires_on" id="id-expires-field" value="{{ old('id_expires_on') }}" type="date" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2 bg-white">
+                                        <input required name="id_expires_on" id="id-expires-field" value="{{ old('id_expires_on') }}" type="date" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2 bg-white">
                                     </div>
                                 </div>
                             </div>
@@ -267,13 +273,22 @@
 
                     <div x-show="idRead" x-cloak class="mt-6">
                         <h2 class="text-xl font-bold text-black">{{ __('site.membership.selfie_heading') }}</h2>
-                        <p class="text-sm text-gray-500">{{ __('site.membership.selfie_hint') }}</p>
-                        <div class="mt-3 flex flex-wrap items-center gap-3">
-                            <button type="button" id="selfie-capture-btn" class="inline-flex items-center gap-2 bg-black text-white font-semibold px-4 py-2 rounded-md">{{ __('site.membership.take_selfie') }}</button>
-                            <input id="selfie-input" type="file" name="selfie" accept="image/*" capture="user" class="text-sm">
+                        <p class="text-sm text-gray-500">{{ __('site.membership.selfie_live_hint') }}</p>
+                        <div x-show="isMobile" class="mt-3 space-y-3">
+                            <div class="relative rounded-xl overflow-hidden bg-black max-w-sm">
+                                <video id="selfie-video" class="w-full max-h-80 object-cover bg-black" style="transform: scaleX(-1);" autoplay muted playsinline></video>
+                            </div>
+                            <button type="button" id="selfie-live-btn" class="inline-flex items-center gap-2 bg-black text-white font-semibold px-4 py-2 rounded-md">{{ __('site.membership.take_selfie') }}</button>
+                            <p id="selfie-status" class="text-sm text-brand-gold m-0"></p>
                         </div>
-                        <video id="selfie-video" class="hidden mt-3 w-full max-w-sm rounded-md bg-black" autoplay playsinline></video>
-                        <button type="button" id="selfie-snap-btn" class="hidden mt-2 border border-brand-gold text-brand-gold font-semibold px-4 py-2 rounded-md">{{ __('site.membership.snap') }}</button>
+                        <div x-show="!isMobile" class="mt-3">
+                            <button type="button" @click="faceQrOpen = true" class="inline-flex items-center gap-2 border-2 border-brand-gold text-black font-semibold px-4 py-2 rounded-md">{{ __('site.membership.selfie_continue_mobile') }}</button>
+                            <div x-show="faceQrOpen" x-cloak class="mt-4">
+                                <p class="text-sm text-gray-600">{{ __('site.membership.selfie_mobile_help') }}</p>
+                                <img src="{{ $faceQr }}" alt="" class="w-52 h-52 object-contain bg-white border border-gray-200 rounded-xl p-2">
+                                <p id="selfie-wait" class="text-sm text-brand-gold mt-2 mb-0">{{ __('site.membership.id_waiting') }}</p>
+                            </div>
+                        </div>
                         <img id="selfie-preview" alt="" class="hidden max-h-40 mt-3 rounded-md">
                     </div>
 
@@ -343,6 +358,7 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 <script src="{{ url('public/js/w2k-id-read.js') }}"></script>
+<script src="{{ url('public/js/w2k-face-live.js') }}"></script>
 <script>
 function membershipApply(startStep, oldPlan) {
     return {
@@ -357,6 +373,7 @@ function membershipApply(startStep, oldPlan) {
         idAction: @json(old('id_number') ? 'upload' : ''),
         idRead: {{ old('full_name') || old('id_number') ? 'true' : 'false' }},
         isMobile: false,
+        faceQrOpen: false,
         init() {
             var self = this;
             this.isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -443,52 +460,55 @@ function membershipApply(startStep, oldPlan) {
         });
     }
 
-    var selfieInput = document.getElementById('selfie-input');
     var selfiePreview = document.getElementById('selfie-preview');
     var selfieHidden = document.getElementById('selfie-data');
-    var selfieBtn = document.getElementById('selfie-capture-btn');
+    var selfieLive = document.getElementById('selfie-live');
     var selfieVideo = document.getElementById('selfie-video');
-    var selfieSnap = document.getElementById('selfie-snap-btn');
-    var stream = null;
-    if (selfieInput) {
-        selfieInput.addEventListener('change', function () {
-            if (selfieInput.files[0]) assignFile(selfieInput, selfieInput.files[0], selfiePreview, selfieHidden);
-        });
+    var selfieBtn = document.getElementById('selfie-live-btn');
+    var selfieStatus = document.getElementById('selfie-status');
+    var selfieStream = null;
+    var selfieCancel = false;
+
+    function acceptSelfie(dataUrl) {
+        if (!dataUrl || dataUrl.indexOf('data:image/jpeg') !== 0) return;
+        if (selfieHidden) selfieHidden.value = dataUrl;
+        if (selfieLive) selfieLive.value = '1';
+        if (selfiePreview) {
+            selfiePreview.src = dataUrl;
+            selfiePreview.classList.remove('hidden');
+        }
+        if (selfieStatus) selfieStatus.textContent = @json(__('site.membership.selfie_live_done'));
     }
+
     if (selfieBtn) {
         selfieBtn.addEventListener('click', function () {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                selfieInput && selfieInput.click();
+            if (!navigator.mediaDevices || !window.w2kFaceLive) {
+                if (selfieStatus) selfieStatus.textContent = @json(__('site.membership.selfie_live_fail'));
                 return;
             }
+            selfieCancel = false;
+            selfieBtn.disabled = true;
             navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false }).then(function (s) {
-                stream = s;
+                selfieStream = s;
                 selfieVideo.srcObject = s;
-                selfieVideo.classList.remove('hidden');
-                selfieSnap.classList.remove('hidden');
+                return selfieVideo.play();
+            }).then(function () {
+                return window.w2kFaceLive.start(selfieVideo, function (msg) {
+                    if (selfieStatus) selfieStatus.textContent = msg;
+                }, function () { return selfieCancel; });
+            }).then(function (result) {
+                acceptSelfie(result.image);
             }).catch(function () {
-                selfieInput && selfieInput.click();
-            });
-        });
-    }
-    if (selfieSnap) {
-        selfieSnap.addEventListener('click', function () {
-            if (!selfieVideo || selfieVideo.readyState < 2) return;
-            var canvas = document.createElement('canvas');
-            canvas.width = selfieVideo.videoWidth || 640;
-            canvas.height = selfieVideo.videoHeight || 480;
-            canvas.getContext('2d').drawImage(selfieVideo, 0, 0);
-            canvas.toBlob(function (blob) {
-                if (!blob) return;
-                var file = new File([blob], 'selfie.jpg', { type: 'image/jpeg' });
-                assignFile(selfieInput, file, selfiePreview, selfieHidden);
-                if (stream) {
-                    stream.getTracks().forEach(function (t) { t.stop(); });
-                    stream = null;
+                if (!selfieCancel && selfieStatus) selfieStatus.textContent = @json(__('site.membership.selfie_live_fail'));
+            }).then(function () {
+                selfieCancel = true;
+                if (selfieStream) {
+                    selfieStream.getTracks().forEach(function (t) { t.stop(); });
+                    selfieStream = null;
                 }
-                selfieVideo.classList.add('hidden');
-                selfieSnap.classList.add('hidden');
-            }, 'image/jpeg', 0.9);
+                if (selfieVideo) selfieVideo.srcObject = null;
+                selfieBtn.disabled = false;
+            });
         });
     }
 
@@ -529,6 +549,27 @@ function membershipApply(startStep, oldPlan) {
 
     document.getElementById('membership-apply-form').addEventListener('submit', function (e) {
         var sig = document.getElementById('membership-signature').value;
+        var live = document.getElementById('selfie-live');
+        var scanned = document.getElementById('id-scanned-name');
+        var typed = document.getElementById('full-name-field');
+        if (!live || live.value !== '1') {
+            e.preventDefault();
+            alert(@json(__('site.membership.selfie_required')));
+            return;
+        }
+        if (scanned && typed && scanned.value && typed.value) {
+            var tokens = function (s) { return String(s).toLowerCase().replace(/[^a-z\s]/g, ' ').split(/\s+/).filter(function (t) { return t.length >= 2; }); };
+            var left = tokens(scanned.value);
+            var right = tokens(typed.value);
+            var shortList = left.length <= right.length ? left : right;
+            var longList = left.length <= right.length ? right : left;
+            var samePerson = shortList.length && shortList.every(function (t) { return longList.indexOf(t) !== -1; });
+            if (!samePerson) {
+                e.preventDefault();
+                alert(@json(__('site.membership.id_name_mismatch')));
+                return;
+            }
+        }
         if (!sig) {
             e.preventDefault();
             alert(@json(__('site.membership.sign_required')));
@@ -567,15 +608,26 @@ function membershipApply(startStep, oldPlan) {
 
     function applyIdRead(result) {
         if (!result) return;
+        if (window.w2kIdRead && window.w2kIdRead.isComplete && !window.w2kIdRead.isComplete(result)) {
+            if (status) {
+                status.classList.remove('hidden');
+                status.textContent = @json(__('site.membership.id_dates_required'));
+            }
+            return;
+        }
         var nameInput = document.getElementById('full-name-field');
+        var scannedName = document.getElementById('id-scanned-name');
         var idNum = document.getElementById('id-number-field');
+        var issued = document.getElementById('id-issued-field');
         var exp = document.getElementById('id-expires-field');
         var nat = document.getElementById('nationality-field');
         var got = document.getElementById('id-scan-got');
         var wait = document.getElementById('id-scan-wait');
         var status = document.getElementById('id-scan-status');
         if (result.full_name && nameInput) nameInput.value = result.full_name;
+        if (result.full_name && scannedName) scannedName.value = result.full_name;
         if (result.id_number && idNum) idNum.value = result.id_number;
+        if (result.issued_on && issued) issued.value = result.issued_on;
         if (result.expires_on && exp) exp.value = result.expires_on;
         if (result.nationality && nat) setNationality(nat, result.nationality);
         if (typeof window.__membershipShowIdRead === 'function') window.__membershipShowIdRead();
@@ -586,6 +638,7 @@ function membershipApply(startStep, oldPlan) {
         if (result.full_name) bits.push(result.full_name);
         if (result.id_number) bits.push(result.id_number);
         if (result.nationality) bits.push(result.nationality);
+        if (result.issued_on) bits.push(result.issued_on);
         if (result.expires_on) bits.push(result.expires_on);
         if (got) {
             got.textContent = bits.length ? bits.join(' · ') : @json(__('site.membership.id_scan_photo_ok'));
@@ -690,6 +743,23 @@ function membershipApply(startStep, oldPlan) {
                 .then(function (data) {
                     if (data && data.status === 'ready') {
                         applyIdRead(data);
+                        return;
+                    }
+                    setTimeout(tick, 3000);
+                })
+                .catch(function () { setTimeout(tick, 4000); });
+        }
+        setTimeout(tick, 2500);
+    })();
+
+    (function pollFaceScan() {
+        var url = @json(url('/membership/face-scan/'.$faceToken.'/status'));
+        function tick() {
+            fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (data) {
+                    if (data && data.status === 'ready' && data.live && data.image) {
+                        acceptSelfie(data.image);
                         return;
                     }
                     setTimeout(tick, 3000);

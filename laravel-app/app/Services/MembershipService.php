@@ -236,6 +236,7 @@ class MembershipService
             'id_number' => $data['id_number'] ?? null,
             'date_of_birth' => ! empty($data['date_of_birth']) ? $data['date_of_birth'] : null,
             'id_expires_on' => ! empty($data['id_expires_on']) ? $data['id_expires_on'] : null,
+            'id_issued_on' => ! empty($data['id_issued_on']) ? $data['id_issued_on'] : null,
             'nationality' => ! empty($data['nationality']) ? $data['nationality'] : null,
             'status' => 'PENDING',
             'signature_image' => $signature,

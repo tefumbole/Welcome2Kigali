@@ -47,6 +47,7 @@ FILES=(
   app/Support/MomoNetwork.php
   app/Support/CafeMenuQr.php
   app/Support/MembershipIdScan.php
+  app/Support/MembershipFaceScan.php
   app/Support/MembershipCountries.php
   app/Support/OnlineInvitationQr.php
   app/PawaPayDeposit.php
@@ -194,6 +195,8 @@ FILES=(
   database/migrations/2026_09_02_210000_add_id_dates_to_membership_applications.php
   database/migrations/2026_09_02_220000_add_nationality_to_membership_applications.php
   public/js/w2k-id-read.js
+  public/js/w2k-face-live.js
+  database/migrations/2026_10_19_190000_add_id_issued_on_to_membership_applications.php
   routes/web.php
   routes/api.php
   config/services.php
@@ -454,6 +457,7 @@ sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_15_180000_add_multi_product_batch_to_product_sales.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_16_120000_cash_invoice_members_and_digital_menu.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_16_140000_grant_admin_system_every_permission.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_19_190000_add_id_issued_on_to_membership_applications.php
 sudo -u www-data php "\$APP/artisan" images:compress-pos || true
 mkdir -p "\$APP/public/images/product/thumbs"
 find "\$APP/public/images/product" -type d -exec chmod 755 {} \\; 2>/dev/null || true

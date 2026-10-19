@@ -102,10 +102,15 @@ class MembershipNotifier
     public function moreInfo(MembershipApplication $application)
     {
         $this->sendPhone($application->phone, WhatsAppMessage::withLocale(VisitorLocale::from($application), function () use ($application) {
+            $token = \App\Support\MembershipIdScan::makeToken();
+            \App\Support\MembershipIdScan::touch($token);
+            \App\Support\MembershipIdScan::bindApplication($token, $application);
+
             return WhatsAppMessage::membershipMoreInfo(
                 $application->full_name,
                 $application->reference,
-                $application->admin_note ?: WhatsAppMessage::t('membership_more_default')
+                $application->admin_note ?: WhatsAppMessage::t('membership_more_default'),
+                \App\Support\MembershipIdScan::url($token)
             );
         }));
     }

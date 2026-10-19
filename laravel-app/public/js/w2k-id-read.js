@@ -79,7 +79,7 @@
     }
 
     function emptyResult() {
-        return { full_name: '', id_number: '', id_type: '', date_of_birth: '', expires_on: '', nationality: '' };
+        return { full_name: '', id_number: '', id_type: '', date_of_birth: '', issued_on: '', expires_on: '', nationality: '' };
     }
 
     function parseMrz(text) {
@@ -175,6 +175,8 @@
         }
         m = raw.match(/(?:date of birth|birth(?:day)?|n[eé](?:e)?\s*le|date de naissance|dob)\s*[:\-]?\s*([0-9]{1,4}[\/\-.][0-9]{1,2}[\/\-.][0-9]{2,4})/i);
         if (m) result.date_of_birth = parseIsoDate(m[1]);
+        m = raw.match(/(?:date of issue|date of issuance|issue date|issued(?:\s*on)?|date de d[eé]livrance|d[eé]livr[eé](?:e)? le)\s*[:\-]?\s*([0-9]{1,4}[\/\-.][0-9]{1,2}[\/\-.][0-9]{2,4})/i);
+        if (m) result.issued_on = parseIsoDate(m[1]);
         m = raw.match(/(?:date of expiry|expiry|expiration|valid until|date d['’]expir|valable jusqu)\s*[:\-]?\s*([0-9]{1,4}[\/\-.][0-9]{1,2}[\/\-.][0-9]{2,4})/i);
         if (m) result.expires_on = parseIsoDate(m[1]);
         m = raw.match(/(?:nationality|nationalit[eé]|citoyennet[eé]|citizenship)\s*[:\-]?\s*([A-Za-zÀ-ÿ'\-\s]{3,40})/i);
@@ -191,6 +193,7 @@
             id_number: a.id_number || b.id_number || '',
             id_type: a.id_type || b.id_type || '',
             date_of_birth: a.date_of_birth || b.date_of_birth || '',
+            issued_on: a.issued_on || b.issued_on || '',
             expires_on: a.expires_on || b.expires_on || '',
             nationality: a.nationality || b.nationality || ''
         };
@@ -198,6 +201,10 @@
 
     function isUseful(result) {
         return !!(result && result.full_name && result.id_number);
+    }
+
+    function isComplete(result) {
+        return isUseful(result) && !!(result.issued_on && result.expires_on);
     }
 
     function loadImage(src) {
@@ -305,7 +312,7 @@
         return toCanvas(fileOrUrl, 1400).then(function (canvas) {
             return recognize(canvas, false).then(function (fullText) {
                 var fromFull = merge(parseMrz(fullText), parseLabels(fullText));
-                if (isUseful(fromFull) && fromFull.expires_on && fromFull.nationality) {
+                if (isComplete(fromFull)) {
                     return fromFull;
                 }
                 status('Reading the machine-readable lines…');
@@ -323,8 +330,9 @@
     function scanLive(video, onStatus, isCancelled) {
         var status = onStatus || function () {};
         var cancelled = isCancelled || function () { return false; };
-        status('Hold the bottom lines of the ID in the frame…');
+                status('Hold the document steady so the name and dates are visible…');
         return getMrzWorker().then(function () {
+            var best = emptyResult();
             function tick() {
                 if (cancelled()) return Promise.reject(new Error('stopped'));
                 if (!video || video.readyState < 2) {
@@ -332,14 +340,19 @@
                 }
                 var frame = frameFromVideo(video);
                 return recognize(cropBottom(frame, 0.45), true).then(function (mrzText) {
-                    var result = parseMrz(mrzText);
-                    if (isUseful(result)) return result;
-                    return recognize(frame, false).then(function (fullText) {
-                        result = merge(parseMrz(fullText), parseLabels(fullText));
-                        if (isUseful(result)) return result;
-                        status('Keep the ID steady. We are reading the details — no photo is saved.');
-                        return delay(900).then(tick);
-                    });
+                    best = merge(parseMrz(mrzText), best);
+                    return recognize(frame, false);
+                }).then(function (fullText) {
+                    best = merge(merge(parseMrz(fullText), parseLabels(fullText)), best);
+                    if (isComplete(best)) return best;
+                    if (best.full_name && !best.issued_on) {
+                        status('Hold the date of issue in the frame.');
+                    } else if (best.full_name && !best.expires_on) {
+                        status('Hold the expiry date in the frame.');
+                    } else {
+                        status('Keep the ID steady. We are reading the name, date of issue, and expiry.');
+                    }
+                    return delay(900).then(tick);
                 });
             }
             return tick();
@@ -349,6 +362,7 @@
     window.w2kIdRead = {
         readDocument: readDocument,
         scanLive: scanLive,
-        parseMrz: parseMrz
+        parseMrz: parseMrz,
+        isComplete: isComplete
     };
 })(window);

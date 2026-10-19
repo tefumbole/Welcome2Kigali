@@ -54,6 +54,8 @@ return [
     'membership_more_title' => 'UBUNYAMURYANGO — ANDI MAKURU',
     'membership_more_intro' => 'Murakoze ku cyifuzo cy’ubunyamuryango *:reference*.',
     'membership_more_body' => 'Dukeneye andi makuru make mbere yo kurangiza isuzuma.',
+    'membership_more_scan' => 'Sikana indangamuntu cyangwa pasiporo ukoresheje iyi link. Dusoma amazina, itariki y’itangwa n’itariki irangiriraho, tukagenzura ko amazina ahuye n’icyifuzo cyawe.',
+    'membership_more_scan_label' => 'Sikana indangamuntu cyangwa pasiporo',
     'membership_more_reply' => 'Nyamuneka subiza kuri iyi numero ya WhatsApp n’ibisabwa.',
     'membership_more_default' => 'Nyamuneka twandikire kuri WhatsApp n’inyandiko zibura.',
     'membership_expired_title' => 'UBUNYAMURYANGO BWARANGIYE',

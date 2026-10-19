@@ -1290,13 +1290,17 @@ class WhatsAppMessage
         return $msg;
     }
 
-    public static function membershipMoreInfo($name, $reference, $note)
+    public static function membershipMoreInfo($name, $reference, $note, $scanUrl = null)
     {
         $msg = self::statusBlock('📎', self::t('membership_more_title'));
         $msg .= self::greeting($name);
         $msg .= self::t('membership_more_intro', ['reference' => $reference])."\n\n";
         $msg .= self::t('membership_more_body')."\n\n";
         $msg .= $note."\n";
+        if ($scanUrl) {
+            $msg .= "\n".self::t('membership_more_scan');
+            $msg .= self::actionLink(self::t('membership_more_scan_label'), $scanUrl);
+        }
         $msg .= "\n".self::t('membership_more_reply');
         $msg .= self::footer();
 

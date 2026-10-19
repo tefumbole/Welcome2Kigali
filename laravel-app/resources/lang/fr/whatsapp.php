@@ -54,6 +54,8 @@ return [
     'membership_more_title' => 'ADHÉSION — INFORMATIONS COMPLÉMENTAIRES',
     'membership_more_intro' => 'Merci pour votre demande d’adhésion *:reference*.',
     'membership_more_body' => 'Nous avons besoin de quelques informations supplémentaires avant de terminer l’examen.',
+    'membership_more_scan' => 'Scannez votre carte d’identité ou votre passeport avec ce lien. Nous lisons le nom, la date de délivrance et l’expiration, puis vérifions que le nom correspond à votre demande.',
+    'membership_more_scan_label' => 'Scanner la pièce ou le passeport',
     'membership_more_reply' => 'Merci de répondre sur ce numéro WhatsApp avec les éléments demandés.',
     'membership_more_default' => 'Merci de nous contacter sur WhatsApp avec les documents manquants.',
     'membership_expired_title' => 'ADHÉSION EXPIRÉE',

@@ -78,6 +78,9 @@ Route::post('/membership/apply', 'MembershipPublicController@store')->name('memb
 Route::get('/membership/id-scan/{token}', 'MembershipPublicController@idScanPage')->name('membership.id-scan')->where('token', '[A-Za-z0-9]+');
 Route::post('/membership/id-scan/{token}', 'MembershipPublicController@idScanStore')->name('membership.id-scan.store')->where('token', '[A-Za-z0-9]+');
 Route::get('/membership/id-scan/{token}/status', 'MembershipPublicController@idScanStatus')->name('membership.id-scan.status')->where('token', '[A-Za-z0-9]+');
+Route::get('/membership/face-scan/{token}', 'MembershipPublicController@faceScanPage')->name('membership.face-scan')->where('token', '[A-Za-z0-9]+');
+Route::post('/membership/face-scan/{token}', 'MembershipPublicController@faceScanStore')->name('membership.face-scan.store')->where('token', '[A-Za-z0-9]+');
+Route::get('/membership/face-scan/{token}/status', 'MembershipPublicController@faceScanStatus')->name('membership.face-scan.status')->where('token', '[A-Za-z0-9]+');
 Route::get('/membership/confirmation/{reference}', 'MembershipPublicController@confirmation')->name('membership.confirmation');
 Route::get('/membership/verify/{token}', 'MembershipPublicController@verify')->name('membership.verify');
 Route::get('/membership/renew/{token}', 'MembershipPublicController@renew')->name('membership.renew');

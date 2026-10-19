@@ -54,6 +54,8 @@ return [
     'membership_more_title' => 'MEMBERSHIP — MORE INFORMATION',
     'membership_more_intro' => 'Thank you for your membership application *:reference*.',
     'membership_more_body' => 'We need a little more information before we can complete the review.',
+    'membership_more_scan' => 'Scan your ID card or passport with this link. We read the name, date of issue, and expiry, and check that the name matches your application.',
+    'membership_more_scan_label' => 'Scan ID or passport',
     'membership_more_reply' => 'Please reply on this WhatsApp number with the requested details.',
     'membership_more_default' => 'Please contact us on WhatsApp with the missing documents.',
     'membership_expired_title' => 'MEMBERSHIP EXPIRED',

@@ -18,14 +18,10 @@ class MembershipAgreement extends Model
     public static function defaultBody()
     {
         return "Welcome 2 Kigali Expats Club Membership Terms\n\n"
-            ."1. Membership is personal and non-transferable.\n"
-            ."2. Active members receive the published member discount and any free member benefits while membership is ACTIVE.\n"
-            ."3. Fees are set by the Club and may change; you pay the fee in force at the time of registration or renewal.\n"
-            ."4. Promotional memberships (including free trial periods) end on the stated expiry date unless you renew on a paid plan.\n"
-            ."5. When membership expires or is suspended, member discounts and free benefits stop. You remain a customer at standard prices.\n"
-            ."6. The Club may suspend membership for misuse of benefits or unpaid fees.\n"
-            ."7. You agree that the Club may contact you on WhatsApp about your membership, renewals, and club notices.\n"
-            ."8. Identification documents you upload are used only to verify membership.\n";
+            ."1. Membership is non-transferable.\n"
+            ."2. If you upgrade from one membership plan to another, you forfeit the current month when upgrading from a 1-month plan to a quarterly plan, or from a quarterly plan to an annual plan.\n"
+            ."3. Members receive a 10% discount on all items at Welcome 2 Kigali, including food, drinks, dress, laundry, supermarket, priority parking, and more.\n"
+            ."4. Members have free access to the pool and PlayStation.\n";
     }
 
     /**
@@ -38,6 +34,13 @@ class MembershipAgreement extends Model
         }
         $current = static::current();
         if ($current) {
+            if ((string) $current->version !== '2.0') {
+                $current->version = '2.0';
+                $current->title = 'Welcome 2 Kigali Expats Club Membership Agreement';
+                $current->body = static::defaultBody();
+                $current->save();
+            }
+
             return $current;
         }
 
@@ -55,7 +58,7 @@ class MembershipAgreement extends Model
 
         try {
             \Illuminate\Support\Facades\DB::table('membership_agreements')->insert([
-                'version' => '1.0',
+                'version' => '2.0',
                 'title' => 'Welcome 2 Kigali Expats Club Membership Agreement',
                 'body' => static::defaultBody(),
                 'is_current' => 1,
@@ -77,14 +80,10 @@ class MembershipAgreement extends Model
     public function presentedClauses()
     {
         $meta = [
-            1 => ['title' => 'Personal membership', 'icon' => 'user'],
-            2 => ['title' => 'Member benefits', 'icon' => 'percent'],
-            3 => ['title' => 'Membership fees', 'icon' => 'dollar-sign'],
-            4 => ['title' => 'Promotional memberships', 'icon' => 'clock'],
-            5 => ['title' => 'Expiry and suspension', 'icon' => 'calendar'],
-            6 => ['title' => 'Club rights', 'icon' => 'shield'],
-            7 => ['title' => 'WhatsApp notices', 'icon' => 'message-circle'],
-            8 => ['title' => 'Identification documents', 'icon' => 'file-text'],
+            1 => ['title' => 'Non-transferable', 'icon' => 'user'],
+            2 => ['title' => 'Plan upgrades', 'icon' => 'refresh-cw'],
+            3 => ['title' => 'Member discount', 'icon' => 'percent'],
+            4 => ['title' => 'Pool and PlayStation', 'icon' => 'gift'],
         ];
 
         $clauses = [];
