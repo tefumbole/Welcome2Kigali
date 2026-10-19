@@ -163,7 +163,7 @@
 
                 @if($agreement)
                 <div x-show="step === 2" x-cloak>
-                    <div class="bg-[#0A0A0A] text-white rounded-2xl border border-brand-gold/30 shadow-2xl max-w-3xl mx-auto" style="display:flex;flex-direction:column;overflow:hidden;height:min(820px,calc(100dvh - 7rem));">
+                    <div class="bg-[#0A0A0A] text-white rounded-2xl border border-brand-gold/30 shadow-2xl max-w-3xl mx-auto" style="display:flex;flex-direction:column;overflow:hidden;height:min(820px,calc(100dvh - 15rem));">
                         @include('beyond.membership.partials.agreement-document', ['agreement' => $agreement])
                         <div class="bg-[#111] border-t border-brand-gold/30 py-4 px-4 md:px-6 flex flex-col sm:flex-row items-center justify-between gap-3" style="flex:0 0 auto;">
                             <p class="text-sm text-gray-300 text-center sm:text-left m-0">Do you accept the terms outlined in this Membership Agreement?</p>
