@@ -272,16 +272,7 @@ class BeyondController extends Controller
 
     private function menuProductImage($filename)
     {
-        $filename = \App\Support\PosProductImage::firstName($filename);
-        if ($filename === '' || $filename === 'zummXD2dvAtI.png') {
-            return '';
-        }
-        $path = public_path('images/product/'.$filename);
-        if (! is_file($path) || filesize($path) < 1) {
-            return '';
-        }
-
-        return \App\Support\PosProductImage::url($filename);
+        return \App\Support\PosProductImage::photoUrl($filename) ?: '';
     }
 
     private function menuCategoryImage($category, $fallback)

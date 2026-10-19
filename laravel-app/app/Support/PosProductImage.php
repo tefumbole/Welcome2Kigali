@@ -43,6 +43,24 @@ class PosProductImage
         return self::url('zummXD2dvAtI.png');
     }
 
+    public static function photoUrl($images)
+    {
+        foreach (explode(',', (string) $images) as $name) {
+            $name = basename(str_replace('\\', '/', urldecode(trim($name))));
+            if ($name === '' || strtolower($name) === 'null' || $name === 'zummXD2dvAtI.png') {
+                continue;
+            }
+            foreach (['images/product/'.$name, 'images/product/thumbs/'.$name] as $relative) {
+                $path = public_path($relative);
+                if (is_file($path) && filesize($path) > 0) {
+                    return self::assetFile($relative).'?v='.filemtime($path);
+                }
+            }
+        }
+
+        return null;
+    }
+
     public static function firstName($filename)
     {
         $filename = trim((string) $filename);

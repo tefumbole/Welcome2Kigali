@@ -45,6 +45,7 @@ return [
         'no_categories' => 'Les produits arrivent bientôt. Écrivez-nous sur WhatsApp pour commander.',
         'no_items' => 'Aucun article dans cette catégorie pour le moment.',
         'cta_browse' => 'Voir et commander',
+        'close' => 'Fermer',
         'all_services' => 'Tous les services',
         'items_count' => '{0} Aucun article|{1} 1 article|[2,*] :count articles',
     ],

@@ -79,10 +79,12 @@
                                 <li class="px-4 sm:px-5 py-3">
                                     <div class="flex items-center gap-3">
                                         @if ($item['image'])
-                                            <img src="{{ $item['image'] }}" alt="" class="w-14 h-14 rounded-xl object-cover shrink-0 bg-white/5" loading="lazy">
+                                            <button type="button" class="shrink-0 p-0 border-0 bg-transparent" @click="photo = {src: {{ json_encode($item['image']) }}, name: {{ json_encode(\App\Support\SiteI18n::item($item['name'])) }}}">
+                                                <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover bg-white/5 border border-brand-gold/20" loading="lazy">
+                                            </button>
                                         @else
-                                            <span class="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center text-brand-gold/70 shrink-0">
-                                                <i data-lucide="{{ $current['icon'] }}" class="w-6 h-6"></i>
+                                            <span class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-white/5 flex items-center justify-center text-brand-gold/70 shrink-0">
+                                                <i data-lucide="{{ $current['icon'] }}" class="w-8 h-8"></i>
                                             </span>
                                         @endif
                                         <div class="min-w-0 flex-1">
@@ -115,6 +117,14 @@
         <span class="uppercase tracking-widest text-xs">{{ __('site.menu.view_cart') }} →</span>
     </a>
 
+    <div x-show="photo" x-cloak x-transition.opacity class="fixed inset-0 z-[60] bg-black/85 flex items-center justify-center p-6" @click="photo = null" @keydown.escape.window="photo = null">
+        <figure class="m-0 text-center" @click.stop>
+            <img :src="photo && photo.src" :alt="photo && photo.name" class="max-w-[90vw] max-h-[70vh] w-80 rounded-2xl object-cover border border-brand-gold/40">
+            <figcaption class="text-white mt-3 font-semibold" x-text="photo && photo.name"></figcaption>
+            <button type="button" class="mt-4 text-xs uppercase tracking-[0.18em] text-brand-gold" @click="photo = null">{{ __('site.services.close') }}</button>
+        </figure>
+    </div>
+
     <div x-show="toast" x-cloak x-transition
          class="fixed bottom-24 left-4 z-50 max-w-sm rounded-2xl border border-brand-gold bg-black/95 px-4 py-3 shadow-2xl">
         <p class="text-brand-gold text-xs tracking-[0.2em] uppercase m-0">{{ __('site.menu.added') }}</p>
@@ -129,6 +139,7 @@ function w2kServiceCart(initialCount) {
     return {
         busy: false,
         toast: '',
+        photo: null,
         cartCount: initialCount || 0,
         qty: {},
         qtyOf(id) { return this.qty[id] || 1; },

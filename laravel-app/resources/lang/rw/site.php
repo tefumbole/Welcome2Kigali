@@ -45,6 +45,7 @@ return [
         'no_categories' => 'Ibicuruzwa biri kongerwamo. Twandikire kuri WhatsApp kugira ngo utumize.',
         'no_items' => 'Nta bicuruzwa biri muri iki cyiciro ubu.',
         'cta_browse' => 'Reba kandi utumize',
+        'close' => 'Funga',
         'all_services' => 'Serivisi zose',
         'items_count' => '{0} Nta bicuruzwa|{1} Igicuruzwa 1|[2,*] Ibicuruzwa :count',
     ],

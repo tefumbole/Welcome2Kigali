@@ -124,15 +124,11 @@ class ServiceCatalog
             ->orderBy('name')
             ->get()
             ->map(function ($product) {
-                $filename = PosProductImage::firstName($product->image);
-                $path = public_path('images/product/'.$filename);
-                $hasImage = $filename !== 'zummXD2dvAtI.png' && is_file($path) && filesize($path) > 0;
-
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
                     'details' => trim(strip_tags((string) $product->product_details)),
-                    'image' => $hasImage ? PosProductImage::url($filename) : null,
+                    'image' => PosProductImage::photoUrl($product->image),
                     'price' => (int) $product->price,
                 ];
             })

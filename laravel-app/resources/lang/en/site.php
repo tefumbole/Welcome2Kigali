@@ -45,6 +45,7 @@ return [
         'no_categories' => 'Products are being added. Chat with us on WhatsApp to order.',
         'no_items' => 'No items in this category yet.',
         'cta_browse' => 'Browse & order',
+        'close' => 'Close',
         'all_services' => 'All services',
         'items_count' => '{0} No items|{1} 1 item|[2,*] :count items',
     ],
