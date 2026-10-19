@@ -200,6 +200,7 @@ FILES=(
   database/migrations/2026_10_19_190000_add_id_issued_on_to_membership_applications.php
   database/migrations/2026_10_19_210000_create_guest_reviews_table.php
   database/migrations/2026_10_19_230000_add_service_to_categories.php
+  database/migrations/2026_10_19_240000_create_momo_payments_table.php
   routes/web.php
   routes/api.php
   config/services.php
@@ -276,6 +277,7 @@ FILES=(
   app/Category.php
   app/Support/MembershipUpdateLink.php
   app/Http/Controllers/MomoPayController.php
+  app/MomoPayment.php
   app/Http/Controllers/SaleInvoiceVerifyController.php
   resources/views/site_content/gallery_tab.blade.php
   app/Http/Controllers/QRController.php
@@ -478,6 +480,7 @@ sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_19_190000_add_id_issued_on_to_membership_applications.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_19_210000_create_guest_reviews_table.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_19_230000_add_service_to_categories.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_19_240000_create_momo_payments_table.php
 sudo -u www-data php "\$APP/artisan" images:compress-pos || true
 mkdir -p "\$APP/public/images/product/thumbs"
 find "\$APP/public/images/product" -type d -exec chmod 755 {} \\; 2>/dev/null || true

@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\MomoPayment;
 use App\Support\MomoUssd;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class MomoPayController extends Controller
 {
@@ -12,15 +15,129 @@ class MomoPayController extends Controller
             abort(404);
         }
 
+        $amount = MomoUssd::amount($amount);
+        $reference = $this->reference($purpose, $id);
+        $record = $this->record($purpose, $id, $amount, $reference);
+        $paid = $this->isPaid($purpose, $id, $record);
+
         return view('beyond.payments.momo_ussd', [
             'purpose' => $purpose,
-            'reference' => $this->reference($purpose, $id),
-            'amount' => MomoUssd::amount($amount),
-            'code' => MomoUssd::code($amount),
+            'id' => $id,
+            'token' => $token,
+            'reference' => $reference,
+            'amount' => $amount,
             'tel' => MomoUssd::telUri($amount),
             'qr' => MomoUssd::qrDataUri($amount),
+            'paid' => $paid,
             'backUrl' => request()->query('back'),
         ]);
+    }
+
+    public function markPaid(Request $request, $purpose, $id, $amount, $token)
+    {
+        if (! MomoUssd::isValid($purpose, $id, $amount, $token)) {
+            abort(404);
+        }
+
+        $amount = MomoUssd::amount($amount);
+        $reference = $this->reference($purpose, $id);
+        $record = $this->record($purpose, $id, $amount, $reference);
+
+        if ($record && ! $record->isPaid()) {
+            $record->status = 'paid';
+            $record->paid_at = now();
+            $record->save();
+        }
+
+        $this->finalize($purpose, $id, $amount);
+
+        $back = $request->query('back');
+        $target = MomoUssd::payUrl($purpose, $id, $amount);
+        if ($back && \Illuminate\Support\Str::startsWith($back, url('/'))) {
+            $target .= '?back='.urlencode($back);
+        }
+
+        return redirect()->to($target)->with('momo_marked_paid', true);
+    }
+
+    protected function record($purpose, $id, $amount, $reference)
+    {
+        if (! Schema::hasTable('momo_payments')) {
+            return null;
+        }
+
+        $record = MomoPayment::where('purpose', $purpose)->where('ref_id', $id)->first();
+        if (! $record) {
+            $record = MomoPayment::create([
+                'purpose' => $purpose,
+                'ref_id' => $id,
+                'amount' => $amount,
+                'reference' => $reference,
+                'status' => 'pending',
+            ]);
+        }
+
+        return $record;
+    }
+
+    protected function isPaid($purpose, $id, $record): bool
+    {
+        if ($record && $record->isPaid()) {
+            return true;
+        }
+
+        // Also treat the link as paid when the underlying record was completed elsewhere.
+        try {
+            switch ($purpose) {
+                case 'sale':
+                    return (int) optional(\App\Sale::find($id))->payment_status === 4;
+                case 'order':
+                    return (int) optional(\App\Order::find($id))->payment_status === 1;
+                case 'membership':
+                    return optional(\App\MembershipPayment::find($id))->status === 'paid';
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        return false;
+    }
+
+    protected function finalize($purpose, $id, $amount)
+    {
+        try {
+            switch ($purpose) {
+                case 'sale':
+                    $sale = \App\Sale::find($id);
+                    if ($sale && (int) $sale->payment_status !== 4) {
+                        $sale->paid_amount = $sale->grand_total;
+                        $sale->payment_status = 4;
+                        $sale->save();
+                    }
+                    break;
+                case 'order':
+                    $order = \App\Order::find($id);
+                    if ($order && (int) $order->payment_status !== 1) {
+                        $order->payment_status = 1;
+                        $order->save();
+                    }
+                    break;
+                case 'membership':
+                    $payment = \App\MembershipPayment::find($id);
+                    if ($payment && $payment->status !== 'paid') {
+                        $service = app(\App\Services\MembershipService::class);
+                        $membership = $service->activateFromPayment($payment);
+                        try {
+                            app(\App\Services\MembershipNotifier::class)->approved($membership);
+                        } catch (\Throwable $e) {
+                            // notification is best-effort
+                        }
+                    }
+                    break;
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('[momo-ussd] finalize failed: '.$e->getMessage());
+        }
     }
 
     protected function reference($purpose, $id)

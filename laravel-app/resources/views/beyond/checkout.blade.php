@@ -7,7 +7,7 @@
 @section('content')
 <section class="bg-black text-white min-h-[70vh] py-12"
          x-data="{
-            service: 'Dine in',
+            service: 'Eat in',
             pay: '',
             takeawayFee: {{ (int) $takeawayFee }},
             subtotal: {{ (float) $total }},
@@ -39,11 +39,11 @@
                 </div>
                 <div>
                     <p class="text-[11px] tracking-[0.2em] uppercase text-brand-gold mb-3">{{ __('site.checkout.service') }}</p>
-                    <input type="hidden" name="address" value="Dine in" x-bind:value="service">
+                    <input type="hidden" name="address" value="Eat in" x-bind:value="service">
                     <div class="grid sm:grid-cols-2 gap-3">
                         <button type="button"
-                                @click="service = 'Dine in'"
-                                :class="service === 'Dine in' ? 'border-brand-gold bg-brand-gold/15' : 'border-brand-gold/35 hover:border-brand-gold/70'"
+                                @click="service = 'Eat in'"
+                                :class="service === 'Eat in' ? 'border-brand-gold bg-brand-gold/15' : 'border-brand-gold/35 hover:border-brand-gold/70'"
                                 class="text-left border px-4 py-4 transition-colors">
                             <span class="flex items-center gap-2 font-serif text-lg text-[#F3E6C8]">
                                 <i data-lucide="utensils" class="w-5 h-5 text-brand-gold"></i>

@@ -191,7 +191,7 @@ return [
         'name' => 'Name',
         'phone' => 'WhatsApp / Phone',
         'service' => 'Service',
-        'dine_in' => 'Dine in',
+        'dine_in' => 'Eat in',
         'dine_in_note' => 'Elegantly served. Thoughtfully paired.',
         'take_away' => 'Take away',
         'take_away_note' => 'Beautifully packed. Always with your bite.',

@@ -13,7 +13,7 @@ class CafeOrder
             return 'Take away';
         }
 
-        return 'Dine in';
+        return 'Eat in';
     }
 
     public static function takeawayFee($service)

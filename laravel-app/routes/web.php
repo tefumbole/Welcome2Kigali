@@ -92,6 +92,7 @@ Route::post('/membership/renew/{token}', 'MembershipPublicController@startPaymen
 Route::get('/membership/payment/check', 'MembershipPublicController@paymentCheck')->name('membership.payment.check');
 Route::get('/membership/paid', 'MembershipPublicController@paid')->name('membership.paid');
 Route::get('/pay/momo/{purpose}/{id}/{amount}/{token}', 'MomoPayController@show')->name('momo.ussd')->where(['purpose' => '[a-z]+', 'id' => '[0-9]+', 'amount' => '[0-9]+', 'token' => '[a-f0-9]+']);
+Route::post('/pay/momo/{purpose}/{id}/{amount}/{token}', 'MomoPayController@markPaid')->name('momo.ussd.paid')->where(['purpose' => '[a-z]+', 'id' => '[0-9]+', 'amount' => '[0-9]+', 'token' => '[a-f0-9]+']);
 Route::get('/payments/pawapay/{depositId}/wait', 'PawaPayCallbackController@wait')->name('pawapay.wait');
 Route::get('/payments/pawapay/{depositId}/status', 'PawaPayCallbackController@status')->name('pawapay.status');
 Route::post('/payments/pawapay/deposits/callback', 'PawaPayCallbackController@handle');
