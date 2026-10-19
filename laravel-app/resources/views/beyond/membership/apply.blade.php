@@ -163,9 +163,9 @@
 
                 @if($agreement)
                 <div x-show="step === 2" x-cloak>
-                    <div class="bg-[#0A0A0A] text-white rounded-2xl overflow-hidden border border-brand-gold/30 shadow-2xl max-w-3xl mx-auto flex flex-col h-[min(820px,calc(100dvh-7rem))]">
+                    <div class="bg-[#0A0A0A] text-white rounded-2xl border border-brand-gold/30 shadow-2xl max-w-3xl mx-auto" style="display:flex;flex-direction:column;overflow:hidden;height:min(820px,calc(100dvh - 7rem));">
                         @include('beyond.membership.partials.agreement-document', ['agreement' => $agreement])
-                        <div class="bg-[#111] border-t border-brand-gold/30 py-4 px-4 md:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+                        <div class="bg-[#111] border-t border-brand-gold/30 py-4 px-4 md:px-6 flex flex-col sm:flex-row items-center justify-between gap-3" style="flex:0 0 auto;">
                             <p class="text-sm text-gray-300 text-center sm:text-left m-0">Do you accept the terms outlined in this Membership Agreement?</p>
                             <div class="flex gap-3 w-full sm:w-auto">
                                 <button type="button" @click="declineAgreement()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-md border border-red-500/60 text-red-400 hover:bg-red-950/40 font-medium">I Disagree</button>

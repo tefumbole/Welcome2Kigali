@@ -1,8 +1,8 @@
 @php
     $clauses = $agreement->presentedClauses();
 @endphp
-<div class="bg-[#0A0A0A] text-white flex flex-col flex-1 min-h-0">
-    <div class="px-5 md:px-8 pt-6 pb-4 text-center border-b border-brand-gold/30 shrink-0">
+<div class="bg-[#0A0A0A] text-white" style="flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;">
+    <div class="px-5 md:px-8 pt-6 pb-4 text-center border-b border-brand-gold/30" style="flex:0 0 auto;">
         <div class="flex justify-center mb-3">
             <i data-lucide="shield-check" class="w-10 h-10 text-brand-gold"></i>
         </div>
@@ -10,7 +10,7 @@
         <p class="text-gray-300 text-sm mt-2 mb-0">Please read the following terms carefully before proceeding.</p>
     </div>
 
-    <div class="px-4 md:px-8 py-6 overflow-y-auto flex-1 min-h-0">
+    <div class="px-4 md:px-8 py-6" style="flex:1 1 auto;min-height:0;overflow-y:auto;">
         <div class="mb-6 p-5 bg-white/5 rounded-lg border-l-4 border-brand-gold">
             <h3 class="text-lg font-bold text-white mb-2">Membership License Agreement</h3>
             <p class="text-gray-300 text-sm md:text-base leading-relaxed m-0">
