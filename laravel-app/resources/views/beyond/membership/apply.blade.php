@@ -76,8 +76,13 @@
 
 @section('content')
 @php
-    $startStep = old('plan_choice') || $errors->any() ? 2 : 1;
     $oldPlan = old('plan_choice', '');
+    $startStep = 1;
+    if (old('accept_agreement')) {
+        $startStep = 3;
+    } elseif ($oldPlan || $errors->any()) {
+        $startStep = 2;
+    }
 @endphp
 <div class="bg-gray-50 flex flex-col"
      x-data="membershipApply({{ (int) $startStep }}, {{ json_encode($oldPlan) }})">
@@ -88,7 +93,7 @@
     </div>
 
     <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-5 z-20 pb-8 w-full">
-        <div class="bg-white rounded-xl shadow-lg border p-4 md:p-5">
+        <div class="rounded-xl" :class="step === 2 ? '' : 'bg-white shadow-lg border p-4 md:p-5'">
             @if ($errors->any())
                 <div class="mb-6 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
                     <ul class="list-disc pl-5 space-y-1">
@@ -106,6 +111,7 @@
                 <input type="hidden" name="selfie_live" id="selfie-live" value="">
                 <input type="hidden" name="id_scanned_name" id="id-scanned-name" value="{{ old('id_scanned_name') }}">
                 <input type="hidden" name="signature" id="membership-signature">
+                <input type="hidden" name="accept_agreement" :value="agreementAccepted ? '1' : ''">
 
                 <div x-show="step === 1">
                     <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-1">
@@ -155,8 +161,25 @@
                     </div>
                 </div>
 
+                @if($agreement)
                 <div x-show="step === 2" x-cloak>
-                    <button type="button" @click="step = 1" class="text-sm text-gray-600 underline mb-4">{{ __('site.membership.change_plan') }}</button>
+                    <div class="bg-[#0A0A0A] text-white rounded-2xl overflow-hidden border border-brand-gold/30 shadow-2xl max-w-3xl mx-auto flex flex-col h-[min(820px,calc(100dvh-7rem))]">
+                        @include('beyond.membership.partials.agreement-document', ['agreement' => $agreement])
+                        <div class="bg-[#111] border-t border-brand-gold/30 py-4 px-4 md:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+                            <p class="text-sm text-gray-300 text-center sm:text-left m-0">Do you accept the terms outlined in this Membership Agreement?</p>
+                            <div class="flex gap-3 w-full sm:w-auto">
+                                <button type="button" @click="declineAgreement()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-md border border-red-500/60 text-red-400 hover:bg-red-950/40 font-medium">I Disagree</button>
+                                <button type="button" @click="agree()" class="flex-1 sm:flex-none bg-brand-gold text-black hover:bg-[#b5952f] font-bold px-8 py-2.5 rounded-md shadow-lg inline-flex items-center justify-center gap-2">
+                                    <i data-lucide="check-circle" class="w-4 h-4"></i> I Agree
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                <div x-show="step === 3" x-cloak>
+                    <button type="button" @click="step = 1; agreementAccepted = false" class="text-sm text-gray-600 underline mb-4">{{ __('site.membership.change_plan') }}</button>
                     <p class="text-sm font-semibold text-brand-gold mb-4" x-text="planLabel ? {{ json_encode(__('site.membership.selected')) }} + ' ' + planLabel : ''"></p>
 
                     <div>
@@ -292,20 +315,6 @@
                         <img id="selfie-preview" alt="" class="hidden max-h-40 mt-3 rounded-md">
                     </div>
 
-                    @if($agreement)
-                        <div x-show="idRead" x-cloak class="mt-6">
-                            <h2 class="text-xl font-bold text-black mb-1">{{ $agreement->title }}</h2>
-                            <p class="text-sm text-gray-500 mb-3">Please read this membership license agreement carefully before you sign.</p>
-                            <div class="rounded-xl overflow-hidden border border-black/10">
-                                @include('beyond.membership.partials.agreement-document', ['agreement' => $agreement])
-                            </div>
-                            <label class="flex items-start gap-2 mt-4 text-sm">
-                                <input type="checkbox" name="accept_agreement" value="1" x-model="agreementAccepted" @if(old('accept_agreement')) checked @endif required class="mt-1">
-                                <span>{{ __('site.membership.accept') }}</span>
-                            </label>
-                        </div>
-                    @endif
-
                     <div x-show="idRead" x-cloak class="mt-6">
                         <button type="button" @click="openSign()" class="w-full md:w-auto bg-brand-gold text-black font-bold px-5 py-3 rounded-md">
                             <span x-show="!signed">{{ __('site.membership.add_signature') }}</span>
@@ -323,23 +332,6 @@
             </form>
         </div>
     </main>
-
-    @if($agreement)
-    <div x-show="agreementOpen" x-cloak class="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80" @keydown.escape.window="agreementOpen = false">
-        <div class="bg-[#0A0A0A] rounded-t-2xl sm:rounded-2xl max-w-4xl w-full max-h-[92vh] overflow-hidden flex flex-col border border-brand-gold/25 shadow-2xl" @click.away="agreementOpen = false">
-            @include('beyond.membership.partials.agreement-document', ['agreement' => $agreement])
-            <div class="bg-[#111] border-t border-brand-gold/30 py-4 px-4 md:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <p class="text-sm text-gray-400 text-center sm:text-left m-0">Do you accept the terms outlined in this Membership License Agreement?</p>
-                <div class="flex gap-3 w-full sm:w-auto">
-                    <button type="button" @click="agreementOpen = false" class="flex-1 sm:flex-none px-6 py-2.5 rounded-md border border-red-500/50 text-red-400 hover:bg-red-950/30 font-medium">I Disagree</button>
-                    <button type="button" @click="agreementAccepted = true; agreementOpen = false" class="flex-1 sm:flex-none bg-brand-gold text-black hover:bg-[#b5952f] font-bold px-8 py-2.5 rounded-md shadow-lg flex items-center justify-center gap-2">
-                        <i data-lucide="check-circle" class="w-4 h-4"></i> I Agree
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
 
     <div x-show="signOpen" x-cloak class="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/70">
         <div class="bg-white rounded-xl max-w-lg w-full p-5">
@@ -365,7 +357,6 @@ function membershipApply(startStep, oldPlan) {
         step: startStep || 1,
         plan: oldPlan || '',
         planLabel: '',
-        agreementOpen: false,
         agreementAccepted: {{ old('accept_agreement') ? 'true' : 'false' }},
         signOpen: false,
         signed: false,
@@ -388,6 +379,11 @@ function membershipApply(startStep, oldPlan) {
             window.__membershipShowIdRead = function () {
                 self.idRead = true;
             };
+            if (this.step === 2) {
+                this.$nextTick(function () {
+                    if (window.lucide) window.lucide.createIcons();
+                });
+            }
         },
         startScan() {
             this.idAction = 'scan';
@@ -399,14 +395,25 @@ function membershipApply(startStep, oldPlan) {
         selectPlan(value, label) {
             this.plan = value;
             this.planLabel = label;
-            this.step = 2;
+            this.agreementAccepted = false;
+            this.step = @json((bool) $agreement) ? 2 : 3;
+            if (this.step === 3) this.agreementAccepted = true;
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        },
-        openAgreement() {
-            this.agreementOpen = true;
             this.$nextTick(function () {
                 if (window.lucide) window.lucide.createIcons();
             });
+        },
+        declineAgreement() {
+            this.agreementAccepted = false;
+            this.plan = '';
+            this.planLabel = '';
+            this.step = 1;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+        agree() {
+            this.agreementAccepted = true;
+            this.step = 3;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         },
         openSign() {
             this.signOpen = true;
