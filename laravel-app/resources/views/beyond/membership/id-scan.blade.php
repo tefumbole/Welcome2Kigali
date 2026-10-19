@@ -19,11 +19,12 @@
         </h1>
         <p class="text-white/70 text-sm mt-2">{{ __('site.membership.id_scan_phone_hint') }}</p>
 
-        <div class="relative mt-6 rounded-xl overflow-hidden bg-neutral-900 min-h-[220px]">
-            <video id="id-live-video" class="w-full max-h-[50vh] object-cover bg-black" autoplay muted playsinline webkit-playsinline></video>
-            <div class="pointer-events-none absolute inset-x-8 bottom-10 h-16 border-2 border-brand-gold/80 rounded-md"></div>
+        <div class="relative mt-6 rounded-xl overflow-hidden bg-neutral-900 w-full" style="aspect-ratio: {{ $idType === 'passport' ? '125 / 88' : '85.6 / 54' }};">
+            <video id="id-live-video" class="absolute inset-0 w-full h-full object-cover bg-black" autoplay muted playsinline webkit-playsinline></video>
+            <div class="pointer-events-none absolute border-2 border-white/80 rounded-lg" style="inset:5%;"></div>
+            <div class="pointer-events-none absolute border-2 border-brand-gold rounded-md" style="left:7%;right:7%;bottom:8%;height:22%;"></div>
         </div>
-        <p class="text-white/70 text-sm mt-3">{{ __('site.membership.id_live_overlay') }}</p>
+        <p class="text-white/70 text-sm mt-3">{{ $idType === 'passport' ? __('site.membership.id_frame_passport') : __('site.membership.id_frame_id') }}</p>
         <p id="id-scan-status" class="mt-3 text-sm text-brand-gold">{{ __('site.membership.id_camera_needed') }}</p>
         <p id="id-scan-name" class="hidden mt-4 text-lg font-semibold text-brand-gold"></p>
     </div>
@@ -126,7 +127,7 @@
         }
         var bits = [];
         if (result.full_name) bits.push(result.full_name);
-        if (result.issued_on) bits.push(result.issued_on);
+        if (result.id_number) bits.push(result.id_number);
         if (result.expires_on) bits.push(result.expires_on);
         if (bits.length) {
             nameEl.textContent = bits.join(' · ');
@@ -136,7 +137,7 @@
         return sendResult(result).then(function (res) {
             return res.json().catch(function () { return {}; }).then(function (body) {
                 if (!res.ok) throw new Error((body && body.message) || 'save');
-                setStatus(@json(__('site.membership.id_scan_done')));
+                setStatus(@json(($idType === 'passport' ? __('site.membership.id_verified_passport') : __('site.membership.id_verified_id')).' · '.__('site.membership.id_scan_done')));
             });
         });
     }

@@ -33,7 +33,7 @@ class SaleInvoiceQr
 
     public static function png(Sale $sale, $withLogo = false)
     {
-        $raw = base64_decode(\DNS2D::getBarcodePNG(self::scanUrl($sale), 'QRCODE', 8, 8));
+        $raw = QrPng::make(self::scanUrl($sale), $withLogo ? 'H' : 'M', 8);
         if (! $withLogo || ! function_exists('imagecreatefromstring') || ! function_exists('imagepng')) {
             return $raw;
         }

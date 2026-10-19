@@ -525,42 +525,11 @@ class CartController extends Controller
                 return redirect()->away($result['url']);
         }
         if(in_array($data['payment_method'], ['MTN', 'AIRTEL', 'MOMO'], true)) {
-                $pawapay = app(\App\Services\PawaPayPaymentService::class);
-                $hint = 'auto';
-                if ($pawapay->isConfigured()) {
-                    $result = $pawapay->start(
-                        'order',
-                        $order_array[0],
-                        $grand_total,
-                        $data['mtn_phone'] ?: $data['phone'],
-                        $hint,
-                        'W2K Cafe',
-                        url('/menu'),
-                        ['ids' => $order_array]
-                    );
-                    if (empty($result['ok'])) {
-                        return back()->with('not_permitted', $result['message'] ?? 'Could not start Mobile Money payment.');
-                    }
-                    Session::forget('cart');
-                    Session::forget('user_data');
-                    Session::forget('otp');
-
-                    return redirect()->route('pawapay.wait', $result['deposit']->deposit_id);
-                }
-                $token = getenv("MOMO_TOKEN");
-                $route = route('order.payment.check');
-                $failure_route = url()->previous();
-                $orders = implode(',', $order_array);
-                $link = $this->mobileMoneyOrderRequestLink($token, $grand_total, $route, $orders, $failure_route, $data['mtn_phone']);
-
-                if ($link == false) {
-                    return back()->with('not_permitted', 'Order is not completed, Something in wrong....!');
-                }
                 Session::forget('cart');
                 Session::forget('user_data');
                 Session::forget('otp');
-                header("Location: $link");
-                die();
+
+                return redirect()->away(\App\Support\MomoUssd::payUrl('order', $order_array[0], $grand_total).'?back='.urlencode(url('/menu')));
         } else {
             $message = 'You have placed an order. Please Clear your payment on delivery Time.';
         }

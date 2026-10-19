@@ -38,8 +38,8 @@
             box-shadow: 0 8px 24px rgba(10,10,10,.08);
         }
         body.beyond-pos-active .transaction-list {
-            height: calc(100vh - 430px) !important;
-            max-height: calc(100vh - 400px);
+            height: calc(100vh - 505px) !important;
+            max-height: calc(100vh - 505px);
             min-height: 110px;
         }
         body.beyond-pos-active .table-container {
@@ -71,9 +71,29 @@
         }
         body.beyond-pos-active .payment-amount h2 {
             color: #C5A059 !important;
-            font-size: 1.25rem;
-            line-height: 1.4;
+            font-size: 1.5rem;
+            line-height: 1.3;
             padding: 8px 12px;
+            margin: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+        }
+        body.beyond-pos-active .payment-amount #grand-total {
+            color: #fff;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        body.beyond-pos-active .totals .row > div {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+        }
+        body.beyond-pos-active .totals .row > div > span:last-child {
+            font-weight: 700;
+            white-space: nowrap;
         }
         body.beyond-pos-active .totals { border-top-color: #eee4d0 !important; }
         body.beyond-pos-active #category-filter,
@@ -338,17 +358,22 @@
         }
         body.beyond-pos-active table.order-list.table-fixed th:nth-child(1),
         body.beyond-pos-active table.order-list.table-fixed td:nth-child(1) {
-            width: 28%;
+            width: 26%;
             white-space: normal;
         }
         body.beyond-pos-active table.order-list.table-fixed th:nth-child(2),
-        body.beyond-pos-active table.order-list.table-fixed td:nth-child(2) { width: 14%; }
+        body.beyond-pos-active table.order-list.table-fixed td:nth-child(2) { width: 9%; }
         body.beyond-pos-active table.order-list.table-fixed th:nth-child(3),
-        body.beyond-pos-active table.order-list.table-fixed td:nth-child(3) { width: 16%; }
+        body.beyond-pos-active table.order-list.table-fixed td:nth-child(3) { width: 15%; }
         body.beyond-pos-active table.order-list.table-fixed th:nth-child(4),
         body.beyond-pos-active table.order-list.table-fixed td:nth-child(4) { width: 22%; }
         body.beyond-pos-active table.order-list.table-fixed th:nth-child(5),
-        body.beyond-pos-active table.order-list.table-fixed td:nth-child(5) { width: 12%; }
+        body.beyond-pos-active table.order-list.table-fixed td:nth-child(5) {
+            width: 20%;
+            text-overflow: clip;
+            font-weight: 700;
+            text-align: right;
+        }
         body.beyond-pos-active table.order-list.table-fixed th:nth-child(6),
         body.beyond-pos-active table.order-list.table-fixed td:nth-child(6) { width: 8%; }
         body.beyond-pos-active table.order-list .input-group {
@@ -1894,6 +1919,7 @@
                                                             <input type="hidden" name="momo_network" value="auto">
                                                             <label>MoMo number *</label>
                                                             <input type="text" name="momo_phone" class="form-control" placeholder="078… / 079… or 072… / 073…">
+                                                            <small class="text-muted">We send a pay link to this WhatsApp number, then show a QR code. Scanning it dials *182*8*1*100236*amount#.</small>
                                                             <small class="text-muted">Filled from the customer. You can edit it. MTN or Airtel is detected from the number. You can pay part of the total; the rest stays pending.</small>
                                                         </div>
                                                         <div class="form-group col-md-12 stripe-hint" style="display:none;">

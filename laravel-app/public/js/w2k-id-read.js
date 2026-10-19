@@ -204,7 +204,7 @@
     }
 
     function isComplete(result) {
-        return isUseful(result) && !!(result.issued_on && result.expires_on);
+        return isUseful(result) && !!result.expires_on;
     }
 
     function loadImage(src) {

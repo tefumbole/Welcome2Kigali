@@ -34,7 +34,7 @@ return [
 
     'membership_received_title' => 'DEMANDE D’ADHÉSION',
     'membership_received_intro' => 'Merci pour votre demande d’adhésion.',
-    'membership_received_body' => 'Nous avons bien reçu votre demande. Notre équipe l’examinera sous peu. Vous recevrez un message WhatsApp dès qu’une décision aura été prise.',
+    'membership_received_body' => 'Votre demande a bien été reçue et est en cours d’examen. Vous recevrez des messages de Welcome2Kigali depuis l’un de nos numéros officiels. Nous pourrons vous contacter de temps en temps pour demander plus d’informations si nécessaire.',
     'membership_admin_title' => 'NOUVELLE DEMANDE D’ADHÉSION',
     'membership_admin_intro' => 'Une nouvelle demande d’adhésion est prête à être examinée.',
     'membership_admin_applicant' => 'Candidat',
@@ -50,6 +50,8 @@ return [
     'membership_welcome' => 'Nous avons hâte de vous accueillir au club.',
     'membership_rejected_intro' => 'Merci de votre intérêt pour l’adhésion chez *:company*.',
     'membership_rejected_body' => 'Après examen, nous ne pouvons pas approuver la demande *:reference* pour le moment.',
+    'membership_rejected_update' => 'Veuillez compléter les informations manquantes avec ce lien :',
+    'membership_rejected_update_label' => 'Mettre à jour ma demande',
     'membership_rejected_contact' => 'Vous pouvez nous contacter sur ce numéro pour toute question.',
     'membership_more_title' => 'ADHÉSION — INFORMATIONS COMPLÉMENTAIRES',
     'membership_more_intro' => 'Merci pour votre demande d’adhésion *:reference*.',

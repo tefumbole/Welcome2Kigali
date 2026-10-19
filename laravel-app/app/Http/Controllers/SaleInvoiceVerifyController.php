@@ -54,9 +54,15 @@ class SaleInvoiceVerifyController extends Controller
             ];
         }
 
+        $setting = $setting ?? GeneralSetting::first();
+        $logoFile = $setting && $setting->site_logo ? basename((string) $setting->site_logo) : '';
+        $logoUrl = $logoFile !== '' && is_file(base_path('public/logo/'.$logoFile)) ? url('logo/'.$logoFile) : null;
+
         return view('beyond.invoice.verify', [
             'error' => $error,
             'data' => $payload,
+            'logoUrl' => $logoUrl,
+            'siteTitle' => optional($setting)->site_title ?: 'Welcome 2 Kigali Expats Club',
         ]);
     }
 }

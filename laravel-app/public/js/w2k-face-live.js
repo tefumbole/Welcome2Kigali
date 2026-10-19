@@ -85,7 +85,7 @@
                     hold = 0;
                     status(phase === 'center'
                         ? 'Look straight at the camera.'
-                        : (phase === 'left' ? 'Turn your head to your left.' : 'Now turn your head to your right.'));
+                        : (phase === 'left' ? '⬅ Turn your head to the LEFT.' : 'Turn your head to the RIGHT ➡'), phase);
                     return delay(220).then(tick);
                 }
                 var side = 0;
@@ -98,45 +98,46 @@
                         hold++;
                         portrait = snapshot(video);
                         baseline = cx;
-                        status('Hold still, looking straight ahead.');
+                        status('Scanning… hold still, looking straight ahead.', 'scan');
                         if (hold >= 5) {
                             phase = 'left';
                             hold = 0;
-                            status('Now turn your head to your left.');
+                            status('⬅ Turn your head to the LEFT.', 'left');
                         }
                     } else {
                         hold = 0;
-                        status('Look straight at the camera.');
+                        status('Look straight at the camera.', 'center');
                     }
                 } else if (phase === 'left') {
                     if (side !== 0) {
                         hold++;
                         firstSide = side;
-                        status('Good. Hold that turn.');
+                        status('Scanning left side… hold.', 'scan');
                         if (hold >= 4) {
                             phase = 'right';
                             hold = 0;
-                            status('Now turn your head the other way.');
+                            status('Now turn your head to the RIGHT ➡', 'right');
                         }
                     } else {
                         hold = 0;
-                        status('Turn your head to your left.');
+                        status('⬅ Turn your head to the LEFT.', 'left');
                     }
                 } else if (side !== 0 && side !== firstSide) {
                     hold++;
-                    status('Good. Hold that turn.');
+                    status('Scanning right side… hold.', 'scan');
                     if (hold >= 4 && portrait) {
+                        status('Face scan complete.', 'done');
                         return { image: portrait };
                     }
                 } else {
                     hold = 0;
-                    status('Now turn your head the other way.');
+                    status('Turn your head to the RIGHT ➡', 'right');
                 }
                 return delay(220).then(tick);
             });
         }
 
-        status('Look straight at the camera.');
+        status('Look straight at the camera.', 'center');
         return tick();
     }
 

@@ -325,8 +325,17 @@ class MembershipService
         return $customer;
     }
 
+    public function purgeIdDocuments(MembershipApplication $application)
+    {
+        foreach (MembershipDocument::where('application_id', $application->id)->where('doc_type', 'id_document')->get() as $doc) {
+            $this->deleteStoredFile($doc->path);
+            $doc->delete();
+        }
+    }
+
     public function approve(MembershipApplication $application, $userId = null)
     {
+        $this->purgeIdDocuments($application);
         $customer = $this->findOrCreateCustomer($application);
         $promo = $application->promotion_id
             ? MembershipPromotion::find($application->promotion_id)
@@ -374,6 +383,7 @@ class MembershipService
         $application->status = 'REJECTED';
         $application->admin_note = $note;
         $application->save();
+        $this->purgeIdDocuments($application);
         $this->audit(null, $application->id, 'application.rejected', ['note' => $note, 'user_id' => $userId]);
     }
 

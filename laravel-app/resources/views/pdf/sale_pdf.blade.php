@@ -269,7 +269,7 @@
         'stampDate' => $lims_sale_data->created_at ?? ($lims_sale_data->sale_date ?? null),
     ])
     <div class="inv-qr" style="margin:0 0 6px;">
-        <?php echo '<img src="data:image/png;base64,'.DNS2D::getBarcodePNG($invoiceQrUrl, 'QRCODE').'" height="52" width="52" alt="qrcode">'; ?>
+        <img src="{{ \App\Support\SaleInvoiceQr::dataUri($lims_sale_data, true) }}" height="64" width="64" alt="qrcode">
     </div>
     <div class="inv-barcode">
         <?php echo '<img src="data:image/png;base64,'.DNS1D::getBarcodePNG($lims_sale_data->reference_no, 'C128').'" height="24" width="160" alt="barcode">'; ?>

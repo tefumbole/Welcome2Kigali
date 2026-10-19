@@ -419,7 +419,11 @@
                 'createdClass' => 'created-by',
             ])
             <div class="code-media" style="margin:0 0 6px;">
-                <?php echo '<img src="data:image/png;base64,'.DNS2D::getBarcodePNG($lims_sale_data->reference_no, 'QRCODE').'" height="48" width="48" alt="qrcode">'; ?>
+                @if($lims_sale_data instanceof \App\Sale)
+                <img src="{{ \App\Support\SaleInvoiceQr::dataUri($lims_sale_data, true) }}" height="64" width="64" alt="qrcode">
+                @else
+                <img src="{{ \App\Support\QrPng::dataUri($lims_sale_data->reference_no) }}" height="64" width="64" alt="qrcode">
+                @endif
             </div>
             <div class="code-media">
                 <?php echo '<img src="data:image/png;base64,'.DNS1D::getBarcodePNG($lims_sale_data->reference_no, 'C128').'" height="28" width="160" alt="barcode">'; ?>

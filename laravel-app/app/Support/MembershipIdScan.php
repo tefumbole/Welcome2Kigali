@@ -69,8 +69,11 @@ class MembershipIdScan
             'application_id' => isset($prev['application_id']) ? $prev['application_id'] : null,
             'expected_name' => isset($prev['expected_name']) ? $prev['expected_name'] : '',
         ];
-        if ($row['full_name'] === '' || ! self::isDate($row['issued_on']) || ! self::isDate($row['expires_on'])) {
+        if ($row['full_name'] === '' || $row['id_number'] === '' || ! self::isDate($row['expires_on'])) {
             return 'incomplete';
+        }
+        if ($row['issued_on'] !== '' && ! self::isDate($row['issued_on'])) {
+            $row['issued_on'] = '';
         }
         $expected = trim((string) $row['expected_name']);
         if ($expected !== '' && ! self::namesMatch($expected, $row['full_name'])) {

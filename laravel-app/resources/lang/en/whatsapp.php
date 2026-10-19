@@ -34,7 +34,7 @@ return [
 
     'membership_received_title' => 'MEMBERSHIP APPLICATION',
     'membership_received_intro' => 'Thank you for your membership application.',
-    'membership_received_body' => 'We have received your request and our team will review it shortly. You will receive a WhatsApp message once a decision has been made.',
+    'membership_received_body' => 'Your application has been received and is under review. You will receive messages from Welcome2Kigali through one of our official numbers. We may contact you from time to time to request more information if needed.',
     'membership_admin_title' => 'NEW MEMBERSHIP APPLICATION',
     'membership_admin_intro' => 'A new membership application is ready for review.',
     'membership_admin_applicant' => 'Applicant',
@@ -50,6 +50,8 @@ return [
     'membership_welcome' => 'We look forward to welcoming you at the club.',
     'membership_rejected_intro' => 'Thank you for your interest in membership with *:company*.',
     'membership_rejected_body' => 'After review, we are unable to approve application *:reference* at this time.',
+    'membership_rejected_update' => 'Please update the missing information with this link:',
+    'membership_rejected_update_label' => 'Update my application',
     'membership_rejected_contact' => 'You are welcome to contact us on this number if you have questions.',
     'membership_more_title' => 'MEMBERSHIP — MORE INFORMATION',
     'membership_more_intro' => 'Thank you for your membership application *:reference*.',

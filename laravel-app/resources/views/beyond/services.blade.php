@@ -1,47 +1,56 @@
 @extends('beyond.layout')
+@section('title', __('site.services.title'))
+@section('meta_description', __('site.services.meta'))
+@section('body_class', 'bg-[#0A0A0A]')
 
-@section('title', 'Our Services')
-@section('meta_description', 'Comprehensive IT consultancy, AI solutions, cloud computing, cybersecurity, VoIP, network infrastructure, and CCTV services in Kigali, Rwanda.')
+@php
+    $services = [
+        ['key' => 'supermarket', 'icon' => 'shopping-basket', 'priority' => true],
+        ['key' => 'restaurant', 'icon' => 'utensils-crossed', 'image' => 'branding/menu/iced-specialty.jpg', 'link' => url('/menu')],
+        ['key' => 'coffee', 'icon' => 'coffee', 'image' => 'branding/menu/coffee-tea.jpg', 'link' => url('/menu')],
+        ['key' => 'laundry', 'icon' => 'shirt'],
+        ['key' => 'fashion', 'icon' => 'shopping-bag'],
+    ];
+    $wa = \App\Support\SiteBrand::phoneWhatsAppDigits();
+@endphp
 
 @section('content')
+<div class="bg-[#0A0A0A] text-white min-h-[70vh] py-10 px-4">
+    <div class="max-w-5xl mx-auto">
+        <p class="text-[11px] tracking-[0.22em] uppercase text-brand-gold m-0">{{ __('site.services.kicker') }}</p>
+        <h1 class="font-serif text-3xl md:text-4xl text-white mt-2">{{ __('site.services.heading') }}</h1>
+        <p class="text-white/70 text-sm mt-2 max-w-2xl">{{ __('site.services.intro') }}</p>
 
-@include('beyond.partials.hero', [
-    'title' => \App\Support\SiteContent::html('services.hero_title', 'Our <span class="text-brand-gold">Services</span>'),
-    'subtitle' => \App\Support\SiteContent::text('services.hero_subtitle', 'Comprehensive technology solutions tailored to your needs'),
-])
-
-<section class="py-16 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-            <h2 class="text-4xl font-bold text-brand-blue">{{ \App\Support\SiteContent::text('services.heading', 'Explore Our Expertise') }}</h2>
-            <p class="text-xl text-gray-600 mt-4">{{ \App\Support\SiteContent::text('services.subheading', "From IT infrastructure to cutting-edge AI solutions, we've got you covered.") }}</p>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            @foreach ($services as $service)
-                <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 flex flex-col">
-                    <div class="text-6xl mb-4 flex-shrink-0">{{ $service['emoji'] }}</div>
-                    <h3 class="text-2xl font-bold text-brand-blue mb-3">{{ $service['title'] }}</h3>
-                    <p class="text-gray-700 text-sm flex-grow mb-4">{{ $service['description'] }}</p>
-                    <a href="{{ \App\Support\SiteBrand::phoneWhatsAppUrl() }}?text={{ urlencode('Hello Welcome 2 Kigali Expats Club, I would like a quote for ' . $service['title']) }}"
-                       target="_blank" rel="noopener"
-                       class="inline-flex items-center gap-2 bg-brand-blue hover:bg-brand-dark text-white px-6 py-3 rounded-md text-sm font-semibold self-start">
-                        <i data-lucide="message-circle" class="w-4 h-4"></i> Get a Quote
-                    </a>
-                </div>
+        <div class="mt-8 grid gap-5 md:grid-cols-2">
+            @foreach ($services as $svc)
+                @php $img = !empty($svc['image']) && is_file(public_path($svc['image'])) ? asset($svc['image']) : null; @endphp
+                <article class="rounded-2xl border {{ !empty($svc['priority']) ? 'border-brand-gold md:col-span-2 bg-gradient-to-br from-[#1a140b] to-[#0A0A0A]' : 'border-brand-gold/30 bg-white/[0.03]' }} overflow-hidden flex flex-col">
+                    @if ($img)
+                        <img src="{{ $img }}" alt="" class="w-full h-40 object-cover" loading="lazy">
+                    @endif
+                    <div class="p-6 flex-1 flex flex-col">
+                        <div class="flex items-center gap-3">
+                            <span class="w-11 h-11 rounded-full border border-brand-gold/60 flex items-center justify-center text-brand-gold shrink-0">
+                                <i data-lucide="{{ $svc['icon'] }}" class="w-5 h-5"></i>
+                            </span>
+                            <h2 class="text-xl font-bold text-white m-0">{{ __('site.services.'.$svc['key']) }}</h2>
+                            @if (!empty($svc['priority']))
+                                <span class="ml-auto text-[10px] tracking-[0.18em] uppercase font-bold bg-brand-gold text-[#0A0A0A] rounded-full px-3 py-1">{{ __('site.services.priority') }}</span>
+                            @endif
+                        </div>
+                        <p class="text-white/75 text-sm mt-3 mb-0 flex-1">{{ __('site.services.'.$svc['key'].'_body') }}</p>
+                        <div class="mt-5 flex flex-wrap gap-3">
+                            @if (!empty($svc['link']))
+                                <a href="{{ $svc['link'] }}" class="inline-flex items-center gap-2 text-xs font-bold tracking-[0.14em] uppercase bg-brand-gold text-[#0A0A0A] rounded-full px-4 py-2">{{ __('site.services.cta_menu') }}</a>
+                            @endif
+                            @if ($wa)
+                                <a href="https://wa.me/{{ $wa }}?text={{ rawurlencode(__('site.services.'.$svc['key'])) }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-xs font-bold tracking-[0.14em] uppercase border border-brand-gold/60 text-brand-gold rounded-full px-4 py-2">{{ __('site.services.cta_contact') }}</a>
+                            @endif
+                        </div>
+                    </div>
+                </article>
             @endforeach
         </div>
     </div>
-</section>
-
-<section class="py-16 bg-gradient-to-r from-brand-blue to-brand-light">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-4xl font-bold text-white mb-6">Ready to Get Started?</h2>
-        <p class="text-xl text-gray-200 mb-8">Contact us today to discuss your project requirements and receive a customized quote.</p>
-        <a href="{{ \App\Support\SiteBrand::phoneWhatsAppUrl() }}" target="_blank" rel="noopener"
-           class="inline-flex items-center gap-2 bg-brand-gold text-brand-blue px-8 py-4 text-lg font-bold rounded-lg shadow-xl hover:shadow-2xl">
-            <i data-lucide="message-circle" class="w-5 h-5"></i> Chat on WhatsApp
-        </a>
-    </div>
-</section>
-
+</div>
 @endsection

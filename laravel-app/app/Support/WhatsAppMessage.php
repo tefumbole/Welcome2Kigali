@@ -1283,7 +1283,7 @@ class WhatsAppMessage
         return $msg;
     }
 
-    public static function membershipRejected($name, $reference, $note = null)
+    public static function membershipRejected($name, $reference, $note = null, $updateUrl = null)
     {
         $company = self::companyName();
         $msg = self::statusBlock('❌', self::t('membership_received_title'));
@@ -1292,6 +1292,10 @@ class WhatsAppMessage
         $msg .= self::t('membership_rejected_body', ['reference' => $reference])."\n";
         if ($note) {
             $msg .= "\n".$note."\n";
+        }
+        if ($updateUrl) {
+            $msg .= "\n".self::t('membership_rejected_update');
+            $msg .= self::actionLink(self::t('membership_rejected_update_label'), $updateUrl);
         }
         $msg .= "\n".self::t('membership_rejected_contact');
         $msg .= self::footer();

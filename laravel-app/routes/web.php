@@ -65,8 +65,7 @@ Route::get('/lang/{locale}', 'LanguageController@switchLanguage')->name('lang.sw
 Route::get('/api/public/menu', 'BeyondController@menuData');
 Route::get('/services', 'BeyondController@services')->name('beyond.services');
 Route::get('/projects', 'BeyondController@projects')->name('beyond.projects');
-Route::get('/gallery', 'BeyondController@gallery')->name('beyond.gallery');
-Route::get('/contact', 'BeyondController@contact')->name('beyond.contact');
+Route::get('/gallery', 'BeyondController@gallery')->name('beyond.gallery');Route::get('/contact', 'BeyondController@contact')->name('beyond.contact');
 Route::post('/contact', 'BeyondController@storeContact')->name('beyond.contact.store');
 Route::post('/contact/message', 'BeyondController@storeContact')->name('beyond.contact.compose');
 Route::post('/shop/contact-message', 'FrontendController@contactMessage')->name('contact.message');
@@ -83,12 +82,15 @@ Route::get('/membership/id-scan/{token}/status', 'MembershipPublicController@idS
 Route::get('/membership/face-scan/{token}', 'MembershipPublicController@faceScanPage')->name('membership.face-scan')->where('token', '[A-Za-z0-9]+');
 Route::post('/membership/face-scan/{token}', 'MembershipPublicController@faceScanStore')->name('membership.face-scan.store')->where('token', '[A-Za-z0-9]+');
 Route::get('/membership/face-scan/{token}/status', 'MembershipPublicController@faceScanStatus')->name('membership.face-scan.status')->where('token', '[A-Za-z0-9]+');
+Route::get('/membership/update/{reference}/{token}', 'MembershipPublicController@updateForm')->name('membership.update');
+Route::post('/membership/update/{reference}/{token}', 'MembershipPublicController@updateStore')->name('membership.update.store');
 Route::get('/membership/confirmation/{reference}', 'MembershipPublicController@confirmation')->name('membership.confirmation');
 Route::get('/membership/verify/{token}', 'MembershipPublicController@verify')->name('membership.verify');
 Route::get('/membership/renew/{token}', 'MembershipPublicController@renew')->name('membership.renew');
 Route::post('/membership/renew/{token}', 'MembershipPublicController@startPayment')->name('membership.renew.pay');
 Route::get('/membership/payment/check', 'MembershipPublicController@paymentCheck')->name('membership.payment.check');
 Route::get('/membership/paid', 'MembershipPublicController@paid')->name('membership.paid');
+Route::get('/pay/momo/{purpose}/{id}/{amount}/{token}', 'MomoPayController@show')->name('momo.ussd')->where(['purpose' => '[a-z]+', 'id' => '[0-9]+', 'amount' => '[0-9]+', 'token' => '[a-f0-9]+']);
 Route::get('/payments/pawapay/{depositId}/wait', 'PawaPayCallbackController@wait')->name('pawapay.wait');
 Route::get('/payments/pawapay/{depositId}/status', 'PawaPayCallbackController@status')->name('pawapay.status');
 Route::post('/payments/pawapay/deposits/callback', 'PawaPayCallbackController@handle');

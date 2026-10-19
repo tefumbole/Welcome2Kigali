@@ -94,7 +94,8 @@ class MembershipNotifier
             return WhatsAppMessage::membershipRejected(
                 $application->full_name,
                 $application->reference,
-                $application->admin_note
+                $application->admin_note,
+                \App\Support\MembershipUpdateLink::url($application)
             );
         }));
     }

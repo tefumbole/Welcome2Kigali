@@ -81,8 +81,10 @@ class MembershipPublicController extends Controller
             'id_type' => 'required|in:'.implode(',', $idTypes),
             'id_number' => 'required|string|max:64',
             'id_expires_on' => 'required|date',
-            'id_issued_on' => 'required|date',
-            'id_scanned_name' => 'required|string|max:191',
+            'id_issued_on' => 'nullable|date',
+            'id_read_mode' => 'nullable|in:scan,photo',
+            'id_scanned_name' => 'required_unless:id_read_mode,photo|nullable|string|max:191',
+            'id_photo_data' => 'required_if:id_read_mode,photo|nullable|string|max:6000000',
             'nationality' => 'required|string|max:80',
             'selfie_data' => 'required|string',
             'selfie_live' => 'required|in:1',
@@ -95,8 +97,17 @@ class MembershipPublicController extends Controller
         MembershipAgreement::ensureCurrent();
         $data = $request->validate($rules);
 
-        if (! \App\Support\MembershipIdScan::namesMatch($data['id_scanned_name'], $data['full_name'])) {
-            return back()->withInput()->withErrors(['full_name' => __('site.membership.id_name_mismatch')]);
+        $idPhotoFile = null;
+        if (($data['id_read_mode'] ?? 'scan') === 'photo') {
+            $idPhotoFile = $this->uploadedFromDataUrl($request->input('id_photo_data'), 'id_document');
+            if (! $idPhotoFile) {
+                return back()->withInput()->withErrors(['id_photo_data' => __('site.membership.id_fallback_required')]);
+            }
+        } else {
+            if (! \App\Support\MembershipIdScan::namesMatch($data['id_scanned_name'], $data['full_name'])) {
+                return back()->withInput()->withErrors(['full_name' => __('site.membership.id_name_mismatch')]);
+            }
+            $data['full_name'] = trim(preg_replace('/\s+/', ' ', $data['id_scanned_name']));
         }
         $selfieFile = $this->uploadedFromDataUrl($request->input('selfie_data'), 'selfie');
         if (! $selfieFile) {
@@ -136,9 +147,10 @@ class MembershipPublicController extends Controller
             'nationality' => $data['nationality'] ?? null,
             'beyond_user_id' => $beyond ? $beyond->id : null,
             'submitted_ip' => $request->ip(),
-        ], [
+        ], array_filter([
             'selfie' => $selfieFile,
-        ], $data['signature']);
+            'id_document' => $idPhotoFile,
+        ]), $data['signature']);
 
         try {
             $this->notifier->applicationReceived($application);
@@ -146,6 +158,62 @@ class MembershipPublicController extends Controller
         }
 
         return redirect()->route('membership.confirmation', $application->reference);
+    }
+
+    public function updateForm($reference, $token)
+    {
+        $application = \App\Support\MembershipUpdateLink::find($reference, $token);
+        if (! $application) {
+            abort(404);
+        }
+        $scanToken = \App\Support\MembershipIdScan::makeToken();
+        \App\Support\MembershipIdScan::touch($scanToken);
+        \App\Support\MembershipIdScan::bindApplication($scanToken, $application);
+        $scanUrl = \App\Support\MembershipIdScan::url($scanToken).'?type='.($application->id_type ?: 'passport');
+
+        return view('beyond.membership.update', [
+            'application' => $application,
+            'token' => $token,
+            'scanToken' => $scanToken,
+            'scanUrl' => $scanUrl,
+            'scanQr' => \App\Support\OnlineInvitationQr::dataUri($scanUrl, 280),
+            'saved' => session('membership_update_saved'),
+        ]);
+    }
+
+    public function updateStore(Request $request, $reference, $token)
+    {
+        $application = \App\Support\MembershipUpdateLink::find($reference, $token);
+        if (! $application) {
+            abort(404);
+        }
+        $data = $request->validate([
+            'phone' => 'required|string|max:40',
+            'email' => 'nullable|email|max:191',
+            'comment' => 'nullable|string|max:2000',
+            'id_photo_data' => 'nullable|string|max:6000000',
+        ]);
+        $photo = $request->filled('id_photo_data') ? $this->uploadedFromDataUrl($request->input('id_photo_data'), 'id_document') : null;
+        if ($photo) {
+            $this->memberships->storeUploads($application, ['id_document' => $photo]);
+        }
+        $application->phone = $data['phone'];
+        if (! empty($data['email'])) {
+            $application->email = $data['email'];
+        }
+        $note = trim((string) ($data['comment'] ?? ''));
+        $application->admin_note = trim('Client update '.date('Y-m-d H:i').($note !== '' ? ': '.$note : '')."\n".(string) $application->admin_note);
+        if (in_array($application->status, ['REJECTED', 'UNDER_REVIEW'], true)) {
+            $application->status = 'PENDING';
+        }
+        $application->save();
+
+        try {
+            $this->notifier->applicationReceived($application);
+        } catch (\Throwable $e) {
+        }
+
+        return redirect()->route('membership.update', [$reference, $token])->with('membership_update_saved', true);
     }
 
     public function confirmation($reference)
@@ -282,33 +350,7 @@ class MembershipPublicController extends Controller
 
     protected function redirectToMobileMoney(Membership $membership, $payment, $networkHint = 'mtn', $phoneOverride = null)
     {
-        $phone = $phoneOverride ?: optional($membership->customer)->phone_number ?: optional($membership->application)->phone;
-        $pawapay = app(\App\Services\PawaPayPaymentService::class);
-        if ($pawapay->isConfigured()) {
-            $result = $pawapay->start(
-                'membership',
-                $payment->id,
-                $payment->amount,
-                $phone,
-                $networkHint,
-                'W2K Membership',
-                MembershipQr::renewUrl($membership)
-            );
-            if (empty($result['ok'])) {
-                return back()->with('not_permitted', $result['message'] ?? 'Could not start Mobile Money payment.');
-            }
-
-            return redirect()->route('pawapay.wait', $result['deposit']->deposit_id);
-        }
-
-        $token = getenv('MOMO_TOKEN');
-        $route = route('membership.payment.check');
-        $link = $this->mobileMoneyRequestLink($token, (int) round($payment->amount), $route, $payment->id, $phone);
-        if (! $link) {
-            return back()->with('not_permitted', 'Could not start Campay payment. Please check the phone number and try again.');
-        }
-
-        return redirect()->away($link);
+        return redirect()->away(\App\Support\MomoUssd::payUrl('membership', $payment->id, $payment->amount).'?back='.urlencode(MembershipQr::renewUrl($membership)));
     }
 
     protected function ensureMemberAccount($beyond, $name, $phone, $email, $password)

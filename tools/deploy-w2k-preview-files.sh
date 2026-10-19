@@ -269,6 +269,12 @@ FILES=(
   resources/views/pdf/sale_pdf.blade.php
   resources/views/pdf/sale_mini.blade.php
   app/Support/SaleInvoiceQr.php
+  app/Support/QrPng.php
+  app/Support/MomoUssd.php
+  app/Support/MembershipUpdateLink.php
+  app/Http/Controllers/MomoPayController.php
+  app/Http/Controllers/SaleInvoiceVerifyController.php
+  resources/views/site_content/gallery_tab.blade.php
   app/Http/Controllers/QRController.php
   resources/views/pdf/letter_pdf.blade.php
   resources/views/pdf/letter_download_pdf.blade.php

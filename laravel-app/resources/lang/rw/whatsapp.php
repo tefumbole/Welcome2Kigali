@@ -34,7 +34,7 @@ return [
 
     'membership_received_title' => 'ICYIFUZO CY’UBUNYAMURYANGO',
     'membership_received_intro' => 'Murakoze ku cyifuzo cy’ubunyamuryango.',
-    'membership_received_body' => 'Twakiriye icyifuzo cyawe kandi itsinda ryacu rizakisuzuma vuba. Uzahabwa ubutumwa bwa WhatsApp icyemezo kimaze gufatwa.',
+    'membership_received_body' => 'Icyifuzo cyawe cyakiriwe kandi kiri gusuzumwa. Uzakira ubutumwa bwa Welcome2Kigali buturutse kuri imwe muri nimero zacu zemewe. Dushobora kukuvugisha rimwe na rimwe dusaba andi makuru bibaye ngombwa.',
     'membership_admin_title' => 'ICYIFUZO GISHYA CY’UBUNYAMURYANGO',
     'membership_admin_intro' => 'Hari icyifuzo gishya cy’ubunyamuryango kitegereje gusuzumwa.',
     'membership_admin_applicant' => 'Uwasabye',
@@ -50,6 +50,8 @@ return [
     'membership_welcome' => 'Turakwitegereje muri club.',
     'membership_rejected_intro' => 'Murakoze kwifuza ubunyamuryango muri *:company*.',
     'membership_rejected_body' => 'Nyuma yo gusuzuma, ntidushobora kwemeza icyifuzo *:reference* ubu.',
+    'membership_rejected_update' => 'Uzuza amakuru abura ukoresheje iyi link:',
+    'membership_rejected_update_label' => 'Kuvugurura icyifuzo cyanjye',
     'membership_rejected_contact' => 'Urashobora kutwandikira kuri iyi numero niba ufite ibibazo.',
     'membership_more_title' => 'UBUNYAMURYANGO — ANDI MAKURU',
     'membership_more_intro' => 'Murakoze ku cyifuzo cy’ubunyamuryango *:reference*.',

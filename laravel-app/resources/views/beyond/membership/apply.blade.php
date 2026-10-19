@@ -48,6 +48,9 @@
     .plan-card .plan-meta { color: #6b7280; }
     .plan-card:hover .plan-meta,
     .plan-card.is-on .plan-meta { color: rgba(255,255,255,.72); }
+    .plan-card .plan-desc { color: #4b5563; }
+    .plan-card:hover .plan-desc,
+    .plan-card.is-on .plan-desc { color: rgba(255,255,255,.8); }
     .plan-card .plan-hint { color: #C5A059; }
     .plan-card:hover .plan-hint,
     .plan-card.is-on .plan-hint { color: rgba(255,255,255,.55); }
@@ -138,6 +141,7 @@
                                     <span class="plan-price text-2xl font-black leading-none">0</span>
                                     <span class="plan-meta text-xs font-semibold pb-0.5">FRW · {{ $promo->free_days }} {{ __('site.membership.days') }}</span>
                                 </span>
+                                <span class="plan-desc block text-xs leading-snug mt-2 opacity-80">{{ __('site.membership.plan_desc_promo') }}</span>
                                 <span class="plan-hint mt-auto pt-2 text-[11px] font-semibold">{{ __('site.membership.tap_to_select') }}</span>
                             </button>
                         @endif
@@ -155,6 +159,10 @@
                                     <span class="plan-price text-2xl font-black leading-none tracking-tight">{{ number_format($plan->fee) }}</span>
                                     <span class="plan-meta text-xs font-semibold pb-0.5">FRW</span>
                                 </span>
+                                @php $descKey = 'site.membership.plan_desc_'.$plan->code; @endphp
+                                @if(\Illuminate\Support\Facades\Lang::has($descKey))
+                                    <span class="plan-desc block text-xs leading-snug mt-2 opacity-80">{{ __($descKey) }}</span>
+                                @endif
                                 <span class="plan-hint mt-auto pt-2 text-[11px] font-semibold">{{ __('site.membership.tap_to_select') }}</span>
                             </button>
                         @endforeach
@@ -216,36 +224,65 @@
                                 <input id="id-document-input" type="file" accept="image/*" class="mt-3 mx-auto text-sm">
                             </div>
 
-                            <div x-show="idAction === 'scan' && isMobile" x-cloak class="mt-4 space-y-3">
-                                <div class="relative rounded-xl overflow-hidden bg-black">
-                                    <video id="id-live-video" class="w-full max-h-72 object-cover bg-black" autoplay muted playsinline></video>
-                                    <div class="pointer-events-none absolute inset-x-8 bottom-8 h-16 border-2 border-brand-gold/80 rounded-md"></div>
+                            <div x-show="idAction === 'scan'" x-cloak class="mt-4 space-y-3">
+                                <div class="relative rounded-xl overflow-hidden bg-black mx-auto w-full"
+                                     :style="'max-width:' + (idType === 'passport' ? '34rem' : '30rem') + ';aspect-ratio:' + (idType === 'passport' ? '125 / 88' : '85.6 / 54')">
+                                    <video id="id-live-video" class="absolute inset-0 w-full h-full object-cover bg-black" autoplay muted playsinline></video>
+                                    <div class="pointer-events-none absolute border-2 border-white/80 rounded-lg" style="inset:5%;"></div>
+                                    <div class="pointer-events-none absolute border-2 border-brand-gold rounded-md" style="left:7%;right:7%;bottom:8%;height:22%;"></div>
+                                    <span class="pointer-events-none absolute top-2 left-3 text-[10px] font-bold tracking-[0.18em] uppercase text-white/90"
+                                          x-text="idType === 'passport' ? {{ json_encode(__('site.membership.passport')) }} : {{ json_encode(__('site.membership.national_id')) }}"></span>
                                 </div>
-                                <div class="flex flex-wrap gap-2">
-                                    <button type="button" id="id-live-start-btn" class="bg-black text-white font-bold px-4 py-2 rounded-md">{{ __('site.membership.id_start_scan') }}</button>
+                                <p class="text-xs text-gray-500 text-center m-0" x-text="idType === 'passport' ? {{ json_encode(__('site.membership.id_frame_passport')) }} : {{ json_encode(__('site.membership.id_frame_id')) }}"></p>
+                                <div class="flex flex-wrap justify-center gap-2">
+                                    <button type="button" id="id-live-start-btn" class="bg-black text-white font-bold px-4 py-2 rounded-md">{{ __('site.membership.id_scan_here') }}</button>
                                     <button type="button" id="id-live-stop-btn" class="border border-gray-300 text-gray-700 font-semibold px-4 py-2 rounded-md">{{ __('site.membership.id_stop_scan') }}</button>
+                                    <button type="button" @click="scanQrOpen = !scanQrOpen" class="border-2 border-brand-gold text-black font-semibold px-4 py-2 rounded-md inline-flex items-center gap-2">
+                                        <i data-lucide="smartphone" class="w-4 h-4"></i> {{ __('site.membership.id_continue_other') }}
+                                    </button>
                                 </div>
-                            </div>
-
-                            <div x-show="idAction === 'scan' && !isMobile" x-cloak class="mt-4 flex justify-center">
-                                <div class="bg-white rounded-xl border border-gray-200 p-3 shadow-sm">
-                                    <img x-show="idType === 'national_id'" src="{{ $scanQrNational }}" alt="" class="w-52 h-52 object-contain">
-                                    <img x-show="idType === 'passport'" src="{{ $scanQrPassport }}" alt="" class="w-52 h-52 object-contain">
+                                <div x-show="scanQrOpen" x-cloak class="flex flex-col items-center gap-2 pt-2">
+                                    <p class="text-sm text-gray-600 text-center max-w-sm m-0">{{ __('site.membership.id_other_help') }}</p>
+                                    <div class="bg-white rounded-xl border border-gray-200 p-3 shadow-sm">
+                                        <img x-show="idType === 'national_id'" src="{{ $scanQrNational }}" alt="" class="w-52 h-52 object-contain">
+                                        <img x-show="idType === 'passport'" src="{{ $scanQrPassport }}" alt="" class="w-52 h-52 object-contain">
+                                    </div>
+                                    <p class="text-xs text-brand-gold m-0">{{ __('site.membership.id_waiting') }}</p>
                                 </div>
                             </div>
                             <p id="id-scan-wait" class="hidden"></p>
                             <p id="id-scan-status" class="hidden text-sm text-brand-gold mt-3 mb-0"></p>
                             <p id="id-scan-got" class="hidden text-sm text-green-700 mt-3 mb-0"></p>
 
+                            <div x-show="idVerified" x-cloak class="mt-4 inline-flex items-center gap-2 rounded-full bg-green-600 text-white font-bold text-sm px-4 py-2 shadow">
+                                <i data-lucide="badge-check" class="w-5 h-5"></i>
+                                <span x-text="idType === 'passport' ? {{ json_encode(__('site.membership.id_verified_passport')) }} : {{ json_encode(__('site.membership.id_verified_id')) }}"></span>
+                            </div>
+
+                            <div x-show="idType && !idVerified && !idManual && (idAction === 'scan' || idFailed)" x-cloak class="mt-4">
+                                <button type="button" @click="useManual()" class="text-sm font-semibold text-gray-700 underline">{{ __('site.membership.id_fallback_btn') }}</button>
+                            </div>
+                            <div x-show="idManual" x-cloak class="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4">
+                                <label class="text-sm font-semibold text-gray-800">{{ __('site.membership.id_fallback_photo') }}</label>
+                                <input id="id-photo-input" type="file" accept="image/*" capture="environment" class="block mt-2 text-sm">
+                                <img id="id-photo-preview" alt="" class="hidden mt-3 max-h-48 rounded-md border">
+                                <p class="text-xs text-amber-900 mt-3 mb-0">{{ __('site.membership.id_fallback_note') }}</p>
+                                <p class="text-xs text-gray-600 mt-1 mb-0">{{ __('site.membership.id_fallback_type') }}</p>
+                            </div>
+                            <input type="hidden" name="id_read_mode" :value="idManual ? 'photo' : 'scan'">
+                            <input type="hidden" name="id_photo_data" id="id-photo-data">
+
                             <div x-show="idRead" x-cloak class="mt-5 rounded-xl border border-gray-200 bg-gray-50 p-4">
                                 <p class="text-sm font-semibold text-gray-800 m-0">{{ __('site.membership.id_from_document') }}</p>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
                                     <div class="md:col-span-2">
                                         <label class="text-sm font-semibold text-gray-700">{{ __('site.membership.full_name') }}</label>
-                                        <input required name="full_name" id="full-name-field" value="{{ old('full_name') }}" type="text" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2 bg-white" autocomplete="name">
+                                        <input required name="full_name" id="full-name-field" value="{{ old('full_name') }}" type="text" :readonly="idVerified"
+                                               class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2" :class="idVerified ? 'bg-gray-100 font-semibold' : 'bg-white'" autocomplete="name">
+                                        <p x-show="idVerified" x-cloak class="text-xs text-gray-500 mt-1 mb-0">{{ __('site.membership.id_name_locked') }}</p>
                                     </div>
                                     <div>
-                                        <label class="text-sm font-semibold text-gray-700">{{ __('site.membership.id_number_label') }}</label>
+                                        <label class="text-sm font-semibold text-gray-700" x-text="idType === 'passport' ? {{ json_encode(__('site.membership.id_number_passport')) }} : {{ json_encode(__('site.membership.id_number_label')) }}">{{ __('site.membership.id_number_label') }}</label>
                                         <input required name="id_number" id="id-number-field" value="{{ old('id_number') }}" type="text" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2 bg-white" autocomplete="off">
                                     </div>
                                     <div>
@@ -266,7 +303,7 @@
                                     </div>
                                     <div>
                                         <label class="text-sm font-semibold text-gray-700">{{ __('site.membership.id_issued_on') }}</label>
-                                        <input required name="id_issued_on" id="id-issued-field" value="{{ old('id_issued_on') }}" type="date" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2 bg-white">
+                                        <input name="id_issued_on" id="id-issued-field" value="{{ old('id_issued_on') }}" type="date" class="w-full mt-1 rounded-md border border-gray-200 px-3 py-2 bg-white">
                                     </div>
                                     <div>
                                         <label class="text-sm font-semibold text-gray-700">{{ __('site.membership.id_expires_on') }}</label>
@@ -300,9 +337,9 @@
                         <div x-show="isMobile" class="mt-3 space-y-3">
                             <div class="relative rounded-xl overflow-hidden bg-black max-w-sm">
                                 <video id="selfie-video" class="w-full max-h-80 object-cover bg-black" style="transform: scaleX(-1);" autoplay muted playsinline></video>
+                                <p id="selfie-status" class="absolute inset-x-0 bottom-0 m-0 bg-black/70 text-brand-gold text-lg font-bold text-center px-3 py-2 empty:hidden"></p>
                             </div>
                             <button type="button" id="selfie-live-btn" class="inline-flex items-center gap-2 bg-black text-white font-semibold px-4 py-2 rounded-md">{{ __('site.membership.take_selfie') }}</button>
-                            <p id="selfie-status" class="text-sm text-brand-gold m-0"></p>
                         </div>
                         <div x-show="!isMobile" class="mt-3">
                             <button type="button" @click="faceQrOpen = true" class="inline-flex items-center gap-2 border-2 border-brand-gold text-black font-semibold px-4 py-2 rounded-md">{{ __('site.membership.selfie_continue_mobile') }}</button>
@@ -365,6 +402,10 @@ function membershipApply(startStep, oldPlan) {
         idRead: {{ old('full_name') || old('id_number') ? 'true' : 'false' }},
         isMobile: false,
         faceQrOpen: false,
+        scanQrOpen: false,
+        idVerified: {{ old('id_scanned_name') && old('id_read_mode') !== 'photo' ? 'true' : 'false' }},
+        idManual: false,
+        idFailed: false,
         init() {
             var self = this;
             this.isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -378,7 +419,19 @@ function membershipApply(startStep, oldPlan) {
             };
             window.__membershipShowIdRead = function () {
                 self.idRead = true;
+                self.idVerified = true;
+                self.idManual = false;
+                self.idFailed = false;
+                self.scanQrOpen = false;
+                self.$nextTick(function () { if (window.lucide) window.lucide.createIcons(); });
             };
+            window.__membershipIdFailed = function () {
+                self.idFailed = true;
+            };
+            this.$watch('idType', function () {
+                self.idVerified = false;
+                self.scanQrOpen = false;
+            });
             if (this.step === 2) {
                 this.$nextTick(function () {
                     if (window.lucide) window.lucide.createIcons();
@@ -387,10 +440,19 @@ function membershipApply(startStep, oldPlan) {
         },
         startScan() {
             this.idAction = 'scan';
-            var self = this;
+            this.scanQrOpen = false;
             this.$nextTick(function () {
-                if (self.isMobile && window.__membershipStartLiveScan) window.__membershipStartLiveScan();
+                if (window.lucide) window.lucide.createIcons();
+                if (window.__membershipStartLiveScan) window.__membershipStartLiveScan();
             });
+        },
+        useManual() {
+            if (window.__membershipStopLiveScan) window.__membershipStopLiveScan();
+            this.idManual = true;
+            this.idVerified = false;
+            this.idRead = true;
+            var scanned = document.getElementById('id-scanned-name');
+            if (scanned) scanned.value = '';
         },
         selectPlan(value, label) {
             this.plan = value;
@@ -559,12 +621,24 @@ function membershipApply(startStep, oldPlan) {
         var live = document.getElementById('selfie-live');
         var scanned = document.getElementById('id-scanned-name');
         var typed = document.getElementById('full-name-field');
+        var manual = document.querySelector('input[name="id_read_mode"]');
+        manual = manual && manual.value === 'photo';
         if (!live || live.value !== '1') {
             e.preventDefault();
             alert(@json(__('site.membership.selfie_required')));
             return;
         }
-        if (scanned && typed && scanned.value && typed.value) {
+        if (manual) {
+            if (!document.getElementById('id-photo-data').value) {
+                e.preventDefault();
+                alert(@json(__('site.membership.id_fallback_required')));
+                return;
+            }
+            if (scanned && typed) scanned.value = typed.value;
+        } else if (scanned && typed && scanned.value) {
+            typed.value = scanned.value;
+        }
+        if (!manual && scanned && typed && scanned.value && typed.value) {
             var tokens = function (s) { return String(s).toLowerCase().replace(/[^a-z\s]/g, ' ').split(/\s+/).filter(function (t) { return t.length >= 2; }); };
             var left = tokens(scanned.value);
             var right = tokens(typed.value);
@@ -613,13 +687,19 @@ function membershipApply(startStep, oldPlan) {
         select.appendChild(extra);
     }
 
+    function idReadFailed(message) {
+        var status = document.getElementById('id-scan-status');
+        if (status) {
+            status.classList.remove('hidden');
+            status.textContent = message;
+        }
+        if (typeof window.__membershipIdFailed === 'function') window.__membershipIdFailed();
+    }
+
     function applyIdRead(result) {
         if (!result) return;
         if (window.w2kIdRead && window.w2kIdRead.isComplete && !window.w2kIdRead.isComplete(result)) {
-            if (status) {
-                status.classList.remove('hidden');
-                status.textContent = @json(__('site.membership.id_dates_required'));
-            }
+            idReadFailed(@json(__('site.membership.id_dates_required')));
             return;
         }
         var nameInput = document.getElementById('full-name-field');
@@ -672,11 +752,36 @@ function membershipApply(startStep, oldPlan) {
             applyIdRead(result);
             if (idInput) idInput.value = '';
         }).catch(function () {
-            if (status) {
-                status.classList.remove('hidden');
-                status.textContent = @json(__('site.membership.id_read_fail'));
-            }
+            idReadFailed(@json(__('site.membership.id_read_fail')));
             if (idInput) idInput.value = '';
+        });
+    }
+
+    var photoInput = document.getElementById('id-photo-input');
+    var photoData = document.getElementById('id-photo-data');
+    var photoPreview = document.getElementById('id-photo-preview');
+    if (photoInput) {
+        photoInput.addEventListener('change', function () {
+            var file = photoInput.files[0];
+            if (!file || file.type.indexOf('image/') !== 0) return;
+            var reader = new FileReader();
+            reader.onload = function () {
+                var img = new Image();
+                img.onload = function () {
+                    var max = 1600;
+                    var scale = Math.min(1, max / Math.max(img.width, img.height));
+                    var c = document.createElement('canvas');
+                    c.width = Math.round(img.width * scale);
+                    c.height = Math.round(img.height * scale);
+                    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+                    var url = c.toDataURL('image/jpeg', 0.8);
+                    photoData.value = url;
+                    photoPreview.src = url;
+                    photoPreview.classList.remove('hidden');
+                };
+                img.src = reader.result;
+            };
+            reader.readAsDataURL(file);
         });
     }
 
@@ -730,10 +835,7 @@ function membershipApply(startStep, oldPlan) {
             stopLiveScan();
         }).catch(function (err) {
             if (liveCancel || (err && err.message === 'stopped')) return;
-            if (status) {
-                status.classList.remove('hidden');
-                status.textContent = @json(__('site.membership.id_read_fail'));
-            }
+            idReadFailed(@json(__('site.membership.id_read_fail')));
         });
     }
 

@@ -166,29 +166,14 @@ class LaundryController extends Controller
         $order = LaundryOrder::with(['sale', 'customer'])->findOrFail($id);
         $amount = $request->input('amount', $order->dueAmount());
         if ($request->input('method') === 'momo') {
-            $pawapay = app(\App\Services\PawaPayPaymentService::class);
-            if (! $pawapay->isConfigured()) {
-                return back()->with('not_permitted', 'Mobile money is not configured. Add PAWAPAY_API_TOKEN to .env.');
-            }
             $sale = $order->sale;
             if (! $sale) {
                 return back()->with('not_permitted', 'This ticket has no sale to pay.');
             }
             $phone = $request->input('momo_phone') ?: optional($order->customer)->phone_number;
-            $result = $pawapay->start(
-                'sale',
-                $sale->id,
-                $amount,
-                $phone,
-                $request->input('momo_network', 'auto'),
-                'W2K Laundry',
-                route('laundry.ready')
-            );
-            if (empty($result['ok'])) {
-                return back()->with('not_permitted', $result['message'] ?? 'Could not start Mobile Money payment.');
-            }
+            \App\Support\MomoUssd::sendLink($phone, optional($order->customer)->name, $order->reference_no, 'sale', $sale->id, $amount);
 
-            return redirect()->route('pawapay.wait', $result['deposit']->deposit_id);
+            return redirect()->away(\App\Support\MomoUssd::payUrl('sale', $sale->id, $amount).'?back='.urlencode(route('laundry.ready')));
         }
         try {
             $this->laundry->addPayment($order, $amount, 'Cash', 'Laundry Cash payment');

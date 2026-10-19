@@ -135,7 +135,10 @@
             <div class="col-md-4 form-group" id="gallery-file-wrap">
                 <label class="font-weight-bold">File <span class="text-danger" id="gallery-file-req">*</span></label>
                 <input type="file" name="file" id="gallery-file" class="form-control-file" accept="image/*,video/*,audio/*">
-                <small class="text-muted">Paste (Ctrl/Cmd+V) after choosing Image type, or pick a file.</small>
+                <small class="text-muted">Copy a picture and press Ctrl+V (Cmd+V on Mac) anywhere on this page, or pick a file.</small>
+            </div>
+            <div class="col-12 form-group d-none" id="gallery-paste-preview">
+                <img src="" alt="Pasted picture" style="max-height:180px;max-width:100%;border-radius:10px;border:1px solid #e3e9f4;">
             </div>
             <div class="col-md-4 form-group d-none" id="gallery-url-wrap">
                 <label class="font-weight-bold">Link <span class="text-danger">*</span></label>
@@ -269,18 +272,37 @@
         });
     }
 
+    var pastePreview = document.getElementById('gallery-paste-preview');
+    function showPreview(file) {
+        if (!pastePreview || !file || file.type.indexOf('image') !== 0) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+            pastePreview.querySelector('img').src = reader.result;
+            pastePreview.classList.remove('d-none');
+        };
+        reader.readAsDataURL(file);
+    }
+    if (fileInput) {
+        fileInput.addEventListener('change', function () { showPreview(fileInput.files[0]); });
+    }
+
     document.addEventListener('paste', function (e) {
-        if (!typeSel || typeSel.value !== 'image') return;
+        if (!typeSel || !fileInput) return;
         var items = e.clipboardData && e.clipboardData.items;
         if (!items) return;
         for (var i = 0; i < items.length; i++) {
             if (items[i].type.indexOf('image') !== -1) {
                 var blob = items[i].getAsFile();
-                if (blob && fileInput) {
-                    var dt = new DataTransfer();
-                    dt.items.add(blob);
-                    fileInput.files = dt.files;
-                }
+                if (!blob) break;
+                e.preventDefault();
+                var ext = (blob.type.split('/')[1] || 'png').replace('jpeg', 'jpg');
+                var file = new File([blob], 'pasted_' + Date.now() + '.' + ext, { type: blob.type });
+                typeSel.value = 'image';
+                syncTypeFields();
+                var dt = new DataTransfer();
+                dt.items.add(file);
+                fileInput.files = dt.files;
+                showPreview(file);
                 break;
             }
         }

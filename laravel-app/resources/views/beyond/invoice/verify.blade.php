@@ -7,6 +7,10 @@
 <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-4 py-16">
     <div class="max-w-md w-full bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
         <div class="text-center px-6 pt-8 pb-4">
+            @if (!empty($logoUrl))
+                <img src="{{ $logoUrl }}" alt="{{ $siteTitle }}" class="h-16 w-auto mx-auto mb-2 object-contain">
+                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">{{ $siteTitle }}</p>
+            @endif
             @if ($data && !empty($data['valid']))
                 <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
                     <i data-lucide="check-circle" class="w-9 h-9 text-green-600"></i>
@@ -15,6 +19,9 @@
                 <p class="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-green-700 bg-green-50 border border-green-200 rounded-full px-3 py-1">
                     Status: Valid
                 </p>
+                <p class="mt-4 text-2xl font-extrabold text-gray-900">{{ number_format((float) $data['amount'], 0) }} {{ $data['currency'] }}</p>
+                <p class="text-sm font-semibold text-gray-700">{{ $data['client'] }}</p>
+                <p class="text-xs text-gray-500 mt-1">{{ $data['created_at'] }}</p>
             @else
                 <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-3">
                     <i data-lucide="x-circle" class="w-9 h-9 text-red-500"></i>

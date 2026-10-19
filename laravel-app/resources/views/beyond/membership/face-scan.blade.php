@@ -12,8 +12,8 @@
         <p class="text-white/70 text-sm mt-2">{{ __('site.membership.selfie_live_hint') }}</p>
         <div class="relative mt-6 rounded-xl overflow-hidden bg-neutral-900 min-h-[280px]">
             <video id="face-video" class="w-full max-h-[60vh] object-cover bg-black" style="transform: scaleX(-1);" autoplay muted playsinline webkit-playsinline></video>
+            <p id="face-status" class="absolute inset-x-0 bottom-0 m-0 bg-black/70 text-brand-gold text-xl font-bold text-center px-3 py-3">{{ __('site.membership.selfie_turn_center') }}</p>
         </div>
-        <p id="face-status" class="mt-4 text-sm text-brand-gold">{{ __('site.membership.selfie_turn_center') }}</p>
     </div>
 </section>
 <div class="fixed bottom-0 inset-x-0 z-[60] bg-black/95 border-t border-brand-gold/30 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">

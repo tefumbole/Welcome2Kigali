@@ -4011,5 +4011,36 @@
               $('.side-navbar .main-menu').on('scroll', saveSidebarScroll);
           })();
         </script>
+        @if(request()->routeIs('order.index', 'payment.index', 'online.booking.index', 'booking.awaiting-signature', 'contracts.awaiting_client', 'contracts.awaiting_admin', 'jobs.awaiting', 'laundry.received', 'laundry.cleaning', 'laundry.ready', 'laundry.collect', 'membership.admin.applications', 'membership.admin.payments', 'sales.index'))
+        <script>
+          (function () {
+            var EVERY = 30000;
+            var lastInput = Date.now();
+            ['keydown', 'mousedown', 'touchstart', 'input'].forEach(function (ev) {
+              document.addEventListener(ev, function () { lastInput = Date.now(); }, true);
+            });
+            function busy() {
+              if (document.hidden) return true;
+              if (document.querySelector('.modal.show, .modal.in')) return true;
+              var a = document.activeElement;
+              if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && a.value) return true;
+              return Date.now() - lastInput < 15000;
+            }
+            setInterval(function () {
+              if (busy()) return;
+              var tables = (window.jQuery && $.fn.dataTable) ? $.fn.dataTable.tables({ api: true }) : null;
+              var ajaxTables = [];
+              if (tables) {
+                tables.every(function () { if (this.ajax && this.ajax.url()) ajaxTables.push(this); });
+              }
+              if (ajaxTables.length) {
+                ajaxTables.forEach(function (t) { t.ajax.reload(null, false); });
+              } else {
+                window.location.reload();
+              }
+            }, EVERY);
+          })();
+        </script>
+        @endif
       </body>
     </html>

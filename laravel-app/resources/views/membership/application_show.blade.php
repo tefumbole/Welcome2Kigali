@@ -33,6 +33,9 @@
                             @php $docUrl = url('public/'.ltrim($doc->path, '/')); @endphp
                             <li class="mb-2">
                                 <a href="{{ $docUrl }}" target="_blank">{{ $doc->doc_type }} — {{ $doc->original_name }}</a>
+                                @if($doc->doc_type === 'id_document')
+                                    <small class="d-block text-warning">The scan could not read this document. Check it by hand. It is deleted when you approve or reject.</small>
+                                @endif
                                 @if(preg_match('/\.(jpe?g|png|webp|gif)$/i', $doc->path))
                                     <div class="mt-1"><img src="{{ $docUrl }}" alt="{{ $doc->doc_type }}" style="max-width:220px;border:1px solid #ddd;"></div>
                                 @endif
