@@ -64,6 +64,7 @@ Route::get('/menu/qr.png', 'BeyondController@menuQrPng')->name('beyond.menu.qr.p
 Route::get('/lang/{locale}', 'LanguageController@switchLanguage')->name('lang.switch');
 Route::get('/api/public/menu', 'BeyondController@menuData');
 Route::get('/services', 'BeyondController@services')->name('beyond.services');
+Route::get('/services/{service}/{category?}', 'BeyondController@serviceShow')->name('beyond.services.show')->where(['service' => '[a-z]+', 'category' => '[0-9]+']);
 Route::get('/projects', 'BeyondController@projects')->name('beyond.projects');
 Route::get('/gallery', 'BeyondController@gallery')->name('beyond.gallery');Route::get('/contact', 'BeyondController@contact')->name('beyond.contact');
 Route::post('/contact', 'BeyondController@storeContact')->name('beyond.contact.store');

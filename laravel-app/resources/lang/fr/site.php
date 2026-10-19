@@ -41,6 +41,12 @@ return [
         'fashion_body' => 'Vêtements, chaussures et accessoires pour toutes les occasions.',
         'cta_menu' => 'Voir le menu',
         'cta_contact' => 'Écrire sur WhatsApp',
+        'categories' => 'Catégories',
+        'no_categories' => 'Les produits arrivent bientôt. Écrivez-nous sur WhatsApp pour commander.',
+        'no_items' => 'Aucun article dans cette catégorie pour le moment.',
+        'cta_browse' => 'Voir et commander',
+        'all_services' => 'Tous les services',
+        'items_count' => '{0} Aucun article|{1} 1 article|[2,*] :count articles',
     ],
     'reviews' => [
         'title' => 'Avis',

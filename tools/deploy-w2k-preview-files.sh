@@ -199,6 +199,7 @@ FILES=(
   public/js/w2k-face-live.js
   database/migrations/2026_10_19_190000_add_id_issued_on_to_membership_applications.php
   database/migrations/2026_10_19_210000_create_guest_reviews_table.php
+  database/migrations/2026_10_19_230000_add_service_to_categories.php
   routes/web.php
   routes/api.php
   config/services.php
@@ -271,6 +272,8 @@ FILES=(
   app/Support/SaleInvoiceQr.php
   app/Support/QrPng.php
   app/Support/MomoUssd.php
+  app/Support/ServiceCatalog.php
+  app/Category.php
   app/Support/MembershipUpdateLink.php
   app/Http/Controllers/MomoPayController.php
   app/Http/Controllers/SaleInvoiceVerifyController.php
@@ -474,6 +477,7 @@ sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_16_140000_grant_admin_system_every_permission.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_19_190000_add_id_issued_on_to_membership_applications.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_19_210000_create_guest_reviews_table.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_19_230000_add_service_to_categories.php
 sudo -u www-data php "\$APP/artisan" images:compress-pos || true
 mkdir -p "\$APP/public/images/product/thumbs"
 find "\$APP/public/images/product" -type d -exec chmod 755 {} \\; 2>/dev/null || true

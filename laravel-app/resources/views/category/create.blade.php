@@ -66,6 +66,15 @@
                     <label>{{trans('file.Parent Category')}}</label>
                     {{Form::select('parent_id', $lims_categories, null, ['class' => 'form-control','placeholder' => 'No Parent Category'])}}
                 </div>
+                <div class="col-md-6 form-group">
+                    <label>Show on website under</label>
+                    <select name="service" class="form-control">
+                        <option value="">Not on the Services page</option>
+                        @foreach (\App\Support\ServiceCatalog::keys() as $serviceKey)
+                            <option value="{{ $serviceKey }}">{{ __('site.services.'.$serviceKey) }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
 
             <div class="form-group">
@@ -106,6 +115,15 @@
                     @endforeach
                 </select>
             </div>
+                <div class="col-md-6 form-group">
+                    <label>Show on website under</label>
+                    <select name="service" class="form-control" id="edit-service">
+                        <option value="">Not on the Services page</option>
+                        @foreach (\App\Support\ServiceCatalog::keys() as $serviceKey)
+                            <option value="{{ $serviceKey }}">{{ __('site.services.'.$serviceKey) }}</option>
+                        @endforeach
+                    </select>
+                </div>
         </div>
 
         <div class="form-group">
@@ -178,6 +196,7 @@
             $("#editModal input[name='name']").val(data['name']);
             $("#editModal select[name='parent_id']").val(data['parent_id']);
             $("#editModal input[name='category_id']").val(data['id']);
+            $("#editModal select[name='service']").val(data['service'] || '');
             $('.selectpicker').selectpicker('refresh');
           });
     });

@@ -132,6 +132,9 @@ class CategoryController extends Controller
         $lims_category_data['name'] = $request->name;
         $lims_category_data['parent_id'] = $request->parent_id;
         $lims_category_data['is_active'] = true;
+        if (\App\Support\ServiceCatalog::enabled()) {
+            $lims_category_data['service'] = \App\Support\ServiceCatalog::exists($request->service) ? $request->service : null;
+        }
         Category::create($lims_category_data);
         return redirect('category')->with('message', 'Category inserted successfully');
     }
@@ -158,6 +161,11 @@ class CategoryController extends Controller
         ]);
 
         $input = $request->except('image');
+        if (\App\Support\ServiceCatalog::enabled()) {
+            $input['service'] = \App\Support\ServiceCatalog::exists($request->service) ? $request->service : null;
+        } else {
+            unset($input['service']);
+        }
         $image = $request->image;
         if ($image) {
             $stored = \App\Support\PosProductImage::storeUpload($image, 'category');

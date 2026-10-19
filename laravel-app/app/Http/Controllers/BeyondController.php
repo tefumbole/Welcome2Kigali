@@ -49,6 +49,39 @@ class BeyondController extends Controller
         ]);
     }
 
+    public function serviceShow($service, $category = null)
+    {
+        if (! \App\Support\ServiceCatalog::exists($service)) {
+            abort(404);
+        }
+        $categories = \App\Support\ServiceCatalog::categories($service);
+        $current = null;
+        if ($category !== null) {
+            $current = $categories->firstWhere('id', (int) $category);
+            if (! $current) {
+                return redirect()->route('beyond.services.show', $service);
+            }
+        } else {
+            $current = $categories->first(function ($row) {
+                return $row['count'] > 0;
+            }) ?: $categories->first();
+        }
+
+        $cartCount = 0;
+        foreach (session('cart', []) as $row) {
+            $cartCount += (int) ($row['quantity'] ?? 0);
+        }
+
+        return view('beyond.service-show', [
+            'service' => $service,
+            'meta' => \App\Support\ServiceCatalog::SERVICES[$service],
+            'categories' => $categories,
+            'current' => $current,
+            'items' => $current ? \App\Support\ServiceCatalog::items($current['id']) : collect(),
+            'cartCount' => $cartCount,
+        ]);
+    }
+
     public function projects()
     {
         return view('beyond.projects', [

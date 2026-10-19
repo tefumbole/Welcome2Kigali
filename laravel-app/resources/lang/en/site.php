@@ -41,6 +41,12 @@ return [
         'fashion_body' => 'Clothing, shoes and accessories for every occasion.',
         'cta_menu' => 'See the menu',
         'cta_contact' => 'Chat on WhatsApp',
+        'categories' => 'Categories',
+        'no_categories' => 'Products are being added. Chat with us on WhatsApp to order.',
+        'no_items' => 'No items in this category yet.',
+        'cta_browse' => 'Browse & order',
+        'all_services' => 'All services',
+        'items_count' => '{0} No items|{1} 1 item|[2,*] :count items',
     ],
     'reviews' => [
         'title' => 'Reviews',
