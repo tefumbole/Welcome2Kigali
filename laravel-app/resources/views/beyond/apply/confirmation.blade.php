@@ -31,6 +31,7 @@
                     <span class="text-gray-500 text-sm block mb-1">YOUR REFERENCE NUMBER</span>
                     <span class="text-2xl font-mono font-bold text-brand-gold tracking-wider">{{ $application->reference_number }}</span>
                 </div>
+                @include('beyond.partials.review-invite', ['reference' => $application->reference_number])
                 @if($application->hasIncompleteDocuments())
                     <p class="mt-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-0">
                         Some documents were marked <strong>submit later</strong>. Your application is still under review. We may WhatsApp you a link to upload the missing files.

@@ -86,6 +86,14 @@
         gap: .75rem;
         width: 100%;
     }
+    .menu-item-photo {
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: .6rem;
+        object-fit: cover;
+        flex: 0 0 auto;
+        background: #1a1a1a;
+    }
     .menu-item-name {
         font-family: "Lora", "Times New Roman", serif;
         font-size: 1.12rem;
@@ -325,11 +333,15 @@
                                                 <button type="button"
                                                         class="menu-item-btn"
                                                         @click="openItem({{ (int) $item['id'] }}, {{ json_encode(\App\Support\SiteI18n::item($item['name'])) }})">
+                                                    @php $itemNote = \App\Support\SiteI18n::details($item['details'] ?? ''); @endphp
                                                     <div class="menu-item-line">
+                                                        @if (!empty($item['image']))
+                                                            <img src="{{ $item['image'] }}" alt="" class="menu-item-photo">
+                                                        @endif
                                                         <span class="menu-item-name">
                                                             {{ \App\Support\SiteI18n::item($item['name']) }}
-                                                            @if (!empty($item['details']) && empty($item['flavors']))
-                                                                <span class="menu-item-note">({{ \App\Support\SiteI18n::details($item['details']) }})</span>
+                                                            @if ($itemNote !== '' && empty($item['flavors']))
+                                                                <span class="menu-item-note">({{ $itemNote }})</span>
                                                             @endif
                                                         </span>
                                                         <span class="menu-dots" aria-hidden="true"></span>

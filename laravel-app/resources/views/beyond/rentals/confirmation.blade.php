@@ -13,6 +13,7 @@
             @endif
         </p>
         <p class="text-sm text-gray-500">We will contact you on WhatsApp with the next steps.</p>
+        @include('beyond.partials.review-invite', ['reference' => $booking->reference_no ?? $reference ?? ''])
         <a href="{{ url('/rentals') }}" class="inline-block mt-6 text-brand-blue font-semibold hover:underline">Back to Rentals</a>
     </div>
 </div>

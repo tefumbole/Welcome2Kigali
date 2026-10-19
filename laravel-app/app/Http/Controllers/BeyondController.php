@@ -191,6 +191,7 @@ class BeyondController extends Controller
                         'id' => $product->id,
                         'name' => $product->name,
                         'details' => $product->product_details,
+                        'image' => $this->menuProductImage($product->image),
                         'price' => (int) $product->price,
                         'flavors' => $flavors,
                     ];
@@ -203,7 +204,7 @@ class BeyondController extends Controller
                 'name' => $category->name,
                 'tagline' => $look['tagline'],
                 'blurb' => $look['blurb'],
-                'image' => $look['image'],
+                'image' => $this->menuCategoryImage($category, $look['image']),
                 'items' => $items,
             ];
         })->values();
@@ -234,6 +235,33 @@ class BeyondController extends Controller
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::warning('Cafe menu seed failed: '.$e->getMessage());
         }
+    }
+
+    private function menuProductImage($filename)
+    {
+        $filename = \App\Support\PosProductImage::firstName($filename);
+        if ($filename === '' || $filename === 'zummXD2dvAtI.png') {
+            return '';
+        }
+        $path = public_path('images/product/'.$filename);
+        if (! is_file($path) || filesize($path) < 1) {
+            return '';
+        }
+
+        return \App\Support\PosProductImage::url($filename);
+    }
+
+    private function menuCategoryImage($category, $fallback)
+    {
+        $filename = trim((string) ($category->image ?? ''));
+        if ($filename !== '' && strtolower($filename) !== 'null' && $filename !== 'zummXD2dvAtI.png') {
+            $path = public_path('images/category/'.$filename);
+            if (is_file($path) && filesize($path) > 0) {
+                return \App\Support\PosProductImage::catalogUrl('category', $filename);
+            }
+        }
+
+        return $fallback;
     }
 
     private function menuSectionLook($name)

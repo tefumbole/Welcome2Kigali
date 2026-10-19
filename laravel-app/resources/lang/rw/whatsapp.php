@@ -84,6 +84,8 @@ return [
     'sale_delivery' => 'Gutanga',
     'sale_served' => 'Byatanzwe na',
     'sale_thanks' => 'Murakoze guhitamo *:company*.',
+    'review_invite' => 'Nyamuneka tanga igitekerezo ku isuku, niba ibiryo byageze ku gihe, serivisi n’imibanire y’abakozi, n’ubwiza bw’ibiryo.',
+    'review_link' => 'Tanga igitekerezo',
     'order_update_title' => 'IVUGURURA RY’IGITUMANWA',
     'order_update_intro' => 'Imiterere y’igitumanwa cyawe yahindutse ikaba *:status*.',
     'order_status' => 'Imiterere',

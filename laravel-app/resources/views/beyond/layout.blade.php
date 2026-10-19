@@ -237,6 +237,7 @@
         'about'    => ['label' => __('site.nav.about'), 'url' => url('/about')],
         'events'   => ['label' => __('site.nav.events'), 'url' => url('/events')],
         'menu'     => ['label' => __('site.nav.menu'), 'url' => url('/menu')],
+        'reviews'  => ['label' => __('site.nav.reviews'), 'url' => url('/reviews')],
         'register' => ['label' => __('site.nav.register'), 'url' => url('/register-now')],
     ];
     $navLinks = [];

@@ -23,7 +23,10 @@ class SiteI18n
 
     public static function details($details)
     {
-        return self::t('menu.details', $details);
+        $plain = html_entity_decode(strip_tags((string) $details), ENT_QUOTES, 'UTF-8');
+        $plain = trim(preg_replace('/\s+/', ' ', $plain));
+
+        return $plain === '' ? '' : self::t('menu.details', $plain);
     }
 
     public static function flavor($flavor)

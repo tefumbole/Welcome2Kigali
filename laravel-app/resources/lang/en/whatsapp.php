@@ -84,6 +84,8 @@ return [
     'sale_delivery' => 'Delivery',
     'sale_served' => 'Served by',
     'sale_thanks' => 'Thank you for choosing *:company*.',
+    'review_invite' => 'Please take a moment to review your visit. Score cleanliness, whether the food arrived on time, customer service and staff attitude, and food quality.',
+    'review_link' => 'Leave a review',
     'order_update_title' => 'ORDER UPDATE',
     'order_update_intro' => 'Your order status has been updated to *:status*.',
     'order_status' => 'Status',

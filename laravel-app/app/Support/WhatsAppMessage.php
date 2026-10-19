@@ -225,6 +225,11 @@ class WhatsAppMessage
         return "\n*{$label}:*\n{$url}\n";
     }
 
+    public static function reviewInvite()
+    {
+        return "\n".self::t('review_invite').self::actionLink(self::t('review_link'), url('/reviews'));
+    }
+
     public static function footer()
     {
         $out = "\n".self::t('regards')."\n*".self::companyName()."*";
@@ -285,6 +290,7 @@ class WhatsAppMessage
         $msg .= self::bullet(self::t('label_reference'), $reference);
         $msg .= self::bullet(self::t('label_period'), $period);
         $msg .= "\n".self::t('rental_followup');
+        $msg .= self::reviewInvite();
         $msg .= self::footer();
 
         return $msg;
@@ -703,6 +709,7 @@ class WhatsAppMessage
         }
 
         $msg .= "\n".self::t('sale_thanks', ['company' => $company]);
+        $msg .= self::reviewInvite();
         $msg .= self::footer();
 
         return $msg;
@@ -1230,6 +1237,7 @@ class WhatsAppMessage
         $msg .= self::t('membership_received_intro')."\n\n";
         $msg .= self::t('membership_received_body')."\n\n";
         $msg .= self::bullet(self::t('label_reference'), $reference);
+        $msg .= self::reviewInvite();
         $msg .= self::footer();
 
         return $msg;
@@ -1269,6 +1277,7 @@ class WhatsAppMessage
             $msg .= self::actionLink(self::t('membership_card'), $verifyUrl);
         }
         $msg .= "\n".self::t('membership_welcome');
+        $msg .= self::reviewInvite();
         $msg .= self::footer();
 
         return $msg;
@@ -1461,6 +1470,9 @@ class WhatsAppMessage
         $extraNote = trim((string) $extraNote);
         if ($extraNote !== '') {
             $msg .= "\n{$extraNote}\n";
+        }
+        if (preg_match('/complete|deliver|served|paid|done/i', (string) $status)) {
+            $msg .= self::reviewInvite();
         }
         $msg .= self::footer();
 

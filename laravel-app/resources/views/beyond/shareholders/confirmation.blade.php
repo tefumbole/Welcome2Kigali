@@ -21,6 +21,7 @@
                 </div>
                 <h1 class="text-3xl font-extrabold text-gray-900">Registration Successful!</h1>
                 <p class="text-lg text-gray-600">Thank you for registering as a shareholder. Your application has been received.</p>
+                @include('beyond.partials.review-invite', ['reference' => $shareholder->reference_number])
             </div>
 
             <div class="bg-white rounded-xl shadow-lg border-t-4 border-t-brand-light overflow-hidden">

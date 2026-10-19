@@ -57,6 +57,8 @@ Route::post('/contracts/sign/{token}/decline', 'ContractSignController@decline')
 Route::get('/', 'BeyondController@home')->name('beyond.home');
 Route::get('/about', 'BeyondController@about')->name('beyond.about');
 Route::get('/menu', 'BeyondController@menu')->name('beyond.menu');
+Route::get('/reviews', 'ReviewController@show')->name('beyond.reviews');
+Route::post('/reviews', 'ReviewController@store')->name('beyond.reviews.store');
 Route::get('/menu/qr', 'BeyondController@menuQr')->name('beyond.menu.qr');
 Route::get('/menu/qr.png', 'BeyondController@menuQrPng')->name('beyond.menu.qr.png');
 Route::get('/lang/{locale}', 'LanguageController@switchLanguage')->name('lang.switch');

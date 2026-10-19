@@ -18,6 +18,7 @@ class SiteMenu
             'about'    => 'About',
             'events'   => 'Events',
             'menu'     => 'Menu',
+            'reviews'  => 'Reviews',
             'register' => 'Become a Member',
             // Login is rendered separately in the header
         ];

@@ -2,65 +2,58 @@
 
 namespace App\Http\Controllers;
 
-use App\Product;
-use App\Review;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class ReviewController extends Controller
 {
-    public function index()
+    public function show(Request $request)
     {
-        //
+        return view('beyond.reviews', [
+            'reference' => $this->reference($request->query('ref')),
+            'saved' => (bool) session('review_saved'),
+        ]);
     }
 
     public function store(Request $request)
     {
-        $data = $request->all();
-        $this->updateRating($request->rating, $request->product_id);
-        Review::create($data);
-
-        return back()->with('message', 'Your valuable review is submitted...!');
-    }
-
-    public function show(Review $review)
-    {
-        //
-    }
-
-    public function update(Request $request, Review $review)
-    {
-        $data = $request->all();
-        $this->updateRating($request->rating, $request->product_id, $review->id);
-        $review->update($data);
-
-        return back()->with('message', 'Your review has been updated...!');
-    }
-
-
-    public function updateRating($rating, $product_id, $id = null)
-    {
-        $rating_count = Review::where('product_id', $product_id)->count('id');
-        $rating_sum = Review::where('product_id', $product_id);
-        if($id != null) {
-            $rating_sum = $rating_sum->where('id', '!=' ,$id);
-        } else {
-            $rating_count = $rating_count + 1;
+        if (! Schema::hasTable('guest_reviews')) {
+            return back()->withInput()->withErrors(['review' => __('site.reviews.unavailable')]);
         }
-        $rating_sum = $rating_sum->sum('rating');
-        $rating_sum = $rating_sum + $rating;
-        $rating = $rating_sum/$rating_count;
 
-        Product::where('id', $product_id)->update(['rating' => $rating]);
+        $data = $request->validate([
+            'cleanliness' => 'required|integer|min:1|max:5',
+            'on_time' => 'required|integer|min:1|max:5',
+            'service' => 'required|integer|min:1|max:5',
+            'food_quality' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:1000',
+            'guest_name' => 'nullable|string|max:80',
+            'reference' => 'nullable|string|max:80',
+        ]);
+
+        DB::table('guest_reviews')->insert([
+            'reference' => $this->reference($data['reference'] ?? ''),
+            'guest_name' => trim((string) ($data['guest_name'] ?? '')) ?: null,
+            'cleanliness' => (int) $data['cleanliness'],
+            'on_time' => (int) $data['on_time'],
+            'service' => (int) $data['service'],
+            'food_quality' => (int) $data['food_quality'],
+            'comment' => trim((string) ($data['comment'] ?? '')) ?: null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->route('beyond.reviews')->with('review_saved', true);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Review  $review
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Review $review)
+    protected function reference($value)
     {
-        //
+        $value = trim((string) $value);
+        if ($value === '') {
+            return null;
+        }
+
+        return substr(preg_replace('/[^\w\-\.\/]/', '', $value), 0, 80) ?: null;
     }
 }

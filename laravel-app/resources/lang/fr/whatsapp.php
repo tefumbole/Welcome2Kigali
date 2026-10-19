@@ -84,6 +84,8 @@ return [
     'sale_delivery' => 'Livraison',
     'sale_served' => 'Servi par',
     'sale_thanks' => 'Merci d’avoir choisi *:company*.',
+    'review_invite' => 'Merci de noter votre visite : propreté, délai du service, attitude du personnel, et qualité de la cuisine.',
+    'review_link' => 'Laisser un avis',
     'order_update_title' => 'MISE À JOUR DE COMMANDE',
     'order_update_intro' => 'Le statut de votre commande est maintenant *:status*.',
     'order_status' => 'Statut',
