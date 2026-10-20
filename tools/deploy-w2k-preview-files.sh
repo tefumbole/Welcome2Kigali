@@ -494,7 +494,16 @@ if [ -f "\$APP/.env" ]; then
   else
     echo 'WASENDER_SESSION_ID=127956' >> "\$APP/.env"
   fi
+  if [ -n "${W2K_WASENDER_API_KEY:-}" ]; then
+    if grep -q '^WASENDER_API_KEY=' "\$APP/.env"; then
+      sed -i "s|^WASENDER_API_KEY=.*|WASENDER_API_KEY=${W2K_WASENDER_API_KEY}|" "\$APP/.env"
+    else
+      echo "WASENDER_API_KEY=${W2K_WASENDER_API_KEY}" >> "\$APP/.env"
+    fi
+  fi
   chown www-data:www-data "\$APP/.env" 2>/dev/null || true
+  echo "Wasender session: \$(grep '^WASENDER_SESSION_ID=' "\$APP/.env" | cut -d= -f2- | tr -d '\r')"
+  echo "Wasender status: \$(curl -s -m 20 -H "Authorization: Bearer \$(grep '^WASENDER_API_KEY=' "\$APP/.env" | cut -d= -f2- | tr -d '\r')" -H "Accept: application/json" https://wasenderapi.com/api/status)"
 fi
 sudo -u www-data php "\$APP/artisan" view:clear
 sudo -u www-data php "\$APP/artisan" cache:clear
