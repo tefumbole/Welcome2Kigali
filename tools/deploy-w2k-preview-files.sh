@@ -487,6 +487,15 @@ find "\$APP/public/images/product" -type d -exec chmod 755 {} \\; 2>/dev/null ||
 find "\$APP/public/images/product" -type f -exec chmod 644 {} \\; 2>/dev/null || true
 chown -R www-data:www-data "\$APP/public/images/product" 2>/dev/null || true
 sudo -u www-data php "\$APP/artisan" permission:cache-reset || true
+# WasenderAPI: switch every WhatsApp notification to the current session (same account, new session id)
+if [ -f "\$APP/.env" ]; then
+  if grep -q '^WASENDER_SESSION_ID=' "\$APP/.env"; then
+    sed -i 's/^WASENDER_SESSION_ID=.*/WASENDER_SESSION_ID=127956/' "\$APP/.env"
+  else
+    echo 'WASENDER_SESSION_ID=127956' >> "\$APP/.env"
+  fi
+  chown www-data:www-data "\$APP/.env" 2>/dev/null || true
+fi
 sudo -u www-data php "\$APP/artisan" view:clear
 sudo -u www-data php "\$APP/artisan" cache:clear
 sudo -u www-data php "\$APP/artisan" config:clear
