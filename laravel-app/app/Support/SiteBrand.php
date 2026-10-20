@@ -113,14 +113,15 @@ class SiteBrand
             || preg_match('/675\s*321\s*739|675321739/i', $val)
             || preg_match('/^\+?237/i', $val)
             || preg_match('/7437\s*010300|447437010300/i', $val)
+            || preg_match('/793\s*761\s*617|793761617/i', $val)
             || preg_match('/^\+?44/i', $val)) {
-            return '+250 793 761 617';
+            return '+250 789 950 016';
         }
 
         return $val;
     }
 
-    /** Digits only for https://wa.me/250793761617 */
+    /** Digits only for https://wa.me/250789950016 */
     public static function phoneWhatsAppDigits()
     {
         $digits = preg_replace('/\D/', '', self::phone());
