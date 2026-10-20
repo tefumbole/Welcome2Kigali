@@ -52,6 +52,13 @@ class MomoPayController extends Controller
         $this->finalize($purpose, $id, $amount);
 
         $back = $request->query('back');
+
+        // POS sale: send the teller straight to the printable invoice; the POS
+        // cart was already consumed when the sale was created.
+        if ($purpose === 'sale' && $back && \Illuminate\Support\Str::contains($back, '/pos') && auth()->check()) {
+            return redirect()->to(url('sales/gen_invoice/'.$id))->with('message', 'Payment received by MoMo.');
+        }
+
         $target = MomoUssd::payUrl($purpose, $id, $amount);
         if ($back && \Illuminate\Support\Str::startsWith($back, url('/'))) {
             $target .= '?back='.urlencode($back);
@@ -113,6 +120,21 @@ class MomoPayController extends Controller
                         $sale->paid_amount = $sale->grand_total;
                         $sale->payment_status = 4;
                         $sale->save();
+                        try {
+                            $account = \App\Account::where('is_default', true)->where('is_active', true)->first()
+                                ?: \App\Account::where('is_active', true)->orderBy('id')->first();
+                            $payment = new \App\Payment();
+                            $payment->user_id = auth()->id() ?: $sale->user_id;
+                            $payment->sale_id = $sale->id;
+                            $payment->account_id = $account ? $account->id : null;
+                            $payment->payment_reference = 'mpr-'.date('Ymd').'-'.date('his');
+                            $payment->amount = $amount;
+                            $payment->change = 0;
+                            $payment->paying_method = 'MTN Mobile Money';
+                            $payment->save();
+                        } catch (\Throwable $e) {
+                            \Log::warning('[momo-ussd] sale payment row failed: '.$e->getMessage());
+                        }
                     }
                     break;
                 case 'order':

@@ -37,7 +37,7 @@
         </div>
     @else
         <div class="qr"><img src="{{ $qr }}" alt="Scan to pay with MoMo"></div>
-        <a class="pay" href="{{ $tel }}">Pay {{ number_format($amount) }} RWF</a>
+        <a class="pay" href="{{ $tel }}">Pay Now</a>
 
         <form method="post"
               action="{{ route('momo.ussd.paid', ['purpose' => $purpose, 'id' => $id, 'amount' => $amount, 'token' => $token]) }}{{ $backUrl ? '?back='.urlencode($backUrl) : '' }}"

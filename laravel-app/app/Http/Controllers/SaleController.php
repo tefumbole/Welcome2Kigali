@@ -754,8 +754,6 @@ class SaleController extends Controller
                 $paying_method = 'Pay Later';
             }
             elseif ($data['paid_by_id'] == 8) {
-                $mtn_number = $request->input('momo_phone') ?: $lims_customer_data->phone_number;
-                $networkHint = $request->input('momo_network', 'auto');
                 $due = max(0, (float) $lims_sale_data->grand_total);
                 $amount = (float) ($data['momo_charge_amount'] ?? 0);
                 if ($amount <= 0) {
@@ -764,7 +762,6 @@ class SaleController extends Controller
                 if ($amount > $due) {
                     $amount = $due;
                 }
-                \App\Support\MomoUssd::sendLink($mtn_number, optional($lims_customer_data)->name, $lims_sale_data->reference_no, 'sale', $lims_sale_data->id, $amount);
 
                 return redirect()->away(\App\Support\MomoUssd::payUrl('sale', $lims_sale_data->id, $amount).'?back='.urlencode(url('/pos')));
             }
