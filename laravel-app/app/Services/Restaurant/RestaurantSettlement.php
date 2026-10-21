@@ -40,6 +40,8 @@ class RestaurantSettlement
                 'pending_delivery' => false,
                 'billable' => $grand,
                 'due' => $plainDue,
+                'pending_amount' => 0,
+                'delivery_percent' => null,
                 'badge' => ((int) $sale->payment_status === 1) ? 'Pending' : ($plainDue <= 0.009 ? 'Paid' : 'Due'),
             ];
         }
@@ -77,6 +79,8 @@ class RestaurantSettlement
         }
         $billable = round($billable, 2);
         $due = max(0, round($billable - $paid, 2));
+        $pendingAmount = max(0, round($grand - $billable, 2));
+        $percent = $grand > 0.009 ? (int) round(($billable / $grand) * 100) : 0;
         if ($pending) {
             $badge = 'Pending delivery';
         } elseif ($due <= 0.009) {
@@ -90,6 +94,8 @@ class RestaurantSettlement
             'pending_delivery' => $pending,
             'billable' => $billable,
             'due' => $due,
+            'pending_amount' => $pendingAmount,
+            'delivery_percent' => $percent,
             'badge' => $badge,
         ];
     }

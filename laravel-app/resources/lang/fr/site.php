@@ -68,6 +68,10 @@ return [
         'unavailable' => 'Les avis ne sont pas disponibles pour le moment.',
         'cta' => 'Laisser un avis',
         'cta_hint' => 'Propreté, délai, service et cuisine.',
+        'add' => 'Ajouter un avis',
+        'count' => '{0} Aucun avis|{1} 1 avis|[2,*] :count avis',
+        'guest' => 'Client',
+        'empty' => 'Les avis apparaîtront ici.',
     ],
     'layout' => [
         'meta' => 'Welcome 2 Kigali Expats Club — une destination, une communauté, une expérience. Vivre. Créer des liens. S’épanouir.',

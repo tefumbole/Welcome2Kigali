@@ -68,6 +68,10 @@ return [
         'unavailable' => 'Ibitekerezo ntibiboneka ubu.',
         'cta' => 'Tanga igitekerezo',
         'cta_hint' => 'Isuku, igihe, serivisi, n’ibiryo.',
+        'add' => 'Ongeraho igitekerezo',
+        'count' => '{0} Nta bitekerezo|{1} Igitekerezo 1|[2,*] Ibitekerezo :count',
+        'guest' => 'Umukiriya',
+        'empty' => 'Ibitekerezo bizagaragara hano.',
     ],
     'layout' => [
         'meta' => 'Welcome 2 Kigali Expats Club — ahantu, umuryango, n’uburambe. Baho. Huza. Iterambere.',

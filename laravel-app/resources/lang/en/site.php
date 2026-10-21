@@ -68,6 +68,10 @@ return [
         'unavailable' => 'Reviews are not available right now. Please try again shortly.',
         'cta' => 'Leave a review',
         'cta_hint' => 'Tell us about cleanliness, timing, service, and food.',
+        'add' => 'Add Review',
+        'count' => '{0} No reviews yet|{1} 1 review|[2,*] :count reviews',
+        'guest' => 'Guest',
+        'empty' => 'Reviews will appear here.',
     ],
     'layout' => [
         'meta' => 'Welcome 2 Kigali Expats Club — a destination, a community, an experience. Live. Connect. Thrive.',

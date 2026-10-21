@@ -229,21 +229,26 @@ class RestaurantOrderService
     public function accept(RestaurantOrderItem $item, User $user, $minutes)
     {
         $this->assertStatus($item, 'awaiting', 'preparing');
-        $minutes = (int) $minutes;
-        if ($minutes < 1 || $minutes > 240) {
+        $minutes = is_numeric($minutes) ? (int) $minutes : 0;
+        if ($minutes > 240) {
             throw new \InvalidArgumentException('Enter a preparation time between 1 and 240 minutes.');
         }
+        $timed = $minutes >= 1;
         $item->status = 'preparing';
         $item->accepted_by = $user->id;
         $item->accepted_at = now();
-        $item->estimate_minutes = $minutes;
-        if (! $item->original_estimate_minutes) {
+        $item->estimate_minutes = $timed ? $minutes : null;
+        if ($timed && ! $item->original_estimate_minutes) {
             $item->original_estimate_minutes = $minutes;
         }
-        $item->expected_ready_at = now()->addMinutes($minutes);
+        $item->expected_ready_at = $timed ? now()->addMinutes($minutes) : null;
         $item->save();
-        $this->event($item->order, $item, 'accepted', $user->id, $minutes.' min');
-        $this->notify($item->order, RestaurantDepartment::label($item->lane ?: $item->department).' accepted '.$item->product_name.' (x'.$this->qty($item).'). Ready in about '.$minutes.' minutes.');
+        $this->event($item->order, $item, 'accepted', $user->id, $timed ? $minutes.' min' : null);
+        $text = RestaurantDepartment::label($item->lane ?: $item->department).' accepted '.$item->product_name.' (x'.$this->qty($item).').';
+        if ($timed) {
+            $text .= ' Ready in about '.$minutes.' minutes.';
+        }
+        $this->notify($item->order, $text);
 
         return $item;
     }
@@ -291,7 +296,9 @@ class RestaurantOrderService
         $item->save();
         $order = $item->order()->with('items', 'sale.customer')->first();
         $this->event($order, $item, 'delivered', $user->id, null);
-        $this->notify($order, $item->product_name.' has been delivered.');
+        $sale = $order->sale ?: Sale::find($order->sale_id);
+        $ref = $sale ? $sale->reference_no : $order->sale_id;
+        $this->notify($order, $item->product_name.' has been delivered. Track: '.$order->trackUrl().' Review: '.url('/reviews?ref='.urlencode((string) $ref)));
         if ($order->isFulfilled()) {
             $this->sendReviewLink($order);
         }
@@ -365,7 +372,7 @@ class RestaurantOrderService
         $order->save();
         $sale = $order->sale ?: Sale::find($order->sale_id);
         $ref = $sale ? $sale->reference_no : $order->sale_id;
-        $this->notify($order, 'Please review order '.$ref.'. Delivery time, food, environment and service: '.$order->reviewUrl());
+        $this->notify($order, 'Please review order '.$ref.'. Cleanliness, delivery time, service and food: '.url('/reviews?ref='.urlencode((string) $ref)));
     }
 
     public function notifyReceived(RestaurantOrder $order)

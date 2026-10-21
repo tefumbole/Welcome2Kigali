@@ -20,6 +20,17 @@
         .row { display:flex; gap:12px; flex-wrap:wrap; }
         .row > * { flex:1 1 180px; }
         .muted { color:#5c5346; font-size:14px; }
+        #countdown { text-align:center; padding:28px 18px 24px; }
+        #count-text {
+            margin:10px 0 0;
+            color:#0A0A0A;
+            font-size:clamp(52px, 12vw, 92px);
+            font-weight:700;
+            letter-spacing:-.04em;
+            line-height:.9;
+            font-variant-numeric:tabular-nums;
+        }
+        #count-text.waiting { font-size:clamp(22px, 4vw, 28px); letter-spacing:0; font-weight:500; color:#5c5346; }
         .alert { padding:10px 12px; border-radius:8px; margin-bottom:12px; }
         .ok { background:#e7f6ea; }
         .bad { background:#fde8e8; }

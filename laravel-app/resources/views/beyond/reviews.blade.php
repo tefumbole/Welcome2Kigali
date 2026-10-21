@@ -13,6 +13,8 @@
     }
     .review-score input:checked + span,
     .review-score input:focus + span { background: #C5A059; color: #0A0A0A; }
+    details.add-review > summary::-webkit-details-marker,
+    details > summary::-webkit-details-marker { display: none; }
 </style>
 @endpush
 
@@ -21,7 +23,9 @@
     <div class="max-w-xl mx-auto">
         <p class="text-[11px] tracking-[0.22em] uppercase text-brand-gold m-0">Welcome 2 Kigali</p>
         <h1 class="font-serif text-3xl text-white mt-2">{{ \App\Support\SiteContent::text('reviews.heading', __('site.reviews.heading')) }}</h1>
-        <p class="text-white/70 text-sm mt-2">{{ \App\Support\SiteContent::text('reviews.intro', __('site.reviews.intro')) }}</p>
+        <div class="mt-6">
+            @include('beyond.partials.review-summary', ['tone' => 'dark'])
+        </div>
 
         @if ($saved)
             <div class="mt-8 rounded-2xl border border-brand-gold/40 bg-white/5 p-6 text-center">
@@ -40,7 +44,9 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('beyond.reviews.store') }}" class="mt-8 space-y-5">
+            <details class="mt-8" @if($errors->any()) open @endif>
+                <summary class="list-none cursor-pointer inline-flex items-center justify-center bg-brand-gold text-black font-bold px-6 py-3 rounded-full">{{ __('site.reviews.add') }}</summary>
+            <form method="POST" action="{{ route('beyond.reviews.store') }}" class="mt-6 space-y-5">
                 @csrf
                 <input type="hidden" name="reference" value="{{ old('reference', $reference) }}">
 
@@ -74,6 +80,7 @@
                 </div>
                 <button type="submit" class="w-full bg-brand-gold text-black font-bold py-3 rounded-md">{{ __('site.reviews.submit') }}</button>
             </form>
+            </details>
         @endif
     </div>
 </div>

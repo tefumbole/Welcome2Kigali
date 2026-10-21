@@ -15,17 +15,21 @@
                 $latest = $item->expected_ready_at;
             }
         }
+        $statusLabels = ['awaiting' => 'Awaiting', 'preparing' => 'Accepted', 'ready' => 'Ready for delivery', 'delivered' => 'Delivered'];
+        $anyDelivered = $order->items->contains(function ($item) {
+            return $item->status === 'delivered';
+        });
     @endphp
     <div class="card" id="countdown" data-ready="{{ $latest ? $latest->toIso8601String() : '' }}">
         @if($food->where('status', 'preparing')->count())<span class="steam" title="Cooking"></span> Kitchen @endif
         @if($drinks->whereIn('status', ['awaiting', 'preparing'])->count())<span class="glass" title="Preparing"></span> Bar @endif
-        <p id="count-text" class="muted">@if($latest) Expected {{ $latest->format('H:i') }} @else Waiting for the kitchen or bar to accept the order. @endif</p>
+        <p id="count-text" class="{{ $latest ? '' : 'waiting' }}">@if($latest) Expected {{ $latest->format('H:i') }} @elseif($open->isNotEmpty() || $order->items->where('status', 'preparing')->count()) Accepted @else Waiting for the kitchen or bar to accept the order. @endif</p>
     </div>
     @foreach(['Food' => $food, 'Drinks' => $drinks] as $label => $rows)
         <div class="card">
             <h2>{{ $label }}</h2>
             @forelse($rows as $item)
-                <p><strong>{{ $item->product_name }}</strong> × {{ $item->qty }} — {{ ucfirst($item->status) }}
+                <p><strong>{{ $item->product_name }}</strong> × {{ $item->qty }} — {{ $statusLabels[$item->status] ?? ucfirst($item->status) }}
                     @if($item->status === 'preparing' && $item->expected_ready_at)
                         · ready about {{ $item->expected_ready_at->format('H:i') }}
                     @endif
@@ -43,8 +47,8 @@
         @else
             <a class="btn" href="{{ $payUrl }}">Pay</a>
         @endif
-        @if($order->isFulfilled())
-            <a class="btn ghost" href="{{ $order->reviewUrl() }}">Review this order</a>
+        @if($anyDelivered || $order->isFulfilled())
+            <a class="btn ghost" href="{{ url('/reviews?ref='.urlencode($sale->reference_no)) }}">Add review</a>
         @endif
     </p>
     <script>
@@ -58,11 +62,13 @@
                 var left = end - Date.now();
                 if (left <= 0) {
                     label.textContent = 'Taking longer than expected';
+                    label.className = 'waiting';
                     return;
                 }
+                label.className = '';
                 var mins = Math.floor(left / 60000);
                 var secs = Math.floor((left % 60000) / 1000);
-                label.textContent = 'About ' + mins + 'm ' + secs + 's';
+                label.textContent = mins + 'm ' + (secs < 10 ? '0' : '') + secs + 's';
             }
             tick();
             setInterval(tick, 1000);

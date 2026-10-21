@@ -28,6 +28,7 @@
                     <th>{{trans('file.Amount')}}</th>
                     <th>{{trans('file.Paid Amount')}}</th>
                     <th>{{trans('file.Due')}}</th>
+                    <th>Delivery</th>
                     <th>{{trans('file.Payment Status')}}</th>
                     <th>{{trans('file.Date')}}</th>
                     <th>{{trans('file.Add Payment')}}</th>
@@ -50,6 +51,19 @@
                         <td>{{ number_format($sale->grand_total, 2) }}</td>
                         <td>{{ number_format($sale->paid_amount, 2) ?? 0 }}</td>
                         <td>{{ number_format($due, 2) }}</td>
+                        <td>
+                            @if($settlement && !empty($settlement['queued']))
+                                <strong>{{ (int) $settlement['delivery_percent'] }}%</strong>
+                                <div style="margin-top:4px;height:6px;border-radius:999px;background:#f1e6d0;overflow:hidden;">
+                                    <div style="height:6px;width:{{ max(0, min(100, (int) $settlement['delivery_percent'])) }}%;background:#C5A059;"></div>
+                                </div>
+                                @if((float) $settlement['pending_amount'] > 0.009)
+                                    <div class="text-muted" style="margin-top:4px;">Not delivered {{ number_format($settlement['pending_amount'], 2) }}</div>
+                                @endif
+                            @else
+                                —
+                            @endif
+                        </td>
                         <td><span class="badge {{ $badgeClass }}">{{ $badge }}</span></td>
                         <td>{{ $sale->created_at }}</td>
                         <td>

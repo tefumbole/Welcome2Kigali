@@ -96,6 +96,7 @@ FILES=(
   app/Services/Restaurant/RestaurantPayments.php
   app/Services/Restaurant/RestaurantSettlement.php
   app/Support/SalePayQr.php
+  app/Support/GuestReviews.php
   database/migrations/2026_10_18_180000_create_restaurant_orders.php
   database/migrations/2026_10_21_140000_add_lane_to_restaurant_order_items.php
   database/migrations/2026_10_21_120000_refresh_site_content_copy.php
