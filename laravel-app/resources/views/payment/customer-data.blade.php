@@ -35,6 +35,12 @@
                 </thead>
                 <tbody>
                 @foreach($sales as $key=>$sale)
+                    @php
+                        $settlement = isset($sale->settlement) ? $sale->settlement : null;
+                        $due = $settlement ? $settlement['due'] : max(0, (float) $sale->grand_total - (float) $sale->paid_amount);
+                        $badge = $settlement ? $settlement['badge'] : ($sale->payment_status == 1 ? 'Pending' : 'Due');
+                        $badgeClass = $badge === 'Paid' ? 'badge-success' : ($badge === 'Due' ? 'badge-danger' : 'badge-warning');
+                    @endphp
                     <tr data-id="{{$sale->id}}">
                         <td>{{$key}}</td>
                         <td>{{ $sale->customer->name }}</td>
@@ -43,11 +49,13 @@
                         <td>{{ $sale->customer->phone_number }}</td>
                         <td>{{ number_format($sale->grand_total, 2) }}</td>
                         <td>{{ number_format($sale->paid_amount, 2) ?? 0 }}</td>
-                        <td>{{ number_format($sale->grand_total - $sale->paid_amount, 2) }}</td>
-                        <td><span class="badge badge-warning">{{ $sale->payment_status == 1 ? 'Pending' : 'Due' }}</span></td>
+                        <td>{{ number_format($due, 2) }}</td>
+                        <td><span class="badge {{ $badgeClass }}">{{ $badge }}</span></td>
                         <td>{{ $sale->created_at }}</td>
                         <td>
+                            @if($due > 0.009)
                             <button type="button" class="add-payment btn btn-sm btn-success" data-id="{{ $sale->id }}" data-toggle="modal" data-target="#add-payment"><i class="fa fa-plus"></i>{{ trans('file.Add Payment') }}</button>
+                            @endif
                             <button type="button" class="get-payment btn btn-info btn-sm" data-id = "{{ $sale->id }}"><i class="fa fa-money"></i>{{ trans('file.View') }}</button>
                             <a class="get-payment btn btn-warning btn-sm" href="{{ route('sales.edit',$sale->id ) }}"><i class="fa fa-pencil"></i> Edit Sale</a>
                         </td>

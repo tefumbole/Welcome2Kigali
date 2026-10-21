@@ -12,6 +12,7 @@ use App\User;
 use App\Services\Restaurant\RestaurantAccess;
 use App\Services\Restaurant\RestaurantOrderService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class RestaurantOrderController extends Controller
 {
@@ -22,50 +23,87 @@ class RestaurantOrderController extends Controller
         $this->orders = $orders;
     }
 
+    public function board(Request $request)
+    {
+        if (! RestaurantAccess::canSeeOrders($request->user())) {
+            return redirect('admin')->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        }
+        $lanes = [
+            'coffee' => 'Coffee & Tea',
+            'restaurant' => 'Restaurant',
+            'bar' => 'Bar',
+            'online' => 'Online orders',
+        ];
+        $lane = $request->input('lane', 'coffee');
+        if (! isset($lanes[$lane])) {
+            $lane = 'coffee';
+        }
+        $tabs = [
+            'awaiting' => 'Awaiting',
+            'accepted' => 'Accepted',
+            'ready' => 'Ready for Delivery',
+            'delivered' => 'Delivered',
+        ];
+        $tab = $request->input('tab', 'awaiting');
+        if ($tab === 'preparing') {
+            $tab = 'accepted';
+        }
+        if (! isset($tabs[$tab])) {
+            $tab = 'awaiting';
+        }
+        $status = $tab === 'accepted' ? 'preparing' : $tab;
+        $items = collect();
+        if (Schema::hasColumn('restaurant_order_items', 'lane')) {
+            $items = RestaurantOrderItem::with(['order.sale.customer', 'order.diningTable', 'order.waitress', 'acceptedBy'])
+                ->where('status', $status)
+                ->where(function ($query) use ($lane) {
+                    $query->where('lane', $lane);
+                    if ($lane === 'restaurant') {
+                        $query->orWhere(function ($fallback) {
+                            $fallback->whereNull('lane')->where('department', 'food');
+                        });
+                    }
+                    if ($lane === 'bar') {
+                        $query->orWhere(function ($fallback) {
+                            $fallback->whereNull('lane')->where('department', 'drinks');
+                        });
+                    }
+                })
+                ->orderBy('id')
+                ->get();
+        }
+
+        return view('restaurant.queue', [
+            'title' => 'Orders',
+            'lane' => $lane,
+            'lanes' => $lanes,
+            'tab' => $tab,
+            'tabs' => $tabs,
+            'items' => $items,
+            'canReject' => RestaurantAccess::can($request->user(), 'meal-rejections'),
+            'canWait' => RestaurantAccess::can($request->user(), 'waiter-orders'),
+        ]);
+    }
+
     public function kitchen(Request $request)
     {
-        return $this->queue($request, 'food', 'Kitchen Orders', 'Cooking');
+        return redirect()->route('restaurant.orders', ['lane' => 'restaurant', 'tab' => $request->input('tab', 'awaiting')]);
     }
 
     public function bar(Request $request)
     {
-        return $this->queue($request, 'drinks', 'Bar Orders', 'Serving / Preparing');
+        return redirect()->route('restaurant.orders', ['lane' => 'bar', 'tab' => $request->input('tab', 'awaiting')]);
     }
 
     public function ready(Request $request)
     {
-        if (! RestaurantAccess::can($request->user(), 'waiter-orders')) {
-            return redirect('admin')->with('not_permitted', 'Sorry! You are not allowed to access this module');
-        }
-        $tab = $request->input('tab', 'ready');
-        if (! in_array($tab, ['ready', 'delivered'], true)) {
-            $tab = 'ready';
-        }
-        $items = RestaurantOrderItem::with(['order.sale.customer', 'order.diningTable', 'order.waitress'])
-            ->whereIn('department', ['food', 'drinks'])
-            ->where('status', $tab === 'ready' ? 'ready' : 'delivered')
-            ->orderBy('updated_at')
-            ->get();
-
-        return view('restaurant.queue', [
-            'title' => 'Ready for Delivery',
-            'department' => 'both',
-            'preparingLabel' => 'Serving / Preparing',
-            'tab' => $tab,
-            'tabs' => ['ready' => 'Ready for Delivery', 'delivered' => 'Delivered'],
-            'items' => $items,
-            'base' => route('restaurant.ready'),
-            'canDeliver' => true,
-            'canPrepare' => false,
-            'canReject' => RestaurantAccess::can($request->user(), 'meal-rejections'),
-            'staff' => User::orderBy('name')->get(['id', 'name']),
-        ]);
+        return redirect()->route('restaurant.orders', ['lane' => 'coffee', 'tab' => 'ready']);
     }
 
     public function accept(Request $request, $item)
     {
         $row = $this->item($item);
-        if ($deny = $this->denyDepartment($request, $row->department)) {
+        if ($deny = $this->denyItem($request, $row)) {
             return $deny;
         }
         try {
@@ -80,7 +118,7 @@ class RestaurantOrderController extends Controller
     public function estimate(Request $request, $item)
     {
         $row = $this->item($item);
-        if ($deny = $this->denyDepartment($request, $row->department)) {
+        if ($deny = $this->denyItem($request, $row)) {
             return $deny;
         }
         try {
@@ -95,7 +133,7 @@ class RestaurantOrderController extends Controller
     public function markReady(Request $request, $item)
     {
         $row = $this->item($item);
-        if ($deny = $this->denyDepartment($request, $row->department)) {
+        if ($deny = $this->denyItem($request, $row)) {
             return $deny;
         }
         try {
@@ -109,17 +147,17 @@ class RestaurantOrderController extends Controller
 
     public function deliver(Request $request, $item)
     {
-        if (! RestaurantAccess::can($request->user(), 'waiter-orders')) {
+        $row = $this->item($item);
+        if (! RestaurantAccess::can($request->user(), 'waiter-orders') && ! RestaurantAccess::canItem($request->user(), $row)) {
             return redirect('/')->with('not_permitted', 'Sorry! You are not allowed to access this module');
         }
-        $row = $this->item($item);
         try {
             $this->orders->deliver($row, $request->user());
         } catch (\InvalidArgumentException $e) {
             return back()->with('not_permitted', $e->getMessage());
         }
 
-        return back()->with('message', 'Marked served / delivered.');
+        return back()->with('message', 'Marked delivered. The guest has been notified.');
     }
 
     public function reject(Request $request, $item)
@@ -224,55 +262,14 @@ class RestaurantOrderController extends Controller
         return back()->with('message', 'Table added.');
     }
 
-    protected function queue(Request $request, $department, $title, $preparingLabel)
-    {
-        if (! RestaurantAccess::canDepartment($request->user(), $department)) {
-            return redirect('admin')->with('not_permitted', 'Sorry! You are not allowed to access this module');
-        }
-        $tab = $request->input('tab', 'awaiting');
-        $map = [
-            'awaiting' => 'awaiting',
-            'preparing' => 'preparing',
-            'ready' => 'ready',
-            'delivered' => 'delivered',
-        ];
-        if (! isset($map[$tab])) {
-            $tab = 'awaiting';
-        }
-        $items = RestaurantOrderItem::with(['order.sale.customer', 'order.diningTable', 'order.waitress', 'acceptedBy'])
-            ->where('department', $department)
-            ->where('status', $map[$tab])
-            ->orderBy('id')
-            ->get();
-
-        return view('restaurant.queue', [
-            'title' => $title,
-            'department' => $department,
-            'preparingLabel' => $preparingLabel,
-            'tab' => $tab,
-            'tabs' => [
-                'awaiting' => 'Awaiting',
-                'preparing' => $preparingLabel,
-                'ready' => 'Ready for Delivery',
-                'delivered' => 'Delivered',
-            ],
-            'items' => $items,
-            'base' => $department === 'food' ? route('restaurant.kitchen') : route('restaurant.bar'),
-            'canDeliver' => false,
-            'canPrepare' => true,
-            'canReject' => RestaurantAccess::can($request->user(), 'meal-rejections'),
-            'staff' => User::orderBy('name')->get(['id', 'name']),
-        ]);
-    }
-
     protected function item($id)
     {
         return RestaurantOrderItem::with('order')->findOrFail($id);
     }
 
-    protected function denyDepartment(Request $request, $department)
+    protected function denyItem(Request $request, RestaurantOrderItem $item)
     {
-        if (RestaurantAccess::canDepartment($request->user(), $department)) {
+        if (RestaurantAccess::canItem($request->user(), $item)) {
             return null;
         }
 

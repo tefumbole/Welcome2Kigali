@@ -369,6 +369,11 @@ class PawaPayPaymentService
             $order->payment_status = 1;
             $order->payment_method = $row->paying_method ?: 'MTN';
             $order->save();
+            try {
+                app(\App\Services\Restaurant\RestaurantOrderService::class)->markWebsiteOrderPaid($order);
+            } catch (\Throwable $e) {
+                Log::warning('website restaurant paid: '.$e->getMessage());
+            }
         }
     }
 

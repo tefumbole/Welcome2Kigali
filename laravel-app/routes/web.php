@@ -806,6 +806,7 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
 	Route::get('sales/product_sale/{id}','SaleController@productSaleData');
 	Route::post('importsale', 'SaleController@importSale')->name('sale.import');
 	Route::get('pos', 'SaleController@posSale')->name('sale.pos');
+	Route::get('/orders', 'RestaurantOrderController@board')->name('restaurant.orders');
 	Route::get('/orders/kitchen', 'RestaurantOrderController@kitchen')->name('restaurant.kitchen');
 	Route::get('/orders/bar', 'RestaurantOrderController@bar')->name('restaurant.bar');
 	Route::get('/orders/ready', 'RestaurantOrderController@ready')->name('restaurant.ready');

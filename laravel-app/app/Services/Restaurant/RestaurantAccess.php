@@ -57,4 +57,31 @@ class RestaurantAccess
 
         return false;
     }
+
+    public static function canSeeOrders($user)
+    {
+        foreach (['kitchen-orders', 'bar-orders', 'waiter-orders', 'order-logs'] as $permission) {
+            if (self::can($user, $permission)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static function canItem($user, $item)
+    {
+        if (self::can($user, 'order-logs')) {
+            return true;
+        }
+        $lane = $item ? $item->lane : null;
+        if ($lane === 'coffee' || $lane === 'restaurant') {
+            return self::can($user, 'kitchen-orders');
+        }
+        if ($lane === 'bar') {
+            return self::can($user, 'bar-orders');
+        }
+
+        return self::canDepartment($user, $item ? $item->department : null);
+    }
 }

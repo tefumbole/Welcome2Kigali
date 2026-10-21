@@ -94,7 +94,7 @@
         <a href="#contracts">Contracts</a>
         <a href="#members">Membership</a>
         <a href="#laundry">Laundry</a>
-        <a href="#restaurant">Kitchen &amp; bar</a>
+        <a href="#restaurant">Orders</a>
         <a href="#expenses">Expenses</a>
         <a href="#returns">Returns</a>
         <a href="#orders">Online orders</a>
@@ -226,8 +226,8 @@
             <li>Search a drink or dress by name/code, or tap Category / Brand / Featured and add lines to the ticket.</li>
             <li>Take <strong>Cash</strong>, <strong>VISA</strong>, <strong>Credit</strong>, <strong>Deposit</strong>, or <strong>MoMo</strong>. There is one MoMo button — MTN (078 / 079) or Airtel (072 / 073) is detected from the number.</li>
             <li>For a laundry dress, add a comment on the line, fill <strong>Laundry comments</strong>, then <strong>Send to Laundry</strong>. The ticket waits under Laundry → Awaiting Acceptance.</li>
-            <li>For food or drinks, leave Service on <strong>Dine In</strong> (or choose Take Away), pick a table and waitress, and add a kitchen or bar note on the line. One sale is one bill. Food goes to Kitchen and drinks go to Bar. Choose <strong>Not a restaurant order</strong> for laundry or other goods.</li>
-            <li>Online cafe orders from /menu also appear under Sale / Online Order.</li>
+            <li>For coffee, food, or drinks, leave Service on <strong>Dine In</strong> (or choose Take Away), pick a table and waitress, and add a note on the line. One sale is one bill. Coffee &amp; Tea, Restaurant, and Bar each get their own tab under <strong>Orders</strong>. Laundry stays on the laundry boards. Fashion and other goods stay on the bill and skip Orders.</li>
+            <li>A website cart for those same categories appears only under <strong>Orders → Online orders</strong>.</li>
         </ol>
         <img class="w2k-help-shot" src="{{ url('public/branding/help/pos-momo.png') }}?v={{ $hv }}" alt="Finalize Sale MoMo with customer number and Paying Amount">
         <p class="w2k-help-cap">Finalize Sale → Paid By <strong>MoMo</strong>. The customer’s phone fills automatically and can be edited. Paying Amount can be less than Total (partial payment); the rest stays due. The client approves on the phone. The sale is marked paid only after PawaPay confirms the money — then the invoice opens for print and the client gets WhatsApp.</p>
@@ -238,11 +238,11 @@
         <h3>6. Site Content (website words and menus)</h3>
         <p>Use <strong>Site Content</strong> in the sidebar (same module as BeyondTechWorld) for pages and menus. It does not change products, members, or sales. Grant it under <strong>Settings → Role Permission → Site Content</strong>.</p>
         <img class="w2k-help-shot" src="{{ url('public/branding/help/site-content.png') }}?v={{ $hv }}" alt="Site Content Home tab with page and menu pills">
-        <p class="w2k-help-cap">Site Content. Pages: Home, About, Services (supermarket, bar &amp; restaurant, coffee, laundry, fashion), Projects, Contact, Gallery, Menu, Reviews, Events, Become a Member, Footer. Menus &amp; Order: Landing Menu, Side Bars, People, Admin settings order, Content Tabs, and <strong>POS Payments</strong>. Admin modules include About Us Leaders, Digital Invitations, Internships, Membership, Laundry, Kitchen, Bar, Ready for delivery, and Order logs. Reorder them in Side Bars; Site Content stays near the bottom and Help stays last.</p>
+        <p class="w2k-help-cap">Site Content. Pages: Home, About, Services (supermarket, bar &amp; restaurant, coffee, laundry, fashion), Projects, Contact, Gallery, Menu, Reviews, Events, Become a Member, Footer. Menus &amp; Order: Landing Menu, Side Bars, People, Admin settings order, Content Tabs, and <strong>POS Payments</strong>. Admin modules include About Us Leaders, Digital Invitations, Internships, Membership, Laundry, and Orders. Reorder them in Side Bars; Site Content stays near the bottom and Help stays last.</p>
         <ul>
             <li><strong>Pages</strong> — Home buttons, About vision/mission, Events title, Menu title, Become a Member, Footer.</li>
             <li><strong>Landing Menu</strong> — show, hide, rename, reorder Home / Menu / Events / About / Become a Member.</li>
-            <li><strong>Side Bars</strong> — same for the admin sidebar, including About Us Leaders, Digital Invitations, Internships, Membership, Laundry, and <strong>Restaurant</strong> (Kitchen, Bar, Ready for delivery, Order logs).</li>
+            <li><strong>Side Bars</strong> — same for the admin sidebar, including About Us Leaders, Digital Invitations, Internships, Membership, Laundry, and <strong>Orders</strong>.</li>
             <li><strong>POS Payments</strong> — default order Send to Laundry, Cash, MoMo, VISA, Deposit, Credit, Group. Hide Pay later / JE unless you use them. Labels can be renamed.</li>
             <li>Press Save on a tab, then open <a href="{{ url('/') }}" target="_blank" rel="noopener">the public site</a> to check.</li>
         </ul>
@@ -277,16 +277,16 @@
     </div>
 
     <div class="w2k-help-card" id="restaurant">
-        <h3>Kitchen and bar</h3>
-        <p>Food and drink orders start on <strong>POS</strong>. One sale is one bill. The category decides the queue: Food goes to the kitchen, drinks go to the bar. Anything else stays on the bill and stays out of both queues.</p>
+        <h3>Orders</h3>
+        <p>Coffee, food, and drink orders start on <strong>POS</strong>. One sale is one bill. Open <strong>Orders</strong> and pick Coffee &amp; Tea, Restaurant, Bar, or Online orders. Each tab has Awaiting, Accepted, Ready for Delivery, and Delivered. Laundry stays on the laundry boards. Fashion, supermarket, and every other category skip this queue.</p>
         <ol>
-            <li>On POS, set Service to <strong>Dine In</strong> or <strong>Take Away</strong>, choose a table and a waitress, and write the guest note. Each line can have a kitchen or bar note.</li>
-            <li><strong>Kitchen</strong> and <strong>Bar</strong> accept the item, enter 1–240 minutes, then mark it ready. A second accept is refused.</li>
-            <li><strong>Ready for delivery</strong> is where the waiter marks the item served. The guest tracking link updates on its own. It never marks an item ready by itself.</li>
-            <li>When the last item is served, the guest receives one WhatsApp review link. A rejection records a remake as a new line and does not change the money.</li>
+            <li>On POS, set Service to <strong>Dine In</strong> or <strong>Take Away</strong>, choose a table and a waitress, and write the guest note. Each line can have a note.</li>
+            <li>Accept the item and enter 1–240 minutes. It moves to Accepted and the guest is told the time. Then mark it Ready for Delivery, then Delivered. The guest is messaged at each step. A second accept is refused.</li>
+            <li>Awaiting Payment collects only lines that are Delivered, plus anything that was never queued. Until every queued line is delivered, a paid or sent-to-payment sale shows <strong>Pending delivery</strong>.</li>
+            <li>When the last item is delivered, the guest receives one WhatsApp review link. A rejection records a remake as a new line and does not change the money or the stock.</li>
             <li>The invoice has a Pay QR. Scanning it opens MoMo. It does not mark the bill paid.</li>
         </ol>
-        <p>Permissions are Kitchen, Bar, Ready / waiter, Order logs, and Reject / remake, under <strong>Settings → Role Permission → Restaurant</strong>. Show, hide, or rename the sidebar item in <strong>Site Content → Side Bars</strong>. Service titles and the Reviews page are under <strong>Site Content → Services</strong> and <strong>Reviews</strong>.</p>
+        <p>Permissions are Kitchen, Bar, Ready / waiter, Order logs, and Reject / remake, under <strong>Settings → Role Permission → Restaurant</strong>. Kitchen accepts Coffee &amp; Tea and Restaurant. Bar accepts Bar. Anyone with those permissions can open Orders. Show, hide, or rename the sidebar item in <strong>Site Content → Side Bars</strong>.</p>
     </div>
 
     <div class="w2k-help-card" id="rental">

@@ -47,7 +47,7 @@ class SiteMenu
             'courses'         => 'Courses',
             'membership'      => 'Membership',
             'laundry'         => 'Laundry',
-            'restaurant'      => 'Restaurant',
+            'restaurant'      => 'Orders',
             'timesheets'      => 'TimeSheets (Employee)',
             'timesheet-admin' => 'TimeSheet Admin',
             'shop'            => 'Shops',
@@ -142,6 +142,9 @@ class SiteMenu
             $custom = isset($saved[$k]) ? trim((string) $saved[$k]) : '';
             $stock = isset($english[$k]) ? $english[$k] : '';
             if ($k === 'quotation' && strcasecmp($custom, 'Quotes') === 0) {
+                $custom = '';
+            }
+            if ($k === 'restaurant' && strcasecmp($custom, 'Restaurant') === 0) {
                 $custom = '';
             }
             if ($k === 'dashboard' && in_array(strtolower($custom), ['home', 'accueil', 'ahabanza'], true)) {

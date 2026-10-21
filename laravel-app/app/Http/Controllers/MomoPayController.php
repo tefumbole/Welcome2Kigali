@@ -143,6 +143,13 @@ class MomoPayController extends Controller
                         $order->payment_status = 1;
                         $order->save();
                     }
+                    if ($order) {
+                        try {
+                            app(\App\Services\Restaurant\RestaurantOrderService::class)->markWebsiteOrderPaid($order);
+                        } catch (\Throwable $e) {
+                            \Log::warning('[momo-ussd] website order paid link failed: '.$e->getMessage());
+                        }
+                    }
                     break;
                 case 'membership':
                     $payment = \App\MembershipPayment::find($id);

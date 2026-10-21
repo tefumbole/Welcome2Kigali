@@ -1019,6 +1019,11 @@ class CartController extends Controller
             if($status == 1) {
                 $this->sendWhatsappMsgForPlacingOrderToBuyer($order);
                 $this->sendWhatsappMsgForPlacingOrderToSaller($order);
+                try {
+                    app(\App\Services\Restaurant\RestaurantOrderService::class)->markWebsiteOrderPaid($order);
+                } catch (\Throwable $e) {
+                    \Log::warning('website restaurant paid: '.$e->getMessage());
+                }
             }
         }
         if($status == 2) {
@@ -1213,6 +1218,12 @@ class CartController extends Controller
         if ($data['payment_method'] == 'COD') {
             $this->sendWhatsappMsgForPlacingOrderToBuyer($lims_sale_data);
             $this->sendWhatsappMsgForPlacingOrderToSaller($lims_sale_data);
+        }
+
+        try {
+            app(\App\Services\Restaurant\RestaurantOrderService::class)->attachWebsiteOrder($lims_sale_data, $cart);
+        } catch (\Throwable $e) {
+            \Log::warning('website restaurant queue: '.$e->getMessage());
         }
 
         if($mail_data['email']) {

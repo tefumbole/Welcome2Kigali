@@ -119,18 +119,9 @@
                             <i class="fa fa-tint"></i> Laundry
                         </a>
                     @endif
-                    @if(\Illuminate\Support\Facades\Route::has('restaurant.kitchen'))
-                        <a class="beyond-module-tab tone-gold" href="{{ route('restaurant.kitchen') }}">
-                            <i class="dripicons-cutlery"></i> Kitchen
-                        </a>
-                        <a class="beyond-module-tab tone-teal" href="{{ route('restaurant.bar') }}">
-                            <i class="dripicons-jewel"></i> Bar
-                        </a>
-                        <a class="beyond-module-tab tone-blue" href="{{ route('restaurant.ready') }}">
-                            <i class="dripicons-checkmark"></i> Ready for delivery
-                        </a>
-                        <a class="beyond-module-tab tone-purple" href="{{ route('restaurant.logs') }}">
-                            <i class="dripicons-document"></i> Order logs
+                    @if(\Illuminate\Support\Facades\Route::has('restaurant.orders'))
+                        <a class="beyond-module-tab tone-gold" href="{{ route('restaurant.orders') }}">
+                            <i class="dripicons-cutlery"></i> Orders
                         </a>
                     @endif
                     <a class="beyond-module-tab tone-purple" href="{{ url('/admin/site-content?tab=side-menu') }}">

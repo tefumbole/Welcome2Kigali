@@ -34,25 +34,36 @@ class RestaurantOrderService
         }
 
         $lines = Product_Sale::where('sale_id', $sale->id)->orderBy('id')->get();
+        $online = $request->input('order_source') === 'frontend';
         $routed = [];
         foreach ($lines as $index => $line) {
-            $department = RestaurantDepartment::forCategoryId($line->category_id);
-            if (! $department && $line->product_id) {
+            $categoryId = $line->category_id;
+            if (! $categoryId && $line->product_id) {
                 $product = Product::find($line->product_id);
-                if ($product) {
-                    $department = RestaurantDepartment::forCategoryId($product->category_id);
-                }
+                $categoryId = $product ? $product->category_id : null;
             }
-            if ($department) {
-                $routed[] = ['line' => $line, 'department' => $department, 'index' => $index];
+            $lane = RestaurantDepartment::laneForCategoryId($categoryId);
+            $department = RestaurantDepartment::forCategoryId($categoryId);
+            if (! $lane && $department) {
+                $lane = $department === 'food' ? 'restaurant' : 'bar';
             }
+            if (! $department && $lane) {
+                $department = $lane === 'restaurant' ? 'food' : 'drinks';
+            }
+            if (! $lane || ! $department) {
+                continue;
+            }
+            if ($online) {
+                $lane = 'online';
+            }
+            $routed[] = ['line' => $line, 'department' => $department, 'lane' => $lane, 'index' => $index];
         }
 
-        $service = $request->input('service_type');
-        if (! $routed && ! in_array($service, ['dine_in', 'take_away'], true)) {
+        if (! $routed) {
             return null;
         }
 
+        $service = $request->input('service_type');
         $waitressId = $this->staffId($request->input('waitress_user_id'));
         $comments = (array) $request->input('item_comment', []);
 
@@ -77,6 +88,7 @@ class RestaurantOrderService
                 'product_id' => $line->product_id,
                 'product_name' => $product ? $product->name : 'Item',
                 'department' => $row['department'],
+                'lane' => $row['lane'],
                 'qty' => $line->qty,
                 'customer_comment' => isset($comments[$row['index']]) ? $comments[$row['index']] : null,
             ]);
@@ -231,7 +243,7 @@ class RestaurantOrderService
         $item->expected_ready_at = now()->addMinutes($minutes);
         $item->save();
         $this->event($item->order, $item, 'accepted', $user->id, $minutes.' min');
-        $this->notify($item->order, ucfirst($item->department).' accepted '.$item->product_name.' (x'.$this->qty($item).'). Ready in about '.$minutes.' minutes.');
+        $this->notify($item->order, RestaurantDepartment::label($item->lane ?: $item->department).' accepted '.$item->product_name.' (x'.$this->qty($item).'). Ready in about '.$minutes.' minutes.');
 
         return $item;
     }
@@ -265,7 +277,7 @@ class RestaurantOrderService
         $item->ready_at = now();
         $item->save();
         $this->event($item->order, $item, 'ready', $user->id, null);
-        $this->notify($item->order, $item->product_name.' is ready. '.$item->order->serviceLabel().'.');
+        $this->notify($item->order, $item->product_name.' is ready for delivery.');
 
         return $item;
     }
@@ -279,8 +291,7 @@ class RestaurantOrderService
         $item->save();
         $order = $item->order()->with('items', 'sale.customer')->first();
         $this->event($order, $item, 'delivered', $user->id, null);
-        $word = $order->service_type === 'take_away' ? 'handed over' : 'served';
-        $this->notify($order, $item->product_name.' has been '.$word.'.');
+        $this->notify($order, $item->product_name.' has been delivered.');
         if ($order->isFulfilled()) {
             $this->sendReviewLink($order);
         }
@@ -310,6 +321,7 @@ class RestaurantOrderService
                 'product_id' => $item->product_id,
                 'product_name' => $item->product_name,
                 'department' => $item->department,
+                'lane' => $item->lane,
                 'qty' => $qty,
                 'customer_comment' => $item->customer_comment,
                 'attempt_no' => ((int) $item->attempt_no) + 1,
@@ -391,9 +403,144 @@ class RestaurantOrderService
         }
     }
 
+    public function attachWebsiteOrder($order, array $cart)
+    {
+        if (! $order || ! Schema::hasTable('restaurant_orders')) {
+            return null;
+        }
+        $token = 'web-order-'.$order->id;
+        $existing = RestaurantOrder::where('checkout_token', $token)->first();
+        if ($existing) {
+            return $existing;
+        }
+
+        $prepared = [];
+        $queued = false;
+        foreach ($cart as $item) {
+            $productId = isset($item['products_id']) ? $item['products_id'] : (isset($item['product_id']) ? $item['product_id'] : null);
+            $qty = isset($item['quantity']) ? (float) $item['quantity'] : (isset($item['qty']) ? (float) $item['qty'] : 0);
+            if (! $productId || $qty <= 0) {
+                continue;
+            }
+            $product = Product::where('is_active', true)->find($productId);
+            if (! $product) {
+                continue;
+            }
+            $lane = RestaurantDepartment::laneForCategoryId($product->category_id);
+            if ($lane) {
+                $queued = true;
+            }
+            $price = isset($item['price']) ? (float) $item['price'] : (float) $product->price;
+            $prepared[] = ['product' => $product, 'qty' => $qty, 'price' => $price];
+        }
+        if (! $queued) {
+            return null;
+        }
+
+        $phone = isset($order->phone) ? $order->phone : '';
+        try {
+            $phone = \App\Support\WhatsAppPhone::normalize($phone);
+        } catch (\Throwable $e) {
+            $phone = preg_replace('/\D/', '', (string) $phone);
+        }
+        if ($phone === '') {
+            return null;
+        }
+        $customer = Customer::where('phone_number', $phone)->first();
+        if (! $customer) {
+            $group = CustomerGroup::query()->orderBy('id')->first();
+            $customer = Customer::create([
+                'customer_group_id' => $group ? $group->id : 1,
+                'name' => $order->name ?: 'Guest',
+                'phone_number' => $phone,
+                'email' => $order->email ?: null,
+                'address' => $order->address ?: 'Website',
+                'city' => $order->city ?: 'Kigali',
+                'is_active' => 1,
+            ]);
+        }
+
+        $warehouse = Warehouse::query()->orderBy('id')->first();
+        $biller = Biller::query()->orderBy('id')->first();
+        if (! $warehouse || ! $biller) {
+            return null;
+        }
+
+        $totalQty = 0;
+        $totalPrice = 0;
+        foreach ($prepared as $line) {
+            $totalQty += $line['qty'];
+            $totalPrice += $line['price'] * $line['qty'];
+        }
+        $shipping = isset($order->shipping_charges) ? (float) $order->shipping_charges : 0;
+        $sale = Sale::create([
+            'reference_no' => $this->reference(),
+            'customer_id' => $customer->id,
+            'warehouse_id' => $warehouse->id,
+            'biller_id' => $biller->id,
+            'user_id' => null,
+            'item' => count($prepared),
+            'total_qty' => $totalQty,
+            'total_discount' => 0,
+            'total_tax' => 0,
+            'total_price' => $totalPrice,
+            'order_tax_rate' => 0,
+            'order_tax' => 0,
+            'order_discount' => 0,
+            'shipping_cost' => $shipping,
+            'grand_total' => $totalPrice + $shipping,
+            'sale_status' => 1,
+            'payment_status' => 1,
+            'paid_amount' => 0,
+            'paid_by_id' => 9,
+            'sale_note' => 'Website order '.$order->id,
+        ]);
+
+        foreach ($prepared as $line) {
+            Product_Sale::create([
+                'sale_id' => $sale->id,
+                'product_id' => $line['product']->id,
+                'category_id' => $line['product']->category_id,
+                'warehouse_id' => $warehouse->id,
+                'qty' => $line['qty'],
+                'sale_unit_id' => $line['product']->sale_unit_id ?: 0,
+                'net_unit_price' => $line['price'],
+                'discount' => 0,
+                'tax_rate' => 0,
+                'tax' => 0,
+                'total' => $line['price'] * $line['qty'],
+            ]);
+        }
+
+        return $this->attachFromRequest($sale, Request::create('/', 'POST', [
+            'service_type' => 'take_away',
+            'order_source' => 'frontend',
+            'checkout_token' => $token,
+            'customer_comment' => $order->address ?: null,
+        ]));
+    }
+
+    public function markWebsiteOrderPaid($order)
+    {
+        if (! $order || ! Schema::hasTable('restaurant_orders')) {
+            return;
+        }
+        $restaurant = RestaurantOrder::where('checkout_token', 'web-order-'.$order->id)->first();
+        if (! $restaurant) {
+            return;
+        }
+        $sale = Sale::find($restaurant->sale_id);
+        if (! $sale || (int) $sale->payment_status === 4) {
+            return;
+        }
+        $sale->paid_amount = $sale->grand_total;
+        $sale->payment_status = 4;
+        $sale->save();
+    }
+
     protected function makeItem(RestaurantOrder $order, array $data)
     {
-        return RestaurantOrderItem::create([
+        $row = [
             'restaurant_order_id' => $order->id,
             'product_sale_id' => isset($data['product_sale_id']) ? $data['product_sale_id'] : null,
             'product_id' => isset($data['product_id']) ? $data['product_id'] : null,
@@ -404,7 +551,12 @@ class RestaurantOrderService
             'customer_comment' => isset($data['customer_comment']) ? $data['customer_comment'] : null,
             'attempt_no' => isset($data['attempt_no']) ? $data['attempt_no'] : 1,
             'remake_of_id' => isset($data['remake_of_id']) ? $data['remake_of_id'] : null,
-        ]);
+        ];
+        if (Schema::hasColumn('restaurant_order_items', 'lane')) {
+            $row['lane'] = isset($data['lane']) ? $data['lane'] : null;
+        }
+
+        return RestaurantOrderItem::create($row);
     }
 
     protected function event(RestaurantOrder $order, $item, $action, $userId, $note)

@@ -52,6 +52,7 @@ class CreateRestaurantOrders extends Migration
                 $table->unsignedInteger('product_id')->nullable();
                 $table->string('product_name');
                 $table->string('department', 20);
+                $table->string('lane', 20)->nullable();
                 $table->double('qty')->default(1);
                 $table->string('status', 20)->default('awaiting');
                 $table->text('customer_comment')->nullable();
@@ -69,6 +70,7 @@ class CreateRestaurantOrders extends Migration
                 $table->unsignedInteger('remake_of_id')->nullable();
                 $table->timestamps();
                 $table->index(['department', 'status']);
+                $table->index(['lane', 'status']);
             });
         }
 

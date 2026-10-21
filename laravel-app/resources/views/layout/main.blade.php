@@ -1256,14 +1256,7 @@
                                 $restaurantLogs = \App\Services\Restaurant\RestaurantAccess::can($restaurantUser, 'order-logs');
                             @endphp
                             @if($restaurantKitchen || $restaurantBar || $restaurantReady || $restaurantLogs)
-                                <li><a href="#restaurant-module" data-nav-key="restaurant" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-cutlery"></i><span>{{ __('sidebar.restaurant') }}</span></a>
-                                    <ul id="restaurant-module" class="collapse list-unstyled ">
-                                        @if($restaurantKitchen)<li><a href="{{ route('restaurant.kitchen') }}">Kitchen</a></li>@endif
-                                        @if($restaurantBar)<li><a href="{{ route('restaurant.bar') }}">Bar</a></li>@endif
-                                        @if($restaurantReady)<li><a href="{{ route('restaurant.ready') }}">Ready for delivery</a></li>@endif
-                                        @if($restaurantLogs)<li><a href="{{ route('restaurant.logs') }}">Order logs</a></li>@endif
-                                    </ul>
-                                </li>
+                                <li class="{{ request()->is('orders') ? 'active' : '' }}"><a href="{{ route('restaurant.orders') }}" data-nav-key="restaurant"> <i class="dripicons-cutlery"></i><span>{{ __('sidebar.restaurant') }}</span></a></li>
                             @endif
                         @endif
                         <?php

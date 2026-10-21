@@ -14,6 +14,7 @@ use App\RestaurantOrderItem;
 use App\Sale;
 use App\Services\Restaurant\RestaurantOrderService;
 use App\Services\Restaurant\RestaurantPayments;
+use App\Services\Restaurant\RestaurantSettlement;
 use App\User;
 use App\Warehouse;
 use Illuminate\Database\Schema\Blueprint;
@@ -204,6 +205,95 @@ class RestaurantOrderWorkflowTest extends TestCase
         $this->get('/order-track/'.$other->id.'/'.$first->token)->assertNotFound();
     }
 
+    public function test_pos_lanes_and_website_orders_stay_on_online()
+    {
+        if (! Schema::hasColumn('categories', 'service')) {
+            Schema::table('categories', function (Blueprint $table) {
+                $table->string('service', 30)->nullable();
+            });
+        }
+        $food = Category::where('name', 'Food')->first();
+        $grill = Category::create(['name' => 'Grill', 'parent_id' => $food->id, 'is_active' => 1]);
+        $coffee = Category::create([
+            'name' => 'Smoothies', 'parent_id' => 0, 'is_active' => 1,
+            'service' => 'coffee', 'department' => 'drinks',
+        ]);
+        $laundry = Category::create([
+            'name' => 'Laundry', 'parent_id' => 0, 'is_active' => 1, 'service' => 'laundry',
+        ]);
+        $fashion = Category::create(['name' => 'Fashion', 'parent_id' => 0, 'is_active' => 1]);
+
+        $brochette = $this->productOn($grill, 'Brochette');
+        $smoothie = $this->productOn($coffee, 'Mango');
+        $dress = $this->productOn($laundry, 'Dress');
+        $shirt = $this->productOn($fashion, 'Shirt');
+        $beer = $this->product('Beer', 'drinks');
+        $seed = $this->order([['product_id' => $this->product('Rice', 'food')->id, 'qty' => 1]]);
+
+        $sale = Sale::create($this->saleRow($seed->customer_id, 2, 7500));
+        foreach ([$brochette, $smoothie, $dress, $shirt, $beer] as $product) {
+            Product_Sale::create([
+                'sale_id' => $sale->id, 'product_id' => $product->id, 'category_id' => $product->category_id,
+                'qty' => 1, 'sale_unit_id' => 0, 'net_unit_price' => 1500, 'discount' => 0,
+                'tax_rate' => 0, 'tax' => 0, 'total' => 1500,
+            ]);
+        }
+        app(RestaurantOrderService::class)->attachFromRequest($sale, Request::create('/', 'POST', [
+            'service_type' => 'dine_in',
+        ]));
+        $items = RestaurantOrder::where('sale_id', $sale->id)->first()->items;
+        $this->assertSame('restaurant', $items->firstWhere('product_id', $brochette->id)->lane);
+        $this->assertSame('coffee', $items->firstWhere('product_id', $smoothie->id)->lane);
+        $this->assertSame('bar', $items->firstWhere('product_id', $beer->id)->lane);
+        $this->assertNull($items->firstWhere('product_id', $dress->id));
+        $this->assertNull($items->firstWhere('product_id', $shirt->id));
+
+        $web = $this->order([['product_id' => $smoothie->id, 'qty' => 1]]);
+        $this->assertSame('online', RestaurantOrder::where('sale_id', $web->id)->first()->items()->value('lane'));
+    }
+
+    public function test_payment_due_counts_only_delivered_lines()
+    {
+        $sale = $this->order([
+            ['product_id' => $this->product('Plate', 'food')->id, 'qty' => 1],
+            ['product_id' => $this->product('Soda', 'drinks')->id, 'qty' => 1],
+        ]);
+        $order = RestaurantOrder::where('sale_id', $sale->id)->first();
+        $food = $order->items()->where('department', 'food')->first();
+        $drink = $order->items()->where('department', 'drinks')->first();
+        $drink->status = 'delivered';
+        $drink->save();
+        Product_Sale::create([
+            'sale_id' => $sale->id, 'product_id' => $food->product_id, 'qty' => 1, 'sale_unit_id' => 0,
+            'net_unit_price' => 400, 'discount' => 0, 'tax_rate' => 0, 'tax' => 0, 'total' => 400,
+        ]);
+        $sale->grand_total = 3400;
+        $sale->total_price = 3400;
+        $sale->paid_amount = 3400;
+        $sale->payment_status = 4;
+        $sale->save();
+
+        $lines = Product_Sale::where('sale_id', $sale->id)->get();
+        $pending = RestaurantSettlement::compute($sale->fresh(), $order->fresh()->load('items'), $lines);
+        $this->assertTrue($pending['pending_delivery']);
+        $this->assertSame('Pending delivery', $pending['badge']);
+        $this->assertEquals(0, $pending['due']);
+
+        $sale->paid_amount = 0;
+        $sale->payment_status = 1;
+        $sale->save();
+        $partial = RestaurantSettlement::compute($sale->fresh(), $order->fresh()->load('items'), $lines);
+        $this->assertEquals(1900, $partial['due']);
+        $this->assertSame('Pending delivery', $partial['badge']);
+
+        $food->status = 'delivered';
+        $food->save();
+        $open = RestaurantSettlement::compute($sale->fresh(), $order->fresh()->load('items'), $lines);
+        $this->assertFalse($open['pending_delivery']);
+        $this->assertEquals(3400, $open['due']);
+        $this->assertSame('Due', $open['badge']);
+    }
+
     public function test_stock_is_deducted_once()
     {
         $product = $this->product('Cake', 'food', 10);
@@ -292,6 +382,31 @@ class RestaurantOrderWorkflowTest extends TestCase
             'product_id' => $product->id,
             'warehouse_id' => 1,
             'qty' => $qty,
+        ]);
+
+        return $product;
+    }
+
+    protected function productOn(Category $category, $name)
+    {
+        $product = Product::create([
+            'name' => $name,
+            'code' => strtolower($name).'-'.mt_rand(100, 999),
+            'type' => 'standard',
+            'barcode_symbology' => 'C128',
+            'category_id' => $category->id,
+            'unit_id' => 1,
+            'purchase_unit_id' => 1,
+            'sale_unit_id' => 0,
+            'cost' => '500',
+            'price' => '1500',
+            'qty' => 20,
+            'is_active' => 1,
+        ]);
+        Product_Warehouse::create([
+            'product_id' => $product->id,
+            'warehouse_id' => 1,
+            'qty' => 20,
         ]);
 
         return $product;

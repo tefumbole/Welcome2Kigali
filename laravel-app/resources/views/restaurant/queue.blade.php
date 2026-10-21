@@ -5,8 +5,13 @@
         @if(session('not_permitted'))<div class="alert alert-danger">{{ session('not_permitted') }}</div>@endif
         <h3>{{ $title }}</h3>
         <p>
+            @foreach($lanes as $key => $label)
+                <a class="btn btn-sm {{ $lane === $key ? 'btn-primary' : 'btn-default' }}" href="{{ route('restaurant.orders', ['lane' => $key, 'tab' => $tab]) }}">{{ $label }}</a>
+            @endforeach
+        </p>
+        <p>
             @foreach($tabs as $key => $label)
-                <a class="btn btn-sm {{ $tab === $key ? 'btn-primary' : 'btn-default' }}" href="{{ $base }}?tab={{ $key }}">{{ $label }}</a>
+                <a class="btn btn-sm {{ $tab === $key ? 'btn-primary' : 'btn-default' }}" href="{{ route('restaurant.orders', ['lane' => $lane, 'tab' => $key]) }}">{{ $label }}</a>
             @endforeach
         </p>
         <div class="table-responsive">
@@ -31,7 +36,11 @@
                         <td>{{ $order ? $order->serviceLabel() : '' }}</td>
                         <td>
                             {{ $item->product_name }} × {{ $item->qty }}
-                            <div class="text-muted">{{ ucfirst($item->department) }} · {{ $item->status }}
+                            @php
+                                $statusLabels = ['awaiting' => 'Awaiting', 'preparing' => 'Accepted', 'ready' => 'Ready for Delivery', 'delivered' => 'Delivered'];
+                                $canAct = \App\Services\Restaurant\RestaurantAccess::canItem(auth()->user(), $item);
+                            @endphp
+                            <div class="text-muted">{{ \App\Services\Restaurant\RestaurantDepartment::label($item->lane ?: $item->department) }} · {{ $statusLabels[$item->status] ?? $item->status }}
                                 @if($item->attempt_no > 1) · attempt {{ $item->attempt_no }} @endif
                             </div>
                             @if($item->customer_comment)<div>{{ $item->customer_comment }}</div>@endif
@@ -49,7 +58,7 @@
                             @endif
                         </td>
                         <td style="min-width:220px;">
-                            @if($canPrepare && $item->status === 'awaiting')
+                            @if($canAct && $item->status === 'awaiting')
                                 <form method="post" action="{{ route('restaurant.accept', $item->id) }}">
                                     @csrf
                                     <div class="input-group">
@@ -58,7 +67,7 @@
                                     </div>
                                 </form>
                             @endif
-                            @if($canPrepare && $item->status === 'preparing')
+                            @if($canAct && $item->status === 'preparing')
                                 <form method="post" action="{{ route('restaurant.ready.mark', $item->id) }}" style="margin-bottom:6px;">
                                     @csrf
                                     <button class="btn btn-success btn-sm" type="submit">Mark ready</button>
@@ -71,10 +80,10 @@
                                     </div>
                                 </form>
                             @endif
-                            @if($canDeliver && $item->status === 'ready')
+                            @if($item->status === 'ready' && ($canAct || $canWait))
                                 <form method="post" action="{{ route('restaurant.deliver', $item->id) }}">
                                     @csrf
-                                    <button class="btn btn-primary btn-sm" type="submit">Served / Delivered</button>
+                                    <button class="btn btn-primary btn-sm" type="submit">Delivered</button>
                                 </form>
                             @endif
                             @if($canReject && $item->status === 'delivered')
