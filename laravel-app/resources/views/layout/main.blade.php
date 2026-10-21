@@ -1255,8 +1255,8 @@
                                 $restaurantReady = \App\Services\Restaurant\RestaurantAccess::can($restaurantUser, 'waiter-orders');
                                 $restaurantLogs = \App\Services\Restaurant\RestaurantAccess::can($restaurantUser, 'order-logs');
                             @endphp
-                            @if($restaurantKitchen || $restaurantBar || $restaurantReady || $restaurantLogs)
-                                <li class="{{ request()->is('orders') ? 'active' : '' }}"><a href="{{ route('restaurant.orders') }}" data-nav-key="restaurant"> <i class="dripicons-cutlery"></i><span>{{ __('sidebar.restaurant') }}</span></a></li>
+                            @if(($restaurantKitchen || $restaurantBar || $restaurantReady || $restaurantLogs) && !in_array('orders-index', $all_permission ?? []))
+                                <li class="{{ request()->routeIs('restaurant.orders') ? 'active' : '' }}"><a href="{{ route('restaurant.orders') }}" data-nav-key="restaurant"> <i class="dripicons-cutlery"></i><span>{{ __('sidebar.restaurant') }}</span></a></li>
                             @endif
                         @endif
                         <?php
@@ -1706,6 +1706,28 @@
                         @if(in_array('orders-index', $all_permission))
                             <li><a href="#order" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document"></i><span>{{ __('sidebar.order') }}</span><span></a>
                                 <ul id="order" class="collapse list-unstyled ">
+                                    @if(\Illuminate\Support\Facades\Schema::hasTable('restaurant_orders'))
+                                        @php
+                                            $cafeLanes = ['coffee' => 'Coffee & Tea', 'restaurant' => 'Restaurant', 'bar' => 'Bar', 'online' => 'Online orders'];
+                                            $cafeTabs = ['awaiting' => 'Awaiting', 'accepted' => 'Accepted', 'ready' => 'Ready for Delivery', 'delivered' => 'Delivered'];
+                                            $onCafeOrders = request()->routeIs('restaurant.orders');
+                                            $cafeLane = $onCafeOrders ? request()->query('lane', 'coffee') : '';
+                                            $cafeTab = $onCafeOrders ? request()->query('tab', 'awaiting') : '';
+                                            if ($cafeTab === 'preparing') { $cafeTab = 'accepted'; }
+                                        @endphp
+                                        @foreach($cafeLanes as $laneKey => $laneLabel)
+                                            <li id="orders-lane-{{ $laneKey }}" class="{{ $onCafeOrders && $cafeLane === $laneKey ? 'active' : '' }}">
+                                                <a href="{{ route('restaurant.orders', ['lane' => $laneKey, 'tab' => 'awaiting']) }}">{{ $laneLabel }}</a>
+                                                <ul>
+                                                    @foreach($cafeTabs as $tabKey => $tabLabel)
+                                                        <li id="orders-{{ $laneKey }}-{{ $tabKey }}" class="{{ $onCafeOrders && $cafeLane === $laneKey && $cafeTab === $tabKey ? 'active' : '' }}">
+                                                            <a href="{{ route('restaurant.orders', ['lane' => $laneKey, 'tab' => $tabKey]) }}">{{ $tabLabel }}</a>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </li>
+                                        @endforeach
+                                    @endif
                                     <li id="order-list-menu"><a href="{{route('order.index')}}">{{trans('file.Order List')}}</a></li>
                                     @if(Auth::user()->role_id != 12 || Auth::user()->can_donation == 1)
                                         @if(in_array('donations-index', $all_permission))<li id="donation-list-menu"><a href="{{route('donation.list')}}">Donation List</a></li>@endif
@@ -3788,6 +3810,10 @@
                   'messaging-setting-menu': 'dripicons-message',
                   'sms-setting-menu': 'dripicons-message',
                   'pos-setting-menu': 'dripicons-cart',
+                  'orders-lane-coffee': 'dripicons-rocket',
+                  'orders-lane-restaurant': 'dripicons-cutlery',
+                  'orders-lane-bar': 'dripicons-jewel',
+                  'orders-lane-online': 'dripicons-cart',
                   'laundry-received-menu': 'dripicons-inbox',
                   'laundry-cleaning-menu': 'dripicons-clockwise',
                   'laundry-ready-menu': 'dripicons-checkmark',

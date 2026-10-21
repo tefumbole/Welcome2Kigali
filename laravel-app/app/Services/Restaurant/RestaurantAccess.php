@@ -60,7 +60,7 @@ class RestaurantAccess
 
     public static function canSeeOrders($user)
     {
-        foreach (['kitchen-orders', 'bar-orders', 'waiter-orders', 'order-logs'] as $permission) {
+        foreach (['kitchen-orders', 'bar-orders', 'waiter-orders', 'order-logs', 'orders-index'] as $permission) {
             if (self::can($user, $permission)) {
                 return true;
             }
