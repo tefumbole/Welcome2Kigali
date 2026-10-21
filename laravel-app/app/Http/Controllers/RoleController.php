@@ -2016,6 +2016,23 @@ class RoleController extends Controller
             }
         }
 
+        foreach (\App\Services\Restaurant\RestaurantAccess::permissionRows() as $orderRow) {
+            foreach ([1, 2, 3, 4] as $orderCol) {
+                $orderPerm = $orderRow[$orderCol];
+                if (in_array($orderPerm, ['orders-index', 'orders-add', 'orders-edit', 'orders-delete'], true)) {
+                    continue;
+                }
+                $permission = Permission::firstOrCreate(['name' => $orderPerm]);
+                if ($request->has($orderPerm)) {
+                    if (! $role->hasPermissionTo($orderPerm)) {
+                        $role->givePermissionTo($permission);
+                    }
+                } elseif ($role->hasPermissionTo($orderPerm)) {
+                    $role->revokePermissionTo($orderPerm);
+                }
+            }
+        }
+
         return redirect('role')->with('message', 'Permission updated successfully');
     }
 

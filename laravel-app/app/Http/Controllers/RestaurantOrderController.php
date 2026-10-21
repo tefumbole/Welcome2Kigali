@@ -28,28 +28,34 @@ class RestaurantOrderController extends Controller
         if (! RestaurantAccess::canSeeOrders($request->user())) {
             return redirect('admin')->with('not_permitted', 'Sorry! You are not allowed to access this module');
         }
-        $lanes = [
-            'coffee' => 'Coffee & Tea',
-            'restaurant' => 'Restaurant',
-            'bar' => 'Bar',
-            'online' => 'Online orders',
-        ];
-        $lane = $request->input('lane', 'coffee');
-        if (! isset($lanes[$lane])) {
-            $lane = 'coffee';
+        $lanes = [];
+        foreach (RestaurantAccess::lanes() as $key => $label) {
+            if (RestaurantAccess::seeLane($request->user(), $key)) {
+                $lanes[$key] = $label;
+            }
         }
-        $tabs = [
-            'awaiting' => 'Awaiting',
-            'accepted' => 'Accepted',
-            'ready' => 'Ready for Delivery',
-            'delivered' => 'Delivered',
-        ];
+        if (! $lanes) {
+            return redirect('admin')->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        }
+        $lane = $request->input('lane', key($lanes));
+        if (! isset($lanes[$lane])) {
+            $lane = key($lanes);
+        }
+        $tabs = [];
+        foreach (RestaurantAccess::statuses() as $key => $label) {
+            if (RestaurantAccess::seeStatus($request->user(), $key)) {
+                $tabs[$key] = $label;
+            }
+        }
+        if (! $tabs) {
+            $tabs = RestaurantAccess::statuses();
+        }
         $tab = $request->input('tab', 'awaiting');
         if ($tab === 'preparing') {
             $tab = 'accepted';
         }
         if (! isset($tabs[$tab])) {
-            $tab = 'awaiting';
+            $tab = key($tabs);
         }
         $status = $tab === 'accepted' ? 'preparing' : $tab;
         $items = collect();
@@ -103,7 +109,7 @@ class RestaurantOrderController extends Controller
     public function accept(Request $request, $item)
     {
         $row = $this->item($item);
-        if ($deny = $this->denyItem($request, $row)) {
+        if ($deny = $this->denyOrder($request, $row, 'add')) {
             return $deny;
         }
         try {
@@ -118,7 +124,7 @@ class RestaurantOrderController extends Controller
     public function estimate(Request $request, $item)
     {
         $row = $this->item($item);
-        if ($deny = $this->denyItem($request, $row)) {
+        if ($deny = $this->denyOrder($request, $row, 'edit')) {
             return $deny;
         }
         try {
@@ -133,7 +139,7 @@ class RestaurantOrderController extends Controller
     public function markReady(Request $request, $item)
     {
         $row = $this->item($item);
-        if ($deny = $this->denyItem($request, $row)) {
+        if ($deny = $this->denyOrder($request, $row, 'edit')) {
             return $deny;
         }
         try {
@@ -148,8 +154,8 @@ class RestaurantOrderController extends Controller
     public function deliver(Request $request, $item)
     {
         $row = $this->item($item);
-        if (! RestaurantAccess::can($request->user(), 'waiter-orders') && ! RestaurantAccess::canItem($request->user(), $row)) {
-            return redirect('/')->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        if ($deny = $this->denyOrder($request, $row, 'edit')) {
+            return $deny;
         }
         try {
             $this->orders->deliver($row, $request->user());
@@ -162,10 +168,10 @@ class RestaurantOrderController extends Controller
 
     public function reject(Request $request, $item)
     {
-        if (! RestaurantAccess::can($request->user(), 'meal-rejections')) {
-            return redirect('/')->with('not_permitted', 'Sorry! You are not allowed to access this module');
-        }
         $row = $this->item($item);
+        if ($deny = $this->denyOrder($request, $row, 'delete')) {
+            return $deny;
+        }
         try {
             $this->orders->reject(
                 $row,
@@ -267,9 +273,9 @@ class RestaurantOrderController extends Controller
         return RestaurantOrderItem::with('order')->findOrFail($id);
     }
 
-    protected function denyItem(Request $request, RestaurantOrderItem $item)
+    protected function denyOrder(Request $request, RestaurantOrderItem $item, $action)
     {
-        if (RestaurantAccess::canItem($request->user(), $item)) {
+        if (RestaurantAccess::canOrder($request->user(), $action, $item)) {
             return null;
         }
 

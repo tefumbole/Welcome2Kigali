@@ -83,57 +83,6 @@
 						        </thead>
 						        <tbody>
                                 <tr>
-                                    <td>{{trans('file.order')}}</td>
-                                    <td class="text-center">
-                                        <div class="icheckbox_square-blue checked" aria-checked="false" aria-disabled="false">
-                                            <div class="checkbox">
-                                                @if(in_array("orders-index", $all_permission))
-                                                    <input type="checkbox" value="1" id="orders-index" name="orders-index" checked />
-                                                @else
-                                                    <input type="checkbox" value="1" id="orders-index" name="orders-index" />
-                                                @endif
-                                                <label for="orders-index"></label>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="icheckbox_square-blue" aria-checked="false" aria-disabled="false">
-                                            <div class="checkbox">
-                                                @if(in_array("orders-add", $all_permission))
-                                                    <input type="checkbox" value="1" id="orders-add" name="orders-add" checked>
-                                                @else
-                                                    <input type="checkbox" value="1" id="orders-add" name="orders-add">
-                                                @endif
-                                                <label for="orders-add"></label>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="icheckbox_square-blue" aria-checked="false" aria-disabled="false">
-                                            <div class="checkbox">
-                                                @if(in_array("orders-edit", $all_permission))
-                                                    <input type="checkbox" value="1" id="orders-edit" name="orders-edit" checked />
-                                                @else
-                                                    <input type="checkbox" value="1" id="orders-edit" name="orders-edit" />
-                                                @endif
-                                                <label for="orders-edit"></label>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="icheckbox_square-blue" aria-checked="false" aria-disabled="false">
-                                            <div class="checkbox">
-                                                @if(in_array("orders-delete", $all_permission))
-                                                    <input type="checkbox" value="1" id="orders-delete" name="orders-delete" checked />
-                                                @else
-                                                    <input type="checkbox" value="1" id="orders-delete" name="orders-delete" />
-                                                @endif
-                                                <label for="orders-delete"></label>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
                                     <td>Shops</td>
                                     <td class="text-center">
                                         <div class="icheckbox_square-blue checked" aria-checked="false" aria-disabled="false">
@@ -2924,8 +2873,31 @@
 						                </span>
 						            </td>
 						        </tr>
+						        <tr class="permission-section-header">
+						            <th colspan="5">
+						                <div class="checkbox">
+						                    <input type="checkbox" class="section-select-all" id="section-orders">
+						                    <label for="section-orders">Orders</label>
+						                </div>
+						            </th>
+						        </tr>
+						        @foreach(\App\Services\Restaurant\RestaurantAccess::permissionRows() as $orderPerm)
 						        <tr>
-						            <td>Restaurant</td>
+						            <td>{{ $orderPerm[0] }}</td>
+						            @foreach([1, 2, 3, 4] as $orderCol)
+						            <td class="text-center">
+						                <div class="icheckbox_square-blue" aria-checked="false" aria-disabled="false">
+						                    <div class="checkbox">
+						                        <input type="checkbox" value="1" id="{{ $orderPerm[$orderCol] }}" name="{{ $orderPerm[$orderCol] }}" @if(in_array($orderPerm[$orderCol], $all_permission)) checked @endif>
+						                        <label for="{{ $orderPerm[$orderCol] }}"></label>
+						                    </div>
+						                </div>
+						            </td>
+						            @endforeach
+						        </tr>
+						        @endforeach
+						        <tr>
+						            <td>Kitchen, bar, and waiter</td>
 						            <td colspan="4">
 						                @foreach(['kitchen-orders' => 'Kitchen', 'bar-orders' => 'Bar', 'waiter-orders' => 'Ready / waiter', 'order-logs' => 'Order logs', 'meal-rejections' => 'Reject / remake'] as $permName => $permLabel)
 						                <span>

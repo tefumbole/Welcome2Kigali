@@ -27,7 +27,9 @@
                             {{ $item->product_name }} × {{ $item->qty }}
                             @php
                                 $statusLabels = ['awaiting' => 'Awaiting', 'preparing' => 'Accepted', 'ready' => 'Ready for Delivery', 'delivered' => 'Delivered'];
-                                $canAct = \App\Services\Restaurant\RestaurantAccess::canItem(auth()->user(), $item);
+                                $canAdd = \App\Services\Restaurant\RestaurantAccess::canOrder(auth()->user(), 'add', $item);
+                                $canEdit = \App\Services\Restaurant\RestaurantAccess::canOrder(auth()->user(), 'edit', $item);
+                                $canDelete = \App\Services\Restaurant\RestaurantAccess::canOrder(auth()->user(), 'delete', $item);
                             @endphp
                             <div class="text-muted">{{ \App\Services\Restaurant\RestaurantDepartment::label($item->lane ?: $item->department) }} · {{ $statusLabels[$item->status] ?? $item->status }}
                                 @if($item->attempt_no > 1) · attempt {{ $item->attempt_no }} @endif
@@ -47,7 +49,7 @@
                             @endif
                         </td>
                         <td style="min-width:220px;">
-                            @if($canAct && $item->status === 'awaiting')
+                            @if($canAdd && $item->status === 'awaiting')
                                 <form method="post" action="{{ route('restaurant.accept', $item->id) }}">
                                     @csrf
                                     <div class="input-group">
@@ -56,7 +58,7 @@
                                     </div>
                                 </form>
                             @endif
-                            @if($canAct && $item->status === 'preparing')
+                            @if($canEdit && $item->status === 'preparing')
                                 <form method="post" action="{{ route('restaurant.ready.mark', $item->id) }}" style="margin-bottom:6px;">
                                     @csrf
                                     <button class="btn btn-success btn-sm" type="submit">Mark ready</button>
@@ -69,13 +71,13 @@
                                     </div>
                                 </form>
                             @endif
-                            @if($item->status === 'ready' && ($canAct || $canWait))
+                            @if($item->status === 'ready' && $canEdit)
                                 <form method="post" action="{{ route('restaurant.deliver', $item->id) }}">
                                     @csrf
                                     <button class="btn btn-primary btn-sm" type="submit">Delivered</button>
                                 </form>
                             @endif
-                            @if($canReject && $item->status === 'delivered')
+                            @if($canDelete && $item->status === 'delivered')
                                 <form method="post" action="{{ route('restaurant.reject', $item->id) }}" style="margin-top:8px;">
                                     @csrf
                                     <input class="form-control" name="qty" type="number" min="0.01" max="{{ $item->qty }}" step="0.01" value="{{ $item->qty }}" required>

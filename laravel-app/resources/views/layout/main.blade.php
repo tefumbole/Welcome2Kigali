@@ -1247,18 +1247,6 @@
                                 </ul>
                             </li>
                         @endif
-                        @if(\Illuminate\Support\Facades\Schema::hasTable('restaurant_orders'))
-                            @php
-                                $restaurantUser = auth()->user();
-                                $restaurantKitchen = \App\Services\Restaurant\RestaurantAccess::can($restaurantUser, 'kitchen-orders') || \App\Services\Restaurant\RestaurantAccess::can($restaurantUser, 'order-logs');
-                                $restaurantBar = \App\Services\Restaurant\RestaurantAccess::can($restaurantUser, 'bar-orders') || \App\Services\Restaurant\RestaurantAccess::can($restaurantUser, 'order-logs');
-                                $restaurantReady = \App\Services\Restaurant\RestaurantAccess::can($restaurantUser, 'waiter-orders');
-                                $restaurantLogs = \App\Services\Restaurant\RestaurantAccess::can($restaurantUser, 'order-logs');
-                            @endphp
-                            @if(($restaurantKitchen || $restaurantBar || $restaurantReady || $restaurantLogs) && !in_array('orders-index', $all_permission ?? []))
-                                <li class="{{ request()->routeIs('restaurant.orders') ? 'active' : '' }}"><a href="{{ route('restaurant.orders') }}" data-nav-key="restaurant"> <i class="dripicons-cutlery"></i><span>{{ __('sidebar.restaurant') }}</span></a></li>
-                            @endif
-                        @endif
                         <?php
                         $index_permission_booking = DB::table('permissions')->where('name', 'booking_module')->first();
                         $index_permission_booking_active = ($role && $index_permission_booking) ? DB::table('role_has_permissions')->where([
@@ -1703,29 +1691,42 @@
                                 </ul>
                             </li>
                         @endif
-                        @if(in_array('orders-index', $all_permission))
+                        @if(\App\Services\Restaurant\RestaurantAccess::canSeeOrders(auth()->user()))
                             <li><a href="#order" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document"></i><span>{{ __('sidebar.order') }}</span><span></a>
                                 <ul id="order" class="collapse list-unstyled ">
                                     @if(\Illuminate\Support\Facades\Schema::hasTable('restaurant_orders'))
                                         @php
-                                            $cafeLanes = ['coffee' => 'Coffee & Tea', 'restaurant' => 'Restaurant', 'bar' => 'Bar', 'online' => 'Online orders'];
-                                            $cafeTabs = ['awaiting' => 'Awaiting', 'accepted' => 'Accepted', 'ready' => 'Ready for Delivery', 'delivered' => 'Delivered'];
+                                            $cafeLanes = \App\Services\Restaurant\RestaurantAccess::lanes();
+                                            $cafeTabs = \App\Services\Restaurant\RestaurantAccess::statuses();
+                                            $cafeCounts = \App\Services\Restaurant\RestaurantAccess::queueCounts();
                                             $onCafeOrders = request()->routeIs('restaurant.orders');
                                             $cafeLane = $onCafeOrders ? request()->query('lane', 'coffee') : '';
                                             $cafeTab = $onCafeOrders ? request()->query('tab', 'awaiting') : '';
                                             if ($cafeTab === 'preparing') { $cafeTab = 'accepted'; }
                                         @endphp
                                         @foreach($cafeLanes as $laneKey => $laneLabel)
+                                            @if(\App\Services\Restaurant\RestaurantAccess::seeLane(auth()->user(), $laneKey))
+                                            @php
+                                                $laneTotal = 0;
+                                                foreach ($cafeTabs as $tabKey => $tabLabel) {
+                                                    $laneTotal += $cafeCounts[$laneKey][$tabKey] ?? 0;
+                                                }
+                                                $openTab = \App\Services\Restaurant\RestaurantAccess::firstOpenStatus($laneKey, $cafeCounts);
+                                            @endphp
                                             <li id="orders-lane-{{ $laneKey }}" class="{{ $onCafeOrders && $cafeLane === $laneKey ? 'active' : '' }}">
-                                                <a href="{{ route('restaurant.orders', ['lane' => $laneKey, 'tab' => 'awaiting']) }}">{{ $laneLabel }}</a>
+                                                <a href="{{ route('restaurant.orders', ['lane' => $laneKey, 'tab' => $openTab]) }}">{{ $laneLabel }}@if($laneTotal)<span class="badge">{{ $laneTotal }}</span>@endif</a>
                                                 <ul>
                                                     @foreach($cafeTabs as $tabKey => $tabLabel)
+                                                        @if(\App\Services\Restaurant\RestaurantAccess::seeStatus(auth()->user(), $tabKey))
+                                                        @php $tabCount = $cafeCounts[$laneKey][$tabKey] ?? 0; @endphp
                                                         <li id="orders-{{ $laneKey }}-{{ $tabKey }}" class="{{ $onCafeOrders && $cafeLane === $laneKey && $cafeTab === $tabKey ? 'active' : '' }}">
-                                                            <a href="{{ route('restaurant.orders', ['lane' => $laneKey, 'tab' => $tabKey]) }}">{{ $tabLabel }}</a>
+                                                            <a href="{{ route('restaurant.orders', ['lane' => $laneKey, 'tab' => $tabKey]) }}">{{ $tabLabel }}@if($tabCount)<span class="badge">{{ $tabCount }}</span>@endif</a>
                                                         </li>
+                                                        @endif
                                                     @endforeach
                                                 </ul>
                                             </li>
+                                            @endif
                                         @endforeach
                                     @endif
                                 </ul>

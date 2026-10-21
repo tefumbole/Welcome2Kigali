@@ -2,8 +2,10 @@
 
 namespace App\Services\Restaurant;
 
+use App\RestaurantOrderItem;
 use App\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Role;
 
 class RestaurantAccess
@@ -60,8 +62,13 @@ class RestaurantAccess
 
     public static function canSeeOrders($user)
     {
-        foreach (['kitchen-orders', 'bar-orders', 'waiter-orders', 'order-logs', 'orders-index'] as $permission) {
+        foreach (['kitchen-orders', 'bar-orders', 'waiter-orders', 'order-logs', 'orders-index', 'orders-add', 'orders-edit', 'orders-delete'] as $permission) {
             if (self::can($user, $permission)) {
+                return true;
+            }
+        }
+        foreach (array_merge(array_keys(self::lanes()), array_keys(self::statuses())) as $key) {
+            if (self::can($user, 'orders-'.$key.'-index')) {
                 return true;
             }
         }
@@ -83,5 +90,141 @@ class RestaurantAccess
         }
 
         return self::canDepartment($user, $item ? $item->department : null);
+    }
+
+    public static function permissionRows()
+    {
+        return [
+            ['Orders', 'orders-index', 'orders-add', 'orders-edit', 'orders-delete'],
+            ['Coffee & Tea', 'orders-coffee-index', 'orders-coffee-add', 'orders-coffee-edit', 'orders-coffee-delete'],
+            ['Restaurant', 'orders-restaurant-index', 'orders-restaurant-add', 'orders-restaurant-edit', 'orders-restaurant-delete'],
+            ['Bar', 'orders-bar-index', 'orders-bar-add', 'orders-bar-edit', 'orders-bar-delete'],
+            ['Online orders', 'orders-online-index', 'orders-online-add', 'orders-online-edit', 'orders-online-delete'],
+            ['Awaiting', 'orders-awaiting-index', 'orders-awaiting-add', 'orders-awaiting-edit', 'orders-awaiting-delete'],
+            ['Accepted', 'orders-accepted-index', 'orders-accepted-add', 'orders-accepted-edit', 'orders-accepted-delete'],
+            ['Ready for Delivery', 'orders-ready-index', 'orders-ready-add', 'orders-ready-edit', 'orders-ready-delete'],
+            ['Delivered', 'orders-delivered-index', 'orders-delivered-add', 'orders-delivered-edit', 'orders-delivered-delete'],
+        ];
+    }
+
+    public static function lanes()
+    {
+        return [
+            'coffee' => 'Coffee & Tea',
+            'restaurant' => 'Restaurant',
+            'bar' => 'Bar',
+            'online' => 'Online orders',
+        ];
+    }
+
+    public static function statuses()
+    {
+        return [
+            'awaiting' => 'Awaiting',
+            'accepted' => 'Accepted',
+            'ready' => 'Ready for Delivery',
+            'delivered' => 'Delivered',
+        ];
+    }
+
+    public static function seeLane($user, $lane)
+    {
+        if (self::can($user, 'orders-index') || self::can($user, 'orders-'.$lane.'-index') || self::can($user, 'order-logs')) {
+            return true;
+        }
+        if ($lane === 'coffee' || $lane === 'restaurant') {
+            return self::can($user, 'kitchen-orders');
+        }
+        if ($lane === 'bar') {
+            return self::can($user, 'bar-orders');
+        }
+        if ($lane === 'online') {
+            return self::can($user, 'kitchen-orders') || self::can($user, 'bar-orders') || self::can($user, 'waiter-orders');
+        }
+
+        return false;
+    }
+
+    public static function seeStatus($user, $status)
+    {
+        if (self::can($user, 'orders-index') || self::can($user, 'orders-'.$status.'-index') || self::can($user, 'order-logs')) {
+            return true;
+        }
+        $explicit = false;
+        foreach (array_keys(self::statuses()) as $key) {
+            if (self::can($user, 'orders-'.$key.'-index')) {
+                $explicit = true;
+            }
+        }
+        if ($explicit) {
+            return false;
+        }
+
+        return self::canSeeOrders($user);
+    }
+
+    public static function canOrder($user, $action, $item = null)
+    {
+        $lane = $item ? $item->lane : null;
+        $status = $item ? $item->status : null;
+        if ($status === 'preparing') {
+            $status = 'accepted';
+        }
+        $names = ['orders-'.$action];
+        if ($lane) {
+            $names[] = 'orders-'.$lane.'-'.$action;
+        }
+        if ($status) {
+            $names[] = 'orders-'.$status.'-'.$action;
+        }
+        foreach ($names as $name) {
+            if (self::can($user, $name)) {
+                return true;
+            }
+        }
+        if ($action === 'delete') {
+            return self::can($user, 'meal-rejections');
+        }
+        if (($action === 'add' || $action === 'edit') && $item && self::canItem($user, $item)) {
+            return true;
+        }
+        if ($action === 'edit' && self::can($user, 'waiter-orders')) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static function queueCounts()
+    {
+        $counts = [];
+        if (! Schema::hasTable('restaurant_order_items') || ! Schema::hasColumn('restaurant_order_items', 'lane')) {
+            return $counts;
+        }
+        $rows = RestaurantOrderItem::query()
+            ->select('lane', 'status', DB::raw('count(*) as total'))
+            ->groupBy('lane', 'status')
+            ->get();
+        foreach ($rows as $row) {
+            $lane = $row->lane ?: 'restaurant';
+            $status = $row->status === 'preparing' ? 'accepted' : $row->status;
+            if (! isset($counts[$lane][$status])) {
+                $counts[$lane][$status] = 0;
+            }
+            $counts[$lane][$status] += (int) $row->total;
+        }
+
+        return $counts;
+    }
+
+    public static function firstOpenStatus($lane, array $counts)
+    {
+        foreach (array_keys(self::statuses()) as $status) {
+            if (! empty($counts[$lane][$status])) {
+                return $status;
+            }
+        }
+
+        return 'awaiting';
     }
 }
