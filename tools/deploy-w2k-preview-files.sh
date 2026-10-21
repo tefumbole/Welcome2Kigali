@@ -523,9 +523,9 @@ if [ -f "\$APP/.env" ]; then
   fi
   if [ -n "${W2K_WASENDER_API_KEY:-}" ]; then
     if grep -q '^WASENDER_API_KEY=' "\$APP/.env"; then
-      sed -i "s|^WASENDER_API_KEY=.*|WASENDER_API_KEY=${W2K_WASENDER_API_KEY}|" "\$APP/.env"
+      sed -i "s|^WASENDER_API_KEY=.*|WASENDER_API_KEY=${W2K_WASENDER_API_KEY:-}|" "\$APP/.env"
     else
-      echo "WASENDER_API_KEY=${W2K_WASENDER_API_KEY}" >> "\$APP/.env"
+      echo "WASENDER_API_KEY=${W2K_WASENDER_API_KEY:-}" >> "\$APP/.env"
     fi
   fi
   chown www-data:www-data "\$APP/.env" 2>/dev/null || true
