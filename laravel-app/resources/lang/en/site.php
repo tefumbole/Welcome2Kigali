@@ -160,7 +160,7 @@ return [
     'menu' => [
         'title' => 'Coffee & Tea Menu',
         'meta' => 'Welcome 2 Kigali cafe menu. Coffee, tea, juices, and smoothies. Click an item to add it to your cart.',
-        'hero_sub' => 'Click an item to add it to your cart.',
+        'hero_sub' => 'Coffee, tea, juices, smoothies, and food. Tap an item to add it.',
         'empty' => 'The menu will appear here after cafe products are seeded.',
         'food_empty' => 'Dishes will be listed here as they are added in admin → Product.',
         'prices' => 'Prices are in FRW | Tax included',

@@ -1256,8 +1256,8 @@
                                 $restaurantLogs = \App\Services\Restaurant\RestaurantAccess::can($restaurantUser, 'order-logs');
                             @endphp
                             @if($restaurantKitchen || $restaurantBar || $restaurantReady || $restaurantLogs)
-                                <li><a href="#restaurant-orders" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-cutlery"></i><span>Restaurant</span></a>
-                                    <ul id="restaurant-orders" class="collapse list-unstyled ">
+                                <li><a href="#restaurant-module" data-nav-key="restaurant" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-cutlery"></i><span>{{ __('sidebar.restaurant') }}</span></a>
+                                    <ul id="restaurant-module" class="collapse list-unstyled ">
                                         @if($restaurantKitchen)<li><a href="{{ route('restaurant.kitchen') }}">Kitchen</a></li>@endif
                                         @if($restaurantBar)<li><a href="{{ route('restaurant.bar') }}">Bar</a></li>@endif
                                         @if($restaurantReady)<li><a href="{{ route('restaurant.ready') }}">Ready for delivery</a></li>@endif
@@ -2757,6 +2757,7 @@
                                     <li id="help-contracts-menu"><a href="{{ route('help.index') }}#contracts">{{ __('sidebar.help_contracts') }}</a></li>
                                     <li id="help-members-menu"><a href="{{ route('help.index') }}#members">{{ __('sidebar.help_members') }}</a></li>
                                     <li id="help-laundry-menu"><a href="{{ route('help.index') }}#laundry">{{ __('sidebar.help_laundry') }}</a></li>
+                                    <li id="help-restaurant-menu"><a href="{{ route('help.index') }}#restaurant">{{ __('sidebar.help_restaurant') }}</a></li>
                                     <li id="help-expense-menu"><a href="{{ route('help.index') }}#expenses">{{ __('sidebar.help_expense') }}</a></li>
                                     <li id="help-orders-menu"><a href="{{ route('help.index') }}#orders">{{ __('sidebar.help_orders') }}</a></li>
                                     <li id="help-assets-menu"><a href="{{ route('help.index') }}#assets">{{ __('sidebar.help_assets') }}</a></li>

@@ -10,9 +10,9 @@
 @section('content')
 <div class="bg-[#0A0A0A] text-white min-h-[70vh] py-10 px-4">
     <div class="max-w-5xl mx-auto">
-        <p class="text-[11px] tracking-[0.22em] uppercase text-brand-gold m-0">{{ __('site.services.kicker') }}</p>
-        <h1 class="font-serif text-3xl md:text-4xl text-white mt-2">{{ __('site.services.heading') }}</h1>
-        <p class="text-white/70 text-sm mt-2 max-w-2xl">{{ __('site.services.intro') }}</p>
+        <p class="text-[11px] tracking-[0.22em] uppercase text-brand-gold m-0">{{ \App\Support\SiteContent::text('services.kicker', __('site.services.kicker')) }}</p>
+        <h1 class="font-serif text-3xl md:text-4xl text-white mt-2">{{ \App\Support\SiteContent::text('services.heading', __('site.services.heading')) }}</h1>
+        <p class="text-white/70 text-sm mt-2 max-w-2xl">{{ \App\Support\SiteContent::text('services.intro', __('site.services.intro')) }}</p>
 
         <div class="mt-8 grid gap-5 md:grid-cols-2">
             @foreach (\App\Support\ServiceCatalog::SERVICES as $key => $svc)
@@ -30,12 +30,12 @@
                             <span class="w-11 h-11 rounded-full border border-brand-gold/60 flex items-center justify-center text-brand-gold shrink-0">
                                 <i data-lucide="{{ $svc['icon'] }}" class="w-5 h-5"></i>
                             </span>
-                            <h2 class="text-xl font-bold text-white m-0"><a href="{{ $showUrl }}" class="hover:text-brand-gold">{{ __('site.services.'.$key) }}</a></h2>
+                            <h2 class="text-xl font-bold text-white m-0"><a href="{{ $showUrl }}" class="hover:text-brand-gold">{{ \App\Support\SiteContent::text('services.'.$key, __('site.services.'.$key)) }}</a></h2>
                             @if (!empty($svc['priority']))
                                 <span class="ml-auto text-[10px] tracking-[0.18em] uppercase font-bold bg-brand-gold text-[#0A0A0A] rounded-full px-3 py-1">{{ __('site.services.priority') }}</span>
                             @endif
                         </div>
-                        <p class="text-white/75 text-sm mt-3 mb-0">{{ __('site.services.'.$key.'_body') }}</p>
+                        <p class="text-white/75 text-sm mt-3 mb-0">{{ \App\Support\SiteContent::text('services.'.$key.'_body', __('site.services.'.$key.'_body')) }}</p>
 
                         <p class="text-[10px] tracking-[0.2em] uppercase text-brand-gold/80 mt-5 mb-2">{{ __('site.services.categories') }}</p>
                         @if ($cats->isEmpty())

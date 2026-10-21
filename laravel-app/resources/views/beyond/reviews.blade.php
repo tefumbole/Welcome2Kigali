@@ -20,13 +20,13 @@
 <div class="bg-[#0A0A0A] text-white min-h-[70vh] py-10 px-4">
     <div class="max-w-xl mx-auto">
         <p class="text-[11px] tracking-[0.22em] uppercase text-brand-gold m-0">Welcome 2 Kigali</p>
-        <h1 class="font-serif text-3xl text-white mt-2">{{ __('site.reviews.heading') }}</h1>
-        <p class="text-white/70 text-sm mt-2">{{ __('site.reviews.intro') }}</p>
+        <h1 class="font-serif text-3xl text-white mt-2">{{ \App\Support\SiteContent::text('reviews.heading', __('site.reviews.heading')) }}</h1>
+        <p class="text-white/70 text-sm mt-2">{{ \App\Support\SiteContent::text('reviews.intro', __('site.reviews.intro')) }}</p>
 
         @if ($saved)
             <div class="mt-8 rounded-2xl border border-brand-gold/40 bg-white/5 p-6 text-center">
-                <h2 class="text-xl font-bold text-brand-gold m-0">{{ __('site.reviews.thanks_title') }}</h2>
-                <p class="text-white/80 mt-2 mb-0">{{ __('site.reviews.thanks_body') }}</p>
+                <h2 class="text-xl font-bold text-brand-gold m-0">{{ \App\Support\SiteContent::text('reviews.thanks_title', __('site.reviews.thanks_title')) }}</h2>
+                <p class="text-white/80 mt-2 mb-0">{{ \App\Support\SiteContent::text('reviews.thanks_body', __('site.reviews.thanks_body')) }}</p>
                 <a href="{{ url('/') }}" class="inline-block mt-5 text-sm font-semibold text-brand-gold underline">{{ __('site.register.return_home') }}</a>
             </div>
         @else

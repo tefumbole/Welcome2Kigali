@@ -47,6 +47,7 @@ class SiteMenu
             'courses'         => 'Courses',
             'membership'      => 'Membership',
             'laundry'         => 'Laundry',
+            'restaurant'      => 'Restaurant',
             'timesheets'      => 'TimeSheets (Employee)',
             'timesheet-admin' => 'TimeSheet Admin',
             'shop'            => 'Shops',

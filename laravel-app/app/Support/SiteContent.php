@@ -102,10 +102,19 @@ class SiteContent
                 'label' => 'Services',
                 'url' => '/services',
                 'fields' => [
-                    'hero_title'    => ['html', 'Hero title (HTML allowed)', 'Our <span class="text-brand-gold">Services</span>'],
-                    'hero_subtitle' => ['text', 'Hero subtitle', 'Comprehensive technology solutions tailored to your needs'],
-                    'heading'       => ['text', 'Section heading', 'Explore Our Expertise'],
-                    'subheading'    => ['textarea', 'Section subheading', "From IT infrastructure to cutting-edge AI solutions, we've got you covered."],
+                    'kicker'            => ['text', 'Kicker', 'Welcome 2 Kigali'],
+                    'heading'           => ['text', 'Heading', 'Our services'],
+                    'intro'             => ['textarea', 'Intro', 'Everything you need in one place. Members get 10% off.'],
+                    'supermarket'       => ['text', 'Supermarket title', 'Convenience store & supermarket'],
+                    'supermarket_body'  => ['textarea', 'Supermarket text', 'Daily groceries, drinks, snacks, toiletries and household items, open when you need them.'],
+                    'restaurant'        => ['text', 'Bar & restaurant title', 'Bar & restaurant'],
+                    'restaurant_body'   => ['textarea', 'Bar & restaurant text', 'Breakfast, lunch and dinner, cocktails, beers and wines in a relaxed lounge.'],
+                    'coffee'            => ['text', 'Coffee shop title', 'Coffee shop'],
+                    'coffee_body'       => ['textarea', 'Coffee shop text', 'Espresso, cappuccino, iced drinks, fresh juices and pastries.'],
+                    'laundry'           => ['text', 'Laundry title', 'Laundry'],
+                    'laundry_body'      => ['textarea', 'Laundry text', 'Washing, ironing and dry cleaning. Drop off and collect when it is ready.'],
+                    'fashion'           => ['text', 'Fashion store title', 'Fashion store'],
+                    'fashion_body'      => ['textarea', 'Fashion store text', 'Clothing, shoes and accessories for every occasion.'],
                 ],
             ],
             'projects' => [
@@ -147,7 +156,7 @@ class SiteContent
                 'url' => '/menu',
                 'fields' => [
                     'hero_title'    => ['html', 'Hero title (HTML allowed)', 'Cafe & <span class="text-brand-gold">Restaurant</span>'],
-                    'hero_subtitle' => ['text', 'Hero subtitle', 'Click an item to add it to your cart.'],
+                    'hero_subtitle' => ['text', 'Hero subtitle', 'Coffee, tea, juices, smoothies, and food. Tap an item to add it.'],
                 ],
             ],
             'events' => [
@@ -156,6 +165,16 @@ class SiteContent
                 'fields' => [
                     'hero_title'    => ['html', 'Hero title (HTML allowed)', 'Club Events'],
                     'hero_subtitle' => ['text', 'Hero subtitle', 'Gatherings, culture nights, and community moments in Kigali.'],
+                ],
+            ],
+            'reviews' => [
+                'label' => 'Reviews',
+                'url' => '/reviews',
+                'fields' => [
+                    'heading'      => ['text', 'Heading', 'How was your visit?'],
+                    'intro'        => ['textarea', 'Intro', 'Score each part from 1 to 5. Your review helps the club.'],
+                    'thanks_title' => ['text', 'Thank-you heading', 'Thank you'],
+                    'thanks_body'  => ['textarea', 'Thank-you text', 'Your review has been received.'],
                 ],
             ],
             'register' => [
