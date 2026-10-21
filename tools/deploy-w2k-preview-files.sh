@@ -507,6 +507,7 @@ sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_19_210000_create_guest_reviews_table.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_19_230000_add_service_to_categories.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_19_240000_create_momo_payments_table.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_18_180000_create_restaurant_orders.php
 sudo -u www-data php "\$APP/artisan" images:compress-pos || true
 mkdir -p "\$APP/public/images/product/thumbs"
 find "\$APP/public/images/product" -type d -exec chmod 755 {} \\; 2>/dev/null || true
