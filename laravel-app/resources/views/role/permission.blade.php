@@ -2924,6 +2924,19 @@
 						                </span>
 						            </td>
 						        </tr>
+						        <tr>
+						            <td>Restaurant</td>
+						            <td colspan="4">
+						                @foreach(['kitchen-orders' => 'Kitchen', 'bar-orders' => 'Bar', 'waiter-orders' => 'Ready / waiter', 'order-logs' => 'Order logs', 'meal-rejections' => 'Reject / remake'] as $permName => $permLabel)
+						                <span>
+						                    <div class="checkbox" style="display:inline-block;margin-right:12px;">
+						                        <input type="checkbox" value="1" id="{{ $permName }}" name="{{ $permName }}" @if(in_array($permName, $all_permission)) checked @endif>
+						                        <label for="{{ $permName }}" class="padding05">{{ $permLabel }}</label>
+						                    </div>
+						                </span>
+						                @endforeach
+						            </td>
+						        </tr>
 						        </tbody>
 						    </table>
 						</div>

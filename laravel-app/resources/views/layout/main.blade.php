@@ -1247,6 +1247,25 @@
                                 </ul>
                             </li>
                         @endif
+                        @if(\Illuminate\Support\Facades\Schema::hasTable('restaurant_orders'))
+                            @php
+                                $restaurantUser = auth()->user();
+                                $restaurantKitchen = \App\Services\Restaurant\RestaurantAccess::can($restaurantUser, 'kitchen-orders') || \App\Services\Restaurant\RestaurantAccess::can($restaurantUser, 'order-logs');
+                                $restaurantBar = \App\Services\Restaurant\RestaurantAccess::can($restaurantUser, 'bar-orders') || \App\Services\Restaurant\RestaurantAccess::can($restaurantUser, 'order-logs');
+                                $restaurantReady = \App\Services\Restaurant\RestaurantAccess::can($restaurantUser, 'waiter-orders');
+                                $restaurantLogs = \App\Services\Restaurant\RestaurantAccess::can($restaurantUser, 'order-logs');
+                            @endphp
+                            @if($restaurantKitchen || $restaurantBar || $restaurantReady || $restaurantLogs)
+                                <li><a href="#restaurant-orders" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-cutlery"></i><span>Restaurant</span></a>
+                                    <ul id="restaurant-orders" class="collapse list-unstyled ">
+                                        @if($restaurantKitchen)<li><a href="{{ route('restaurant.kitchen') }}">Kitchen</a></li>@endif
+                                        @if($restaurantBar)<li><a href="{{ route('restaurant.bar') }}">Bar</a></li>@endif
+                                        @if($restaurantReady)<li><a href="{{ route('restaurant.ready') }}">Ready for delivery</a></li>@endif
+                                        @if($restaurantLogs)<li><a href="{{ route('restaurant.logs') }}">Order logs</a></li>@endif
+                                    </ul>
+                                </li>
+                            @endif
+                        @endif
                         <?php
                         $index_permission_booking = DB::table('permissions')->where('name', 'booking_module')->first();
                         $index_permission_booking_active = ($role && $index_permission_booking) ? DB::table('role_has_permissions')->where([

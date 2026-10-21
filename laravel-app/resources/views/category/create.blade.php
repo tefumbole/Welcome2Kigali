@@ -67,6 +67,14 @@
                     {{Form::select('parent_id', $lims_categories, null, ['class' => 'form-control','placeholder' => 'No Parent Category'])}}
                 </div>
                 <div class="col-md-6 form-group">
+                    <label>Kitchen or bar</label>
+                    <select name="department" class="form-control">
+                        <option value="">Not a restaurant item</option>
+                        <option value="food">Food — kitchen</option>
+                        <option value="drinks">Drinks — bar</option>
+                    </select>
+                </div>
+                <div class="col-md-6 form-group">
                     <label>Show on website under</label>
                     <select name="service" class="form-control">
                         <option value="">Not on the Services page</option>
@@ -115,6 +123,14 @@
                     @endforeach
                 </select>
             </div>
+                <div class="col-md-6 form-group">
+                    <label>Kitchen or bar</label>
+                    <select name="department" class="form-control" id="edit-department">
+                        <option value="">Not a restaurant item</option>
+                        <option value="food">Food — kitchen</option>
+                        <option value="drinks">Drinks — bar</option>
+                    </select>
+                </div>
                 <div class="col-md-6 form-group">
                     <label>Show on website under</label>
                     <select name="service" class="form-control" id="edit-service">
@@ -197,6 +213,7 @@
             $("#editModal select[name='parent_id']").val(data['parent_id']);
             $("#editModal input[name='category_id']").val(data['id']);
             $("#editModal select[name='service']").val(data['service'] || '');
+            $("#editModal select[name='department']").val(data['department'] || '');
             $('.selectpicker').selectpicker('refresh');
           });
     });

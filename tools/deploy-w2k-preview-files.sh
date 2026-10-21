@@ -75,6 +75,31 @@ FILES=(
   app/Http/Controllers/MembershipPublicController.php
   app/Http/Controllers/MembershipPosController.php
   app/Http/Controllers/SaleController.php
+  app/Http/Controllers/RestaurantOrderController.php
+  app/Http/Controllers/RestaurantTrackingController.php
+  app/Http/Controllers/RestaurantPayController.php
+  app/Http/Controllers/RestaurantMenuController.php
+  app/Http/Controllers/CategoryController.php
+  app/Http/Controllers/RoleController.php
+  app/RestaurantOrder.php
+  app/RestaurantOrderItem.php
+  app/RestaurantOrderEvent.php
+  app/RestaurantTable.php
+  app/OrderReview.php
+  app/MealRejection.php
+  app/Category.php
+  app/Sale.php
+  app/Services/Restaurant/RestaurantOrderService.php
+  app/Services/Restaurant/RestaurantDepartment.php
+  app/Services/Restaurant/RestaurantAccess.php
+  app/Services/Restaurant/RestaurantPayments.php
+  app/Support/SalePayQr.php
+  database/migrations/2026_10_18_180000_create_restaurant_orders.php
+  resources/views/sale/pos.blade.php
+  resources/views/sale/invoice.blade.php
+  resources/views/layout/main.blade.php
+  resources/views/role/permission.blade.php
+  routes/web.php
   app/Http/Controllers/CustomerController.php
   app/Http/Controllers/CashRegisterController.php
   app/Http/Controllers/SiteContentController.php
@@ -377,6 +402,7 @@ done
 /usr/bin/rsync -rltz --relative \
   resources/views/membership \
   resources/views/beyond \
+  resources/views/restaurant \
   resources/views/laundry \
   resources/views/help \
   public/branding/help \

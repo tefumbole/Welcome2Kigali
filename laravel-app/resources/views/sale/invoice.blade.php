@@ -585,6 +585,10 @@
             <div class="code-media" style="margin:0 0 6px;">
                 <img src="{{ \App\Support\SaleInvoiceQr::dataUri($lims_sale_data, $isMini) }}" height="{{ $isMini ? 92 : 48 }}" width="{{ $isMini ? 92 : 48 }}" alt="qrcode">
             </div>
+            <div class="code-media" style="margin:0 0 6px;">
+                <img src="{{ \App\Support\QrPng::dataUri(\App\Support\SalePayQr::payUrl($lims_sale_data)) }}" height="{{ $isMini ? 92 : 48 }}" width="{{ $isMini ? 92 : 48 }}" alt="Pay QR">
+                <div>Pay</div>
+            </div>
             <div class="code-media">
                 <?php echo '<img src="data:image/png;base64,'.DNS1D::getBarcodePNG($lims_sale_data->reference_no, 'C128').'" height="28" width="160" alt="barcode">'; ?>
             </div>

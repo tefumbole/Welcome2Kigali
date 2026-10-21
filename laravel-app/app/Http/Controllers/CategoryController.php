@@ -135,6 +135,9 @@ class CategoryController extends Controller
         if (\App\Support\ServiceCatalog::enabled()) {
             $lims_category_data['service'] = \App\Support\ServiceCatalog::exists($request->service) ? $request->service : null;
         }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('categories', 'department')) {
+            $lims_category_data['department'] = \App\Services\Restaurant\RestaurantDepartment::normalize($request->department);
+        }
         Category::create($lims_category_data);
         return redirect('category')->with('message', 'Category inserted successfully');
     }
@@ -165,6 +168,11 @@ class CategoryController extends Controller
             $input['service'] = \App\Support\ServiceCatalog::exists($request->service) ? $request->service : null;
         } else {
             unset($input['service']);
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('categories', 'department')) {
+            $input['department'] = \App\Services\Restaurant\RestaurantDepartment::normalize($request->department);
+        } else {
+            unset($input['department']);
         }
         $image = $request->image;
         if ($image) {

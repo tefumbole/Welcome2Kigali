@@ -45,4 +45,9 @@ class Sale extends Model
         return $this->hasOne('App\LaundryOrder');
     }
 
+    public function restaurantOrder()
+    {
+        return $this->hasOne('App\RestaurantOrder');
+    }
+
 }

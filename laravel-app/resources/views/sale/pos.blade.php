@@ -1782,6 +1782,41 @@
                                             </div>
                                         </div>
                                     </div>
+                                    @if(\Illuminate\Support\Facades\Schema::hasTable('restaurant_tables') && (\App\Services\Restaurant\RestaurantAccess::can(auth()->user(), 'sales-add') || \App\Services\Restaurant\RestaurantAccess::can(auth()->user(), 'waiter-orders')))
+                                    <div class="row" style="margin:8px 12px;">
+                                        <div class="col-sm-12"><strong>Restaurant order</strong> <span class="text-muted">One bill. Food goes to the kitchen and drinks go to the bar.</span></div>
+                                        <div class="col-sm-3">
+                                            <label>Service</label>
+                                            <select name="service_type" class="form-control">
+                                                <option value="dine_in">Dine In</option>
+                                                <option value="take_away">Take Away</option>
+                                                <option value="">Not a restaurant order</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <label>Table</label>
+                                            <select name="restaurant_table_id" class="form-control">
+                                                <option value="">Optional for take away</option>
+                                                @foreach(\App\RestaurantTable::where('is_active', 1)->orderBy('name')->get() as $table)
+                                                    <option value="{{ $table->id }}">{{ $table->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <label>Waitress / waiter</label>
+                                            <select name="waitress_user_id" class="form-control">
+                                                <option value="">Unassigned</option>
+                                                @foreach(\App\Services\Restaurant\RestaurantAccess::usersWithPermission('waiter-orders') as $person)
+                                                    <option value="{{ $person->id }}">{{ $person->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <label>Order note</label>
+                                            <input type="text" name="customer_comment" class="form-control" placeholder="Guest comment">
+                                        </div>
+                                    </div>
+                                    @endif
                                     <div class="payment-amount">
                                         <h2>{{trans('file.grand total')}} <span id="grand-total">0.00</span></h2>
                                     </div>
@@ -4303,14 +4338,18 @@
             for (var li = 0; li < laundryCodes.length; li++) {
                 if (String(laundryCodes[li]) === String(data[1])) { isLaundryLine = true; break; }
             }
+            var itemNoteHtml = '';
+            @if(\Illuminate\Support\Facades\Schema::hasTable('restaurant_tables'))
+            itemNoteHtml = '<input type="text" class="form-control form-control-sm mt-1" name="item_comment[]" placeholder="Kitchen / bar note">';
+            @endif
             var laundryNoteHtml = isLaundryLine
                 ? '<input type="text" class="form-control form-control-sm mt-1 laundry-item-note" name="laundry_item_note[' + data[9] + ']" placeholder="Comment for this dress">'
                 : '<input type="hidden" class="laundry-item-note" name="laundry_item_note[' + data[9] + ']" value="">';
             var stockHtml = (product_type[pos] === 'digital') ? '' : '<p>In Stock: <span class="in-stock"></span></p>';
             @if(in_array("price-change", $all_permission))
-                cols += '<td class="col-sm-3 product-title"><strong>' + data[0] + '</strong><br>' + data[1] + '<a class="edit-product btn btn-link" data-toggle="modal" data-target="#editModal"><i class="fa fa-pencil-square"></i></a>' + stockHtml + laundryNoteHtml + '</td>';
+                cols += '<td class="col-sm-3 product-title"><strong>' + data[0] + '</strong><br>' + data[1] + '<a class="edit-product btn btn-link" data-toggle="modal" data-target="#editModal"><i class="fa fa-pencil-square"></i></a>' + stockHtml + laundryNoteHtml + itemNoteHtml + '</td>';
             @else
-                cols += '<td class="col-sm-3 product-title"><button type="button" class="edit-product btn btn-link"><strong>' + data[0] + '</strong></button><br>' + data[1] + stockHtml + laundryNoteHtml + '</td>';
+                cols += '<td class="col-sm-3 product-title"><button type="button" class="edit-product btn btn-link"><strong>' + data[0] + '</strong></button><br>' + data[1] + stockHtml + laundryNoteHtml + itemNoteHtml + '</td>';
             @endif
             if(data[12]) {
                 cols += '<td class="col-sm-2"><input type="text" title="'+product_expired_date[pos]+'" class="form-control batch-no product_expired_date" value="'+batch_no[pos]+'" required/> <input type="hidden" class="product-batch-id" name="product_batch_id[]" value="'+product_batch_id[pos]+'"/> </td>';

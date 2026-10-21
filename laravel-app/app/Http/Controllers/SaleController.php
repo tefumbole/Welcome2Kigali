@@ -716,6 +716,16 @@ class SaleController extends Controller
                 }
             }
         }
+        if ((int) $data['sale_status'] !== 3) {
+            $seller = Auth::user();
+            if (\App\Services\Restaurant\RestaurantAccess::can($seller, 'sales-add') || \App\Services\Restaurant\RestaurantAccess::can($seller, 'waiter-orders')) {
+                try {
+                    app(\App\Services\Restaurant\RestaurantOrderService::class)->attachFromRequest($lims_sale_data, $request);
+                } catch (\Throwable $e) {
+                    \Log::warning('restaurant attach: '.$e->getMessage());
+                }
+            }
+        }
         if($data['sale_status'] == 3)
             $message = 'Sale successfully added to draft';
         else

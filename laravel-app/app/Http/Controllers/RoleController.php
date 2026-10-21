@@ -2000,6 +2000,11 @@ class RoleController extends Controller
             'courses.create',
             'courses.update',
             'courses.delete',
+            'kitchen-orders',
+            'bar-orders',
+            'waiter-orders',
+            'order-logs',
+            'meal-rejections',
         ] as $modPerm) {
             if ($request->has($modPerm)) {
                 $permission = Permission::firstOrCreate(['name' => $modPerm]);
