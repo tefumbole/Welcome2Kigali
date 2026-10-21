@@ -3,17 +3,6 @@
     <section class="container-fluid">
         @if(session('message'))<div class="alert alert-success">{{ session('message') }}</div>@endif
         @if(session('not_permitted'))<div class="alert alert-danger">{{ session('not_permitted') }}</div>@endif
-        <h3>{{ $title }}</h3>
-        <p>
-            @foreach($lanes as $key => $label)
-                <a class="btn btn-sm {{ $lane === $key ? 'btn-primary' : 'btn-default' }}" href="{{ route('restaurant.orders', ['lane' => $key, 'tab' => $tab]) }}">{{ $label }}</a>
-            @endforeach
-        </p>
-        <p>
-            @foreach($tabs as $key => $label)
-                <a class="btn btn-sm {{ $tab === $key ? 'btn-primary' : 'btn-default' }}" href="{{ route('restaurant.orders', ['lane' => $lane, 'tab' => $key]) }}">{{ $label }}</a>
-            @endforeach
-        </p>
         <div class="table-responsive">
             <table class="table">
                 <thead>

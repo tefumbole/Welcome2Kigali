@@ -1728,18 +1728,6 @@
                                             </li>
                                         @endforeach
                                     @endif
-                                    <li id="order-list-menu"><a href="{{route('order.index')}}">{{trans('file.Order List')}}</a></li>
-                                    @if(Auth::user()->role_id != 12 || Auth::user()->can_donation == 1)
-                                        @if(in_array('donations-index', $all_permission))<li id="donation-list-menu"><a href="{{route('donation.list')}}">Donation List</a></li>@endif
-                                    @endif
-                                    @if(Auth::user()->role_id != 12 || Auth::user()->can_service == 1)
-                                        @if(in_array('services-index', $all_permission))<li id="service-list-menu"><a href="{{route('services.list')}}">Service List</a></li>@endif
-                                    @endif
-                                    @if(Auth::user()->role_id != 12 || Auth::user()->can_booking == 1)
-                                        @if(in_array('booking_index', $all_permission))
-                                            <li id="online-booking-index-menu"><a href="{{route('online.booking.index')}}">Online Booking List</a></li>
-                                        @endif
-                                    @endif
                                 </ul>
                             </li>
                         @endif
