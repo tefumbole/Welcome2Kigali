@@ -268,12 +268,16 @@ class SaleController extends Controller
         {
             foreach ($sales as $key=>$sale)
             {
+                $biller = $sale->biller;
+                $customer = $sale->customer;
+                $staff = $sale->user;
+                $warehouse = $sale->warehouse;
                 $nestedData['id'] = $sale->id;
                 $nestedData['key'] = $key;
                 $nestedData['date'] = date(config('date_format'), strtotime($sale->created_at->toDateString()));
                 $nestedData['reference_no'] = $sale->reference_no;
-                $nestedData['biller'] = $sale->biller->name ?? 'NAN';
-                $nestedData['customer'] = $sale->customer->name.'<input type="hidden" class="deposit" value="'.($sale->customer->deposit - $sale->customer->expense).'" />'.'<input type="hidden" class="points" value="'.$sale->customer->points.'" />'.'<input type="hidden" class="customer-phone" value="'.e($sale->customer->phone_number).'" />';
+                $nestedData['biller'] = $biller ? $biller->name : 'NAN';
+                $nestedData['customer'] = ($customer ? $customer->name : 'Guest').'<input type="hidden" class="deposit" value="'.($customer ? ($customer->deposit - $customer->expense) : 0).'" />'.'<input type="hidden" class="points" value="'.($customer ? $customer->points : 0).'" />'.'<input type="hidden" class="customer-phone" value="'.e($customer ? $customer->phone_number : '').'" />';
 
                 if($sale->sale_status == 1){
                     $nestedData['sale_status'] = '<div class="badge badge-success">'.trans('file.Completed').'</div>';
@@ -322,7 +326,7 @@ class SaleController extends Controller
                 }
                 $nestedData['options'] .=
                     '<li>
-                        <button type="button" class="add-payment btn btn-link" data-id = "'.$sale->id.'" data-phone="'.e($sale->customer->phone_number).'" data-toggle="modal" data-target="#add-payment"><i class="fa fa-plus"></i> '.trans('file.Add Payment').'</button>
+                        <button type="button" class="add-payment btn btn-link" data-id = "'.$sale->id.'" data-phone="'.e($customer ? $customer->phone_number : '').'" data-toggle="modal" data-target="#add-payment"><i class="fa fa-plus"></i> '.trans('file.Add Payment').'</button>
                     </li>
                     <li>
                         <button type="button" class="get-payment btn btn-link" data-id = "'.$sale->id.'"><i class="fa fa-money"></i> '.trans('file.View Payment').'</button>
@@ -344,7 +348,7 @@ class SaleController extends Controller
                 else
                     $coupon_code = null;
 
-                $nestedData['sale'] = array( '[ "'.date(config('date_format'), strtotime($sale->created_at->toDateString())).'"', ' "'.$sale->reference_no.'"', ' "'.$sale_status.'"', ' "'.$sale->biller->name.'"', ' "'.$sale->biller->company_name.'"', ' "'.$sale->biller->email.'"', ' "'.$sale->biller->phone_number.'"', ' "'.$sale->biller->address.'"', ' "'.$sale->biller->city.'"', ' "'.$sale->customer->name.'"', ' "'.$sale->customer->phone_number.'"', ' "'.$sale->customer->address.'"', ' "'.$sale->customer->city.'"', ' "'.$sale->id.'"', ' "'.$sale->total_tax.'"', ' "'.$sale->total_discount.'"', ' "'.$sale->total_price.'"', ' "'.$sale->order_tax.'"', ' "'.$sale->order_tax_rate.'"', ' "'.$sale->order_discount.'"', ' "'.$sale->shipping_cost.'"', ' "'.$sale->grand_total.'"', ' "'.$sale->paid_amount.'"', ' "'.preg_replace('/[\n\r]/', "<br>", $sale->sale_note).'"', ' "'.preg_replace('/[\n\r]/', "<br>", $sale->staff_note).'"', ' "'.$sale->user->name.'"', ' "'.$sale->user->email.'"', ' "'.$sale->warehouse->name.'"', ' "'.$coupon_code.'"', ' "'.$sale->coupon_discount.'"]'
+                $nestedData['sale'] = array( '[ "'.date(config('date_format'), strtotime($sale->created_at->toDateString())).'"', ' "'.$sale->reference_no.'"', ' "'.$sale_status.'"', ' "'.($biller ? $biller->name : '').'"', ' "'.($biller ? $biller->company_name : '').'"', ' "'.($biller ? $biller->email : '').'"', ' "'.($biller ? $biller->phone_number : '').'"', ' "'.($biller ? $biller->address : '').'"', ' "'.($biller ? $biller->city : '').'"', ' "'.($customer ? $customer->name : '').'"', ' "'.($customer ? $customer->phone_number : '').'"', ' "'.($customer ? $customer->address : '').'"', ' "'.($customer ? $customer->city : '').'"', ' "'.$sale->id.'"', ' "'.$sale->total_tax.'"', ' "'.$sale->total_discount.'"', ' "'.$sale->total_price.'"', ' "'.$sale->order_tax.'"', ' "'.$sale->order_tax_rate.'"', ' "'.$sale->order_discount.'"', ' "'.$sale->shipping_cost.'"', ' "'.$sale->grand_total.'"', ' "'.$sale->paid_amount.'"', ' "'.preg_replace('/[\n\r]/', "<br>", $sale->sale_note).'"', ' "'.preg_replace('/[\n\r]/', "<br>", $sale->staff_note).'"', ' "'.($staff ? $staff->name : 'Website').'"', ' "'.($staff ? $staff->email : '').'"', ' "'.($warehouse ? $warehouse->name : '').'"', ' "'.$coupon_code.'"', ' "'.$sale->coupon_discount.'"]'
                 );
                 $data[] = $nestedData;
             }
