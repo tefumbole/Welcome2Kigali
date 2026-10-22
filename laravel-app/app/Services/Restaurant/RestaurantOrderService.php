@@ -197,7 +197,7 @@ class RestaurantOrderService
         $comments = [];
         foreach ($lines as $line) {
             $priced = $this->priceLine($line['product'], $line['qty']);
-            Product_Sale::create([
+            Product_Sale::create($this->productSaleAttrs([
                 'sale_id' => $sale->id,
                 'product_id' => $line['product']->id,
                 'category_id' => $line['product']->category_id,
@@ -209,7 +209,7 @@ class RestaurantOrderService
                 'tax_rate' => $priced['rate'],
                 'tax' => $priced['tax'],
                 'total' => $priced['net'] + $priced['tax'],
-            ]);
+            ]));
             $this->deductStock($line['product'], $line['qty'], $warehouse->id);
             $comments[] = $line['comment'];
         }
@@ -650,7 +650,7 @@ class RestaurantOrderService
         ]);
 
         foreach ($prepared as $line) {
-            Product_Sale::create([
+            Product_Sale::create($this->productSaleAttrs([
                 'sale_id' => $sale->id,
                 'product_id' => $line['product']->id,
                 'category_id' => $line['product']->category_id,
@@ -662,7 +662,7 @@ class RestaurantOrderService
                 'tax_rate' => 0,
                 'tax' => 0,
                 'total' => $line['price'] * $line['qty'],
-            ]);
+            ]));
         }
 
         $service = 'take_away';
@@ -866,6 +866,18 @@ class RestaurantOrderService
         }
 
         return User::where('id', $id)->exists() ? $id : null;
+    }
+
+    /** Drop columns that older product_sales schemas do not have. */
+    protected function productSaleAttrs(array $attrs)
+    {
+        foreach (['category_id', 'warehouse_id'] as $column) {
+            if (array_key_exists($column, $attrs) && ! Schema::hasColumn('product_sales', $column)) {
+                unset($attrs[$column]);
+            }
+        }
+
+        return $attrs;
     }
 
     protected function tableId($id)
