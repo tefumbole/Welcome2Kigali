@@ -73,6 +73,8 @@ class HelpTopics
             'membership-module' => 'members',
             'laundry-module' => 'laundry',
             'laundry' => 'laundry',
+            'tables-module' => 'restaurant',
+            'tables' => 'restaurant',
             'timesheets-module' => 'tasks',
             'timesheet-admin-module' => 'tasks',
             'order' => 'restaurant',

@@ -76,6 +76,7 @@ FILES=(
   app/Http/Controllers/MembershipPosController.php
   app/Http/Controllers/SaleController.php
   app/Http/Controllers/RestaurantOrderController.php
+  app/Http/Controllers/TableController.php
   app/Http/Controllers/PaymentController.php
   app/Http/Controllers/RestaurantTrackingController.php
   app/Http/Controllers/RestaurantPayController.php
@@ -336,6 +337,7 @@ FILES=(
   resources/views/beyond/service-show.blade.php
   database/migrations/2026_10_22_140000_add_signature_country_phone_to_guest_reviews.php
   database/migrations/2026_10_22_150000_add_hold_fields_to_order_items.php
+  database/migrations/2026_10_22_160000_extend_tables_and_staff_alerts.php
   resources/views/product/edit.blade.php
   app/LaundryOrder.php
   app/LaundryOrderItem.php
@@ -418,6 +420,7 @@ done
   resources/views/beyond \
   resources/views/restaurant \
   resources/views/laundry \
+  resources/views/tables \
   resources/views/help \
   resources/views/guest_reviews \
   public/branding/help \
@@ -528,6 +531,7 @@ sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_21_120000_refresh_site_content_copy.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_22_140000_add_signature_country_phone_to_guest_reviews.php
 sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_22_150000_add_hold_fields_to_order_items.php
+sudo -u www-data php "\$APP/artisan" migrate --force --path=database/migrations/2026_10_22_160000_extend_tables_and_staff_alerts.php
 sudo -u www-data php "\$APP/artisan" images:compress-pos || true
 mkdir -p "\$APP/public/images/product/thumbs"
 find "\$APP/public/images/product" -type d -exec chmod 755 {} \\; 2>/dev/null || true

@@ -1815,32 +1815,39 @@
                                             </div>
                                         </div>
                                     </div>
-                                    @if(\Illuminate\Support\Facades\Schema::hasTable('restaurant_tables') && (\App\Services\Restaurant\RestaurantAccess::can(auth()->user(), 'sales-add') || \App\Services\Restaurant\RestaurantAccess::can(auth()->user(), 'waiter-orders')))
+                                    @if(\App\Services\Restaurant\RestaurantAccess::can(auth()->user(), 'sales-add') || \App\Services\Restaurant\RestaurantAccess::can(auth()->user(), 'waiter-orders'))
                                     <div class="row" style="margin:8px 12px;">
-                                        <div class="col-sm-12"><strong>Restaurant order</strong> <span class="text-muted">One bill. Food goes to the kitchen and drinks go to the bar.</span></div>
+                                        <div class="col-sm-12"><strong>Service &amp; table</strong> <span class="text-muted">You are tagged as the person who placed this order. Laundry items go to Laundry automatically.</span></div>
                                         <div class="col-sm-3">
                                             <label>Service</label>
                                             <select name="service_type" class="form-control">
                                                 <option value="dine_in">Dine In</option>
-                                                <option value="take_away">Take Away</option>
-                                                <option value="">Not a restaurant order</option>
+                                                <option value="take_away" selected>Take Away</option>
+                                                <option value="">Not a cafe order</option>
                                             </select>
                                         </div>
                                         <div class="col-sm-3">
                                             <label>Table</label>
                                             <select name="restaurant_table_id" class="form-control">
-                                                <option value="">Optional for take away</option>
-                                                @foreach(\App\RestaurantTable::where('is_active', 1)->orderBy('name')->get() as $table)
-                                                    <option value="{{ $table->id }}">{{ $table->name }}</option>
-                                                @endforeach
+                                                <option value="">No table</option>
+                                                @if(\Illuminate\Support\Facades\Schema::hasTable('restaurant_tables'))
+                                                    @foreach(\App\RestaurantTable::where('is_active', 1)->orderBy('name')->get() as $table)
+                                                        <option value="{{ $table->id }}">
+                                                            {{ $table->name }}@if($table->capacity) · {{ $table->capacity }}p@endif
+                                                        </option>
+                                                    @endforeach
+                                                @endif
                                             </select>
+                                            <a href="{{ route('tables.index') }}" target="_blank" rel="noopener" class="small" style="color:#C5A059;">Create table</a>
                                         </div>
                                         <div class="col-sm-3">
                                             <label>Waitress / waiter</label>
                                             <select name="waitress_user_id" class="form-control">
-                                                <option value="">Unassigned</option>
+                                                <option value="{{ auth()->id() }}">{{ auth()->user()->name }} (me)</option>
                                                 @foreach(\App\Services\Restaurant\RestaurantAccess::usersWithPermission('waiter-orders') as $person)
-                                                    <option value="{{ $person->id }}">{{ $person->name }}</option>
+                                                    @if((int)$person->id !== (int)auth()->id())
+                                                        <option value="{{ $person->id }}">{{ $person->name }}</option>
+                                                    @endif
                                                 @endforeach
                                             </select>
                                         </div>
@@ -1861,9 +1868,7 @@
                                     <div class="payment-options">
                                         @foreach(\App\Support\SiteMenu::posPaymentButtons() as $payBtn)
                                             @if($payBtn['key'] === 'laundry')
-                                                <div class="column-5" id="send-laundry-wrap" style="display:none;">
-                                                    <button type="button" class="btn btn-custom" id="send-laundry-btn"><i class="fa fa-shower"></i> {{ $payBtn['label'] }}</button>
-                                                </div>
+                                                {{-- Laundry tickets are created automatically from laundry lines. --}}
                                             @elseif($payBtn['key'] === 'cash')
                                                 <div class="column-5">
                                                     <button type="button" class="btn btn-custom payment-btn" data-toggle="modal" data-target="#add-payment" id="cash-btn"><i class="fa fa-money"></i> {{ $payBtn['label'] }}</button>
@@ -4795,31 +4800,12 @@
         }
         function refreshLaundryButton() {
             if (cartHasLaundry()) {
-                $('#send-laundry-wrap').show();
                 $('#laundry-notes-wrap').show();
             } else {
-                $('#send-laundry-wrap').hide();
                 $('#laundry-notes-wrap').hide();
-                $('input[name="send_to_laundry"]').val(0);
             }
+            $('input[name="send_to_laundry"]').val(0);
         }
-        $('#send-laundry-btn').on('click', function() {
-            var rownumber = $('table.order-list tbody tr:last').index();
-            if (rownumber < 0) {
-                alert('Select a laundry item first.');
-                return;
-            }
-            if (!cartHasLaundry()) {
-                alert('Add a Laundry item to send a ticket.');
-                return;
-            }
-            $('input[name="send_to_laundry"]').val(1);
-            $('select[name="paid_by_id_select"]').val(9);
-            $('input[name="paid_by_id"]').val(9);
-            $('input[name="paid_amount"]').val(0);
-            $('input[name="paying_amount"]').val($('#grand-total').text() || 0);
-            $('.payment-form').submit();
-        });
 
         function fillMomoFromCustomer(overwrite) {
             if (overwrite === undefined) overwrite = true;

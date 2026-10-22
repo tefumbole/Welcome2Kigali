@@ -74,7 +74,16 @@
                         <p class="w2k-kicker">{{ $order ? $order->serviceLabel() : 'Order' }}</p>
                         <p class="w2k-ref">{{ $sale->reference_no ?? $item->restaurant_order_id }}</p>
                         <p class="w2k-guest">{{ optional(optional($sale)->customer)->name ?: 'Guest' }}</p>
-                        <p class="w2k-meta">{{ optional(optional($order)->waitress)->name ?: 'Unassigned' }}</p>
+                        <p class="w2k-meta">
+                            Placed by {{ optional(optional($order)->placedBy)->name ?: optional(optional($order)->waitress)->name ?: 'Staff' }}
+                            @if(optional($order)->diningTable)
+                                · {{ $order->diningTable->name }}
+                                @if($order->diningTable->capacity) ({{ $order->diningTable->capacity }}p) @endif
+                            @endif
+                        </p>
+                        @if(optional($order)->waitress && optional($order)->placed_by_user_id != optional($order)->waitress_user_id)
+                            <p class="w2k-meta">Waitress: {{ $order->waitress->name }}</p>
+                        @endif
                     </div>
                     <div>
                         <p class="w2k-item">{{ $item->product_name }} <span style="color:#8a7350;">× {{ $item->qty }}</span></p>

@@ -86,7 +86,10 @@
                         @php $stageItems = $order->stage_items ?? $order->items; @endphp
                         <div class="laundry-order-block">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <a href="{{ route('laundry.show', $order->id) }}"><strong>{{ $order->reference_no }}</strong></a>
+                                <div>
+                                    <a href="{{ route('laundry.show', $order->id) }}"><strong>{{ $order->reference_no }}</strong></a>
+                                    <div class="text-muted small">Placed by {{ optional($order->user)->name ?: optional(optional($order->sale)->user)->name ?: 'Staff' }}</div>
+                                </div>
                                 @if($stage === 'collected')
                                     <span class="text-muted small">{{ $order->collector_name }} · {{ optional($order->collected_at)->format('d M Y H:i') }}</span>
                                 @elseif($stage === 'awaiting')

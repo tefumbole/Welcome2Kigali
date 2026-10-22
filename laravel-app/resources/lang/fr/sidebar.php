@@ -19,6 +19,7 @@ return [
     'courses' => 'Formations',
     'membership' => 'Membres',
     'laundry' => 'Blanchisserie',
+    'tables' => 'Tables',
     'restaurant' => 'Commandes',
     'laundry_received' => 'En attente d’acceptation',
     'laundry_cleaning' => 'En attente de nettoyage',

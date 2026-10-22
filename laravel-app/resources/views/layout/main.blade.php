@@ -1655,6 +1655,25 @@
                                     @if(\App\Support\StaffAccess::canLaundry('laundry.collect'))
                                         <li id="laundry-collect-menu"><a href="{{ route('laundry.collect') }}">{{ __('sidebar.laundry_collect') }}@if(!empty($laundryCounts['collect']['dresses'])) <span class="badge badge-count" title="{{ $laundryCounts['collect']['dresses'] }} dresses · {{ $laundryCounts['collect']['clients'] }} clients">{{ $laundryCounts['collect']['dresses'] }}</span>@endif</a></li>
                                     @endif
+                                    <li id="laundry-log-menu"><a href="{{ route('laundry.logs') }}">Log</a></li>
+                                </ul>
+                            </li>
+                        @endif
+                        @php
+                            $canTablesMenu = auth()->check() && (
+                                in_array((int) optional(auth()->user())->role_id, [1, 2], true)
+                                || \App\Services\Restaurant\RestaurantAccess::can(auth()->user(), 'tables-index')
+                                || \App\Services\Restaurant\RestaurantAccess::can(auth()->user(), 'order-logs')
+                                || \App\Services\Restaurant\RestaurantAccess::can(auth()->user(), 'sales-add')
+                                || \App\Services\Restaurant\RestaurantAccess::can(auth()->user(), 'waiter-orders')
+                            );
+                        @endphp
+                        @if($canTablesMenu && \Illuminate\Support\Facades\Schema::hasTable('restaurant_tables'))
+                            <li>
+                                <a href="#tables-module" data-nav-key="tables" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-view-thumb"></i><span>Tables</span></a>
+                                <ul id="tables-module" class="collapse list-unstyled ">
+                                    <li id="tables-list-menu"><a href="{{ route('tables.index') }}">Table list</a></li>
+                                    <li id="tables-add-menu"><a href="{{ route('tables.index') }}#add">Add new table</a></li>
                                 </ul>
                             </li>
                         @endif
@@ -1724,6 +1743,9 @@
                                                         </li>
                                                         @endif
                                                     @endforeach
+                                                    <li id="orders-{{ $laneKey }}-log">
+                                                        <a href="{{ route('restaurant.logs', ['lane' => $laneKey]) }}">Log</a>
+                                                    </li>
                                                 </ul>
                                             </li>
                                             @endif
@@ -4047,7 +4069,10 @@
           })();
         </script>
         @endif
-        @if(auth()->check() && \App\Services\Restaurant\RestaurantAccess::installed())
+        @if(auth()->check() && (
+            (\App\Services\Restaurant\RestaurantAccess::installed() && \App\Services\Restaurant\RestaurantAccess::canSeeOrders(auth()->user()))
+            || \App\Support\StaffAccess::canAnyLaundry()
+        ))
         <style>
             #w2k-order-pop { position:fixed; right:18px; bottom:18px; z-index:11000; width:min(400px, calc(100vw - 24px)); background:#0A0A0A; color:#fff8ea; border-radius:18px; box-shadow:0 18px 50px rgba(0,0,0,.28); padding:16px 16px 14px; }
             #w2k-order-pop h2 { margin:0 0 8px; font-size:18px; color:#C5A059; }
@@ -4123,9 +4148,10 @@
                         + ' · ' + queue.length + (queue.length === 1 ? ' open' : ' open');
                     body.innerHTML = queue.slice(0, 8).map(function (item) {
                         var label = item.status === 'ready' ? 'Ready' : 'Waiting';
+                        var by = item.placed_by ? ('<br><span style="color:#c5a059;">By ' + esc(item.placed_by) + '</span>') : '';
                         return '<div class="w2k-order-row" data-id="' + esc(item.id) + '">' +
                             '<p><strong>' + label + '</strong> · ' + esc(item.lane_label || item.lane) + ' · ' + esc(item.ref) +
-                            '<br>' + esc(item.name) + ' × ' + esc(item.qty) + '</p>' +
+                            '<br>' + esc(item.name) + ' × ' + esc(item.qty) + by + '</p>' +
                             '<div class="w2k-order-actions">' +
                             '<a class="go" data-open-id="' + esc(item.id) + '" href="' + esc(item.href) + '">Open</a>' +
                             '<button type="button" class="stay" data-dismiss-id="' + esc(item.id) + '">Dismiss</button>' +

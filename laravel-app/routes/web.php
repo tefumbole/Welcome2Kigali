@@ -530,8 +530,14 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
     Route::post('/admin/laundry/{id}/pay', 'LaundryController@pay')->name('laundry.pay');
     Route::get('/admin/laundry/collect', 'LaundryController@collect')->name('laundry.collect');
     Route::post('/admin/laundry/{id}/collect', 'LaundryController@sendCollect')->name('laundry.collect.send');
+    Route::get('/admin/laundry/logs', 'LaundryController@logs')->name('laundry.logs');
     Route::get('/admin/laundry/customer-price', 'LaundryController@customerPrice')->name('laundry.customer-price');
     Route::get('/admin/laundry/{id}', 'LaundryController@show')->name('laundry.show');
+
+    Route::get('/admin/tables', 'TableController@index')->name('tables.index');
+    Route::post('/admin/tables', 'TableController@store')->name('tables.store');
+    Route::put('/admin/tables/{id}', 'TableController@update')->name('tables.update');
+    Route::delete('/admin/tables/{id}', 'TableController@destroy')->name('tables.destroy');
 
     Route::get('/admin/membership', 'MembershipAdminController@dashboard')->name('membership.admin.dashboard');
     Route::get('/admin/membership/applications', 'MembershipAdminController@applications')->name('membership.admin.applications');

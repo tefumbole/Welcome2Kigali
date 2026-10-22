@@ -19,6 +19,7 @@ return [
     'courses' => 'Amasomo',
     'membership' => 'Abanyamuryango',
     'laundry' => 'Imyenda yo gukaraba',
+    'tables' => 'Ameza',
     'restaurant' => 'Komande',
     'laundry_received' => 'Bitegereje kwemerwa',
     'laundry_cleaning' => 'Bitegereje gukaraba',

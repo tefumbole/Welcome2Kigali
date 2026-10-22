@@ -318,7 +318,7 @@ class LaundryService
 
     public function ordersForStage($status)
     {
-        $query = LaundryOrder::with(['customer', 'items.cleanedBy', 'items.acceptedBy', 'sale'])
+        $query = LaundryOrder::with(['customer', 'items.cleanedBy', 'items.acceptedBy', 'sale', 'user'])
             ->whereHas('items', function ($q) use ($status) {
                 $q->where('status', $status);
             })

@@ -47,6 +47,7 @@ class SiteMenu
             'courses'         => 'Courses',
             'membership'      => 'Membership',
             'laundry'         => 'Laundry',
+            'tables'          => 'Tables',
             'restaurant'      => 'Orders',
             'timesheets'      => 'TimeSheets (Employee)',
             'timesheet-admin' => 'TimeSheet Admin',
@@ -164,18 +165,18 @@ class SiteMenu
         return self::ordered('landing_menu_order', self::landingItems());
     }
 
-    /** POS payment bar: default order Send to Laundry, Cash, MoMo, VISA, Deposit, Credit, Group. */
+    /** POS payment bar: Send to Payments first, then Cash / MoMo / … Laundry auto-routes (no button). */
     public static function posPaymentItems()
     {
         return [
-            'laundry'   => 'Send to Laundry',
+            'pay_later' => 'Send to Payments',
             'cash'      => 'Cash',
             'momo'      => 'MoMo',
             'visa'      => 'VISA',
             'deposit'   => 'Deposit',
             'credit'    => 'Credit',
             'group'     => 'Group',
-            'pay_later' => 'Pay later',
+            'laundry'   => 'Send to Laundry',
             'je'        => 'JE',
             'cancel'    => 'Cancel',
             'recent'    => 'Recent',
@@ -184,17 +185,28 @@ class SiteMenu
 
     public static function posPaymentOrder()
     {
-        return self::ordered('pos_payments_order', self::posPaymentItems());
+        $order = self::ordered('pos_payments_order', self::posPaymentItems());
+        // Always lead with Send to Payments so cash/MoMo sit beside pay-later.
+        $order = array_values(array_filter($order, function ($key) {
+            return $key !== 'pay_later';
+        }));
+        array_unshift($order, 'pay_later');
+
+        return $order;
     }
 
     public static function posPaymentHidden()
     {
         $saved = SiteSetting::getValue('pos_payments_hidden', null);
         if ($saved === null) {
-            return ['pay_later', 'je'];
+            return ['laundry', 'je'];
+        }
+        $hidden = is_array($saved) ? array_values($saved) : [];
+        if (! in_array('laundry', $hidden, true)) {
+            $hidden[] = 'laundry';
         }
 
-        return is_array($saved) ? array_values($saved) : [];
+        return $hidden;
     }
 
     public static function posPaymentLabels()

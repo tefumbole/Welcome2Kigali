@@ -168,6 +168,19 @@ class LaundryController extends Controller
         return view('laundry.hold', compact('orders'));
     }
 
+    public function logs(Request $request)
+    {
+        $this->authorizeLaundryAny();
+        $query = LaundryOrder::with(['customer', 'user', 'sale', 'items.acceptedBy', 'items.cleanedBy'])
+            ->orderByDesc('id');
+        if ($request->filled('date')) {
+            $query->whereDate('created_at', $request->input('date'));
+        }
+        $orders = $query->limit(200)->get();
+
+        return view('laundry.logs', compact('orders'));
+    }
+
     public function hold(Request $request, $id)
     {
         $this->authorizeLaundryAny();

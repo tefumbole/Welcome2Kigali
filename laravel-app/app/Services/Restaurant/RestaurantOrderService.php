@@ -64,15 +64,16 @@ class RestaurantOrderService
         }
 
         $service = $request->input('service_type');
-        $waitressId = $this->staffId($request->input('waitress_user_id'));
+        $placerId = $request->input('order_source') === 'frontend' ? null : (auth()->id() ?: null);
+        $waitressId = $this->staffId($request->input('waitress_user_id')) ?: $placerId;
         $comments = (array) $request->input('item_comment', []);
 
         $order = RestaurantOrder::create([
             'sale_id' => $sale->id,
             'source' => $request->input('order_source') === 'frontend' ? 'frontend' : 'pos',
-            'service_type' => $service === 'dine_in' ? 'dine_in' : 'take_away',
+            'service_type' => $service === 'dine_in' ? 'dine_in' : ($service === 'take_away' ? 'take_away' : ($request->filled('restaurant_table_id') ? 'dine_in' : 'take_away')),
             'restaurant_table_id' => $this->tableId($request->input('restaurant_table_id')),
-            'placed_by_user_id' => $request->input('order_source') === 'frontend' ? null : (auth()->id() ?: null),
+            'placed_by_user_id' => $placerId,
             'waitress_user_id' => $waitressId,
             'customer_comment' => $request->input('customer_comment') ?: $sale->sale_note,
             'internal_note' => $request->input('internal_note') ?: $sale->staff_note,

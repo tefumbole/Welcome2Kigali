@@ -60,7 +60,7 @@ class RestaurantOrderController extends Controller
         $status = $tab === 'accepted' ? 'preparing' : $tab;
         $items = collect();
         if (Schema::hasColumn('restaurant_order_items', 'lane')) {
-            $items = RestaurantOrderItem::with(['order.sale.customer', 'order.diningTable', 'order.waitress', 'acceptedBy', 'productSale'])
+            $items = RestaurantOrderItem::with(['order.sale.customer', 'order.diningTable', 'order.waitress', 'order.placedBy', 'acceptedBy', 'productSale'])
                 ->where('status', $status)
                 ->where(function ($query) use ($lane) {
                     $query->where('lane', $lane);
@@ -281,87 +281,134 @@ class RestaurantOrderController extends Controller
     public function alerts(Request $request)
     {
         $user = $request->user();
-        if (! $user || ! RestaurantAccess::installed()) {
+        if (! $user) {
             return response()->json(['items' => [], 'summary' => [], 'pending' => 0]);
         }
-        // Every logged-in staff member should hear new orders. Prefer their lane/status
-        // permissions when set; otherwise notify on all cafe lanes.
-        $statuses = [];
-        if (RestaurantAccess::seeStatus($user, 'awaiting')) {
-            $statuses[] = 'awaiting';
-        }
-        if (RestaurantAccess::seeStatus($user, 'ready')) {
-            $statuses[] = 'ready';
-        }
-        if (! $statuses) {
-            $statuses = ['awaiting', 'ready'];
-        }
-        $lanes = [];
-        foreach (array_keys(RestaurantAccess::lanes()) as $lane) {
-            if (RestaurantAccess::seeLane($user, $lane)) {
-                $lanes[] = $lane;
-            }
-        }
-        if (! $lanes) {
-            $lanes = array_keys(RestaurantAccess::lanes());
-        }
-        $rows = RestaurantOrderItem::with(['order.sale'])
-            ->whereIn('status', $statuses)
-            ->where(function ($query) use ($lanes) {
-                $query->whereIn('lane', $lanes);
-                if (in_array('restaurant', $lanes, true)) {
-                    $query->orWhereNull('lane');
-                }
-            })
-            ->orderBy('id', 'desc')
-            ->limit(12)
-            ->get();
+
         $items = [];
-        $pendingByLane = [];
-        foreach ($rows as $row) {
-            $sale = $row->order ? $row->order->sale : null;
-            $lane = $row->lane ?: 'restaurant';
-            $tab = $row->status === 'ready' ? 'ready' : 'awaiting';
-            if (! isset($pendingByLane[$lane])) {
-                $pendingByLane[$lane] = ['awaiting' => 0, 'ready' => 0];
+        $summary = [];
+
+        // Cafe / bar / restaurant — only lanes this user can access.
+        if (RestaurantAccess::installed() && RestaurantAccess::canSeeOrders($user)) {
+            $statuses = [];
+            if (RestaurantAccess::seeStatus($user, 'awaiting')) {
+                $statuses[] = 'awaiting';
             }
-            if ($row->status === 'ready') {
-                $pendingByLane[$lane]['ready']++;
-            } else {
-                $pendingByLane[$lane]['awaiting']++;
+            if (RestaurantAccess::seeStatus($user, 'ready')) {
+                $statuses[] = 'ready';
             }
-            $items[] = [
-                'id' => (int) $row->id,
-                'name' => $row->product_name,
-                'qty' => $row->qty,
-                'status' => $row->status,
-                'lane' => $lane,
-                'lane_label' => RestaurantAccess::lanes()[$lane] ?? $lane,
-                'ref' => $sale ? $sale->reference_no : '',
-                'href' => route('restaurant.orders', [
-                    'lane' => $lane,
-                    'tab' => $tab,
-                ]),
-            ];
+            $lanes = [];
+            foreach (array_keys(RestaurantAccess::lanes()) as $lane) {
+                if (RestaurantAccess::seeLane($user, $lane)) {
+                    $lanes[] = $lane;
+                }
+            }
+            if ($statuses && $lanes) {
+                $rows = RestaurantOrderItem::with(['order.sale', 'order.placedBy', 'order.waitress'])
+                    ->whereIn('status', $statuses)
+                    ->where(function ($query) use ($lanes) {
+                        $query->whereIn('lane', $lanes);
+                        if (in_array('restaurant', $lanes, true)) {
+                            $query->orWhereNull('lane');
+                        }
+                    })
+                    ->orderBy('id', 'desc')
+                    ->limit(20)
+                    ->get();
+                foreach ($rows as $row) {
+                    $sale = $row->order ? $row->order->sale : null;
+                    $lane = $row->lane ?: 'restaurant';
+                    $tab = $row->status === 'ready' ? 'ready' : 'awaiting';
+                    $placer = optional(optional($row->order)->placedBy)->name
+                        ?: optional(optional($row->order)->waitress)->name;
+                    $items[] = [
+                        'id' => 'ord-'.(int) $row->id,
+                        'module' => 'orders',
+                        'name' => $row->product_name,
+                        'qty' => $row->qty,
+                        'status' => $row->status,
+                        'lane' => $lane,
+                        'lane_label' => RestaurantAccess::lanes()[$lane] ?? $lane,
+                        'ref' => $sale ? $sale->reference_no : '',
+                        'placed_by' => $placer ?: '',
+                        'href' => route('restaurant.orders', ['lane' => $lane, 'tab' => $tab]),
+                    ];
+                }
+                $counts = RestaurantAccess::queueCounts();
+                foreach ($lanes as $lane) {
+                    $awaiting = (int) ($counts[$lane]['awaiting'] ?? 0);
+                    $ready = (int) ($counts[$lane]['ready'] ?? 0);
+                    if ($awaiting + $ready < 1) {
+                        continue;
+                    }
+                    $summary[] = [
+                        'module' => 'orders',
+                        'lane' => $lane,
+                        'label' => RestaurantAccess::lanes()[$lane] ?? $lane,
+                        'awaiting' => $awaiting,
+                        'ready' => $ready,
+                        'total' => $awaiting + $ready,
+                        'href' => route('restaurant.orders', [
+                            'lane' => $lane,
+                            'tab' => $awaiting > 0 ? 'awaiting' : 'ready',
+                        ]),
+                    ];
+                }
+            }
         }
 
-        $counts = RestaurantAccess::queueCounts();
-        $summary = [];
-        foreach ($lanes as $lane) {
-            $awaiting = (int) ($counts[$lane]['awaiting'] ?? 0);
-            $ready = (int) ($counts[$lane]['ready'] ?? 0);
-            if ($awaiting + $ready < 1) {
-                continue;
+        // Laundry — only staff with laundry access.
+        if (\App\Support\StaffAccess::canAnyLaundry() && \Illuminate\Support\Facades\Schema::hasTable('laundry_order_items')) {
+            $laundryRows = \App\LaundryOrderItem::with(['order.customer', 'order.user', 'order.sale'])
+                ->whereIn('status', [
+                    \App\LaundryOrderItem::STATUS_RECEIVED,
+                    \App\LaundryOrderItem::STATUS_READY,
+                    \App\LaundryOrderItem::STATUS_HOLD,
+                ])
+                ->orderByDesc('id')
+                ->limit(20)
+                ->get();
+            $laundryAwaiting = 0;
+            $laundryReady = 0;
+            foreach ($laundryRows as $row) {
+                $order = $row->order;
+                $status = $row->status ?: \App\LaundryOrderItem::STATUS_RECEIVED;
+                if ($status === \App\LaundryOrderItem::STATUS_READY) {
+                    $laundryReady++;
+                    $href = route('laundry.ready');
+                    $label = 'Ready';
+                } elseif ($status === \App\LaundryOrderItem::STATUS_HOLD) {
+                    $href = route('laundry.hold');
+                    $label = 'On hold';
+                } else {
+                    $laundryAwaiting++;
+                    $href = route('laundry.received');
+                    $label = 'Awaiting';
+                }
+                $items[] = [
+                    'id' => 'lnd-'.(int) $row->id,
+                    'module' => 'laundry',
+                    'name' => $row->name,
+                    'qty' => $row->qty,
+                    'status' => $status === \App\LaundryOrderItem::STATUS_READY ? 'ready' : 'awaiting',
+                    'lane' => 'laundry',
+                    'lane_label' => 'Laundry',
+                    'ref' => $order ? $order->reference_no : '',
+                    'placed_by' => optional(optional($order)->user)->name ?: '',
+                    'href' => $href,
+                ];
             }
-            $openTab = $awaiting > 0 ? 'awaiting' : 'ready';
-            $summary[] = [
-                'lane' => $lane,
-                'label' => RestaurantAccess::lanes()[$lane] ?? $lane,
-                'awaiting' => $awaiting,
-                'ready' => $ready,
-                'total' => $awaiting + $ready,
-                'href' => route('restaurant.orders', ['lane' => $lane, 'tab' => $openTab]),
-            ];
+            if ($laundryAwaiting + $laundryReady > 0) {
+                $summary[] = [
+                    'module' => 'laundry',
+                    'lane' => 'laundry',
+                    'label' => 'Laundry',
+                    'awaiting' => $laundryAwaiting,
+                    'ready' => $laundryReady,
+                    'total' => $laundryAwaiting + $laundryReady,
+                    'href' => $laundryAwaiting > 0 ? route('laundry.received') : route('laundry.ready'),
+                ];
+            }
         }
 
         return response()->json([
@@ -404,6 +451,22 @@ class RestaurantOrderController extends Controller
             return redirect('admin')->with('not_permitted', 'Sorry! You are not allowed to access this module');
         }
         $query = RestaurantOrderItem::with(['order.sale.customer', 'order.diningTable', 'order.placedBy', 'order.waitress', 'acceptedBy', 'readyBy', 'deliveredBy']);
+        if ($request->filled('lane') && isset(RestaurantAccess::lanes()[$request->input('lane')])) {
+            $lane = $request->input('lane');
+            $query->where(function ($q) use ($lane) {
+                $q->where('lane', $lane);
+                if ($lane === 'restaurant') {
+                    $q->orWhere(function ($fallback) {
+                        $fallback->whereNull('lane')->where('department', 'food');
+                    });
+                }
+                if ($lane === 'bar') {
+                    $q->orWhere(function ($fallback) {
+                        $fallback->whereNull('lane')->where('department', 'drinks');
+                    });
+                }
+            });
+        }
         if ($request->filled('date')) {
             $query->whereDate('created_at', $request->input('date'));
         }

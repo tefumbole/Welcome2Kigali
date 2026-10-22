@@ -19,6 +19,7 @@ return [
     'courses' => 'Courses',
     'membership' => 'Members',
     'laundry' => 'Laundry',
+    'tables' => 'Tables',
     'restaurant' => 'Orders',
     'laundry_received' => 'Awaiting Acceptance',
     'laundry_cleaning' => 'Awaiting cleaning',
