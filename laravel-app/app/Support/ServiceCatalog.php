@@ -282,75 +282,129 @@ class ServiceCatalog
             return $groups;
         }
 
-        $roots = self::categoryTree('coffee')
-            ->concat(self::categoryTree('restaurant'))
-            ->values();
+        $categories = Category::where('is_active', true)
+            ->whereIn('service', ['coffee', 'restaurant'])
+            ->orderBy('name')
+            ->get();
+        if ($categories->isEmpty()) {
+            return $groups;
+        }
 
-        foreach ($roots as $root) {
-            if ((int) ($root['count'] ?? 0) < 1) {
-                continue;
+        $byId = $categories->keyBy('id');
+        $childrenMap = [];
+        foreach ($categories as $category) {
+            $pid = self::parentId($category);
+            if ($pid > 0 && $pid !== (int) $category->id && $byId->has($pid)) {
+                $childrenMap[$pid][] = (int) $category->id;
+            }
+        }
+
+        $productsByCat = Product::whereIn('category_id', $categories->pluck('id')->all())
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get()
+            ->groupBy('category_id');
+
+        $descendantIds = function ($rootId) use ($childrenMap) {
+            $ids = [(int) $rootId];
+            $queue = [(int) $rootId];
+            while ($queue) {
+                $parent = array_shift($queue);
+                foreach ($childrenMap[$parent] ?? [] as $kid) {
+                    $ids[] = (int) $kid;
+                    $queue[] = (int) $kid;
+                }
             }
 
-            $items = self::items($root['id'], true)->map(function ($item) {
-                return self::menuItemPayload($item);
-            })->all();
+            return array_values(array_unique($ids));
+        };
+
+        $mapItems = function ($categoryIds) use ($productsByCat) {
+            $out = [];
+            foreach ($categoryIds as $cid) {
+                foreach ($productsByCat->get($cid, []) as $product) {
+                    $out[] = self::menuItemPayload([
+                        'id' => $product->id,
+                        'name' => $product->name,
+                        'details' => trim(strip_tags((string) $product->product_details)),
+                        'image' => PosProductImage::photoUrl($product->image),
+                        'icon' => self::categoryIcon($product->name),
+                        'price' => (int) $product->price,
+                    ]);
+                }
+            }
+
+            return $out;
+        };
+
+        $roots = $categories->filter(function ($category) use ($byId) {
+            $pid = self::parentId($category);
+            if ($pid === 0 || $pid === (int) $category->id) {
+                return true;
+            }
+
+            return ! $byId->has($pid);
+        });
+
+        foreach ($roots as $root) {
+            $branchIds = $descendantIds($root->id);
+            $items = $mapItems($branchIds);
             if (! $items) {
                 continue;
             }
 
-            $image = $root['image'] ?: self::menuFallbackImage($root['name']);
+            $image = self::categoryImage($root) ?: self::menuFallbackImage($root->name);
+            $childIds = $childrenMap[$root->id] ?? [];
             $buckets = [];
-            $children = collect($root['children'] ?? []);
-            if ($children->isNotEmpty()) {
-                foreach ($children as $child) {
-                    $childItems = self::items($child['id'], true)->map(function ($item) {
-                        return self::menuItemPayload($item);
-                    })->all();
+            if ($childIds) {
+                $ownItems = $mapItems([$root->id]);
+                if ($ownItems) {
+                    $buckets[] = [
+                        'id' => $root->id,
+                        'title' => $root->name,
+                        'icon' => self::categoryIcon($root->name),
+                        'image' => $image,
+                        'items' => $ownItems,
+                    ];
+                }
+                foreach ($childIds as $childId) {
+                    $child = $byId->get($childId);
+                    if (! $child) {
+                        continue;
+                    }
+                    $childItems = $mapItems($descendantIds($childId));
                     if (! $childItems) {
                         continue;
                     }
                     $buckets[] = [
-                        'id' => $child['id'],
-                        'title' => $child['name'],
-                        'icon' => $child['icon'] ?? self::categoryIcon($child['name']),
-                        'image' => $child['image'] ?: null,
+                        'id' => $child->id,
+                        'title' => $child->name,
+                        'icon' => self::categoryIcon($child->name),
+                        'image' => self::categoryImage($child) ?: null,
                         'items' => $childItems,
                     ];
-                }
-                // Products attached directly to the parent (not only children).
-                $ownItems = self::items($root['id'], false)->map(function ($item) {
-                    return self::menuItemPayload($item);
-                })->all();
-                if ($ownItems) {
-                    array_unshift($buckets, [
-                        'id' => $root['id'],
-                        'title' => $root['name'],
-                        'icon' => $root['icon'] ?? self::categoryIcon($root['name']),
-                        'image' => $image,
-                        'items' => $ownItems,
-                    ]);
                 }
             }
             if (! $buckets) {
                 $buckets = [[
-                    'id' => $root['id'],
-                    'title' => $root['name'],
-                    'icon' => $root['icon'] ?? self::categoryIcon($root['name']),
+                    'id' => $root->id,
+                    'title' => $root->name,
+                    'icon' => self::categoryIcon($root->name),
                     'image' => $image,
                     'items' => $items,
                 ]];
             }
 
             $groups->push([
-                'id' => $root['id'],
-                'name' => $root['name'],
-                'icon' => $root['icon'] ?? self::categoryIcon($root['name']),
+                'id' => $root->id,
+                'name' => $root->name,
+                'icon' => self::categoryIcon($root->name),
                 'tagline' => '',
                 'blurb' => '',
                 'image' => $image,
                 'items' => $items,
                 'buckets' => $buckets,
-                'has_children' => ! empty($root['has_children']),
+                'has_children' => ! empty($childIds),
             ]);
         }
 
@@ -413,15 +467,24 @@ class ServiceCatalog
 
     protected static function descendantIds($categoryId)
     {
+        static $childrenMap = null;
+        if ($childrenMap === null) {
+            $childrenMap = [];
+            if (self::enabled()) {
+                foreach (Category::where('is_active', true)->get(['id', 'parent_id']) as $row) {
+                    $pid = (int) ($row->parent_id ?: 0);
+                    if ($pid > 0 && $pid !== (int) $row->id) {
+                        $childrenMap[$pid][] = (int) $row->id;
+                    }
+                }
+            }
+        }
+
         $ids = [];
         $queue = [(int) $categoryId];
         while ($queue) {
             $parent = array_shift($queue);
-            $kids = Category::where('is_active', true)
-                ->where('parent_id', $parent)
-                ->pluck('id')
-                ->all();
-            foreach ($kids as $kid) {
+            foreach ($childrenMap[$parent] ?? [] as $kid) {
                 $ids[] = (int) $kid;
                 $queue[] = (int) $kid;
             }
