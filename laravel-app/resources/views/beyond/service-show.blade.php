@@ -20,7 +20,6 @@
 
 @section('content')
 @php
-    $wa = \App\Support\SiteBrand::phoneWhatsAppDigits();
     $currentName = $current ? \App\Support\SiteI18n::category($current['name']) : '';
 @endphp
 <div x-data="w2kServiceCart({{ (int) $cartCount }})" class="bg-[#0A0A0A] text-white min-h-[70vh] pt-8 pb-28 px-4">
