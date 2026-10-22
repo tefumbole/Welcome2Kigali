@@ -35,15 +35,15 @@
     }
     .menu-hero {
         position: relative;
-        min-height: 11.5rem;
+        min-height: 7.5rem;
+        max-height: 9.5rem;
         overflow: hidden;
     }
     .menu-hero img {
         width: 100%;
-        height: 100%;
+        height: 9.5rem;
         object-fit: cover;
         display: block;
-        min-height: 11.5rem;
     }
     .menu-hero:after {
         content: "";
@@ -188,8 +188,8 @@
     .menu-sheet--juice .menu-hero img,
     .menu-sheet--smoothies .menu-hero img { object-position: 72% 48%; }
     @media (min-width: 768px) {
-        .menu-hero { min-height: 15rem; }
-        .menu-hero img { min-height: 15rem; }
+        .menu-hero { min-height: 8.5rem; max-height: 10rem; }
+        .menu-hero img { height: 10rem; }
         .menu-item-name, .menu-item-price { font-size: 1.28rem; }
         .menu-list { padding: .5rem 1.15rem 1.15rem; }
     }
@@ -200,12 +200,13 @@
             margin: 1.1rem auto;
             border-radius: 1.5rem;
         }
-        /* Category main picture on top, then items listed under it. */
+        /* Category picture, then the products for the selected tab. */
         .menu-hero {
             position: relative;
-            min-height: 18rem;
+            min-height: 9rem;
+            max-height: 11rem;
         }
-        .menu-hero img { min-height: 18rem; width: 100%; object-fit: cover; }
+        .menu-hero img { height: 11rem; min-height: 0; width: 100%; object-fit: cover; }
         .menu-hero:after {
             background: linear-gradient(to top, rgba(7,7,7,.88) 0%, rgba(7,7,7,.25) 55%, transparent 100%);
         }
@@ -228,18 +229,45 @@
 
 @section('content')
 @php
-    $pageNo = 0;
+    $tabs = [];
+    foreach ($groups as $group) {
+        $buckets = !empty($group['buckets']) ? $group['buckets'] : [];
+        $childTabs = count($buckets) > 1;
+        if ($childTabs) {
+            foreach ($buckets as $bucket) {
+                if (empty($bucket['items'])) {
+                    continue;
+                }
+                $tabs[] = [
+                    'id' => $bucket['id'],
+                    'name' => $bucket['title'] ?? $group['name'],
+                    'icon' => $bucket['icon'] ?? ($group['icon'] ?? 'tag'),
+                    'image' => !empty($bucket['image']) ? $bucket['image'] : ($group['image'] ?? ''),
+                    'items' => $bucket['items'],
+                ];
+            }
+        } else {
+            $tabs[] = [
+                'id' => $group['id'],
+                'name' => $group['name'],
+                'icon' => $group['icon'] ?? 'tag',
+                'image' => $group['image'] ?? '',
+                'items' => $group['items'] ?? [],
+            ];
+        }
+    }
+    $firstTab = isset($tabs[0]['id']) ? 'menu-'.$tabs[0]['id'] : '';
 @endphp
 
-<div x-data="w2kMenuCart({{ (int) ($cartCount ?? 0) }}, {{ json_encode(isset($groups[0]['id']) ? 'menu-'.$groups[0]['id'] : '') }})" class="menu-book text-white">
+<div x-data="w2kMenuCart({{ (int) ($cartCount ?? 0) }}, {{ json_encode($firstTab) }})" class="menu-book text-white">
     <div class="max-w-[1180px] mx-auto px-4 pt-8 pb-2 text-center">
         <h1 class="font-serif text-2xl sm:text-3xl lg:text-4xl text-[#F7F1E8]">{!! \App\Support\SiteContent::html('menu.hero_title', 'Cafe & <span class="text-brand-gold">Restaurant</span>') !!}</h1>
         <p class="mt-2 text-sm sm:text-base text-white/70 max-w-2xl mx-auto">{{ \App\Support\SiteContent::text('menu.hero_subtitle', __('site.menu.hero_sub')) }}</p>
     </div>
     <div class="menu-cat-nav sticky top-[4.75rem] sm:top-[5.75rem] lg:top-[6.25rem] z-30 bg-black/95 backdrop-blur border-b border-brand-gold/20">
         <div class="max-w-[1180px] mx-auto px-3 py-2 flex gap-2 overflow-x-auto snap-x">
-            @foreach ($groups as $navGroup)
-                <a href="#menu-{{ $navGroup['id'] }}"
+            @foreach ($tabs as $navGroup)
+                <button type="button"
                    @click="activeId = 'menu-{{ $navGroup['id'] }}'"
                    :class="activeId === 'menu-{{ $navGroup['id'] }}'
                        ? 'bg-brand-gold text-black border-brand-gold'
@@ -251,17 +279,17 @@
                         <i data-lucide="{{ $navGroup['icon'] }}" class="w-3.5 h-3.5"></i>
                     @endif
                     {{ \App\Support\SiteI18n::category($navGroup['name']) }}
-                </a>
+                </button>
             @endforeach
         </div>
     </div>
 
-    @if (empty($groups) || count($groups) === 0)
+    @if (count($tabs) === 0)
         <section class="py-24 px-4 text-center">
             <p class="text-gray-300 mb-3">{{ __('site.menu.empty') }}</p>
         </section>
     @else
-        @foreach ($groups as $group)
+        @foreach ($tabs as $group)
             @php
                 $pageNo++;
                 $sheetMod = '';
@@ -276,9 +304,9 @@
                 } elseif (($group['name'] ?? '') === 'Fresh & Detox Juices') {
                     $sheetMod = ' menu-sheet--juice';
                 }
-                $buckets = !empty($group['buckets']) ? $group['buckets'] : [['title' => $group['name'], 'icon' => $group['icon'] ?? 'tag', 'items' => $group['items']]];
+                $buckets = [['title' => '', 'icon' => $group['icon'] ?? 'tag', 'items' => $group['items']]];
             @endphp
-            <section id="menu-{{ $group['id'] }}" class="menu-section px-3 sm:px-4 scroll-mt-[8.25rem] sm:scroll-mt-[9.5rem] lg:scroll-mt-[10.25rem]">
+            <section id="menu-{{ $group['id'] }}" class="menu-section px-3 sm:px-4" x-show="activeId === 'menu-{{ $group['id'] }}'" x-cloak>
                 <article class="menu-sheet{{ $sheetMod }}">
                     <div class="menu-hero">
                         @if (!empty($group['image']))
@@ -400,25 +428,7 @@ function w2kMenuCart(initialCount, firstId) {
             this.openOption = option || '';
             this.qty = 1;
         },
-        init() {
-            var self = this;
-            var sections = Array.prototype.slice.call(document.querySelectorAll('.menu-section[id^="menu-"]'));
-            if (!sections.length) return;
-            var onScroll = function () {
-                var header = document.querySelector('header');
-                var sticky = document.querySelector('.menu-cat-nav');
-                var offset = (header ? header.offsetHeight : 72) + (sticky ? sticky.offsetHeight : 36) + 12;
-                var current = sections[0].id;
-                for (var i = 0; i < sections.length; i++) {
-                    if (sections[i].getBoundingClientRect().top <= offset) {
-                        current = sections[i].id;
-                    }
-                }
-                self.activeId = current;
-            };
-            window.addEventListener('scroll', onScroll, { passive: true });
-            onScroll();
-        },
+        init() {},
         addOpen() {
             this.addItem(this.openId, this.openName, this.openOption, this.qty);
         },
