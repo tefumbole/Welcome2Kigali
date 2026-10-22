@@ -128,7 +128,8 @@ class ServiceCatalog
         $childrenMap = [];
         foreach ($all as $category) {
             $pid = self::parentId($category);
-            if ($pid > 0 && $byId->has($pid)) {
+            // Ignore self-parent rows (legacy bad data) so the tree can still root.
+            if ($pid > 0 && $pid !== (int) $category->id && $byId->has($pid)) {
                 $childrenMap[$pid][] = $category->id;
             }
         }
@@ -157,8 +158,11 @@ class ServiceCatalog
 
         return $all->filter(function ($category) use ($byId) {
             $pid = self::parentId($category);
+            if ($pid === 0 || $pid === (int) $category->id) {
+                return true;
+            }
 
-            return $pid === 0 || ! $byId->has($pid);
+            return ! $byId->has($pid);
         })->map(function ($category) use ($build) {
             return $build($category);
         })->values();
@@ -262,63 +266,61 @@ class ServiceCatalog
 
     public static function menuGroups()
     {
+        // Flat cafe chips: every coffee/restaurant category with its own products.
+        // (Parent/child nesting stays on the Services pages; self-parent rows are ignored.)
+        $preferred = [
+            'coffee & tea' => 10,
+            'iced & specialty' => 20,
+            'tea & hot beverages' => 30,
+            'fresh & detox juices' => 40,
+            'smoothies' => 50,
+            'food' => 60,
+            'bar' => 70,
+        ];
+
         $groups = collect();
-        foreach (['coffee', 'restaurant'] as $service) {
-            foreach (self::categoryTree($service) as $parent) {
-                $children = collect($parent['children'] ?? []);
-                if ($children->isNotEmpty()) {
-                    $buckets = $children->map(function ($child) {
-                        return [
-                            'id' => $child['id'],
-                            'title' => $child['name'],
-                            'icon' => $child['icon'],
-                            'image' => $child['image'],
-                            'items' => self::items($child['id'], true)->map(function ($item) {
-                                return self::menuItemPayload($item);
-                            })->all(),
-                        ];
-                    })->filter(function ($bucket) {
-                        return count($bucket['items']) > 0;
-                    })->values()->all();
-                } else {
-                    $items = self::items($parent['id'], true)->map(function ($item) {
-                        return self::menuItemPayload($item);
-                    })->all();
-                    $buckets = count($items) ? [[
-                        'id' => $parent['id'],
-                        'title' => $parent['name'],
-                        'icon' => $parent['icon'],
-                        'image' => $parent['image'],
-                        'items' => $items,
-                    ]] : [];
-                }
-
-                $flatItems = [];
-                foreach ($buckets as $bucket) {
-                    foreach ($bucket['items'] as $item) {
-                        $flatItems[] = $item;
-                    }
-                }
-
-                if (! $flatItems) {
-                    continue;
-                }
-
-                $groups->push([
-                    'id' => $parent['id'],
-                    'name' => $parent['name'],
-                    'icon' => $parent['icon'],
-                    'tagline' => '',
-                    'blurb' => '',
-                    'image' => $parent['image'] ?: self::menuFallbackImage($parent['name']),
-                    'items' => $flatItems,
-                    'buckets' => $buckets,
-                    'has_children' => $children->isNotEmpty(),
-                ]);
-            }
+        if (! self::enabled()) {
+            return $groups;
         }
 
-        return $groups->values();
+        $categories = Category::where('is_active', true)
+            ->whereIn('service', ['coffee', 'restaurant'])
+            ->orderBy('name')
+            ->get();
+
+        foreach ($categories as $category) {
+            $items = self::items($category->id, false)->map(function ($item) {
+                return self::menuItemPayload($item);
+            })->all();
+            if (! $items) {
+                continue;
+            }
+
+            $image = self::categoryImage($category) ?: self::menuFallbackImage($category->name);
+            $groups->push([
+                'id' => $category->id,
+                'name' => $category->name,
+                'icon' => self::categoryIcon($category->name),
+                'tagline' => '',
+                'blurb' => '',
+                'image' => $image,
+                'items' => $items,
+                'buckets' => [[
+                    'id' => $category->id,
+                    'title' => $category->name,
+                    'icon' => self::categoryIcon($category->name),
+                    'image' => $image,
+                    'items' => $items,
+                ]],
+                'has_children' => false,
+            ]);
+        }
+
+        return $groups->sortBy(function ($group) use ($preferred) {
+            $key = strtolower(trim((string) $group['name']));
+
+            return $preferred[$key] ?? (1000 + (int) $group['id']);
+        })->values();
     }
 
     protected static function menuItemPayload(array $item)

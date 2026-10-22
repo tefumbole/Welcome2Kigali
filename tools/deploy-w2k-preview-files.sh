@@ -589,7 +589,7 @@ smoke() {
   fi
   echo "SMOKE OK: ${path}"
 }
-smoke /menu "Espresso" "after cafe products are seeded"
+smoke /menu "Cafe &" "after cafe products are seeded"
 smoke /membership/apply "Choose a plan"
 smoke /about "Our Vision"
 
