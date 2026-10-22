@@ -52,7 +52,7 @@
             </div>
             <div class="w2k-meta" style="text-align:right;">
                 <p style="margin:0;">{{ $items->count() }} on this screen</p>
-                <a href="{{ route('help.index') }}#{{ \App\Services\Restaurant\RestaurantAccess::helpHashForLane($lane) }}"
+                <a href="{{ route('help.index', ['topic' => \App\Services\Restaurant\RestaurantAccess::helpHashForLane($lane)]) }}"
                    class="btn btn-default btn-sm" style="margin-top:8px;border-radius:999px;border-color:#C5A059;color:#6a5420;">
                     Help · {{ $lanes[$lane] ?? 'Orders' }}
                 </a>

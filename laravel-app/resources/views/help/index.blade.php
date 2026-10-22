@@ -128,6 +128,16 @@
     }
 </style>
 
+<script>
+    (function () {
+        var hash = (window.location.hash || '').replace(/^#/, '');
+        if (!hash) return;
+        var params = new URLSearchParams(window.location.search);
+        if (params.get('topic') || params.get('tab')) return;
+        params.set('topic', hash);
+        window.location.replace(window.location.pathname + '?' + params.toString());
+    })();
+</script>
 <div class="container-fluid w2k-help">
     <div class="w2k-help-hero">
         @if($logo)

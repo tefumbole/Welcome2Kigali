@@ -1713,7 +1713,7 @@
                         @endif
                         @if(\App\Services\Restaurant\RestaurantAccess::canSeeOrders(auth()->user()) && \App\Services\Restaurant\RestaurantAccess::installed())
                             <li><a href="#order" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document"></i><span>{{ __('sidebar.order') }}</span><span></a>
-                                <ul id="order" class="collapse list-unstyled ">
+                                <ul id="order" class="collapse list-unstyled" data-help-topic="{{ request('lane') === 'coffee' ? 'restaurant-coffee' : (request('lane') === 'bar' ? 'restaurant-bar' : (request('lane') === 'online' ? 'orders' : (request('lane') === 'restaurant' ? 'restaurant' : ''))) }}">
                                         @php
                                             $cafeLanes = \App\Services\Restaurant\RestaurantAccess::lanes();
                                             $cafeTabs = \App\Services\Restaurant\RestaurantAccess::statuses();
@@ -3716,14 +3716,19 @@
 
               function helpHrefForMenu($submenu) {
                   var id = $submenu.attr('id') || '';
-                  var topic = helpHashByMenu[id] || id.replace(/-module$/, '') || 'start';
+                  var topic = $submenu.attr('data-help-topic') || helpHashByMenu[id] || id.replace(/-module$/, '') || 'start';
                   if (id === 'order') {
                       var params = new URLSearchParams(window.location.search || '');
                       var lane = params.get('lane') || '';
+                      if (!lane) {
+                          var activeLane = $submenu.find('> li.active[id^="orders-lane-"]').attr('id') || '';
+                          lane = activeLane.replace('orders-lane-', '');
+                      }
                       if (lane === 'online') topic = 'orders';
                       else if (lane === 'coffee') topic = 'restaurant-coffee';
                       else if (lane === 'bar') topic = 'restaurant-bar';
                       else if (lane === 'restaurant') topic = 'restaurant';
+                      else if (topic) { /* pinned topic already set */ }
                       else if (/\/orders/.test(window.location.pathname || '')) topic = 'restaurant';
                   }
                   return helpUrl + '?topic=' + encodeURIComponent(topic);
