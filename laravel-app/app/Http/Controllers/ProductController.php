@@ -25,7 +25,7 @@ use App\ProductVariant;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $role = Role::find(Auth::user()->role_id);
         if($role->hasPermissionTo('products-index')){
@@ -38,7 +38,11 @@ class ProductController extends Controller
             $lims_category_list = Category::where('is_active', true)->orderBy('name')->get(['id', 'name']);
             $lims_unit_list = Unit::where('is_active', true)->whereNull('base_unit')->orderBy('unit_name')->get(['id', 'unit_name']);
             $can_inline_edit = in_array('products-edit', $all_permission);
-            return view('product.index', compact('all_permission', 'lims_brand_list', 'lims_category_list', 'lims_unit_list', 'can_inline_edit'));
+            $filterCategory = null;
+            if ((int) $request->input('category_id') > 0) {
+                $filterCategory = Category::where('is_active', true)->find((int) $request->input('category_id'));
+            }
+            return view('product.index', compact('all_permission', 'lims_brand_list', 'lims_category_list', 'lims_unit_list', 'can_inline_edit', 'filterCategory'));
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
@@ -62,12 +66,16 @@ class ProductController extends Controller
         if (Auth::user()->role_id == 12) {
             $vendor_id =  Auth::user()->id;
         }
+        $categoryIds = $this->categoryTreeIds((int) $request->input('category_id'));
 
-        if($vendor_id == null) {
-            $totalData = Product::where('is_active', true)->count();
-        } else {
-            $totalData = Product::where('is_active', true)->where('vendor_id', $vendor_id)->count();
+        $totalQuery = Product::where('is_active', true);
+        if ($vendor_id) {
+            $totalQuery->where('vendor_id', $vendor_id);
         }
+        if ($categoryIds) {
+            $totalQuery->whereIn('category_id', $categoryIds);
+        }
+        $totalData = $totalQuery->count();
 
         $totalFiltered = $totalData;
 
@@ -82,6 +90,9 @@ class ProductController extends Controller
             if($vendor_id == null) {
                 $products = Product::with('category', 'brand', 'unit')->offset($start)
                     ->where('is_active', true)
+                    ->when($categoryIds, function ($query) use ($categoryIds) {
+                        $query->whereIn('category_id', $categoryIds);
+                    })
                     ->limit($limit)
                     ->orderBy($order, $dir)
                     ->get();
@@ -89,6 +100,9 @@ class ProductController extends Controller
                 $products = Product::with('category', 'brand', 'unit')->offset($start)
                     ->where('is_active', true)
                     ->where('vendor_id', $vendor_id)
+                    ->when($categoryIds, function ($query) use ($categoryIds) {
+                        $query->whereIn('category_id', $categoryIds);
+                    })
                     ->limit($limit)
                     ->orderBy($order, $dir)
                     ->get();
@@ -100,7 +114,10 @@ class ProductController extends Controller
             $products = Product::select('products.*')
                 ->with('category', 'brand', 'unit')
                 ->join('categories', 'products.category_id', '=', 'categories.id')
-                ->leftjoin('brands', 'products.brand_id', '=', 'brands.id');
+                ->leftjoin('brands', 'products.brand_id', '=', 'brands.id')
+                ->when($categoryIds, function ($query) use ($categoryIds) {
+                    $query->whereIn('products.category_id', $categoryIds);
+                });
 
             if($vendor_id == null) {
                 $products = $products->where([
@@ -158,6 +175,9 @@ class ProductController extends Controller
             $totalFiltered = Product::
             join('categories', 'products.category_id', '=', 'categories.id')
                 ->leftjoin('brands', 'products.brand_id', '=', 'brands.id')
+                ->when($categoryIds, function ($query) use ($categoryIds) {
+                    $query->whereIn('products.category_id', $categoryIds);
+                })
                 ->where([
                     ['products.name','LIKE',"%{$search}%"],
                     ['products.is_active', true]
@@ -215,7 +235,12 @@ class ProductController extends Controller
                 $nestedData['id'] = $product->id;
                 $nestedData['key'] = $key;
                 $product_image = explode(",", $product->image);
-                $nestedData['image'] = '<img src="'.e(\App\Support\PosProductImage::url($product_image[0])).'" height="80" width="80">';
+                $imageUrl = e(\App\Support\PosProductImage::url($product_image[0]));
+                if (in_array('products-edit', (array) $request->input('all_permission'), true)) {
+                    $nestedData['image'] = '<div class="w2k-paste" tabindex="0" data-paste-url="'.e(url('products/'.$product->id.'/paste-image')).'" title="Click, then paste an image"><img src="'.$imageUrl.'" height="80" width="80"></div>';
+                } else {
+                    $nestedData['image'] = '<img src="'.$imageUrl.'" height="80" width="80">';
+                }
                 $nestedData['name'] = $product->name;
                 $nestedData['code'] = $product->code;
                 $nestedData['brand_id'] = $product->brand_id;
@@ -450,7 +475,12 @@ class ProductController extends Controller
                 $nestedData['id'] = $product->id;
                 $nestedData['key'] = $key;
                 $product_image = explode(",", $product->image);
-                $nestedData['image'] = '<img src="'.e(\App\Support\PosProductImage::url($product_image[0])).'" height="80" width="80">';
+                $imageUrl = e(\App\Support\PosProductImage::url($product_image[0]));
+                if (in_array('products-edit', (array) $request->input('all_permission'), true)) {
+                    $nestedData['image'] = '<div class="w2k-paste" tabindex="0" data-paste-url="'.e(url('products/'.$product->id.'/paste-image')).'" title="Click, then paste an image"><img src="'.$imageUrl.'" height="80" width="80"></div>';
+                } else {
+                    $nestedData['image'] = '<img src="'.$imageUrl.'" height="80" width="80">';
+                }
                 $nestedData['name'] = $product->name;
                 $nestedData['code'] = $product->code;
                 $nestedData['brand_id'] = $product->brand_id;
@@ -905,6 +935,59 @@ class ProductController extends Controller
         \Session::flash('edit_message', 'Product updated successfully');
 
         return response()->json(['success' => true, 'message' => 'Product updated successfully']);
+    }
+
+    public function pasteImage(Request $request, $id)
+    {
+        $role = Role::find(Auth::user()->role_id);
+        if (! $role || ! $role->hasPermissionTo('products-edit')) {
+            return response()->json(['message' => 'You are not allowed to edit products.'], 403);
+        }
+        $request->validate([
+            'image' => 'required|image|mimes:jpg,jpeg,png,gif,webp',
+        ]);
+        $product = Product::where('is_active', true)->findOrFail($id);
+        $stored = \App\Support\PosProductImage::storeUpload($request->file('image'), 'product');
+        if (! $stored) {
+            return response()->json(['message' => 'Could not save that image.'], 422);
+        }
+        $names = array_values(array_filter(array_map('trim', explode(',', (string) $product->image))));
+        if ($names && $names[0] !== 'zummXD2dvAtI.png') {
+            array_shift($names);
+        }
+        array_unshift($names, $stored);
+        $product->image = implode(',', $names);
+        $product->save();
+
+        return response()->json([
+            'url' => \App\Support\PosProductImage::url($stored).'?v='.time(),
+        ]);
+    }
+
+    protected function categoryTreeIds($id)
+    {
+        $id = (int) $id;
+        if ($id < 1) {
+            return [];
+        }
+        $children = [];
+        foreach (Category::where('is_active', true)->get(['id', 'parent_id']) as $row) {
+            $children[(int) $row->parent_id][] = (int) $row->id;
+        }
+        $ids = [];
+        $stack = [$id];
+        while ($stack) {
+            $current = array_pop($stack);
+            if (isset($ids[$current])) {
+                continue;
+            }
+            $ids[$current] = true;
+            foreach ($children[$current] ?? [] as $child) {
+                $stack[] = $child;
+            }
+        }
+
+        return array_keys($ids);
     }
 
     public function quickUpdate(Request $request)

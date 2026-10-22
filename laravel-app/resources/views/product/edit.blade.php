@@ -1041,7 +1041,9 @@
                             url:'../update',
                             data: $("#product-form").serialize(),
                             success:function(response){
-                                location.href = '{{ route('products.index') }}';
+                                var back = '{{ route('products.index') }}';
+                                try { back = sessionStorage.getItem('w2k-product-return') || back; } catch (err) {}
+                                location.href = back;
                             },
                             error:function(response) {
                               var json = response.responseJSON || {};
@@ -1105,7 +1107,9 @@
             }*/
         },
         successmultiple: function (file, response) {
-            location.href = '{{ route('products.index') }}';
+            var back = '{{ route('products.index') }}';
+            try { back = sessionStorage.getItem('w2k-product-return') || back; } catch (err) {}
+            location.href = back;
             //console.log('sss: '+ response);
         },
         completemultiple: function (file, response) {

@@ -27,6 +27,9 @@
     #product-data-table td.js-inline-ok {
         animation: w2kInlineOk .7s ease;
     }
+    .w2k-paste { display:inline-block; border-radius:8px; outline:none; cursor:copy; }
+    .w2k-paste:hover, .w2k-paste:focus { box-shadow:0 0 0 2px #C5A059; }
+    .w2k-paste.is-saving { opacity:.55; }
     @keyframes w2kInlineOk {
         from { background: #e8f8ee; }
         to { background: transparent; }
@@ -50,6 +53,12 @@
 
 <section>
     <div class="container-fluid">
+        @if(!empty($filterCategory))
+            <div class="alert alert-info">
+                Products in <strong>{{ $filterCategory->name }}</strong>, including its subcategories.
+                <a href="{{ url('products') }}">Show all products</a>
+            </div>
+        @endif
         @if(in_array("products-add", $all_permission))
             <a href="{{route('products.create')}}" class="btn btn-info"><i class="dripicons-plus"></i> {{__('file.add_product')}}</a>
             <a href="#" data-toggle="modal" data-target="#importProduct" class="btn btn-primary"><i class="dripicons-copy"></i> {{__('file.import_product')}}</a>
@@ -202,7 +211,7 @@
     });
 
     $(document).on("click", "tr.product-link td:not(:first-child, :last-child, .js-inline)", function() {
-        if ($(this).find('input, select').length) return;
+        if ($(this).find('input, select, .w2k-paste').length) return;
         productDetails( $(this).parent().data('product'), $(this).parent().data('imagedata') );
     });
 
@@ -343,6 +352,10 @@
         $('#product-img-slider').carousel(0);
     }
 
+    var productCategoryId = '{{ (int) request('category_id') }}';
+    if (productCategoryId === '0') productCategoryId = '';
+    try { sessionStorage.setItem('w2k-product-return', window.location.pathname + window.location.search); } catch (e) {}
+
     $(document).ready(function() {
         var table = $('#product-data-table').DataTable( {
             responsive: true,
@@ -352,10 +365,26 @@
             },
             "processing": true,
             "serverSide": true,
+            stateSave: true,
+            stateDuration: 60 * 60 * 8,
+            stateSaveCallback: function (settings, data) {
+                data.category_id = productCategoryId;
+                try { sessionStorage.setItem('w2k-product-table', JSON.stringify(data)); } catch (e) {}
+            },
+            stateLoadCallback: function () {
+                try {
+                    var raw = sessionStorage.getItem('w2k-product-table');
+                    if (!raw) return null;
+                    var data = JSON.parse(raw);
+                    if ((data.category_id || '') !== (productCategoryId || '')) data.start = 0;
+                    return data;
+                } catch (e) { return null; }
+            },
             "ajax":{
                 url:"products/product-data",
-                data:{
-                    all_permission: all_permission
+                data: function (d) {
+                    d.all_permission = all_permission;
+                    d.category_id = productCategoryId;
                 },
                 dataType: "json",
                 type:"post"
@@ -636,6 +665,43 @@
         $('.buttons-delete').addClass('d-none');
 
     $('select').selectpicker();
+
+    var w2kPasteHover = null;
+    $(document).on('mouseenter', '.w2k-paste', function () { w2kPasteHover = this; });
+    $(document).on('mouseleave', '.w2k-paste', function () { if (w2kPasteHover === this) w2kPasteHover = null; });
+    $(document).on('paste', function (e) {
+        if ($(e.target).is('input, textarea, [contenteditable="true"]')) return;
+        var box = (e.target.closest && e.target.closest('.w2k-paste')) || w2kPasteHover;
+        if (!box) return;
+        var items = (e.originalEvent.clipboardData || window.clipboardData || {}).items;
+        if (!items) return;
+        var file = null;
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].type && items[i].type.indexOf('image') === 0) {
+                file = items[i].getAsFile();
+                break;
+            }
+        }
+        if (!file) return;
+        e.preventDefault();
+        var $box = $(box).addClass('is-saving');
+        var fd = new FormData();
+        fd.append('image', file, 'paste.png');
+        $.ajax({
+            url: $box.data('paste-url'),
+            type: 'POST',
+            data: fd,
+            processData: false,
+            contentType: false
+        }).done(function (res) {
+            if (res && res.url) $box.find('img').attr('src', res.url);
+        }).fail(function (xhr) {
+            var json = xhr.responseJSON || {};
+            alert(json.message || (json.errors && json.errors.image && json.errors.image[0]) || 'Could not save that image.');
+        }).always(function () {
+            $box.removeClass('is-saving');
+        });
+    });
 
 </script>
 @endsection

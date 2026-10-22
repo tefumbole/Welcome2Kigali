@@ -17,6 +17,10 @@
     .category-actions { display: inline-flex; flex-wrap: wrap; gap: 4px; }
     .category-actions .btn { border: 1px solid #0A0A0A; color: #0A0A0A; background: #fff; }
     .category-actions .open-EditCategoryDialog:hover { background: #C5A059; border-color: #C5A059; }
+    .w2k-paste { display:inline-block; border-radius:8px; outline:none; cursor:copy; }
+    .w2k-paste:hover, .w2k-paste:focus { box-shadow:0 0 0 2px #C5A059; }
+    .w2k-paste.is-saving { opacity:.55; }
+    #category-table a { color:#0A0A0A; font-weight:700; }
 </style>
 <section>
     <div class="container-fluid">
@@ -339,6 +343,43 @@
             },
         ],
     } );
+
+    var w2kPasteHover = null;
+    $(document).on('mouseenter', '.w2k-paste', function () { w2kPasteHover = this; });
+    $(document).on('mouseleave', '.w2k-paste', function () { if (w2kPasteHover === this) w2kPasteHover = null; });
+    $(document).on('paste', function (e) {
+        if ($(e.target).is('input, textarea, [contenteditable="true"]')) return;
+        var box = (e.target.closest && e.target.closest('.w2k-paste')) || w2kPasteHover;
+        if (!box) return;
+        var items = (e.originalEvent.clipboardData || window.clipboardData || {}).items;
+        if (!items) return;
+        var file = null;
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].type && items[i].type.indexOf('image') === 0) {
+                file = items[i].getAsFile();
+                break;
+            }
+        }
+        if (!file) return;
+        e.preventDefault();
+        var $box = $(box).addClass('is-saving');
+        var fd = new FormData();
+        fd.append('image', file, 'paste.png');
+        $.ajax({
+            url: $box.data('paste-url'),
+            type: 'POST',
+            data: fd,
+            processData: false,
+            contentType: false
+        }).done(function (res) {
+            if (res && res.url) $box.find('img').attr('src', res.url);
+        }).fail(function (xhr) {
+            var json = xhr.responseJSON || {};
+            alert(json.message || (json.errors && json.errors.image && json.errors.image[0]) || 'Could not save that image.');
+        }).always(function () {
+            $box.removeClass('is-saving');
+        });
+    });
 
 </script>
 @endsection
