@@ -135,7 +135,13 @@
         @endif
         <div class="w2k-help-hero-body">
             <span class="w2k-help-kicker">{{ $title }}</span>
-            <h2>@if($focus && isset($topics[$focus])){{ $topics[$focus]['title'] }} help@else Staff user guide @endif</h2>
+            <h2>
+                @if($focus && isset($topics[$focus]))
+                    {{ $topics[$focus]['title'] }} help
+                @else
+                    Staff user guide
+                @endif
+            </h2>
             <p>
                 @if($focus && isset($topics[$focus]))
                     This page shows help for <strong>{{ $topics[$focus]['title'] }}</strong> only — opened from that menu’s Help tab.

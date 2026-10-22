@@ -1644,7 +1644,7 @@
                                 <ul id="laundry-module" class="collapse list-unstyled ">
                                     @if(\App\Support\StaffAccess::canLaundry('laundry.received'))
                                         <li id="laundry-received-menu"><a href="{{ route('laundry.received') }}">{{ __('sidebar.laundry_received') }}@if(!empty($laundryCounts['received']['dresses'])) <span class="badge badge-count" title="{{ $laundryCounts['received']['dresses'] }} dresses · {{ $laundryCounts['received']['clients'] }} clients">{{ $laundryCounts['received']['dresses'] }}</span>@endif</a></li>
-                                        <li id="laundry-hold-menu"><a href="{{ route('laundry.hold') }}">On Hold@if(!empty($laundryCounts['hold']['dresses'])) <span class="badge badge-count">{{ $laundryCounts['hold']['dresses'] }}</span>@endif</a></li>
+                                        <li id="laundry-hold-menu"><a href="{{ route('laundry.hold') }}">On Hold @if(!empty($laundryCounts['hold']['dresses'])) <span class="badge badge-count">{{ $laundryCounts['hold']['dresses'] }}</span>@endif</a></li>
                                     @endif
                                     @if(\App\Support\StaffAccess::canLaundry('laundry.cleaning'))
                                         <li id="laundry-cleaning-menu"><a href="{{ route('laundry.cleaning') }}">{{ __('sidebar.laundry_cleaning') }}@if(!empty($laundryCounts['cleaning']['dresses'])) <span class="badge badge-count" title="{{ $laundryCounts['cleaning']['dresses'] }} dresses · {{ $laundryCounts['cleaning']['clients'] }} clients">{{ $laundryCounts['cleaning']['dresses'] }}</span>@endif</a></li>
@@ -3776,6 +3776,7 @@
                   'orders-lane-bar': 'dripicons-jewel',
                   'orders-lane-online': 'dripicons-cart',
                   'laundry-received-menu': 'dripicons-inbox',
+                  'laundry-hold-menu': 'dripicons-clock',
                   'laundry-cleaning-menu': 'dripicons-clockwise',
                   'laundry-ready-menu': 'dripicons-checkmark',
                   'laundry-collect-menu': 'dripicons-user',
@@ -3824,6 +3825,10 @@
                       var $link = $(this);
                       var href = $link.attr('href');
                       if (!href || href === '#' || href.indexOf('javascript') === 0) {
+                          return;
+                      }
+                      // Help is appended once at the end — skip sidebar Help to avoid duplicate tabs.
+                      if ($link.is('[data-w2k-help-item]') || $link.closest('li').hasClass('w2k-module-help')) {
                           return;
                       }
 
