@@ -10,7 +10,7 @@ class ServiceCatalog
 {
     const SERVICES = [
         'supermarket' => ['icon' => 'shopping-basket', 'priority' => true],
-        'restaurant' => ['icon' => 'utensils-crossed', 'image' => 'branding/menu/iced-specialty.jpg'],
+        'restaurant' => ['icon' => 'utensils-crossed'],
         'coffee' => ['icon' => 'coffee', 'image' => 'branding/menu/coffee-tea.jpg'],
         'laundry' => ['icon' => 'shirt'],
         'fashion' => ['icon' => 'shopping-bag'],
@@ -73,6 +73,34 @@ class ServiceCatalog
         return $image && is_file(public_path($image)) ? asset('public/'.$image).'?v=3' : null;
     }
 
+    /** Card photo: the service's own category image (restaurant uses its food photo). */
+    public static function heroUrl($key)
+    {
+        $tree = self::categories($key);
+        if ($key === 'restaurant') {
+            foreach ($tree as $node) {
+                foreach ($node['children'] ?? [] as $child) {
+                    if (stripos((string) $child['name'], 'food') !== false && ! empty($child['image'])) {
+                        return $child['image'];
+                    }
+                }
+                if (stripos((string) $node['name'], 'food') !== false && ! empty($node['image'])) {
+                    return $node['image'];
+                }
+                if (! empty($node['image'])) {
+                    return $node['image'];
+                }
+            }
+        }
+        foreach ($tree as $node) {
+            if (! empty($node['image'])) {
+                return $node['image'];
+            }
+        }
+
+        return self::imageUrl($key);
+    }
+
     public static function categoryIcon($name)
     {
         $name = strtolower((string) $name);
@@ -124,6 +152,20 @@ class ServiceCatalog
             return collect();
         }
 
+        // Pull in child categories that were never tagged with this service.
+        $ids = $all->pluck('id')->all();
+        $extra = Category::where('is_active', true)
+            ->whereIn('parent_id', $ids)
+            ->whereNotIn('id', $ids)
+            ->where(function ($query) use ($key) {
+                $query->whereNull('service')->orWhere('service', '')->orWhere('service', $key);
+            })
+            ->orderBy('name')
+            ->get();
+        if ($extra->isNotEmpty()) {
+            $all = $all->concat($extra)->unique('id')->sortBy('name')->values();
+        }
+
         $byId = $all->keyBy('id');
         $childrenMap = [];
         foreach ($all as $category) {
@@ -151,6 +193,7 @@ class ServiceCatalog
                 'icon' => self::categoryIcon($category->name),
                 'image' => self::categoryImage($category),
                 'count' => $count,
+                'own_count' => $own,
                 'has_children' => $children->isNotEmpty(),
                 'children' => $children,
             ];
@@ -166,6 +209,31 @@ class ServiceCatalog
         })->map(function ($category) use ($build) {
             return $build($category);
         })->values();
+    }
+
+    /**
+     * What Browse should list: subcategories under a single wrapper,
+     * otherwise the parent categories themselves.
+     */
+    public static function browseNodes($tree)
+    {
+        $tree = collect($tree);
+        if ($tree->count() === 1 && ! empty($tree[0]['has_children'])) {
+            $root = $tree[0];
+            $nodes = collect($root['children'] ?? [])->values();
+            if ((int) ($root['own_count'] ?? 0) > 0) {
+                $self = $root;
+                $self['items_only'] = true;
+                $self['has_children'] = false;
+                $self['count'] = (int) $root['own_count'];
+                $self['children'] = collect();
+                $nodes->prepend($self);
+            }
+
+            return $nodes;
+        }
+
+        return $tree->values();
     }
 
     public static function findInTree($tree, $categoryId)

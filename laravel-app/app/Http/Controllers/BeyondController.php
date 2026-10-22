@@ -56,27 +56,40 @@ class BeyondController extends Controller
         }
         $catalog = \App\Support\ServiceCatalog::class;
         $tree = $catalog::categories($service);
+        $direct = request()->boolean('direct');
         $current = null;
+        $chips = collect();
+        $items = collect();
+
         if ($category !== null) {
             $current = $catalog::findInTree($tree, (int) $category);
             if (! $current) {
                 return redirect()->route('beyond.services.show', $service);
             }
+            if ($direct || empty($current['has_children'])) {
+                // A category with no subcategories opens straight onto its items.
+                $items = $catalog::items($current['id'], ! $direct);
+            } else {
+                $chips = collect($current['children'] ?? [])->values();
+                if ((int) ($current['own_count'] ?? 0) > 0) {
+                    $self = $current;
+                    $self['items_only'] = true;
+                    $self['has_children'] = false;
+                    $self['count'] = (int) $current['own_count'];
+                    $chips->prepend($self);
+                }
+            }
+        } else {
+            $nodes = $catalog::browseNodes($tree);
+            if ($nodes->count() === 1 && empty($nodes[0]['has_children'])) {
+                $current = $nodes[0];
+                $items = $catalog::items($current['id'], empty($current['items_only']));
+            } else {
+                $chips = $nodes;
+            }
         }
-        // No category in URL → parent categories only (click a category to see items).
 
         $breadcrumb = $current ? $catalog::breadcrumb($tree, $current['id']) : [];
-        $parentNode = count($breadcrumb) > 1 ? $breadcrumb[count($breadcrumb) - 2] : null;
-        $siblings = $current
-            ? ($parentNode ? collect($parentNode['children'] ?? []) : $tree)
-            : $tree;
-        $subcategories = $current && ! empty($current['has_children'])
-            ? collect($current['children'] ?? [])
-            : collect();
-        $items = collect();
-        if ($current && empty($current['has_children'])) {
-            $items = $catalog::items($current['id'], true);
-        }
 
         $cartCount = 0;
         foreach (session('cart', []) as $row) {
@@ -86,10 +99,11 @@ class BeyondController extends Controller
         return view('beyond.service-show', [
             'service' => $service,
             'meta' => $catalog::SERVICES[$service],
-            'categories' => $siblings,
+            'categories' => $chips,
             'parents' => $tree,
             'current' => $current,
-            'subcategories' => $subcategories,
+            'subcategories' => $chips,
+            'chips' => $chips,
             'breadcrumb' => $breadcrumb,
             'items' => $items,
             'cartCount' => $cartCount,

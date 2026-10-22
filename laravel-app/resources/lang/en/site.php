@@ -46,7 +46,7 @@ return [
         'subcategories' => 'Sub categories',
         'choose_subcategory' => 'Choose a sub category to see items.',
         'laundry_items' => 'Laundry items',
-        'no_categories' => 'Products are being added. Chat with us on WhatsApp to order.',
+        'no_categories' => 'Products are being added.',
         'no_items' => 'No items in this category yet.',
         'cta_browse' => 'Browse & order',
         'close' => 'Close',

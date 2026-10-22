@@ -51,18 +51,19 @@
             </nav>
         @endif
 
-        @if ($parents->isEmpty())
+        @if ($parents->isEmpty() && $chips->isEmpty() && $items->isEmpty())
             <div class="mt-10 rounded-2xl border border-brand-gold/30 bg-white/[0.03] p-8 text-center">
                 <p class="text-white/70 m-0">{{ __('site.services.no_categories') }}</p>
             </div>
         @else
+            @if ($chips->isNotEmpty())
             <p class="text-[10px] tracking-[0.2em] uppercase text-brand-gold/80 mt-8 mb-3">
-                {{ ($current && ! empty($current['has_children'])) ? __('site.services.subcategories') : __('site.services.parent_categories') }}
+                {{ __('site.services.subcategories') }}
             </p>
             <div class="svc-cats flex md:grid md:grid-cols-4 lg:grid-cols-5 gap-3 overflow-x-auto pb-1">
-                @foreach (($subcategories->isNotEmpty() ? $subcategories : $categories) as $cat)
-                    @php $active = $current && $current['id'] === $cat['id']; @endphp
-                    <a href="{{ route('beyond.services.show', [$service, $cat['id']]) }}"
+                @foreach ($chips as $cat)
+                    @php $active = $current && $current['id'] === $cat['id'] && empty($cat['items_only']); @endphp
+                    <a href="{{ route('beyond.services.show', [$service, $cat['id']]) }}{{ !empty($cat['items_only']) ? '?direct=1' : '' }}"
                        class="shrink-0 w-32 md:w-auto rounded-2xl border px-3 py-4 flex flex-col items-center text-center gap-2 transition-colors {{ $active ? 'border-brand-gold bg-brand-gold/15' : 'border-brand-gold/25 bg-white/[0.03] hover:border-brand-gold/70' }}">
                         <span class="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden {{ $active ? 'bg-brand-gold text-[#0A0A0A]' : 'border border-brand-gold/50 text-brand-gold' }}">
                             @if ($cat['image'])
@@ -79,8 +80,9 @@
                     </a>
                 @endforeach
             </div>
+            @endif
 
-            @if ($current && $subcategories->isNotEmpty() && $items->isEmpty())
+            @if ($chips->isNotEmpty() && $items->isEmpty())
                 <p class="text-white/55 text-sm mt-6 m-0">{{ __('site.services.choose_subcategory') }}</p>
             @endif
 

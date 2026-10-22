@@ -13,8 +13,8 @@
         <div class="mt-8 grid gap-5 md:grid-cols-2">
             @foreach (\App\Support\ServiceCatalog::SERVICES as $key => $svc)
                 @php
-                    $img = \App\Support\ServiceCatalog::imageUrl($key);
-                    $cats = \App\Support\ServiceCatalog::categories($key);
+                    $img = \App\Support\ServiceCatalog::heroUrl($key);
+                    $cats = \App\Support\ServiceCatalog::browseNodes(\App\Support\ServiceCatalog::categories($key));
                     $showUrl = route('beyond.services.show', $key);
                 @endphp
                 <article class="rounded-2xl border {{ !empty($svc['priority']) ? 'border-brand-gold md:col-span-2 bg-gradient-to-br from-[#1a140b] to-[#0A0A0A]' : 'border-brand-gold/30 bg-white/[0.03]' }} overflow-hidden flex flex-col">
@@ -39,7 +39,7 @@
                         @else
                             <div class="flex flex-wrap gap-2 flex-1 content-start">
                                 @foreach ($cats as $cat)
-                                    <a href="{{ route('beyond.services.show', [$key, $cat['id']]) }}"
+                                    <a href="{{ route('beyond.services.show', [$key, $cat['id']]) }}{{ !empty($cat['items_only']) ? '?direct=1' : '' }}"
                                        class="inline-flex items-center gap-2 rounded-full border border-brand-gold/40 hover:border-brand-gold hover:bg-brand-gold/10 px-3 py-1.5 text-sm text-white/90">
                                         @if ($cat['image'])
                                             <img src="{{ $cat['image'] }}" alt="" class="w-5 h-5 rounded-full object-cover">
