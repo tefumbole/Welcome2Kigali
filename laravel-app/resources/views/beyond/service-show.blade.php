@@ -55,9 +55,6 @@
         @if ($parents->isEmpty())
             <div class="mt-10 rounded-2xl border border-brand-gold/30 bg-white/[0.03] p-8 text-center">
                 <p class="text-white/70 m-0">{{ __('site.services.no_categories') }}</p>
-                @if ($wa)
-                    <a href="https://wa.me/{{ $wa }}?text={{ rawurlencode(__('site.services.'.$service)) }}" target="_blank" rel="noopener" class="inline-flex mt-5 text-xs font-bold tracking-[0.14em] uppercase border border-brand-gold/60 text-brand-gold rounded-full px-4 py-2">{{ __('site.services.cta_contact') }}</a>
-                @endif
             </div>
         @else
             <p class="text-[10px] tracking-[0.2em] uppercase text-brand-gold/80 mt-8 mb-3">

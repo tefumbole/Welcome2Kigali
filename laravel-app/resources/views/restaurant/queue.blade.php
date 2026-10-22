@@ -121,72 +121,20 @@
                         @elseif($item->client_signed_at)
                             <p class="w2k-note signed">Client signed {{ $item->client_signed_at->format('H:i') }}.</p>
                         @endif
-                        @if($canAdd && $item->status === 'awaiting')
-                            <form method="post" action="{{ route('restaurant.accept', $item->id) }}" style="margin-bottom:8px;">
-                                @csrf
-                                <div class="input-group">
-                                    <input class="form-control" type="number" name="minutes" min="1" max="240" placeholder="Minutes, optional">
-                                    <span class="input-group-btn"><button class="btn btn-primary" type="submit">Accept</button></span>
-                                </div>
-                            </form>
-                        @endif
-                        @if($canEdit)
+                        @if($item->status === 'awaiting' && ($canAdd || $canDelete))
                             <div class="w2k-row" style="margin-bottom:8px;">
-                                @if(in_array($item->status, ['awaiting', 'preparing', 'ready'], true))
-                                    <details class="w2k-choice">
-                                        <summary>Put on hold</summary>
-                                        <form method="post" action="{{ route('restaurant.hold', $item->id) }}">
-                                            @csrf
-                                            <input class="form-control" name="comment" placeholder="Hold reason / comment">
-                                            <button class="btn btn-default btn-block" style="margin-top:6px;" type="submit">Hold this order</button>
-                                        </form>
-                                    </details>
-                                @elseif($item->status === 'hold')
-                                    <form method="post" action="{{ route('restaurant.resume', $item->id) }}">
+                                @if($canAdd)
+                                    <form method="post" action="{{ route('restaurant.accept', $item->id) }}" style="display:inline;">
                                         @csrf
-                                        <button class="btn btn-primary" type="submit">Resume</button>
+                                        <button class="btn btn-primary" type="submit">Accept</button>
                                     </form>
                                 @endif
-                                <details class="w2k-choice">
-                                    <summary>Comment</summary>
-                                    <form method="post" action="{{ route('restaurant.comment', $item->id) }}">
+                                @if($canDelete)
+                                    <form method="post" action="{{ route('restaurant.deny', $item->id) }}" style="display:inline;" onsubmit="return confirm('Reject this order?');">
                                         @csrf
-                                        <input class="form-control" name="comment" value="{{ $item->customer_comment }}" placeholder="Comment for this item" required>
-                                        <button class="btn btn-primary btn-block" style="margin-top:6px;" type="submit">Save comment</button>
+                                        <input type="hidden" name="reason" value="Rejected">
+                                        <button class="btn btn-default" type="submit">Reject</button>
                                     </form>
-                                </details>
-                            </div>
-                        @endif
-                        @if(($canDelete || $canEdit) && in_array($item->status, ['awaiting', 'preparing', 'ready'], true))
-                            <div class="w2k-row">
-                                @if($canDelete && in_array($item->status, ['awaiting', 'preparing'], true))
-                                    <details class="w2k-choice deny">
-                                        <summary>Deny</summary>
-                                        <form method="post" action="{{ route('restaurant.deny', $item->id) }}">
-                                            @csrf
-                                            <input class="form-control" name="reason" placeholder="Reason" required>
-                                            <button class="btn btn-default btn-block" style="margin-top:6px;" type="submit">Deny this order</button>
-                                        </form>
-                                    </details>
-                                @endif
-                                @if($canEdit)
-                                    <details class="w2k-choice">
-                                        <summary>Change price</summary>
-                                        <form method="post" action="{{ route('restaurant.price', $item->id) }}">
-                                            @csrf
-                                            <input class="form-control" type="number" name="price" min="0" step="1" placeholder="New price each" required>
-                                            <input class="form-control" name="note" placeholder="Note for the guest" style="margin-top:6px;">
-                                            <button class="btn btn-primary btn-block" style="margin-top:6px;" type="submit">Send for signature</button>
-                                        </form>
-                                    </details>
-                                    <details class="w2k-choice">
-                                        <summary>Request a change</summary>
-                                        <form method="post" action="{{ route('restaurant.modification', $item->id) }}">
-                                            @csrf
-                                            <input class="form-control" name="note" placeholder="What should the guest confirm?" required>
-                                            <button class="btn btn-primary btn-block" style="margin-top:6px;" type="submit">Ask the guest to sign</button>
-                                        </form>
-                                    </details>
                                 @endif
                             </div>
                         @endif

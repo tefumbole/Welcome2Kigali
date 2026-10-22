@@ -403,7 +403,7 @@ class RestaurantOrderService
         }
         $reason = trim((string) $reason);
         if ($reason === '') {
-            throw new \InvalidArgumentException('A reason is required.');
+            $reason = 'Rejected';
         }
         $wasAwaiting = $item->status === 'awaiting';
         $item->status = 'rejected';

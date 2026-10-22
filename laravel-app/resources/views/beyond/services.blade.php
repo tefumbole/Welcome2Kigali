@@ -3,10 +3,6 @@
 @section('meta_description', __('site.services.meta'))
 @section('body_class', 'bg-[#0A0A0A]')
 
-@php
-    $wa = \App\Support\SiteBrand::phoneWhatsAppDigits();
-@endphp
-
 @section('content')
 <div class="bg-[#0A0A0A] text-white min-h-[70vh] py-10 px-4">
     <div class="max-w-5xl mx-auto">
@@ -63,9 +59,6 @@
                         <div class="mt-5 flex flex-wrap gap-3">
                             @if ($cats->isNotEmpty())
                                 <a href="{{ $showUrl }}" class="inline-flex items-center gap-2 text-xs font-bold tracking-[0.14em] uppercase bg-brand-gold text-[#0A0A0A] rounded-full px-4 py-2">{{ __('site.services.cta_browse') }}</a>
-                            @endif
-                            @if ($wa)
-                                <a href="https://wa.me/{{ $wa }}?text={{ rawurlencode(__('site.services.'.$key)) }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-xs font-bold tracking-[0.14em] uppercase border border-brand-gold/60 text-brand-gold rounded-full px-4 py-2">{{ __('site.services.cta_contact') }}</a>
                             @endif
                         </div>
                     </div>

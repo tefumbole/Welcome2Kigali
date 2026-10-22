@@ -290,12 +290,10 @@ class RestaurantOrderController extends Controller
 
         // Cafe / bar / restaurant — only lanes this user can access.
         if (RestaurantAccess::installed() && RestaurantAccess::canSeeOrders($user)) {
+            // Popup only for orders nobody has accepted yet.
             $statuses = [];
             if (RestaurantAccess::seeStatus($user, 'awaiting')) {
                 $statuses[] = 'awaiting';
-            }
-            if (RestaurantAccess::seeStatus($user, 'ready')) {
-                $statuses[] = 'ready';
             }
             $lanes = [];
             foreach (array_keys(RestaurantAccess::lanes()) as $lane) {
@@ -337,8 +335,7 @@ class RestaurantOrderController extends Controller
                 $counts = RestaurantAccess::queueCounts();
                 foreach ($lanes as $lane) {
                     $awaiting = (int) ($counts[$lane]['awaiting'] ?? 0);
-                    $ready = (int) ($counts[$lane]['ready'] ?? 0);
-                    if ($awaiting + $ready < 1) {
+                    if ($awaiting < 1) {
                         continue;
                     }
                     $summary[] = [
@@ -346,11 +343,11 @@ class RestaurantOrderController extends Controller
                         'lane' => $lane,
                         'label' => RestaurantAccess::lanes()[$lane] ?? $lane,
                         'awaiting' => $awaiting,
-                        'ready' => $ready,
-                        'total' => $awaiting + $ready,
+                        'ready' => 0,
+                        'total' => $awaiting,
                         'href' => route('restaurant.orders', [
                             'lane' => $lane,
-                            'tab' => $awaiting > 0 ? 'awaiting' : 'ready',
+                            'tab' => 'awaiting',
                         ]),
                     ];
                 }
@@ -360,53 +357,34 @@ class RestaurantOrderController extends Controller
         // Laundry — only staff with laundry access.
         if (\App\Support\StaffAccess::canAnyLaundry() && \Illuminate\Support\Facades\Schema::hasTable('laundry_order_items')) {
             $laundryRows = \App\LaundryOrderItem::with(['order.customer', 'order.user', 'order.sale'])
-                ->whereIn('status', [
-                    \App\LaundryOrderItem::STATUS_RECEIVED,
-                    \App\LaundryOrderItem::STATUS_READY,
-                    \App\LaundryOrderItem::STATUS_HOLD,
-                ])
+                ->where('status', \App\LaundryOrderItem::STATUS_RECEIVED)
                 ->orderByDesc('id')
                 ->limit(20)
                 ->get();
-            $laundryAwaiting = 0;
-            $laundryReady = 0;
             foreach ($laundryRows as $row) {
                 $order = $row->order;
-                $status = $row->status ?: \App\LaundryOrderItem::STATUS_RECEIVED;
-                if ($status === \App\LaundryOrderItem::STATUS_READY) {
-                    $laundryReady++;
-                    $href = route('laundry.ready');
-                    $label = 'Ready';
-                } elseif ($status === \App\LaundryOrderItem::STATUS_HOLD) {
-                    $href = route('laundry.hold');
-                    $label = 'On hold';
-                } else {
-                    $laundryAwaiting++;
-                    $href = route('laundry.received');
-                    $label = 'Awaiting';
-                }
                 $items[] = [
                     'id' => 'lnd-'.(int) $row->id,
                     'module' => 'laundry',
                     'name' => $row->name,
                     'qty' => $row->qty,
-                    'status' => $status === \App\LaundryOrderItem::STATUS_READY ? 'ready' : 'awaiting',
+                    'status' => 'awaiting',
                     'lane' => 'laundry',
                     'lane_label' => 'Laundry',
                     'ref' => $order ? $order->reference_no : '',
                     'placed_by' => optional(optional($order)->user)->name ?: '',
-                    'href' => $href,
+                    'href' => route('laundry.received'),
                 ];
             }
-            if ($laundryAwaiting + $laundryReady > 0) {
+            if ($laundryRows->isNotEmpty()) {
                 $summary[] = [
                     'module' => 'laundry',
                     'lane' => 'laundry',
                     'label' => 'Laundry',
-                    'awaiting' => $laundryAwaiting,
-                    'ready' => $laundryReady,
-                    'total' => $laundryAwaiting + $laundryReady,
-                    'href' => $laundryAwaiting > 0 ? route('laundry.received') : route('laundry.ready'),
+                    'awaiting' => $laundryRows->count(),
+                    'ready' => 0,
+                    'total' => $laundryRows->count(),
+                    'href' => route('laundry.received'),
                 ];
             }
         }
