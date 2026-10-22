@@ -46,57 +46,46 @@ class RestaurantSettlement
             ];
         }
 
-        $queuedIds = [];
-        $deliveredIds = [];
-        $pending = false;
+        $linesById = collect($lines)->keyBy('id');
+        $undelivered = [];
+        $pendingAmount = 0;
+        $soonest = null;
         foreach ($order->items as $item) {
-            $closed = $item->status === 'rejected' || $item->status === 'cancelled';
-            if (! $closed && $item->status !== 'delivered') {
-                $pending = true;
-            }
-            if (! $item->product_sale_id) {
+            $closed = in_array($item->status, ['rejected', 'cancelled', 'delivered'], true);
+            if ($closed) {
                 continue;
             }
-            $queuedIds[(int) $item->product_sale_id] = true;
-            if (! $closed && ! $item->remake_of_id && $item->status === 'delivered') {
-                $deliveredIds[(int) $item->product_sale_id] = true;
+            $line = $item->product_sale_id ? $linesById->get($item->product_sale_id) : null;
+            $amount = $line ? (float) $line->total : 0;
+            $pendingAmount += $amount;
+            $minutes = null;
+            if ($item->expected_ready_at) {
+                $minutes = now()->diffInMinutes($item->expected_ready_at, false);
+                if ($soonest === null || $minutes < $soonest) {
+                    $soonest = $minutes;
+                }
             }
+            $undelivered[] = [
+                'name' => $item->product_name,
+                'qty' => $item->qty,
+                'amount' => $amount,
+                'status' => $item->status,
+                'minutes_left' => $minutes,
+            ];
         }
 
-        $lineTotal = 0;
-        $openTotal = 0;
-        foreach ($lines as $line) {
-            $amount = (float) $line->total;
-            $lineTotal += $amount;
-            $id = (int) $line->id;
-            if (! isset($queuedIds[$id]) || isset($deliveredIds[$id])) {
-                $openTotal += $amount;
-            }
-        }
-
-        $billable = $openTotal;
-        if ($lineTotal > 0.009 && abs($grand - $lineTotal) > 0.009) {
-            $billable = $grand * ($openTotal / $lineTotal);
-        }
-        $billable = round($billable, 2);
-        $due = max(0, round($billable - $paid, 2));
-        $pendingAmount = max(0, round($grand - $billable, 2));
-        $percent = $grand > 0.009 ? (int) round(($billable / $grand) * 100) : 0;
-        if ($pending) {
-            $badge = 'Pending delivery';
-        } elseif ($due <= 0.009) {
-            $badge = 'Paid';
-        } else {
-            $badge = 'Due';
-        }
+        $due = $plainDue;
+        $badge = $due <= 0.009 ? 'Paid' : 'Due';
 
         return [
             'queued' => true,
-            'pending_delivery' => $pending,
-            'billable' => $billable,
+            'pending_delivery' => count($undelivered) > 0,
+            'billable' => $grand,
             'due' => $due,
-            'pending_amount' => $pendingAmount,
-            'delivery_percent' => $percent,
+            'pending_amount' => round($pendingAmount, 2),
+            'delivery_percent' => $grand > 0.009 ? (int) round((($grand - $pendingAmount) / $grand) * 100) : 0,
+            'minutes_left' => $soonest,
+            'undelivered' => $undelivered,
             'badge' => $badge,
         ];
     }

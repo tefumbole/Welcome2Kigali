@@ -752,10 +752,15 @@ class RestaurantOrderService
 
     protected function dropLineFromBill(RestaurantOrderItem $item)
     {
-        if (! $item->product_sale_id) {
-            return;
+        $order = $item->order ?: RestaurantOrder::find($item->restaurant_order_id);
+        $line = $item->product_sale_id ? Product_Sale::find($item->product_sale_id) : null;
+        if (! $line && $order && $item->product_id) {
+            $line = Product_Sale::where('sale_id', $order->sale_id)
+                ->where('product_id', $item->product_id)
+                ->where('total', '>', 0)
+                ->orderBy('id')
+                ->first();
         }
-        $line = Product_Sale::find($item->product_sale_id);
         if (! $line) {
             return;
         }
@@ -767,13 +772,19 @@ class RestaurantOrderService
         if ($amount <= 0) {
             return;
         }
-        $order = $item->order ?: RestaurantOrder::find($item->restaurant_order_id);
         $sale = $order ? ($order->sale ?: Sale::find($order->sale_id)) : Sale::find($line->sale_id);
         if (! $sale) {
             return;
         }
         $sale->grand_total = max(0, round((float) $sale->grand_total - $amount, 2));
         $sale->total_price = max(0, round((float) $sale->total_price - $amount, 2));
+        if ((float) $sale->grand_total <= (float) $sale->paid_amount + 0.009) {
+            $sale->payment_status = 4;
+        } elseif ((float) $sale->paid_amount > 0.009) {
+            $sale->payment_status = 3;
+        } else {
+            $sale->payment_status = 2;
+        }
         $sale->save();
     }
 

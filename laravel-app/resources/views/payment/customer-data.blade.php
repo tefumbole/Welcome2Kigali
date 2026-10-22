@@ -52,14 +52,26 @@
                         <td>{{ number_format($sale->paid_amount, 2) ?? 0 }}</td>
                         <td>{{ number_format($due, 2) }}</td>
                         <td>
-                            @if($settlement && !empty($settlement['queued']))
-                                <strong>{{ (int) $settlement['delivery_percent'] }}%</strong>
-                                <div style="margin-top:4px;height:6px;border-radius:999px;background:#f1e6d0;overflow:hidden;">
-                                    <div style="height:6px;width:{{ max(0, min(100, (int) $settlement['delivery_percent'])) }}%;background:#C5A059;"></div>
-                                </div>
-                                @if((float) $settlement['pending_amount'] > 0.009)
-                                    <div class="text-muted" style="margin-top:4px;">Not delivered {{ number_format($settlement['pending_amount'], 2) }}</div>
-                                @endif
+                            @if($settlement && !empty($settlement['undelivered']))
+                                @foreach($settlement['undelivered'] as $openItem)
+                                    <div style="margin-bottom:4px;">
+                                        <strong>{{ $openItem['name'] }}</strong> × {{ $openItem['qty'] }}
+                                        @if($openItem['amount'] > 0)
+                                            <span class="text-muted">{{ number_format($openItem['amount'], 0) }}</span>
+                                        @endif
+                                        <div class="text-muted">
+                                            @if($openItem['minutes_left'] === null)
+                                                Waiting to accept
+                                            @elseif($openItem['minutes_left'] >= 0)
+                                                {{ $openItem['minutes_left'] }} min left
+                                            @else
+                                                {{ abs($openItem['minutes_left']) }} min over
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @elseif($settlement && !empty($settlement['queued']))
+                                Delivered
                             @else
                                 —
                             @endif

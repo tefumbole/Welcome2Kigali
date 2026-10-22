@@ -256,7 +256,7 @@ class RestaurantOrderWorkflowTest extends TestCase
         $this->assertSame('online', RestaurantOrder::where('sale_id', $web->id)->first()->items()->value('lane'));
     }
 
-    public function test_payment_due_counts_only_delivered_lines()
+    public function test_payment_stays_due_and_lists_undelivered_items()
     {
         $sale = $this->order([
             ['product_id' => $this->product('Plate', 'food')->id, 'qty' => 1],
@@ -280,15 +280,17 @@ class RestaurantOrderWorkflowTest extends TestCase
         $lines = Product_Sale::where('sale_id', $sale->id)->get();
         $pending = RestaurantSettlement::compute($sale->fresh(), $order->fresh()->load('items'), $lines);
         $this->assertTrue($pending['pending_delivery']);
-        $this->assertSame('Pending delivery', $pending['badge']);
+        $this->assertSame('Paid', $pending['badge']);
         $this->assertEquals(0, $pending['due']);
+        $this->assertNotEmpty($pending['undelivered']);
 
         $sale->paid_amount = 0;
         $sale->payment_status = 1;
         $sale->save();
         $partial = RestaurantSettlement::compute($sale->fresh(), $order->fresh()->load('items'), $lines);
-        $this->assertEquals(1900, $partial['due']);
-        $this->assertSame('Pending delivery', $partial['badge']);
+        $this->assertEquals(3400, $partial['due']);
+        $this->assertSame('Due', $partial['badge']);
+        $this->assertGreaterThan(0, $partial['pending_amount']);
 
         $food->status = 'delivered';
         $food->save();

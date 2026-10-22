@@ -36,7 +36,7 @@ class PaymentController extends Controller
         $pendingPaid = collect();
         if (Schema::hasTable('restaurant_orders') && Schema::hasTable('restaurant_order_items')) {
             $ids = RestaurantOrder::whereHas('items', function ($items) {
-                $items->where('status', '!=', 'delivered');
+                $items->whereNotIn('status', ['delivered', 'rejected', 'cancelled']);
             })->pluck('sale_id');
             if ($ids->isNotEmpty()) {
                 $paid = Sale::with('customer')->where('payment_status', 4)->whereIn('id', $ids);
