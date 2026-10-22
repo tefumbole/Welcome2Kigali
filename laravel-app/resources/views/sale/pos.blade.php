@@ -69,11 +69,18 @@
             color: #C5A059 !important;
             border-radius: 10px;
         }
+        body.beyond-pos-active .payment-amount {
+            position: sticky;
+            bottom: 76px;
+            z-index: 6;
+            margin-top: 10px !important;
+            box-shadow: 0 -8px 24px rgba(0,0,0,.18);
+        }
         body.beyond-pos-active .payment-amount h2 {
             color: #C5A059 !important;
-            font-size: 1.5rem;
+            font-size: 1.65rem;
             line-height: 1.3;
-            padding: 8px 12px;
+            padding: 12px 14px;
             margin: 0;
             display: flex;
             justify-content: space-between;
@@ -84,6 +91,7 @@
             color: #fff;
             font-weight: 800;
             white-space: nowrap;
+            font-size: 1.85rem;
         }
         body.beyond-pos-active .totals .row > div {
             display: flex;
@@ -358,24 +366,38 @@
         }
         body.beyond-pos-active table.order-list.table-fixed th:nth-child(1),
         body.beyond-pos-active table.order-list.table-fixed td:nth-child(1) {
-            width: 26%;
+            width: 40%;
             white-space: normal;
         }
         body.beyond-pos-active table.order-list.table-fixed th:nth-child(2),
-        body.beyond-pos-active table.order-list.table-fixed td:nth-child(2) { width: 9%; }
+        body.beyond-pos-active table.order-list.table-fixed td:nth-child(2) { width: 7%; }
         body.beyond-pos-active table.order-list.table-fixed th:nth-child(3),
-        body.beyond-pos-active table.order-list.table-fixed td:nth-child(3) { width: 15%; }
+        body.beyond-pos-active table.order-list.table-fixed td:nth-child(3) { width: 18%; }
         body.beyond-pos-active table.order-list.table-fixed th:nth-child(4),
-        body.beyond-pos-active table.order-list.table-fixed td:nth-child(4) { width: 22%; }
+        body.beyond-pos-active table.order-list.table-fixed td:nth-child(4) { width: 12%; }
         body.beyond-pos-active table.order-list.table-fixed th:nth-child(5),
         body.beyond-pos-active table.order-list.table-fixed td:nth-child(5) {
-            width: 20%;
+            width: 15%;
             text-overflow: clip;
             font-weight: 700;
             text-align: right;
         }
         body.beyond-pos-active table.order-list.table-fixed th:nth-child(6),
         body.beyond-pos-active table.order-list.table-fixed td:nth-child(6) { width: 8%; }
+        body.beyond-pos-active table.order-list .item-line-comment {
+            white-space: normal;
+            margin-top: 4px;
+            max-width: 100%;
+        }
+        body.beyond-pos-active table.order-list .input-group .btn {
+            flex: 0 0 26px;
+            padding: 2px 0;
+        }
+        body.beyond-pos-active table.order-list input.qty {
+            max-width: 3.2rem;
+            text-align: center;
+            margin: 0 auto;
+        }
         body.beyond-pos-active table.order-list .input-group {
             display: flex;
             flex-wrap: nowrap;
@@ -1590,7 +1612,7 @@
                 <audio id="mysoundclip2" preload="auto">
                     <source src="{{url('public/beep/beep-07.mp3')}}"></source>
                 </audio>
-                <div class="col-md-6 pos-side">
+                <div class="col-md-7 pos-side">
                     <div class="card">
                         <div class="card-body" style="padding-bottom: 0">
                             {!! Form::open(['route' => 'sales.store', 'method' => 'post', 'files' => true, 'class' => 'payment-form']) !!}
@@ -2075,7 +2097,7 @@
 
                             {!! Form::close() !!}
                                 <!-- product list -->
-                                <div class="col-md-6 products-side">
+                                <div class="col-md-5 products-side">
                                     <!-- navbar-->
                                     <header class="header">
                                         <nav class="navbar">
@@ -4338,18 +4360,15 @@
             for (var li = 0; li < laundryCodes.length; li++) {
                 if (String(laundryCodes[li]) === String(data[1])) { isLaundryLine = true; break; }
             }
-            var itemNoteHtml = '';
-            @if(\Illuminate\Support\Facades\Schema::hasTable('restaurant_tables'))
-            itemNoteHtml = '<input type="text" class="form-control form-control-sm mt-1" name="item_comment[]" placeholder="Kitchen / bar note">';
-            @endif
-            var laundryNoteHtml = isLaundryLine
-                ? '<input type="text" class="form-control form-control-sm mt-1 laundry-item-note" name="laundry_item_note[' + data[9] + ']" placeholder="Comment for this dress">'
-                : '<input type="hidden" class="laundry-item-note" name="laundry_item_note[' + data[9] + ']" value="">';
+            var commentHtml = '<input type="text" class="form-control form-control-sm mt-1 item-line-comment" name="item_comment[]" placeholder="Comment" autocomplete="off">';
+            if (isLaundryLine) {
+                commentHtml += '<input type="hidden" class="laundry-item-note" name="laundry_item_note[' + data[9] + ']" value="">';
+            }
             var stockHtml = (product_type[pos] === 'digital') ? '' : '<p>In Stock: <span class="in-stock"></span></p>';
             @if(in_array("price-change", $all_permission))
-                cols += '<td class="col-sm-3 product-title"><strong>' + data[0] + '</strong><br>' + data[1] + '<a class="edit-product btn btn-link" data-toggle="modal" data-target="#editModal"><i class="fa fa-pencil-square"></i></a>' + stockHtml + laundryNoteHtml + itemNoteHtml + '</td>';
+                cols += '<td class="col-sm-3 product-title"><strong>' + data[0] + '</strong><br>' + data[1] + '<a class="edit-product btn btn-link" data-toggle="modal" data-target="#editModal"><i class="fa fa-pencil-square"></i></a>' + stockHtml + commentHtml + '</td>';
             @else
-                cols += '<td class="col-sm-3 product-title"><button type="button" class="edit-product btn btn-link"><strong>' + data[0] + '</strong></button><br>' + data[1] + stockHtml + laundryNoteHtml + itemNoteHtml + '</td>';
+                cols += '<td class="col-sm-3 product-title"><button type="button" class="edit-product btn btn-link"><strong>' + data[0] + '</strong></button><br>' + data[1] + stockHtml + commentHtml + '</td>';
             @endif
             if(data[12]) {
                 cols += '<td class="col-sm-2"><input type="text" title="'+product_expired_date[pos]+'" class="form-control batch-no product_expired_date" value="'+batch_no[pos]+'" required/> <input type="hidden" class="product-batch-id" name="product_batch_id[]" value="'+product_batch_id[pos]+'"/> </td>';
@@ -4915,7 +4934,21 @@
             return false;
         }
 
+        $(document).on('input change', '.item-line-comment', function () {
+            var $hidden = $(this).siblings('.laundry-item-note');
+            if ($hidden.length) {
+                $hidden.val($(this).val());
+            }
+        });
         $(document).on('submit', '.payment-form', function(e) {
+            $('table.order-list tbody tr').each(function () {
+                var $comment = $(this).find('.item-line-comment');
+                var $hidden = $(this).find('.laundry-item-note');
+                if ($comment.length && $hidden.length) {
+                    $hidden.val($comment.val());
+                }
+            });
+
             var rownumber = $('table.order-list tbody tr:last').index();
             if (rownumber < 0) {
                 alert("Please insert product to order table!")

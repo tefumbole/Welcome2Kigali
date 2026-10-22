@@ -226,6 +226,48 @@ class RestaurantOrderService
         return $sale->fresh();
     }
 
+    public function hold(RestaurantOrderItem $item, User $user, $comment = null)
+    {
+        if (! in_array($item->status, ['awaiting', 'preparing', 'ready'], true)) {
+            throw new \InvalidArgumentException('Only open items can be put on hold.');
+        }
+        $item->previous_status = $item->status;
+        $item->status = 'hold';
+        if ($comment !== null && trim((string) $comment) !== '') {
+            $item->internal_note = trim((string) $comment);
+        }
+        $item->save();
+        $this->event($item->order, $item, 'hold', $user->id, $item->internal_note);
+
+        return $item;
+    }
+
+    public function resume(RestaurantOrderItem $item, User $user)
+    {
+        if ($item->status !== 'hold') {
+            throw new \InvalidArgumentException('This item is not on hold.');
+        }
+        $back = $item->previous_status ?: 'awaiting';
+        if (! in_array($back, ['awaiting', 'preparing', 'ready'], true)) {
+            $back = 'awaiting';
+        }
+        $item->status = $back;
+        $item->previous_status = null;
+        $item->save();
+        $this->event($item->order, $item, 'resume', $user->id, 'Back to '.$back);
+
+        return $item;
+    }
+
+    public function updateItemComment(RestaurantOrderItem $item, User $user, $comment)
+    {
+        $item->customer_comment = trim((string) $comment) ?: null;
+        $item->save();
+        $this->event($item->order, $item, 'comment', $user->id, $item->customer_comment);
+
+        return $item;
+    }
+
     public function accept(RestaurantOrderItem $item, User $user, $minutes)
     {
         $this->assertStatus($item, 'awaiting', 'preparing');

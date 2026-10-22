@@ -328,9 +328,87 @@ class LaundryService
             $query->whereNotIn('status', [LaundryOrder::STATUS_AWAITING_SIGNATURE, LaundryOrder::STATUS_COLLECTED]);
         } elseif ($status === LaundryOrderItem::STATUS_CLEANING) {
             $query->whereNotIn('status', [LaundryOrder::STATUS_AWAITING_SIGNATURE, LaundryOrder::STATUS_COLLECTED]);
+        } elseif ($status === LaundryOrderItem::STATUS_HOLD) {
+            $query->whereNotIn('status', [LaundryOrder::STATUS_AWAITING_SIGNATURE, LaundryOrder::STATUS_COLLECTED]);
         }
 
         return $query;
+    }
+
+    public function holdItems(array $itemIds, $comment = null)
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('laundry_order_items', 'status')) {
+            throw new \InvalidArgumentException('Laundry hold is not available until the laundry pipeline migration is applied.');
+        }
+        $ids = array_values(array_filter(array_map('intval', $itemIds)));
+        if (! $ids) {
+            throw new \InvalidArgumentException('Select at least one dress to put on hold.');
+        }
+        $items = LaundryOrderItem::whereIn('id', $ids)->get();
+        if ($items->isEmpty()) {
+            throw new \InvalidArgumentException('No dresses found.');
+        }
+        $held = 0;
+        foreach ($items as $item) {
+            $status = $item->status ?: LaundryOrderItem::STATUS_RECEIVED;
+            if (! in_array($status, [LaundryOrderItem::STATUS_RECEIVED, LaundryOrderItem::STATUS_CLEANING, LaundryOrderItem::STATUS_READY], true)) {
+                continue;
+            }
+            if (\Illuminate\Support\Facades\Schema::hasColumn('laundry_order_items', 'previous_status')) {
+                $item->previous_status = $status;
+            }
+            $item->status = LaundryOrderItem::STATUS_HOLD;
+            if ($comment !== null && trim((string) $comment) !== '') {
+                $item->note = trim((string) $comment);
+            }
+            $item->save();
+            $held++;
+        }
+
+        return $held;
+    }
+
+    public function resumeItems(array $itemIds)
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('laundry_order_items', 'status')) {
+            throw new \InvalidArgumentException('Laundry hold is not available until the laundry pipeline migration is applied.');
+        }
+        $ids = array_values(array_filter(array_map('intval', $itemIds)));
+        if (! $ids) {
+            throw new \InvalidArgumentException('Select at least one dress to resume.');
+        }
+        $items = LaundryOrderItem::whereIn('id', $ids)->where('status', LaundryOrderItem::STATUS_HOLD)->get();
+        foreach ($items as $item) {
+            $back = (\Illuminate\Support\Facades\Schema::hasColumn('laundry_order_items', 'previous_status')
+                ? $item->previous_status
+                : null) ?: LaundryOrderItem::STATUS_RECEIVED;
+            if (! in_array($back, [LaundryOrderItem::STATUS_RECEIVED, LaundryOrderItem::STATUS_CLEANING, LaundryOrderItem::STATUS_READY], true)) {
+                $back = LaundryOrderItem::STATUS_RECEIVED;
+            }
+            $item->status = $back;
+            if (\Illuminate\Support\Facades\Schema::hasColumn('laundry_order_items', 'previous_status')) {
+                $item->previous_status = null;
+            }
+            $item->save();
+        }
+
+        return $items->count();
+    }
+
+    public function updateItemNote(LaundryOrderItem $item, $note)
+    {
+        $item->note = trim((string) $note) ?: null;
+        $item->save();
+
+        return $item;
+    }
+
+    public function updateOrderNotes(LaundryOrder $order, $notes)
+    {
+        $order->notes = trim((string) $notes) ?: null;
+        $order->save();
+
+        return $order;
     }
 
     public function stageCounts()
@@ -339,6 +417,7 @@ class LaundryService
             'received' => ['dresses' => 0, 'clients' => 0],
             'cleaning' => ['dresses' => 0, 'clients' => 0],
             'ready' => ['dresses' => 0, 'clients' => 0],
+            'hold' => ['dresses' => 0, 'clients' => 0],
             'collect' => ['dresses' => 0, 'clients' => 0],
         ];
         if (! \Illuminate\Support\Facades\Schema::hasTable('laundry_order_items')) {
@@ -352,6 +431,7 @@ class LaundryService
                 LaundryOrderItem::STATUS_RECEIVED,
                 LaundryOrderItem::STATUS_CLEANING,
                 LaundryOrderItem::STATUS_READY,
+                LaundryOrderItem::STATUS_HOLD,
             ])
             ->groupBy('laundry_order_items.status')
             ->get();

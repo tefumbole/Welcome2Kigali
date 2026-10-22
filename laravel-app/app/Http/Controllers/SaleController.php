@@ -995,6 +995,22 @@ class SaleController extends Controller
         $laundryTicket = null;
         try {
             $itemNotes = $data['laundry_item_note'] ?? [];
+            if (! is_array($itemNotes)) {
+                $itemNotes = [];
+            }
+            // One POS comment per line: copy item_comment into laundry notes by product id when empty.
+            $lineComments = array_values((array) ($data['item_comment'] ?? []));
+            $productIds = array_values((array) ($data['product_id'] ?? []));
+            foreach ($productIds as $idx => $productId) {
+                $pid = (string) $productId;
+                $comment = isset($lineComments[$idx]) ? trim((string) $lineComments[$idx]) : '';
+                if ($comment === '') {
+                    continue;
+                }
+                if (! isset($itemNotes[$pid]) || trim((string) $itemNotes[$pid]) === '') {
+                    $itemNotes[$pid] = $comment;
+                }
+            }
             $notes = trim((string) ($data['sale_note'] ?? ''));
             $laundryNotes = trim((string) ($data['laundry_notes'] ?? ''));
             if ($laundryNotes !== '') {
@@ -1003,7 +1019,7 @@ class SaleController extends Controller
             $laundryTicket = app(\App\Services\LaundryService::class)->createFromSale(
                 $lims_sale_data->fresh('products'),
                 $notes,
-                is_array($itemNotes) ? $itemNotes : [],
+                $itemNotes,
                 false
             );
         } catch (\Throwable $e) {

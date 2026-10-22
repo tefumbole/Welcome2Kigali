@@ -38,7 +38,21 @@
             </div>
         </div>
 
-        @if ($categories->isEmpty())
+        @if (!empty($breadcrumb) && count($breadcrumb) > 1)
+            <nav class="mt-4 flex flex-wrap items-center gap-2 text-xs text-white/55">
+                <a href="{{ route('beyond.services.show', $service) }}" class="hover:text-brand-gold">{{ __('site.services.categories') }}</a>
+                @foreach ($breadcrumb as $crumb)
+                    <span class="text-brand-gold/50">/</span>
+                    @if ($loop->last)
+                        <span class="text-brand-gold">{{ \App\Support\SiteI18n::category($crumb['name']) }}</span>
+                    @else
+                        <a href="{{ route('beyond.services.show', [$service, $crumb['id']]) }}" class="hover:text-brand-gold">{{ \App\Support\SiteI18n::category($crumb['name']) }}</a>
+                    @endif
+                @endforeach
+            </nav>
+        @endif
+
+        @if ($parents->isEmpty())
             <div class="mt-10 rounded-2xl border border-brand-gold/30 bg-white/[0.03] p-8 text-center">
                 <p class="text-white/70 m-0">{{ __('site.services.no_categories') }}</p>
                 @if ($wa)
@@ -46,9 +60,11 @@
                 @endif
             </div>
         @else
-            <p class="text-[10px] tracking-[0.2em] uppercase text-brand-gold/80 mt-8 mb-3">{{ __('site.services.categories') }}</p>
+            <p class="text-[10px] tracking-[0.2em] uppercase text-brand-gold/80 mt-8 mb-3">
+                {{ !empty($current['has_children']) ? __('site.services.subcategories') : __('site.services.parent_categories') }}
+            </p>
             <div class="svc-cats flex md:grid md:grid-cols-4 lg:grid-cols-5 gap-3 overflow-x-auto pb-1">
-                @foreach ($categories as $cat)
+                @foreach (($subcategories->isNotEmpty() ? $subcategories : $categories) as $cat)
                     @php $active = $current && $current['id'] === $cat['id']; @endphp
                     <a href="{{ route('beyond.services.show', [$service, $cat['id']]) }}"
                        class="shrink-0 w-32 md:w-auto rounded-2xl border px-3 py-4 flex flex-col items-center text-center gap-2 transition-colors {{ $active ? 'border-brand-gold bg-brand-gold/15' : 'border-brand-gold/25 bg-white/[0.03] hover:border-brand-gold/70' }}">
@@ -61,53 +77,62 @@
                         </span>
                         <span class="text-sm font-semibold leading-tight {{ $active ? 'text-brand-gold' : 'text-white/90' }}">{{ \App\Support\SiteI18n::category($cat['name']) }}</span>
                         <span class="text-[11px] text-white/45">{{ trans_choice('site.services.items_count', $cat['count'], ['count' => $cat['count']]) }}</span>
+                        @if (!empty($cat['has_children']))
+                            <span class="text-[10px] uppercase tracking-wider text-brand-gold/70">{{ __('site.services.subcategories') }}</span>
+                        @endif
                     </a>
                 @endforeach
             </div>
 
-            @if ($current)
+            @if ($current && $subcategories->isNotEmpty() && $items->isEmpty())
+                <p class="text-white/55 text-sm mt-6 m-0">{{ __('site.services.choose_subcategory') }}</p>
+            @endif
+
+            @if ($current && $items->isNotEmpty())
                 <section class="mt-8 rounded-2xl border border-brand-gold/30 bg-white/[0.03] overflow-hidden">
                     <div class="flex items-center gap-3 px-5 py-4 border-b border-brand-gold/20">
-                        <i data-lucide="{{ $current['icon'] }}" class="w-5 h-5 text-brand-gold"></i>
+                        @if (!empty($current['image']))
+                            <img src="{{ $current['image'] }}" alt="" class="w-10 h-10 rounded-full object-cover border border-brand-gold/40">
+                        @else
+                            <i data-lucide="{{ $current['icon'] }}" class="w-5 h-5 text-brand-gold"></i>
+                        @endif
                         <h2 class="text-lg font-bold text-white m-0">{{ $currentName }}</h2>
                     </div>
-                    @if ($items->isEmpty())
-                        <p class="text-white/55 italic px-5 py-8 m-0">{{ __('site.services.no_items') }}</p>
-                    @else
-                        <ul class="divide-y divide-white/10 m-0 p-0 list-none">
-                            @foreach ($items as $item)
-                                <li class="px-4 sm:px-5 py-3">
-                                    <div class="flex items-center gap-3">
-                                        @if ($item['image'])
-                                            <button type="button" class="shrink-0 p-0 border-0 bg-transparent" @click="photo = {src: {{ json_encode($item['image']) }}, name: {{ json_encode(\App\Support\SiteI18n::item($item['name'])) }}}">
-                                                <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover bg-white/5 border border-brand-gold/20" loading="lazy">
-                                            </button>
-                                        @else
-                                            <span class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-white/5 flex items-center justify-center text-brand-gold/70 shrink-0">
-                                                <i data-lucide="{{ $current['icon'] }}" class="w-8 h-8"></i>
-                                            </span>
+                    <ul class="divide-y divide-white/10 m-0 p-0 list-none">
+                        @foreach ($items as $item)
+                            <li class="px-4 sm:px-5 py-3">
+                                <div class="flex items-center gap-3">
+                                    @if ($item['image'])
+                                        <button type="button" class="shrink-0 p-0 border-0 bg-transparent" @click="photo = {src: {{ json_encode($item['image']) }}, name: {{ json_encode(\App\Support\SiteI18n::item($item['name'])) }}}">
+                                            <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover bg-white/5 border border-brand-gold/20" loading="lazy">
+                                        </button>
+                                    @else
+                                        <span class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-white/5 flex items-center justify-center text-brand-gold/70 shrink-0">
+                                            <i data-lucide="{{ $item['icon'] ?? $current['icon'] }}" class="w-8 h-8"></i>
+                                        </span>
+                                    @endif
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-white font-semibold m-0 leading-snug">{{ \App\Support\SiteI18n::item($item['name']) }}</p>
+                                        @if ($item['details'] !== '')
+                                            <p class="text-white/55 text-xs m-0 mt-0.5 line-clamp-2">{{ \App\Support\SiteI18n::details($item['details']) }}</p>
                                         @endif
-                                        <div class="min-w-0 flex-1">
-                                            <p class="text-white font-semibold m-0 leading-snug">{{ \App\Support\SiteI18n::item($item['name']) }}</p>
-                                            @if ($item['details'] !== '')
-                                                <p class="text-white/55 text-xs m-0 mt-0.5 line-clamp-2">{{ \App\Support\SiteI18n::details($item['details']) }}</p>
-                                            @endif
-                                            <p class="text-brand-gold font-bold m-0 mt-1 tabular-nums">{{ number_format($item['price']) }} RWF</p>
-                                        </div>
-                                        <div class="flex items-center gap-2 shrink-0">
-                                            <button type="button" class="w-9 h-9 rounded-full border border-brand-gold/60 text-brand-gold text-lg leading-none" @click="dec({{ (int) $item['id'] }})" aria-label="−">−</button>
-                                            <span class="w-6 text-center tabular-nums" x-text="qtyOf({{ (int) $item['id'] }})">1</span>
-                                            <button type="button" class="w-9 h-9 rounded-full border border-brand-gold/60 text-brand-gold text-lg leading-none" @click="inc({{ (int) $item['id'] }})" aria-label="+">+</button>
-                                            <button type="button" class="ml-1 rounded-full bg-brand-gold text-[#0A0A0A] text-[11px] font-bold tracking-[0.12em] uppercase px-3 sm:px-4 h-9 disabled:opacity-50"
-                                                    :disabled="busy"
-                                                    @click="add({{ (int) $item['id'] }}, {{ json_encode(\App\Support\SiteI18n::item($item['name'])) }})">{{ __('site.menu.add') }}</button>
-                                        </div>
+                                        <p class="text-brand-gold font-bold m-0 mt-1 tabular-nums">{{ number_format($item['price']) }} RWF</p>
                                     </div>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @endif
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <button type="button" class="w-9 h-9 rounded-full border border-brand-gold/60 text-brand-gold text-lg leading-none" @click="dec({{ (int) $item['id'] }})" aria-label="−">−</button>
+                                        <span class="w-6 text-center tabular-nums" x-text="qtyOf({{ (int) $item['id'] }})">1</span>
+                                        <button type="button" class="w-9 h-9 rounded-full border border-brand-gold/60 text-brand-gold text-lg leading-none" @click="inc({{ (int) $item['id'] }})" aria-label="+">+</button>
+                                        <button type="button" class="ml-1 rounded-full bg-brand-gold text-[#0A0A0A] text-[11px] font-bold tracking-[0.12em] uppercase px-3 sm:px-4 h-9 disabled:opacity-50"
+                                                :disabled="busy"
+                                                @click="add({{ (int) $item['id'] }}, {{ json_encode(\App\Support\SiteI18n::item($item['name'])) }})">{{ __('site.menu.add') }}</button>
+                                    </div>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
                 </section>
+            @elseif ($current && empty($current['has_children']))
+                <p class="text-white/55 italic mt-8 m-0">{{ __('site.services.no_items') }}</p>
             @endif
         @endif
     </div>
@@ -148,22 +173,17 @@ function w2kServiceCart(initialCount) {
         async add(id, name) {
             if (this.busy) return;
             this.busy = true;
-            var quantity = this.qtyOf(id);
             try {
-                const params = new URLSearchParams({ id: String(id), quantity: String(quantity) });
-                const res = await fetch('{{ url('/addToCart') }}?' + params.toString(), {
+                const qty = this.qtyOf(id);
+                const res = await fetch('/addToCart?id=' + encodeURIComponent(id) + '&quantity=' + qty, {
                     credentials: 'same-origin',
-                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
                 });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || @json(__('site.menu.add_error')));
-                this.cartCount = data.number || 0;
-                this.toast = name + ' × ' + quantity;
-                this.qty = Object.assign({}, this.qty, { [id]: 1 });
-                window.dispatchEvent(new CustomEvent('cart-updated', { detail: { number: data.number || 0 } }));
-                setTimeout(() => { if (this.toast.indexOf(name) === 0) this.toast = ''; }, 3200);
-            } catch (e) {
-                this.toast = e.message || @json(__('site.menu.add_error'));
+                const data = await res.json().catch(function () { return {}; });
+                this.cartCount = data.number != null ? data.number : (this.cartCount + qty);
+                this.toast = name;
+                setTimeout(() => { this.toast = ''; }, 2200);
+                if (window.lucide) window.lucide.createIcons();
             } finally {
                 this.busy = false;
             }

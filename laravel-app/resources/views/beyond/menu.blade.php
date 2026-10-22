@@ -245,7 +245,12 @@
                    :class="activeId === 'menu-{{ $navGroup['id'] }}'
                        ? 'bg-brand-gold text-black border-brand-gold'
                        : 'border-brand-gold/40 text-brand-gold'"
-                   class="menu-chip shrink-0 border">
+                   class="menu-chip shrink-0 border inline-flex items-center gap-2">
+                    @if (!empty($navGroup['image']))
+                        <img src="{{ $navGroup['image'] }}" alt="" class="w-5 h-5 rounded-full object-cover">
+                    @elseif (!empty($navGroup['icon']))
+                        <i data-lucide="{{ $navGroup['icon'] }}" class="w-3.5 h-3.5"></i>
+                    @endif
                     {{ \App\Support\SiteI18n::category($navGroup['name']) }}
                 </a>
             @endforeach
@@ -272,40 +277,7 @@
                 } elseif (($group['name'] ?? '') === 'Fresh & Detox Juices') {
                     $sheetMod = ' menu-sheet--juice';
                 }
-                $buckets = [];
-                if (($group['name'] ?? '') === 'Iced & Specialty') {
-                    $iced = [];
-                    $specialty = [];
-                    foreach ($group['items'] as $bucketItem) {
-                        if (strpos($bucketItem['name'], 'Ice ') === 0) {
-                            $iced[] = $bucketItem;
-                        } else {
-                            $specialty[] = $bucketItem;
-                        }
-                    }
-                    $buckets = [
-                        ['title' => 'Iced Coffees', 'items' => $iced],
-                        ['title' => 'Specialty Coffees / Brewing', 'items' => $specialty],
-                    ];
-                } elseif (($group['name'] ?? '') === 'Coffee & Tea') {
-                    $buckets = [['title' => 'Espresso Beverages', 'items' => $group['items']]];
-                } elseif (($group['name'] ?? '') === 'Fresh & Detox Juices') {
-                    $fresh = [];
-                    $detox = [];
-                    foreach ($group['items'] as $bucketItem) {
-                        if (stripos($bucketItem['name'], 'Detox') !== false) {
-                            $detox[] = $bucketItem;
-                        } else {
-                            $fresh[] = $bucketItem;
-                        }
-                    }
-                    $buckets = [
-                        ['title' => 'Fresh Juices', 'items' => $fresh],
-                        ['title' => 'Detox Juices', 'items' => $detox],
-                    ];
-                } else {
-                    $buckets = [['title' => $group['name'], 'items' => $group['items']]];
-                }
+                $buckets = !empty($group['buckets']) ? $group['buckets'] : [['title' => $group['name'], 'icon' => $group['icon'] ?? 'tag', 'items' => $group['items']]];
             @endphp
             <section id="menu-{{ $group['id'] }}" class="menu-section px-3 sm:px-4 scroll-mt-[8.25rem] sm:scroll-mt-[9.5rem] lg:scroll-mt-[10.25rem]">
                 <article class="menu-sheet{{ $sheetMod }}">
@@ -323,11 +295,18 @@
                                 <p class="text-white/60 italic py-8 px-2">{{ __('site.menu.food_empty') }}</p>
                             @else
                                 @foreach ($buckets as $bucket)
-                                    @if ($bucket['title'] && count($bucket['items']))
-                                        <p class="menu-cat">{{ \App\Support\SiteI18n::bucket($bucket['title']) }}</p>
+                                    @if (!empty($bucket['title']) && count($bucket['items'] ?? []))
+                                        <p class="menu-cat inline-flex items-center gap-2">
+                                            @if (!empty($bucket['image']))
+                                                <img src="{{ $bucket['image'] }}" alt="" class="w-5 h-5 rounded-full object-cover">
+                                            @elseif (!empty($bucket['icon']))
+                                                <i data-lucide="{{ $bucket['icon'] }}" class="w-3.5 h-3.5"></i>
+                                            @endif
+                                            {{ \App\Support\SiteI18n::bucket($bucket['title']) }}
+                                        </p>
                                     @endif
                                     <div>
-                                        @foreach ($bucket['items'] as $item)
+                                        @foreach (($bucket['items'] ?? []) as $item)
                                             @php $itemKey = (string) $item['id']; @endphp
                                             <div class="menu-item" :class="isOpen({{ json_encode($itemKey) }}) ? 'bg-white/5' : ''">
                                                 <button type="button"
@@ -337,6 +316,10 @@
                                                     <div class="menu-item-line">
                                                         @if (!empty($item['image']))
                                                             <img src="{{ $item['image'] }}" alt="" class="menu-item-photo">
+                                                        @else
+                                                            <span class="menu-item-photo flex items-center justify-center text-brand-gold/80 border border-brand-gold/30">
+                                                                <i data-lucide="{{ $item['icon'] ?? ($bucket['icon'] ?? 'coffee') }}" class="w-4 h-4"></i>
+                                                            </span>
                                                         @endif
                                                         <span class="menu-item-name">
                                                             {{ \App\Support\SiteI18n::item($item['name']) }}

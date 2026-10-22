@@ -53,7 +53,7 @@
         @forelse($guestReviews['rows'] as $review)
             <article class="w2k-eulogy">
                 <cite>{{ $review->guest_name ?: __('site.reviews.guest') }}</cite>
-                <time>{{ \Carbon\Carbon::parse($review->created_at)->format('d M Y') }}</time>
+                <time>{{ \Carbon\Carbon::parse($review->created_at)->format('d M Y') }}@if(!empty($review->country)) · {{ $review->country }}@endif</time>
                 @if($review->comment)
                     <p>{{ $review->comment }}</p>
                 @endif

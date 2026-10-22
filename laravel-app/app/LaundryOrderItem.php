@@ -9,6 +9,7 @@ class LaundryOrderItem extends Model
     const STATUS_RECEIVED = 'received';
     const STATUS_CLEANING = 'cleaning';
     const STATUS_READY = 'ready';
+    const STATUS_HOLD = 'hold';
     const STATUS_COLLECTED = 'collected';
 
     protected $fillable = [
@@ -22,6 +23,7 @@ class LaundryOrderItem extends Model
         'note',
         'collect_at',
         'status',
+        'previous_status',
         'accepted_at',
         'accepted_by',
         'cleaned_at',

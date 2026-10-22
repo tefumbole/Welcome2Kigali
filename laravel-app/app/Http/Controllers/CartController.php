@@ -37,7 +37,25 @@ class CartController extends Controller
             $count += $qty;
         }
 
-        return view('beyond.cart', compact('cart', 'total', 'count'));
+        $orderService = CafeOrder::service(session('cafe_service', 'Eat in'));
+        $takeawayFee = CafeOrder::TAKEAWAY_FEE;
+
+        return view('beyond.cart', compact('cart', 'total', 'count', 'orderService', 'takeawayFee'));
+    }
+
+    public function setService(Request $request)
+    {
+        $service = CafeOrder::service($request->query('service', $request->input('service', 'Eat in')));
+        session(['cafe_service' => $service]);
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'service' => $service,
+                'fee' => CafeOrder::takeawayFee($service),
+            ]);
+        }
+
+        return back();
     }
 
     public function rentCart(){
@@ -60,8 +78,9 @@ class CartController extends Controller
         }
 
         $takeawayFee = CafeOrder::TAKEAWAY_FEE;
+        $orderService = CafeOrder::service(session('cafe_service', 'Eat in'));
 
-        return view('beyond.checkout', compact('cart', 'total', 'count', 'takeawayFee'));
+        return view('beyond.checkout', compact('cart', 'total', 'count', 'takeawayFee', 'orderService'));
     }
 
     public function rentCheckout(){
@@ -463,7 +482,8 @@ class CartController extends Controller
         $data = $request->all();
         $grand_total = 0;
         $order_array = [];
-        $data['address'] = CafeOrder::service($request->input('address', $request->input('service')));
+        $data['address'] = CafeOrder::service($request->input('address', $request->input('service', session('cafe_service', 'Eat in'))));
+        session(['cafe_service' => $data['address']]);
         $takeawayFee = CafeOrder::takeawayFee($data['address']);
         $data['shipping_charges'] = $takeawayFee;
         if(!Auth::user()) {

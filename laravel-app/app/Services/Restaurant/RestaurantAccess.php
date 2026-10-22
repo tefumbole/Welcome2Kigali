@@ -154,8 +154,24 @@ class RestaurantAccess
             'awaiting' => 'Awaiting',
             'accepted' => 'Accepted',
             'ready' => 'Ready for Delivery',
+            'hold' => 'On Hold',
             'delivered' => 'Delivered',
         ];
+    }
+
+    public static function helpHashForLane($lane)
+    {
+        if ($lane === 'online') {
+            return 'orders';
+        }
+        if ($lane === 'coffee') {
+            return 'restaurant-coffee';
+        }
+        if ($lane === 'bar') {
+            return 'restaurant-bar';
+        }
+
+        return 'restaurant';
     }
 
     public static function seeLane($user, $lane)
@@ -200,6 +216,9 @@ class RestaurantAccess
         $status = $item ? $item->status : null;
         if ($status === 'preparing') {
             $status = 'accepted';
+        }
+        if ($status === 'hold') {
+            $status = $item->previous_status === 'preparing' ? 'accepted' : ($item->previous_status ?: 'awaiting');
         }
         $names = ['orders-'.$action];
         if ($lane) {

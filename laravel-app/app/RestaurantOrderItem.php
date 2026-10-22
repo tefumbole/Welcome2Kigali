@@ -10,6 +10,7 @@ class RestaurantOrderItem extends Model
         'restaurant_order_id', 'product_sale_id', 'product_id', 'product_name',
         'department', 'lane', 'qty', 'status', 'customer_comment', 'internal_note',
         'accepted_by', 'accepted_at', 'estimate_minutes', 'original_estimate_minutes',
+        'previous_status',
         'expected_ready_at', 'ready_by', 'ready_at', 'delivered_by', 'delivered_at',
         'attempt_no', 'remake_of_id',
         'proposed_price', 'proposed_note', 'client_signature', 'client_signed_at',

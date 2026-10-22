@@ -1,18 +1,53 @@
 @extends('layout.main')
 
 @section('content')
-@php $hv = \App\Support\AppVersion::erp(); @endphp
+@php
+    $hv = $appVersion ?? \App\Support\AppVersion::erp();
+    $logo = $appLogo ?? \App\Support\SiteBrand::logoUrl();
+    $title = $siteTitle ?? 'Welcome 2 Kigali';
+    $show = function ($key) use ($topics, $focus) {
+        return isset($topics[$key]) && (! $focus || $focus === $key);
+    };
+    $helpIndexUrl = url('/admin/help');
+@endphp
 <style>
     .w2k-help { max-width: 1100px; }
     .w2k-help-hero {
         background: linear-gradient(135deg, #1a1a1a 0%, #3a2c16 60%, #c5a059 140%);
         color: #f7f1e8;
         border-radius: 18px;
-        padding: 28px 28px 22px;
+        padding: 22px 26px 18px;
         margin-bottom: 20px;
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        flex-wrap: wrap;
     }
-    .w2k-help-hero h2 { margin: 0 0 6px; font-size: 28px; }
-    .w2k-help-hero p { margin: 0; color: #e8d7b0; }
+    .w2k-help-hero-logo {
+        width: 36px;
+        height: 36px;
+        object-fit: contain;
+        border-radius: 8px;
+        background: #fff;
+        padding: 3px;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+    .w2k-help-hero-body { flex: 1; min-width: 200px; }
+    .w2k-help-hero h2 { margin: 0 0 6px; font-size: 26px; }
+    .w2k-help-hero p { margin: 0; color: #e8d7b0; font-size: 14px; }
+    .w2k-help-version {
+        margin-left: auto;
+        font-size: 12px;
+        letter-spacing: .04em;
+        color: #c5a059;
+        background: rgba(0,0,0,.28);
+        border: 1px solid rgba(197,160,89,.45);
+        border-radius: 999px;
+        padding: 6px 12px;
+        align-self: flex-start;
+        white-space: nowrap;
+    }
     .w2k-help-nav {
         display: flex;
         flex-wrap: wrap;
@@ -31,6 +66,24 @@
         text-decoration: none;
     }
     .w2k-help-nav a:hover, .w2k-help-nav a.is-active { background: #1a1a1a; color: #c5a059; border-color: #1a1a1a; }
+    .w2k-help-focus-bar {
+        background: #fff8ea;
+        border: 1px solid #ead9b4;
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        font-size: 14px;
+        color: #5c4630;
+    }
+    .w2k-help-focus-bar a {
+        color: #1a1a1a;
+        font-weight: 700;
+        text-decoration: underline;
+    }
     .w2k-help-card {
         background: #fffdf8;
         border: 1px solid #ead9b4;
@@ -77,118 +130,148 @@
 
 <div class="container-fluid w2k-help">
     <div class="w2k-help-hero">
-        <span class="w2k-help-kicker">Welcome 2 Kigali</span>
-        <h2>Staff user guide</h2>
-        <p>How to run Welcome 2 Kigali — cafe, website, laundry, POS (Cash / MoMo / VISA), rentals, quotations, contracts, membership, and accounts. Open Help from the last tab on any module, or from the bottom of the sidebar.</p>
+        @if($logo)
+            <img class="w2k-help-hero-logo" src="{{ $logo }}" alt="{{ $title }} logo">
+        @endif
+        <div class="w2k-help-hero-body">
+            <span class="w2k-help-kicker">{{ $title }}</span>
+            <h2>@if($focus && isset($topics[$focus])){{ $topics[$focus]['title'] }} help@else Staff user guide @endif</h2>
+            <p>
+                @if($focus && isset($topics[$focus]))
+                    This page shows help for <strong>{{ $topics[$focus]['title'] }}</strong> only — opened from that menu’s Help tab.
+                @else
+                    How to run {{ $title }} — cafe, website, laundry, POS, rentals, quotations, contracts, membership, and accounts. Open Help from the last tab on any module you can access, or from the sidebar.
+                @endif
+            </p>
+        </div>
+        <span class="w2k-help-version" title="Application version">{{ $hv }}</span>
     </div>
+
+    @if($focus)
+        <div class="w2k-help-focus-bar">
+            <span>Focused on this menu’s help.</span>
+            <a href="{{ $helpIndexUrl }}">Show all help you can access</a>
+        </div>
+    @endif
 
     <div class="w2k-help-nav">
-        <a href="#start">Start</a>
-        <a href="#find-help">Find Help</a>
-        <a href="#website">Website</a>
-        <a href="#products">Products</a>
-        <a href="#catalog">Catalog</a>
-        <a href="#pos">POS</a>
-        <a href="#rental">Rental</a>
-        <a href="#quotations">Quotations</a>
-        <a href="#contracts">Contracts</a>
-        <a href="#members">Membership</a>
-        <a href="#laundry">Laundry</a>
-        <a href="#restaurant">Orders</a>
-        <a href="#expenses">Expenses</a>
-        <a href="#returns">Returns</a>
-        <a href="#orders">Online orders</a>
-        <a href="#assets">Assets</a>
-        <a href="#events">Events</a>
-        <a href="#purchase">Purchase</a>
-        <a href="#payments">Payments</a>
-        <a href="#people">People</a>
-        <a href="#content">Site Content</a>
-        <a href="#accounting">Accounting</a>
-        <a href="#letters">Letters</a>
-        <a href="#invitations">Invitations</a>
-        <a href="#internships">Internships</a>
-        <a href="#tasks">Tasks &amp; jobs</a>
-        <a href="#reports">Reports</a>
-        <a href="#settings">Settings</a>
-        <a href="#transfer">Transfer</a>
-        <a href="#whatsapp">WhatsApp links</a>
+        @foreach($topics as $key => $meta)
+            @continue($focus && $focus !== $key)
+            @php
+                $href = $focus
+                    ? $helpIndexUrl.'?topic='.urlencode($key)
+                    : '#'.$key;
+            @endphp
+            <a href="{{ $href }}" class="{{ $focus === $key ? 'is-active' : '' }}" data-topic="{{ $key }}">{{ $meta['nav'] }}</a>
+        @endforeach
     </div>
 
+    @if($show('start'))
     <div class="w2k-help-card" id="start">
-        <h3>1. Sign in</h3>
-        <p>Open <a href="{{ url('/login') }}" target="_blank" rel="noopener">welcome2kigali.net/login</a>. Use your staff email, username, or WhatsApp number. After sign-in you can switch workspace if you are both a member and staff.</p>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/login.png') }}?v={{ $hv }}" alt="Kigali Expats Club sign-in card">
-        <p class="w2k-help-cap">Live login: spinning club logo on a <strong>white</strong> disc with a gold ring, then <strong>Kigali Expats Club</strong>, Email or Username, Password, gold Forgot username or password, Login with WhatsApp OTP, and the black Sign in button. Version (W2K_V_…) is at the bottom of the card.</p>
+        <h3>Sign in</h3>
+        <p>Open <a href="{{ url('/login') }}" target="_blank" rel="noopener">{{ parse_url(url('/'), PHP_URL_HOST) }}/login</a>. Use your staff email, username, or WhatsApp number. After sign-in you can switch workspace if you are both a member and staff.</p>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/login.png') }}?v={{ $hv }}" alt="Staff sign-in card">
+        <p class="w2k-help-cap">Login card: club logo, Email or Username, Password, Forgot username or password, Login with WhatsApp OTP, and Sign in. Version ({{ $hv }}) appears at the bottom of the card.</p>
         <ol>
-            <li>Click <strong>Login</strong> in the public header (gold button, top right).</li>
+            <li>Click <strong>Login</strong> in the public header.</li>
             <li>Enter email / WhatsApp number / username and password, then Sign in.</li>
             <li>Or tap <strong>Login with WhatsApp OTP</strong> if you prefer a code.</li>
             <li>You land on the admin dashboard. The gold <strong>POS</strong> button is in the top bar if you sell.</li>
         </ol>
     </div>
+    @endif
 
+    @if($show('find-help'))
     <div class="w2k-help-card" id="find-help">
         <h3>Where to find Help</h3>
-        <p>Help is always one click away. Use the last horizontal tab on any module, the Help menu at the bottom of the sidebar (above your profile), or the Help icon in the top bar next to POS.</p>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/tabs-help.png') }}?v={{ $hv }}" alt="Rental Booking List with two-line coffee tabs and Help last">
-        <p class="w2k-help-cap">Rental Module tabs wrap onto two lines: Booking Create, Booking List, Booking Request, Booked Products, Booking Reminder, Awaiting Signature, then Pending Review, Signed Contracts, and gold-outline <strong>Help</strong> last. Booking List has a date range and Submit.</p>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/sidebar-help.png') }}?v={{ $hv }}" alt="Sidebar with Help as the last menu item above the profile">
-        <p class="w2k-help-cap">Scroll the black sidebar to the bottom. <strong>Help</strong> sits last, under Settings, just above your profile. Module tabs also end with Help (Expense Category, Expense List, Help).</p>
+        <p>Help is always one click away. Use the last horizontal tab on any module you can see, the Help menu at the bottom of the sidebar, or the Help icon in the top bar next to POS.</p>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/tabs-help.png') }}?v={{ $hv }}" alt="Module tabs ending with Help">
+        <p class="w2k-help-cap">Every module’s tab row ends with <strong>Help</strong>. That link opens only this module’s help (permission-checked).</p>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/sidebar-help.png') }}?v={{ $hv }}" alt="Sidebar with Help as the last menu item">
+        <p class="w2k-help-cap">Scroll the black sidebar to the bottom. <strong>Help</strong> sits last, under Settings, just above your profile.</p>
         <ol>
-            <li>Work in any module (Product, Rental, Sale, Expense, …).</li>
-            <li>Click the last tab, labelled Help.</li>
-            <li>Or scroll the sidebar to Help, or use the question-mark Help in the header next to POS.</li>
+            <li>Work in any module you have permission for.</li>
+            <li>Click the last tab, labelled Help — you see that menu’s guide only.</li>
+            <li>Or open Help in the sidebar for the full guide filtered to your permissions.</li>
         </ol>
     </div>
+    @endif
 
+    @if($show('website'))
     <div class="w2k-help-card" id="website">
-        <h3>2. Public website</h3>
-        <p>Guests see Home, Menu, Events, About, and Become a Member in the black header (with EN / FR / RW). Those pages are edited in <strong>Site Content</strong> — not in Products.</p>
+        <h3>Public website</h3>
+        <p>Guests see Home, Menu, Events, About, Reviews, and Become a Member in the header (with EN / FR / RW). Edit page words in <strong>Site Content</strong> — not in Products.</p>
         <h4>Home</h4>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/home.png') }}?v={{ $hv }}" alt="Home page with the sunrise Kigali artwork and three gold buttons">
-        <p class="w2k-help-cap">Home fills the screen with the current sunrise <strong>Welcome 2 Kigali</strong> artwork (KIGALI wordmark over the city). Three gold buttons sit on the image — <strong>Join the Club</strong>, <strong>Events</strong>, and <strong>Cafe Menu</strong>. Language switcher EN / FR / RW is in the header. Version (W2K_V_…) is in the bottom-right.</p>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/home.png') }}?v={{ $hv }}" alt="Home page hero">
+        <p class="w2k-help-cap">Home fills the screen with the current Welcome 2 Kigali artwork. Gold CTAs and the language switcher sit in the header. Version is shown on the public site.</p>
         <h4>Cafe menu (what guests order)</h4>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/menu.png') }}?v={{ $hv }}" alt="Cafe and Restaurant menu Coffee and Tea list">
-        <p class="w2k-help-cap">Menu title is Cafe &amp; Restaurant. Category pills: Coffee &amp; Tea (active), Iced &amp; Specialty, Tea &amp; Hot Beverages, Fresh &amp; Detox Juices, Smoothies, Food. Espresso beverages include Espresso 2,000, Americano 2,000, Macchiato 2,000, Cortado 2,000, Flat White 2,500, Cappuccino 3,000, Café Latte 3,000, Caramel Macchiato 4,000, Café Mocha 4,000, and African Coffee 4,000. A photo sits on the right. Click a drink to add it to the cart.</p>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/menu.png') }}?v={{ $hv }}" alt="Cafe and Restaurant menu">
+        <p class="w2k-help-cap">Menu uses parent categories and sub-categories with images. Guests pick Dine In or Take away (+1,000 FRW packing). Cart checkout creates an online cafe order.</p>
         <h4>About the club</h4>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/about.png') }}?v={{ $hv }}" alt="About page with vision, mission, and Mr. Sylvester Takwa">
-        <p class="w2k-help-cap">About: Our Vision and Our Mission on cream, then Our Leadership with Mr. Sylvester Takwa, CEO / Director. Footer has Restaurant &amp; Cafe, Lounge &amp; Hospitality, contact +250 793 761 617, Kigali, Rwanda, and Join the Club.</p>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/about.png') }}?v={{ $hv }}" alt="About page">
+        <p class="w2k-help-cap">About covers vision, mission, and leadership. Footer lists restaurant &amp; cafe, lounge, and contact details.</p>
         <h4>Events</h4>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/events.png') }}?v={{ $hv }}" alt="Club Events page with Upcoming filter">
-        <p class="w2k-help-cap">Club Events: search, Filter (Upcoming), Type (All types), Search. Empty state reads No Events Found — try a different filter or check back soon. Add events under Admin → Events and they appear here automatically.</p>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/events.png') }}?v={{ $hv }}" alt="Club Events page">
+        <p class="w2k-help-cap">Club Events: search and filters. Add events under Admin → Events and they appear here automatically.</p>
         <h4>Become a Member</h4>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/register.png') }}?v={{ $hv }}" alt="Become a Member choose a plan cards">
-        <p class="w2k-help-cap">Become a Member → Choose a plan. Promotion Demo 0 FRW for 90 days, Monthly 15,000 FRW, Quarterly 40,000 FRW, Annual 140,000 FRW. Members have 10% discount on all products. Tap a plan, then scan ID or passport to continue.</p>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/register.png') }}?v={{ $hv }}" alt="Become a Member plans">
+        <p class="w2k-help-cap">Become a Member (<a href="{{ url('/membership/apply') }}" target="_blank" rel="noopener">/membership/apply</a>) → choose a plan, then continue with ID / passport scan when required.</p>
     </div>
+    @endif
 
-    <div class="w2k-help-card" id="products">
-        <h3>3. Products — cafe items</h3>
-        <p>Open <strong>Product</strong> in the sidebar. Tabs are Category, Product List, Add Product, Help.</p>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/products-list.png') }}?v={{ $hv }}" alt="Product List with African Coffee, African Tea, Americano">
-        <p class="w2k-help-cap">Product List: + Add Product and Import Product buttons, then the table. Example rows: African Coffee W2K-010 (Coffee &amp; Tea, 4,000), African Tea W2K-029 (Tea &amp; Hot Beverages, 3,000), Americano W2K-002 (2,000), Avocado Smoothie W2K-048 (Smoothies, 5,000). Click a name, quantity, price, cost, brand, category, or unit to change it. Press Enter or click away to save.</p>
+    @if($show('reviews'))
+    <div class="w2k-help-card" id="reviews">
+        <h3>Guest reviews</h3>
+        <p>Public reviews live on the <strong>Reviews</strong> tab (not on Home). Guests rate and comment there. Signature, country, and OTP phone are collected for verification on the backend; staff moderate under Site Content → Reviews when they have permission.</p>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/reviews.png') }}?v={{ $hv }}" alt="Public Reviews page">
+        <p class="w2k-help-cap">Reviews page: guests leave ratings and comments here only. Home no longer embeds the review form.</p>
         <ol>
-            <li>Search for <em>Espresso</em> or code <em>W2K-001</em>.</li>
-            <li>Click the price cell if a drink changes (e.g. Cappuccino 3,000 FRW).</li>
-            <li>Click quantity to set stock. That number is what POS and the list show.</li>
-            <li>Use Action → Edit only when you need image, tax, or membership benefit.</li>
+            <li>Guest opens Reviews from the public header.</li>
+            <li>They leave a rating and comment; verification fields are handled securely.</li>
+            <li>Approved reviews show on the Reviews page only.</li>
+        </ol>
+    </div>
+    @endif
+
+    @if($show('services'))
+    <div class="w2k-help-card" id="services">
+        <h3>Services catalog</h3>
+        <p>Public services use parent categories with sub-categories and menu images. Manage structure under Site Content / service catalog so the Menu page matches live offerings (coffee, food, laundry items, etc.).</p>
+        <ol>
+            <li>Set parent categories, then nest sub-categories under them.</li>
+            <li>Attach images so guests see the current look on Menu.</li>
+            <li>Laundry and cafe items stay in their own flows (POS / Orders / Laundry boards).</li>
+        </ol>
+    </div>
+    @endif
+
+    @if($show('products'))
+    <div class="w2k-help-card" id="products">
+        <h3>Products — cafe &amp; retail items</h3>
+        <p>Open <strong>Product</strong> in the sidebar. Tabs include Category, Product List, Add Product, and Help.</p>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/products-list.png') }}?v={{ $hv }}" alt="Product List">
+        <p class="w2k-help-cap">Product List: search, add/import, and inline edit for name, quantity, price, cost, brand, category, and unit.</p>
+        <ol>
+            <li>Search by name or product code.</li>
+            <li>Click a price or quantity cell to update stock or FRW price; press Enter or click away to save.</li>
+            <li>Use Action → Edit for image, tax, or membership benefit.</li>
         </ol>
         <h4>Add a product</h4>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/add-product.png') }}?v={{ $hv }}" alt="Add Product form with gold fields">
-        <p class="w2k-help-cap">Add Product (brown tab). Sections: The Item, Units &amp; Stock, Price. Gold-outline fields for type, name, code, barcode, brand, category, units, cost, price, quantity, and rent prices. Code is generated; tap the refresh icon to make a new one. Image is optional.</p>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/add-product.png') }}?v={{ $hv }}" alt="Add Product form">
+        <p class="w2k-help-cap">Add Product: type, name, code, barcode, brand, category, units, cost, price, quantity, and optional image.</p>
         <ol>
             <li>Product → Add Product.</li>
-            <li>Name: e.g. <em>Espresso</em>. Leave the code or press refresh.</li>
-            <li>Category: Coffee &amp; Tea. Unit: Portion. Price: 2000. Cost: 2000.</li>
-            <li>Paste or drop a photo if you have one. Save product.</li>
-            <li>It appears on Product List and on the public Menu.</li>
+            <li>Name the item, pick category and unit, set cost and price.</li>
+            <li>Save — it appears on Product List and on the public Menu when active.</li>
         </ol>
     </div>
+    @endif
 
+    @if($show('catalog'))
     <div class="w2k-help-card" id="catalog">
-        <h3>4. Live cafe catalog</h3>
-        <p>These are the products currently in the Welcome 2 Kigali database (prices in FRW, tax included on the public menu).</p>
-        @foreach($grouped as $category => $items)
+        <h3>Live cafe catalog</h3>
+        <p>Active products in the database (prices in FRW). This table updates when you add or rename items.</p>
+        @forelse($grouped as $category => $items)
             <h4>{{ $category }} ({{ $items->count() }})</h4>
             <div class="table-responsive">
                 <table class="w2k-help-table">
@@ -212,274 +295,349 @@
                     </tbody>
                 </table>
             </div>
-        @endforeach
-        <p class="w2k-help-cap mt-2">{{ $products->count() }} active products. This table updates when you add or rename items.</p>
+        @empty
+            <p class="w2k-help-cap">No active products to list, or you opened Help focused on another topic.</p>
+        @endforelse
+        @if($products->count())
+            <p class="w2k-help-cap mt-2">{{ $products->count() }} active products.</p>
+        @endif
     </div>
+    @endif
 
+    @if($show('pos'))
     <div class="w2k-help-card" id="pos">
-        <h3>5. POS and cafe orders</h3>
+        <h3>POS and cafe orders</h3>
         <p>Click the gold <strong>POS</strong> button in the top bar (next to Help).</p>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/pos.jpg') }}?v={{ $hv }}" alt="POS walk-in ticket with Cash Visa MoMo payment buttons">
-        <p class="w2k-help-cap">POS: customer on the left (Walk-in or a named client), product search, ticket columns Product / Batch No / Price / Quantity / SubTotal. Right side: Category, Brand, Featured. Payment bar (default): <strong>Send to Laundry, Cash, MoMo, VISA, Deposit, Credit, Group</strong>, then Cancel and Recent. Pay later and JE are hidden unless you turn them on. Reorder or rename these under <strong>Site Content → POS Payments</strong>.</p>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/pos.jpg') }}?v={{ $hv }}" alt="POS ticket and payment buttons">
+        <p class="w2k-help-cap">POS: customer on the left, product search and ticket in the middle, category grid on the right. Payment bar includes Send to Laundry, Cash, MoMo, VISA, Deposit, Credit, Group (reorder under Site Content → POS Payments). One <strong>Comment</strong> field per line follows the item. Grand Total stays visible while you scroll.</p>
         <ol>
             <li>Choose Walk-in Customer or pick a member. Their phone is used for MoMo and WhatsApp.</li>
-            <li>Search a drink or dress by name/code, or tap Category / Brand / Featured and add lines to the ticket.</li>
-            <li>Take <strong>Cash</strong>, <strong>VISA</strong>, <strong>Credit</strong>, <strong>Deposit</strong>, or <strong>MoMo</strong>. There is one MoMo button — MTN (078 / 079) or Airtel (072 / 073) is detected from the number.</li>
-            <li>For a laundry dress, add a comment on the line, fill <strong>Laundry comments</strong>, then <strong>Send to Laundry</strong>. The ticket waits under Laundry → Awaiting Acceptance.</li>
-            <li>For coffee, food, or drinks, leave Service on <strong>Dine In</strong> (or choose Take Away), pick a table and waitress, and add a note on the line. One sale is one bill. Coffee &amp; Tea, Restaurant, and Bar each get their own tab under <strong>Orders</strong>. Laundry stays on the laundry boards. Fashion and other goods stay on the bill and skip Orders.</li>
-            <li>A website cart for those same categories appears only under <strong>Orders → Online orders</strong>.</li>
+            <li>Add lines by search or Category / Brand / Featured. Adjust qty; price and description stay readable beside qty.</li>
+            <li>Set Service to <strong>Dine In</strong> or <strong>Take Away</strong> (+1,000 FRW packing for take away), table, and waitress when serving cafe food/drinks.</li>
+            <li>Pay with <strong>Cash</strong>, <strong>VISA</strong>, <strong>Credit</strong>, <strong>Deposit</strong>, or <strong>MoMo</strong> (MTN 078/079 or Airtel 072/073 from the number).</li>
+            <li>Laundry dresses: comment + <strong>Send to Laundry</strong> → Laundry boards. Cafe food/coffee/bar lines go to <strong>Orders</strong> lanes. Fashion and other goods stay on the sale only.</li>
         </ol>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/pos-momo.png') }}?v={{ $hv }}" alt="Finalize Sale MoMo with customer number and Paying Amount">
-        <p class="w2k-help-cap">Finalize Sale → Paid By <strong>MoMo</strong>. The customer’s phone fills automatically and can be edited. Paying Amount can be less than Total (partial payment); the rest stays due. The client approves on the phone. The sale is marked paid only after PawaPay confirms the money — then the invoice opens for print and the client gets WhatsApp.</p>
-        <div class="w2k-help-tip">If Add Cash Register opens first, enter 0 (or the cash in the drawer) and submit. Then POS loads. Do not close the MoMo wait screen until it shows paid — ACCEPTED is not yet money received.</div>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/pos-momo.png') }}?v={{ $hv }}" alt="Finalize Sale MoMo">
+        <p class="w2k-help-cap">Finalize Sale → MoMo: phone auto-fills, partial Paying Amount allowed. Sale is paid only after PawaPay confirms — then invoice print and WhatsApp.</p>
+        <div class="w2k-help-tip">If Add Cash Register opens first, enter 0 (or drawer cash) and submit. Do not close the MoMo wait screen until it shows paid.</div>
     </div>
+    @endif
 
+    @if($show('content'))
     <div class="w2k-help-card" id="content">
-        <h3>6. Site Content (website words and menus)</h3>
-        <p>Use <strong>Site Content</strong> in the sidebar (same module as BeyondTechWorld) for pages and menus. It does not change products, members, or sales. Grant it under <strong>Settings → Role Permission → Site Content</strong>.</p>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/site-content.png') }}?v={{ $hv }}" alt="Site Content Home tab with page and menu pills">
-        <p class="w2k-help-cap">Site Content. Pages: Home, About, Services (supermarket, bar &amp; restaurant, coffee, laundry, fashion), Projects, Contact, Gallery, Menu, Reviews, Events, Become a Member, Footer. Menus &amp; Order: Landing Menu, Side Bars, People, Admin settings order, Content Tabs, and <strong>POS Payments</strong>. Admin modules include About Us Leaders, Digital Invitations, Internships, Membership, Laundry, and Orders. Reorder them in Side Bars; Site Content stays near the bottom and Help stays last.</p>
+        <h3>Site Content</h3>
+        <p>Use <strong>Site Content</strong> for public pages and menu order. It does not change products, members, or sales. Grant it under <strong>Settings → Role Permission → Site Content</strong>.</p>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/site-content.png') }}?v={{ $hv }}" alt="Site Content tabs">
+        <p class="w2k-help-cap">Pages (Home, About, Menu, Reviews, Events, Become a Member, Footer, …) and Menus &amp; Order (Landing Menu, Side Bars, POS Payments, …).</p>
         <ul>
-            <li><strong>Pages</strong> — Home buttons, About vision/mission, Events title, Menu title, Become a Member, Footer.</li>
-            <li><strong>Landing Menu</strong> — show, hide, rename, reorder Home / Menu / Events / About / Become a Member.</li>
-            <li><strong>Side Bars</strong> — same for the admin sidebar, including About Us Leaders, Digital Invitations, Internships, Membership, Laundry, and <strong>Orders</strong>.</li>
-            <li><strong>POS Payments</strong> — default order Send to Laundry, Cash, MoMo, VISA, Deposit, Credit, Group. Hide Pay later / JE unless you use them. Labels can be renamed.</li>
-            <li>Press Save on a tab, then open <a href="{{ url('/') }}" target="_blank" rel="noopener">the public site</a> to check.</li>
+            <li><strong>Pages</strong> — Home buttons, About, Events title, Menu title, Reviews, Become a Member, Footer.</li>
+            <li><strong>Landing Menu</strong> — show, hide, rename, reorder public header links.</li>
+            <li><strong>Side Bars</strong> — admin sidebar order, including Membership, Laundry, and Orders.</li>
+            <li><strong>POS Payments</strong> — button order and labels (Send to Laundry, Cash, MoMo, VISA, …).</li>
         </ul>
     </div>
+    @endif
 
+    @if($show('members'))
     <div class="w2k-help-card" id="members">
-        <h3>7. Membership</h3>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/membership.png') }}?v={{ $hv }}" alt="Membership dashboard with two-line tabs ending in Help">
-        <p class="w2k-help-cap">Membership dashboard. Tabs wrap two lines: Dashboard, Applications, Members, Plans, Promotions, Benefits, Payments, Agreements, Documents, then Notifications, Reports, Audit, Settings, and <strong>Help</strong> last. Cards show Active, Expiring (30 days), Expired, Pending applications, Promotional, Paid members, Registration revenue, Renewal revenue, Free-product value, Promo → paid %.</p>
+        <h3>Membership</h3>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/membership.png') }}?v={{ $hv }}" alt="Membership dashboard">
+        <p class="w2k-help-cap">Membership tabs end with Help. Dashboard cards cover active, expiring, applications, and revenue.</p>
         <ol>
-            <li>Guests apply on Become a Member (choose a plan, then scan ID).</li>
+            <li>Guests apply on Become a Member.</li>
             <li>Staff review under Membership → Applications.</li>
-            <li>Approved members can sign in and use POS benefits if you enabled them on a product.</li>
+            <li>Approved members can sign in and use POS benefits when enabled on a product.</li>
         </ol>
-        <p>Settings (units, brands, tax, warehouse) stay under the <strong>Settings</strong> hub — not Site Content.</p>
     </div>
+    @endif
 
+    @if($show('laundry'))
     <div class="w2k-help-card" id="laundry">
         <h3>Laundry</h3>
-        <p>Dresses sold on POS (Laundry category) open a ticket. Staff move it: <strong>Awaiting Acceptance</strong> → <strong>Awaiting cleaning</strong> → <strong>Ready for collection</strong> → <strong>Collect</strong> (signature). The client is WhatsApp’d at each step. Sidebar badges show how many dresses are in each stage.</p>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/laundry.png') }}?v={{ $hv }}" alt="Laundry Ready for collection customer list">
-        <p class="w2k-help-cap">Ready for collection: one row per customer, with dress count, collection time, and Paid / Due. Open a name to take remaining cash or MoMo, then Collect. The client (or nominee) must sign.</p>
+        <p>Dresses sold on POS (Laundry category) open a ticket. Flow: <strong>Awaiting Acceptance</strong> → <strong>Awaiting cleaning</strong> → <strong>Ready for collection</strong> → <strong>Collect</strong> (signature). WhatsApp updates the client at each step. Sidebar badges show pending counts; the order pop alerts you to new work.</p>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/laundry.png') }}?v={{ $hv }}" alt="Laundry Ready for collection">
+        <p class="w2k-help-cap">Ready for collection: one row per customer, dress count, collection time, Paid / Due. Open a name to take remaining payment, then Collect with signature.</p>
         <ol>
-            <li>On POS, add a laundry dress, write a comment (stain, no starch, …) on the line and in <strong>Laundry comments</strong>, then <strong>Send to Laundry</strong> or take cash / MoMo.</li>
-            <li>Open <strong>Laundry → Awaiting Acceptance</strong>. Only customer names are listed. Open the name, tick the dresses you are accepting, set collection date and time, then Accept. Unaccepted dresses stay here and never appear under Awaiting cleaning.</li>
-            <li>On <strong>Awaiting cleaning</strong>, tick the dresses that are actually clean (one or many), then <strong>Mark selected cleaned</strong>. Each cleaned line is stamped with the staff name who clicked it.</li>
-            <li>On <strong>Ready for collection</strong>, take remaining payment if needed, then <strong>Collect</strong>. Signed tickets leave this board.</li>
-            <li>The client Track / scan link shows item status and a countdown to the collection date.</li>
+            <li>On POS, add a laundry dress, write the shared <strong>Comment</strong>, then <strong>Send to Laundry</strong> or take payment.</li>
+            <li><strong>Awaiting Acceptance</strong> — open the customer, tick dresses, set collection date/time, Accept. Unaccepted dresses stay here.</li>
+            <li><strong>Awaiting cleaning</strong> — tick cleaned dresses → Mark selected cleaned (staff name stamped).</li>
+            <li><strong>Ready for collection</strong> — take remaining payment if needed, then Collect. Signed tickets leave this board.</li>
+            <li>Use <strong>On Hold</strong> with a comment to park work; <strong>Resume</strong> returns to the previous stage.</li>
         </ol>
-        <div class="w2k-help-tip">Clothes cannot be collected until the bill is paid. All tickets start from POS — do not use a separate walk-in form. MoMo on laundry follows the same PawaPay confirm-then-paid rule as POS.</div>
-        <p>Turn Laundry on for a role under <strong>Settings → Role Permission</strong> (Laundry Module, Awaiting Acceptance, Awaiting cleaning, Ready for collection, Collect). Reorder the Laundry sidebar item in <strong>Site Content → Side Bars</strong>.</p>
+        <div class="w2k-help-tip">Clothes cannot be collected until the bill is paid. All tickets start from POS. MoMo follows the same PawaPay confirm-then-paid rule.</div>
     </div>
+    @endif
 
+    @if($show('restaurant'))
     <div class="w2k-help-card" id="restaurant">
-        <h3>Orders</h3>
-        <p>Coffee, food, and drink orders start on <strong>POS</strong>. One sale is one bill. Open <strong>Orders</strong> and pick Coffee &amp; Tea, Restaurant, Bar, or Online orders. Each tab has Awaiting, Accepted, Ready for Delivery, and Delivered. Laundry stays on the laundry boards. Fashion, supermarket, and every other category skip this queue.</p>
+        <h3>Orders · Restaurant</h3>
+        <p>Food for the restaurant lane. Open <strong>Orders → Restaurant</strong>. Tabs: Awaiting, Accepted, Ready for Delivery, On Hold, Delivered. Pending counts pop and badge so you do not miss tickets.</p>
         <ol>
-            <li>On POS, set Service to <strong>Dine In</strong> or <strong>Take Away</strong>, choose a table and a waitress, and write the guest note. Each line can have a note.</li>
-            <li>Accept the item and enter 1–240 minutes. It moves to Accepted and the guest is told the time. Then mark it Ready for Delivery, then Delivered. The guest is messaged at each step. A second accept is refused.</li>
-            <li>Awaiting Payment collects only lines that are Delivered, plus anything that was never queued. Until every queued line is delivered, a paid or sent-to-payment sale shows <strong>Pending delivery</strong>.</li>
-            <li>When the last item is delivered, the guest receives one WhatsApp review link. A rejection records a remake as a new line and does not change the money or the stock.</li>
-            <li>The invoice has a Pay QR. Scanning it opens MoMo. It does not mark the bill paid.</li>
+            <li>On POS, set <strong>Dine In</strong> or <strong>Take Away</strong> (+1,000 FRW packing), table, waitress, and one <strong>Comment</strong> per line.</li>
+            <li>Accept with optional minutes, or <strong>Put on hold</strong> with a comment, then Resume. Comment updates stay on the ticket and tracking page.</li>
+            <li>Mark Ready for Delivery, then Delivered. The guest is messaged at each step.</li>
         </ol>
-        <p>Permissions are Kitchen, Bar, Ready / waiter, Order logs, and Reject / remake, under <strong>Settings → Role Permission → Restaurant</strong>. Kitchen accepts Coffee &amp; Tea and Restaurant. Bar accepts Bar. Anyone with those permissions can open Orders. Show, hide, or rename the sidebar item in <strong>Site Content → Side Bars</strong>.</p>
+        <p>Kitchen accepts Restaurant and Coffee &amp; Tea. Coffee and Bar have their own Help tabs when you open those menus.</p>
     </div>
+    @endif
 
+    @if($show('restaurant-coffee'))
+    <div class="w2k-help-card" id="restaurant-coffee">
+        <h3>Orders · Coffee &amp; Tea</h3>
+        <p>Cafe drinks land under <strong>Orders → Coffee &amp; Tea</strong>.</p>
+        <ol>
+            <li>Watch the pop-up or the Coffee &amp; Tea badge for pending counts, then open Awaiting.</li>
+            <li>Accept with minutes, put on hold, or add a comment — the same note shows on ticket and tracking.</li>
+            <li>Ready for Delivery when the drink is done, then Delivered when it reaches the guest.</li>
+        </ol>
+    </div>
+    @endif
+
+    @if($show('restaurant-bar'))
+    <div class="w2k-help-card" id="restaurant-bar">
+        <h3>Orders · Bar</h3>
+        <p>Bar / drinks lane under <strong>Orders → Bar</strong>.</p>
+        <ol>
+            <li>Open Awaiting from the Bar badge or the order pop-up.</li>
+            <li>Accept, hold, or comment the same way as Restaurant / Coffee.</li>
+            <li>Ready for Delivery → Delivered when the drink is handed over.</li>
+        </ol>
+    </div>
+    @endif
+
+    @if($show('orders'))
+    <div class="w2k-help-card" id="orders">
+        <h3>Online orders</h3>
+        <p>Guest cafe orders from <a href="{{ url('/menu') }}" target="_blank" rel="noopener">/menu</a> land under <strong>Orders → Online orders</strong>.</p>
+        <ol>
+            <li>Guest picks Dine In or Take away, adds items from parent/sub categories, and checks out.</li>
+            <li>Staff open Online orders to see items, payment, and status.</li>
+            <li>POS walk-in sales stay under Sale → Sale List; website carts stay here.</li>
+        </ol>
+    </div>
+    @endif
+
+    @if($show('rental'))
     <div class="w2k-help-card" id="rental">
-        <h3>8. Rental module</h3>
+        <h3>Rental module</h3>
         <p>Use <strong>Rental Module</strong> for equipment, accommodation, studio, or software bookings.</p>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/rental.png') }}?v={{ $hv }}" alt="Create Equipment Rental Booking with gold Customer Warehouse Biller pickers">
-        <p class="w2k-help-cap">Create Equipment Rental Booking. Two-line tabs end with Help. Gold pickers: Customer, Warehouse (Main), Biller (Welcome 2 Kigali), and CC (Engineer / Company Copy). Default rental period has From / To Date &amp; Time and Apply to All Items. Equipment Selection is the product search. Order table sits at the bottom.</p>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/rental.png') }}?v={{ $hv }}" alt="Create Equipment Rental Booking">
+        <p class="w2k-help-cap">Create booking: Customer, Warehouse, Biller, CC, rental period, equipment search, and order table. Tabs end with Help.</p>
         <ol>
-            <li>Open Rental Module → Booking Create (first tab).</li>
-            <li>Pick the customer. Their phone is required if you send a signature link.</li>
-            <li>Set From / To dates, then add products with the search + button.</li>
-            <li>To send the agreement on WhatsApp, tick send for signature and choose the contract type (equipment, accommodation, licenses, studio).</li>
-            <li>Submit. The client gets a WhatsApp link. After they sign, staff countersign under Pending Review / Signed Contracts.</li>
+            <li>Rental Module → Booking Create.</li>
+            <li>Pick customer (phone required for signature WhatsApp).</li>
+            <li>Set From / To dates, add products, optionally send for signature.</li>
+            <li>After the client signs, countersign under Pending Review / Signed Contracts.</li>
         </ol>
-        <div class="w2k-help-tip">Customer, Warehouse, Biller, and CC use the gold dropdowns — not the old blue ones. If Add Cash Register opens, enter 0 and submit, then continue the booking.</div>
     </div>
+    @endif
 
+    @if($show('quotations'))
     <div class="w2k-help-card" id="quotations">
-        <h3>9. Quotations</h3>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/quotation.png') }}?v={{ $hv }}" alt="Quotation List with status chips and Help tab">
-        <p class="w2k-help-cap">Quotation List + Help. Status chips: Awaiting Signature, Client Quotes, Approval / Final, Rejected, Drafts. Table columns: Date, Reference, Biller, Customer, Supplier, Quotation Status, Client comment, Grand Total, Action. Help is also last in the sidebar under Settings.</p>
+        <h3>Quotations</h3>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/quotation.png') }}?v={{ $hv }}" alt="Quotation List">
+        <p class="w2k-help-cap">Quotation List with status chips (Awaiting Signature, Client Quotes, Approval / Final, Rejected, Drafts) and Help last.</p>
         <ol>
-            <li>Quotation → Add Quotation. Choose the customer and add lines.</li>
-            <li>Send via WhatsApp. The client opens <em>Review quotation</em>, then Sign &amp; Approve, Reject, or Quote.</li>
-            <li>The official PDF goes out only after they sign. Track the row in the chips above.</li>
+            <li>Quotation → Add Quotation. Choose customer and lines.</li>
+            <li>Send via WhatsApp. Client Sign &amp; Approve, Reject, or Quote.</li>
+            <li>Official PDF goes out only after they sign. Quote the message serial (e.g. W2K/MSG/…) if you follow up.</li>
         </ol>
-        <p>Every official WhatsApp and email shows the club name, a subject line, a <strong>serial number</strong> (for example W2K/MSG/26/0000042), and the date. Quote that serial if you follow up with a client.</p>
-        <div class="w2k-help-tip">If an old WhatsApp message still opens Home, resend the quotation — do not reuse the old green link.</div>
     </div>
+    @endif
 
+    @if($show('contracts'))
     <div class="w2k-help-card" id="contracts">
-        <h3>10. Contracts</h3>
-        <p>Contracts are sent from Rental (Awaiting Signature / Pending Review / Signed Contracts) or from Contracts in the sidebar.</p>
+        <h3>Contracts</h3>
+        <p>Contracts are sent from Rental tabs or from Contracts in the sidebar.</p>
         <ol>
-            <li>Create the booking or open Contracts → Create Contract.</li>
-            <li>Add signatories with phone numbers. Issue the request.</li>
-            <li>The client opens the WhatsApp link, reads the contract, draws a signature, and submits.</li>
-            <li>Track status under Awaiting Signature, Pending Review, and Signed Contracts on the rental tabs.</li>
+            <li>Create the booking or Contracts → Create Contract.</li>
+            <li>Add signatories with phone numbers and issue the request.</li>
+            <li>Client opens the WhatsApp link, reads, signs, and submits.</li>
+            <li>Track under Awaiting Signature, Pending Review, and Signed Contracts.</li>
         </ol>
-        <div class="w2k-help-tip">Clients do not need an account — they use the WhatsApp link. Staff must be signed in to send or countersign.</div>
+        <div class="w2k-help-tip">Clients do not need an account — they use the WhatsApp link.</div>
     </div>
+    @endif
 
+    @if($show('expenses'))
     <div class="w2k-help-card" id="expenses">
-        <h3>11. Expenses</h3>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/expenses.png') }}?v={{ $hv }}" alt="Expense List with Help as last tab and last sidebar item">
-        <p class="w2k-help-cap">Expense List. Tabs: Expense Category, Expense List, Help. Date range + Submit, then the table (Date, Reference No, Warehouse, Category, Product Category, Amount, Note, Action). Sidebar shows Expense selected and Help last under Settings.</p>
+        <h3>Expenses</h3>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/expenses.png') }}?v={{ $hv }}" alt="Expense List">
+        <p class="w2k-help-cap">Expense Category, Expense List, Help. Date range filter and expense table.</p>
         <ol>
-            <li>Expense → Expense List (or Expense Category to set categories first).</li>
-            <li>Add an expense: category, warehouse, account, amount, and note.</li>
-            <li>Submit. It appears on this list immediately.</li>
+            <li>Expense → Expense List (or Expense Category first).</li>
+            <li>Add category, warehouse, account, amount, and note.</li>
+            <li>Submit — it appears on the list immediately.</li>
         </ol>
     </div>
+    @endif
 
+    @if($show('returns'))
     <div class="w2k-help-card" id="returns">
-        <h3>12. Returns</h3>
+        <h3>Returns</h3>
         <ol>
             <li>Return → Sale (or Purchase).</li>
-            <li>Select customer, warehouse, and the products coming back.</li>
-            <li>Submit. Stock is increased again.</li>
+            <li>Select customer, warehouse, and products coming back.</li>
+            <li>Submit. Stock increases again.</li>
         </ol>
     </div>
+    @endif
 
-    <div class="w2k-help-card" id="orders">
-        <h3>13. Online orders</h3>
-        <p>Guest cafe orders from <a href="{{ url('/menu') }}" target="_blank" rel="noopener">/menu</a> land under <strong>Online Order</strong>.</p>
-        <ol>
-            <li>Guest taps a drink on Cafe &amp; Restaurant (Coffee &amp; Tea, Smoothies, …).</li>
-            <li>Open Online Order → Online Order List.</li>
-            <li>Open a row to see items, payment, and status.</li>
-            <li>POS sales stay under Sale → Sale List. Online guest tickets stay here.</li>
-        </ol>
-    </div>
-
+    @if($show('assets'))
     <div class="w2k-help-card" id="assets">
-        <h3>14. Fixed assets</h3>
+        <h3>Fixed assets</h3>
         <ol>
             <li>Fixed Assets → Assets Dashboard or Assets List.</li>
-            <li>Add Assets for new items. Use Asset Activity / Repair / Expense for running costs.</li>
+            <li>Add Assets for new items. Use Activity / Repair / Expense for running costs.</li>
             <li>Reports sit at the bottom of the Fixed Assets menu.</li>
         </ol>
     </div>
+    @endif
 
+    @if($show('events'))
     <div class="w2k-help-card" id="events">
-        <h3>15. Events</h3>
-        <p>Admin → Events. New events appear on the public Club Events page automatically (search + Upcoming filter).</p>
-        <p>If the public page shows No Events Found, add an event in admin and keep the Upcoming filter, or switch the filter to see past dates.</p>
+        <h3>Events</h3>
+        <p>Admin → Events. New events appear on the public Club Events page automatically.</p>
+        <p>If the public page shows No Events Found, add an event in admin or change the Upcoming filter.</p>
     </div>
+    @endif
 
+    @if($show('purchase'))
     <div class="w2k-help-card" id="purchase">
-        <h3>16. Purchases</h3>
-        <img class="w2k-help-shot" src="{{ url('public/branding/help/purchase.png') }}?v={{ $hv }}" alt="Purchase List with four tabs including Help">
-        <p class="w2k-help-cap">Purchase List. Tabs only: Purchase List, Add Purchase, Import Purchase By CSV, Help. Date range + Submit, then the table (Date, Reference, Supplier, Purchase Status, Grand Total, Paid, Due, Payment Status, Action). There are no extra Add / Import buttons under the date filter.</p>
+        <h3>Purchases</h3>
+        <img class="w2k-help-shot" src="{{ url('public/branding/help/purchase.png') }}?v={{ $hv }}" alt="Purchase List">
+        <p class="w2k-help-cap">Purchase List, Add Purchase, Import Purchase By CSV, Help.</p>
         <ol>
-            <li>Purchase → Add Purchase (second tab) or Import Purchase By CSV.</li>
+            <li>Purchase → Add Purchase or Import by CSV.</li>
             <li>Supplier, warehouse, products, cost, and payment.</li>
             <li>Stock increases when the purchase is recorded.</li>
         </ol>
     </div>
+    @endif
 
+    @if($show('payments'))
     <div class="w2k-help-card" id="payments">
-        <h3>17. Awaiting Payment</h3>
+        <h3>Awaiting Payment</h3>
         <img class="w2k-help-shot" src="{{ url('public/branding/help/payments.png') }}?v={{ $hv }}" alt="Awaiting Payment list">
-        <p class="w2k-help-cap">Awaiting Payment list: Customer Name, Unique ID, Order Id, Phone Number, Amount, Paid Amount, Due, Payment Status, Date, Add Payment. Use Add Payment on a row when a client settles a due balance.</p>
+        <p class="w2k-help-cap">Due balances with Add Payment per row (Cash / MoMo / VISA).</p>
         <ol>
-            <li>Open Sale → Awaiting Payment (or Payments in the sidebar).</li>
+            <li>Open Sale → Awaiting Payment (or Payments).</li>
             <li>Find the customer and remaining Due.</li>
-            <li>Click Add Payment, choose Cash / MoMo / VISA, and save. MoMo is one method (MTN or Airtel from the phone number).</li>
+            <li>Add Payment and save. MoMo detects MTN or Airtel from the phone number.</li>
         </ol>
     </div>
+    @endif
 
+    @if($show('people'))
     <div class="w2k-help-card" id="people">
-        <h3>18. People</h3>
+        <h3>People</h3>
         <ul>
-            <li><strong>Customers</strong> — needed for sales, rentals, quotations. Phone number is required for WhatsApp.</li>
+            <li><strong>Customers</strong> — sales, rentals, quotations. Phone required for WhatsApp.</li>
             <li><strong>Users</strong> — staff logins and roles.</li>
-            <li><strong>Billers / Suppliers</strong> — for invoices and purchases. Rental Biller defaults to Welcome 2 Kigali (Welcome 2 Kigali Expats Club).</li>
+            <li><strong>Billers / Suppliers</strong> — invoices and purchases.</li>
         </ul>
     </div>
+    @endif
 
+    @if($show('accounting'))
     <div class="w2k-help-card" id="accounting">
-        <h3>19. Accounting</h3>
-        <p>Accounting holds accounts, money transfers, and statements. Set at least one default account so sales, returns, and expenses can post.</p>
+        <h3>Accounting</h3>
+        <p>Accounts, money transfers, and statements. Set at least one default account so sales, returns, and expenses can post.</p>
     </div>
+    @endif
 
+    @if($show('letters'))
     <div class="w2k-help-card" id="letters">
-        <h3>20. Letters</h3>
+        <h3>Letters</h3>
         <p>Letters → compose, approve, and send official letters with the club letterhead.</p>
     </div>
+    @endif
 
+    @if($show('invitations'))
     <div class="w2k-help-card" id="invitations">
-        <h3>21. Digital invitations</h3>
+        <h3>Digital invitations</h3>
         <p>Digital Invitations → create an event, add guests, send WhatsApp/email invites with RSVP links.</p>
     </div>
+    @endif
 
+    @if($show('internships'))
     <div class="w2k-help-card" id="internships">
-        <h3>22. Internships</h3>
+        <h3>Internships</h3>
         <p>Internships hub for programmes, enrolment, supervisor grading, and timesheets.</p>
     </div>
+    @endif
 
+    @if($show('tasks'))
     <div class="w2k-help-card" id="tasks">
-        <h3>23. Tasks, jobs, announcements, courses, timesheets</h3>
+        <h3>Tasks, jobs, announcements, courses, timesheets</h3>
         <ul>
-            <li><strong>Task Manager</strong> — assign and track internal work. Help is the last tab on that module too.</li>
-            <li><strong>Job Board</strong> — public vacancies at <a href="{{ url('/apply-now') }}" target="_blank" rel="noopener">/apply-now</a> (admin jobs stay under Admin → Jobs).</li>
+            <li><strong>Task Manager</strong> — assign and track internal work.</li>
+            <li><strong>Job Board</strong> — public vacancies at <a href="{{ url('/apply-now') }}" target="_blank" rel="noopener">/apply-now</a>.</li>
             <li><strong>Announcements</strong> — bulk WhatsApp messages.</li>
             <li><strong>Courses</strong> — course list, registrations, certificates.</li>
             <li><strong>TimeSheets</strong> — employees fill weeks; TimeSheet Admin reviews overtime.</li>
         </ul>
     </div>
+    @endif
 
+    @if($show('reports'))
     <div class="w2k-help-card" id="reports">
-        <h3>24. Reports</h3>
+        <h3>Reports</h3>
         <p>Reports in the sidebar cover sales, purchases, and stock. Fixed Assets has its own report tabs.</p>
     </div>
+    @endif
 
+    @if($show('settings'))
     <div class="w2k-help-card" id="settings">
-        <h3>25. Settings</h3>
-        <p>The Settings hub tabs (General, Warehouse, Units, Tax, POS, Mail, …) end with <strong>Help</strong>. Use General Setting for company name, logo, and currency (RWF).</p>
+        <h3>Settings</h3>
+        <p>Settings hub tabs (General, Warehouse, Units, Tax, POS, Mail, …) end with <strong>Help</strong>. Use General Setting for company name, logo, and currency (RWF). Role Permission controls who sees each module’s Help.</p>
     </div>
+    @endif
 
+    @if($show('transfer'))
     <div class="w2k-help-card" id="transfer">
-        <h3>26. Stock transfer</h3>
+        <h3>Stock transfer</h3>
         <p>Transfer → Add Transfer to move stock between warehouses.</p>
     </div>
+    @endif
 
+    @if($show('whatsapp'))
     <div class="w2k-help-card" id="whatsapp">
-        <h3>27. WhatsApp links (quotations &amp; signatures)</h3>
+        <h3>WhatsApp links</h3>
         <p>Clients should land on the document or sign page — never the homepage.</p>
         <ol>
             <li>Send the quotation or contract from admin.</li>
             <li>The message has the URL on its own line (Review quotation / Open / Sign).</li>
-            <li>If an old message still opens Home, <strong>resend</strong> it. Do not reuse the green link from before this fix.</li>
+            <li>If an old message still opens Home, <strong>resend</strong> it — do not reuse an old green link.</li>
         </ol>
-        <div class="w2k-help-tip">Every module now has a <strong>Help</strong> tab as the last tab in the row under the page title. The Help menu also sits at the bottom of the sidebar, under Settings.</div>
     </div>
+    @endif
 </div>
 
 <script>
     $("ul#help-module").siblings('a').attr('aria-expanded','true');
     $("ul#help-module").addClass("show");
     $("ul#help-module #help-guide-menu").addClass("active");
-    function w2kHelpNav() {
-        var hash = (window.location.hash || '#start').replace('#','');
-        $('.w2k-help-nav a').removeClass('is-active');
-        var $a = $('.w2k-help-nav a[href="#' + hash + '"]');
-        if (!$a.length) $a = $('.w2k-help-nav a').first();
-        $a.addClass('is-active');
-    }
-    w2kHelpNav();
-    $(window).on('hashchange', w2kHelpNav);
-    $('.w2k-help-nav a').on('click', function () {
-        $('.w2k-help-nav a').removeClass('is-active');
-        $(this).addClass('is-active');
-    });
+    (function () {
+        var focus = @json($focus);
+        function markNav() {
+            if (focus) {
+                $('.w2k-help-nav a[data-topic="' + focus + '"]').addClass('is-active');
+                return;
+            }
+            var hash = (window.location.hash || '').replace('#','');
+            $('.w2k-help-nav a').removeClass('is-active');
+            var $a = hash ? $('.w2k-help-nav a[data-topic="' + hash + '"]') : $();
+            if (!$a.length) $a = $('.w2k-help-nav a').first();
+            $a.addClass('is-active');
+        }
+        markNav();
+        $(window).on('hashchange', markNav);
+        $('.w2k-help-nav a').on('click', function () {
+            if (focus) return;
+            $('.w2k-help-nav a').removeClass('is-active');
+            $(this).addClass('is-active');
+        });
+    })();
 </script>
 @endsection

@@ -37,7 +37,7 @@
                         </div>
                         <p class="text-white/75 text-sm mt-3 mb-0">{{ \App\Support\SiteContent::text('services.'.$key.'_body', __('site.services.'.$key.'_body')) }}</p>
 
-                        <p class="text-[10px] tracking-[0.2em] uppercase text-brand-gold/80 mt-5 mb-2">{{ __('site.services.categories') }}</p>
+                        <p class="text-[10px] tracking-[0.2em] uppercase text-brand-gold/80 mt-5 mb-2">{{ __('site.services.parent_categories') }}</p>
                         @if ($cats->isEmpty())
                             <p class="text-white/50 text-sm italic m-0 flex-1">{{ __('site.services.no_categories') }}</p>
                         @else
@@ -52,9 +52,34 @@
                                         @endif
                                         <span>{{ \App\Support\SiteI18n::category($cat['name']) }}</span>
                                         <span class="text-[11px] text-white/45">{{ $cat['count'] }}</span>
+                                        @if (!empty($cat['has_children']))
+                                            <span class="text-[10px] uppercase tracking-wider text-brand-gold/60">{{ __('site.services.subcategories') }}</span>
+                                        @endif
                                     </a>
                                 @endforeach
                             </div>
+                        @endif
+
+                        @if ($key === 'laundry')
+                            @php $laundryItems = \App\Support\ServiceCatalog::previewItems('laundry', 24); @endphp
+                            @if ($laundryItems->isNotEmpty())
+                                <p class="text-[10px] tracking-[0.2em] uppercase text-brand-gold/80 mt-5 mb-2">{{ __('site.services.laundry_items') }}</p>
+                                <ul class="m-0 p-0 list-none space-y-2 flex-1">
+                                    @foreach ($laundryItems as $item)
+                                        <li class="flex items-center gap-3 text-sm text-white/85">
+                                            @if ($item['image'])
+                                                <img src="{{ $item['image'] }}" alt="" class="w-9 h-9 rounded-lg object-cover border border-brand-gold/25">
+                                            @else
+                                                <span class="w-9 h-9 rounded-lg border border-brand-gold/40 flex items-center justify-center text-brand-gold">
+                                                    <i data-lucide="{{ $item['icon'] }}" class="w-4 h-4"></i>
+                                                </span>
+                                            @endif
+                                            <span class="flex-1 min-w-0 truncate">{{ \App\Support\SiteI18n::item($item['name']) }}</span>
+                                            <span class="text-brand-gold tabular-nums shrink-0">{{ number_format($item['price']) }}</span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
                         @endif
 
                         <div class="mt-5 flex flex-wrap gap-3">

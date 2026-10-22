@@ -50,14 +50,20 @@
                 <p class="w2k-kicker">Orders</p>
                 <h1>{{ $lanes[$lane] ?? 'Orders' }} · {{ $tabs[$tab] ?? '' }}</h1>
             </div>
-            <p class="w2k-meta">{{ $items->count() }} on this screen</p>
+            <div class="w2k-meta" style="text-align:right;">
+                <p style="margin:0;">{{ $items->count() }} on this screen</p>
+                <a href="{{ route('help.index') }}#{{ \App\Services\Restaurant\RestaurantAccess::helpHashForLane($lane) }}"
+                   class="btn btn-default btn-sm" style="margin-top:8px;border-radius:999px;border-color:#C5A059;color:#6a5420;">
+                    Help · {{ $lanes[$lane] ?? 'Orders' }}
+                </a>
+            </div>
         </header>
         <div class="w2k-board">
             @forelse($items as $item)
                 @php
                     $order = $item->order;
                     $sale = $order ? $order->sale : null;
-                    $statusLabels = ['awaiting' => 'Awaiting', 'preparing' => 'Accepted', 'ready' => 'Ready for Delivery', 'delivered' => 'Delivered'];
+                    $statusLabels = ['awaiting' => 'Awaiting', 'preparing' => 'Accepted', 'ready' => 'Ready for Delivery', 'hold' => 'On Hold', 'delivered' => 'Delivered'];
                     $canAdd = \App\Services\Restaurant\RestaurantAccess::canOrder(auth()->user(), 'add', $item);
                     $canEdit = \App\Services\Restaurant\RestaurantAccess::canOrder(auth()->user(), 'edit', $item);
                     $canDelete = \App\Services\Restaurant\RestaurantAccess::canOrder(auth()->user(), 'delete', $item);
@@ -77,7 +83,8 @@
                             · {{ $statusLabels[$item->status] ?? $item->status }}
                             @if($item->attempt_no > 1) · attempt {{ $item->attempt_no }} @endif
                         </span>
-                        @if($item->customer_comment)<p class="w2k-meta">{{ $item->customer_comment }}</p>@endif
+                        @if($item->customer_comment)<p class="w2k-note">Comment: {{ $item->customer_comment }}</p>@endif
+                        @if($item->status === 'hold' && $item->internal_note)<p class="w2k-note">Hold: {{ $item->internal_note }}</p>@endif
                         <p class="w2k-meta">
                             @if($item->ready_at)
                                 Ready {{ $item->ready_at->format('H:i') }} · waiting {{ $item->ready_at->diffInMinutes(now()) }} min
@@ -113,6 +120,33 @@
                                     <span class="input-group-btn"><button class="btn btn-primary" type="submit">Accept</button></span>
                                 </div>
                             </form>
+                        @endif
+                        @if($canEdit)
+                            <div class="w2k-row" style="margin-bottom:8px;">
+                                @if(in_array($item->status, ['awaiting', 'preparing', 'ready'], true))
+                                    <details class="w2k-choice">
+                                        <summary>Put on hold</summary>
+                                        <form method="post" action="{{ route('restaurant.hold', $item->id) }}">
+                                            @csrf
+                                            <input class="form-control" name="comment" placeholder="Hold reason / comment">
+                                            <button class="btn btn-default btn-block" style="margin-top:6px;" type="submit">Hold this order</button>
+                                        </form>
+                                    </details>
+                                @elseif($item->status === 'hold')
+                                    <form method="post" action="{{ route('restaurant.resume', $item->id) }}">
+                                        @csrf
+                                        <button class="btn btn-primary" type="submit">Resume</button>
+                                    </form>
+                                @endif
+                                <details class="w2k-choice">
+                                    <summary>Comment</summary>
+                                    <form method="post" action="{{ route('restaurant.comment', $item->id) }}">
+                                        @csrf
+                                        <input class="form-control" name="comment" value="{{ $item->customer_comment }}" placeholder="Comment for this item" required>
+                                        <button class="btn btn-primary btn-block" style="margin-top:6px;" type="submit">Save comment</button>
+                                    </form>
+                                </details>
+                            </div>
                         @endif
                         @if(($canDelete || $canEdit) && in_array($item->status, ['awaiting', 'preparing', 'ready'], true))
                             <div class="w2k-row">

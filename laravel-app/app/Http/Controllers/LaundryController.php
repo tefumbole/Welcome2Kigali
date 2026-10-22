@@ -160,6 +160,59 @@ class LaundryController extends Controller
         return view('laundry.ready', compact('orders'));
     }
 
+    public function holdBoard()
+    {
+        $this->authorizeLaundryAny();
+        $orders = $this->laundry->ordersForStage(\App\LaundryOrderItem::STATUS_HOLD)->paginate(30);
+
+        return view('laundry.hold', compact('orders'));
+    }
+
+    public function hold(Request $request, $id)
+    {
+        $this->authorizeLaundryAny();
+        LaundryOrder::findOrFail($id);
+        $ids = $request->input('item_id', []);
+        try {
+            $count = $this->laundry->holdItems(is_array($ids) ? $ids : [], $request->input('comment', $request->input('note')));
+        } catch (\Throwable $e) {
+            return back()->with('not_permitted', $e->getMessage());
+        }
+
+        return back()->with('message', $count.' dress(es) put on hold.');
+    }
+
+    public function resume(Request $request, $id)
+    {
+        $this->authorizeLaundryAny();
+        LaundryOrder::findOrFail($id);
+        $ids = $request->input('item_id', []);
+        try {
+            $count = $this->laundry->resumeItems(is_array($ids) ? $ids : []);
+        } catch (\Throwable $e) {
+            return back()->with('not_permitted', $e->getMessage());
+        }
+
+        return redirect()->route('laundry.hold')->with('message', $count.' dress(es) resumed.');
+    }
+
+    public function updateComment(Request $request, $id)
+    {
+        $this->authorizeLaundryAny();
+        $order = LaundryOrder::with('items')->findOrFail($id);
+        if ($request->filled('notes')) {
+            $this->laundry->updateOrderNotes($order, $request->input('notes'));
+        }
+        foreach ((array) $request->input('item_note', []) as $itemId => $note) {
+            $item = $order->items->firstWhere('id', (int) $itemId);
+            if ($item) {
+                $this->laundry->updateItemNote($item, $note);
+            }
+        }
+
+        return back()->with('message', 'Comment saved.');
+    }
+
     public function pay(Request $request, $id)
     {
         $this->authorizeLaundry('laundry.ready');

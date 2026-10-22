@@ -18,7 +18,7 @@ class ServiceCatalog
 
     const KEYWORDS = [
         'laundry' => ['laundry', 'dry clean', 'ironing', 'washing'],
-        'fashion' => ['fashion', 'cloth', 'shoe', 'dress', 'shirt', 'trouser', 'accessor', 'jewel', 'bag'],
+        'fashion' => ['fashion', 'cloth', 'shoe', 'dress', 'shirt', 'trouser', 'accessor', 'jewel', 'bag', 'hugo'],
         'restaurant' => ['restaurant', 'food', 'steak', 'meat', 'chicken', 'fish', 'meal', 'breakfast', 'lunch', 'dinner', 'starter', 'main', 'dessert', 'grill', 'pizza', 'burger', 'bar', 'beer', 'wine', 'cocktail', 'spirit', 'whisk', 'liquor'],
         'coffee' => ['coffee', 'espresso', 'tea', 'iced', 'specialty', 'juice', 'smoothie', 'pastr', 'hot beverage'],
         'supermarket' => ['supermarket', 'grocer', 'snack', 'soft drink', 'water', 'toiletr', 'household', 'cleaning', 'dairy', 'bakery', 'canned', 'cereal', 'convenience'],
@@ -34,6 +34,7 @@ class ServiceCatalog
         'bakery' => 'croissant', 'fruit' => 'apple', 'vegetable' => 'carrot', 'toiletr' => 'bath',
         'household' => 'house', 'cleaning' => 'spray-can', 'shoe' => 'footprints', 'bag' => 'shopping-bag',
         'jewel' => 'gem', 'accessor' => 'watch', 'cloth' => 'shirt', 'dress' => 'shirt', 'shirt' => 'shirt',
+        'fashion' => 'shopping-bag', 'hugo' => 'gem', 'suit' => 'shirt', 'trouser' => 'shirt',
     ];
 
     public static function keys()
@@ -95,31 +96,121 @@ class ServiceCatalog
         return is_file($path) && filesize($path) > 0 ? PosProductImage::catalogUrl('category', $filename) : null;
     }
 
+    public static function parentId($category)
+    {
+        return (int) ($category->parent_id ?: 0);
+    }
+
+    /**
+     * Parent categories for a service (roots). Each may include nested children.
+     */
     public static function categories($key)
+    {
+        return self::categoryTree($key);
+    }
+
+    public static function categoryTree($key)
     {
         if (! self::enabled()) {
             return collect();
         }
 
-        return Category::where('is_active', true)
+        $all = Category::where('is_active', true)
             ->where('service', $key)
             ->orderBy('name')
-            ->get()
-            ->map(function ($category) {
-                return [
-                    'id' => $category->id,
-                    'name' => $category->name,
-                    'icon' => self::categoryIcon($category->name),
-                    'image' => self::categoryImage($category),
-                    'count' => Product::where('category_id', $category->id)->where('is_active', true)->count(),
-                ];
-            })
-            ->values();
+            ->get();
+
+        if ($all->isEmpty()) {
+            return collect();
+        }
+
+        $byId = $all->keyBy('id');
+        $childrenMap = [];
+        foreach ($all as $category) {
+            $pid = self::parentId($category);
+            if ($pid > 0 && $byId->has($pid)) {
+                $childrenMap[$pid][] = $category->id;
+            }
+        }
+
+        $productCounts = self::directProductCounts($all->pluck('id')->all());
+
+        $build = function ($category) use (&$build, $byId, $childrenMap, $productCounts) {
+            $childIds = $childrenMap[$category->id] ?? [];
+            $children = collect($childIds)->map(function ($id) use ($byId, &$build) {
+                return $build($byId->get($id));
+            })->filter()->values();
+
+            $own = (int) ($productCounts[$category->id] ?? 0);
+            $count = $own + $children->sum('count');
+
+            return [
+                'id' => $category->id,
+                'name' => $category->name,
+                'icon' => self::categoryIcon($category->name),
+                'image' => self::categoryImage($category),
+                'count' => $count,
+                'has_children' => $children->isNotEmpty(),
+                'children' => $children,
+            ];
+        };
+
+        return $all->filter(function ($category) use ($byId) {
+            $pid = self::parentId($category);
+
+            return $pid === 0 || ! $byId->has($pid);
+        })->map(function ($category) use ($build) {
+            return $build($category);
+        })->values();
     }
 
-    public static function items($categoryId)
+    public static function findInTree($tree, $categoryId)
     {
-        return Product::where('category_id', $categoryId)
+        $categoryId = (int) $categoryId;
+        foreach ($tree as $node) {
+            if ((int) $node['id'] === $categoryId) {
+                return $node;
+            }
+            $found = self::findInTree($node['children'] ?? collect(), $categoryId);
+            if ($found) {
+                return $found;
+            }
+        }
+
+        return null;
+    }
+
+    public static function breadcrumb($tree, $categoryId)
+    {
+        $path = [];
+        $walk = function ($nodes, $trail) use (&$walk, &$path, $categoryId) {
+            foreach ($nodes as $node) {
+                $next = array_merge($trail, [$node]);
+                if ((int) $node['id'] === (int) $categoryId) {
+                    $path = $next;
+
+                    return true;
+                }
+                if (! empty($node['children']) && $walk($node['children'], $next)) {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+        $walk($tree, []);
+
+        return $path;
+    }
+
+    public static function items($categoryId, $includeChildren = false)
+    {
+        $ids = [(int) $categoryId];
+        if ($includeChildren && self::enabled()) {
+            $ids = array_merge($ids, self::descendantIds((int) $categoryId));
+        }
+
+        return Product::whereIn('category_id', $ids)
             ->where('is_active', true)
             ->orderBy('name')
             ->get()
@@ -129,9 +220,173 @@ class ServiceCatalog
                     'name' => $product->name,
                     'details' => trim(strip_tags((string) $product->product_details)),
                     'image' => PosProductImage::photoUrl($product->image),
+                    'icon' => self::categoryIcon($product->name),
                     'price' => (int) $product->price,
                 ];
             })
             ->values();
+    }
+
+    /** Preview products for a service card (e.g. Laundry item list). */
+    public static function previewItems($key, $limit = 12)
+    {
+        if (! self::enabled()) {
+            return collect();
+        }
+
+        $categoryIds = Category::where('is_active', true)
+            ->where('service', $key)
+            ->pluck('id')
+            ->all();
+
+        if (! $categoryIds) {
+            return collect();
+        }
+
+        return Product::whereIn('category_id', $categoryIds)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->limit($limit)
+            ->get()
+            ->map(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'image' => PosProductImage::photoUrl($product->image),
+                    'icon' => self::categoryIcon($product->name),
+                    'price' => (int) $product->price,
+                ];
+            })
+            ->values();
+    }
+
+    public static function menuGroups()
+    {
+        $groups = collect();
+        foreach (['coffee', 'restaurant'] as $service) {
+            foreach (self::categoryTree($service) as $parent) {
+                $children = collect($parent['children'] ?? []);
+                if ($children->isNotEmpty()) {
+                    $buckets = $children->map(function ($child) {
+                        return [
+                            'id' => $child['id'],
+                            'title' => $child['name'],
+                            'icon' => $child['icon'],
+                            'image' => $child['image'],
+                            'items' => self::items($child['id'], true)->map(function ($item) {
+                                return self::menuItemPayload($item);
+                            })->all(),
+                        ];
+                    })->filter(function ($bucket) {
+                        return count($bucket['items']) > 0;
+                    })->values()->all();
+                } else {
+                    $items = self::items($parent['id'], true)->map(function ($item) {
+                        return self::menuItemPayload($item);
+                    })->all();
+                    $buckets = count($items) ? [[
+                        'id' => $parent['id'],
+                        'title' => $parent['name'],
+                        'icon' => $parent['icon'],
+                        'image' => $parent['image'],
+                        'items' => $items,
+                    ]] : [];
+                }
+
+                $flatItems = [];
+                foreach ($buckets as $bucket) {
+                    foreach ($bucket['items'] as $item) {
+                        $flatItems[] = $item;
+                    }
+                }
+
+                if (! $flatItems) {
+                    continue;
+                }
+
+                $groups->push([
+                    'id' => $parent['id'],
+                    'name' => $parent['name'],
+                    'icon' => $parent['icon'],
+                    'tagline' => '',
+                    'blurb' => '',
+                    'image' => $parent['image'] ?: self::menuFallbackImage($parent['name']),
+                    'items' => $flatItems,
+                    'buckets' => $buckets,
+                    'has_children' => $children->isNotEmpty(),
+                ]);
+            }
+        }
+
+        return $groups->values();
+    }
+
+    protected static function menuItemPayload(array $item)
+    {
+        $flavors = [];
+        if (stripos($item['name'], 'Flavored Tea') !== false) {
+            $flavors = ['Cinnamon', 'Earl Grey', 'Chamomile', 'Masala', 'Clover', 'Peppermint', 'Chai', 'Hibiscus'];
+        }
+
+        return [
+            'id' => $item['id'],
+            'name' => $item['name'],
+            'details' => $item['details'],
+            'image' => $item['image'] ?: '',
+            'icon' => $item['icon'] ?? 'coffee',
+            'price' => $item['price'],
+            'flavors' => $flavors,
+        ];
+    }
+
+    protected static function menuFallbackImage($name)
+    {
+        $map = [
+            'Coffee & Tea' => 'branding/menu/coffee-tea.jpg',
+            'Iced & Specialty' => 'branding/menu/iced-specialty.jpg',
+            'Tea & Hot Beverages' => 'branding/menu/tea-hot.jpg',
+            'Fresh & Detox Juices' => 'branding/menu/juices.jpg',
+            'Smoothies' => 'branding/menu/smoothies.jpg',
+            'Food' => 'branding/menu/food.jpg',
+        ];
+        $file = $map[$name] ?? 'branding/menu/coffee-tea.jpg';
+        if (is_file(public_path($file))) {
+            return asset('public/'.$file).'?v=3';
+        }
+
+        return url('public/branding/menu/coffee-tea.jpg').'?v=3';
+    }
+
+    protected static function directProductCounts(array $categoryIds)
+    {
+        if (! $categoryIds) {
+            return [];
+        }
+
+        return Product::whereIn('category_id', $categoryIds)
+            ->where('is_active', true)
+            ->selectRaw('category_id, COUNT(*) as aggregate')
+            ->groupBy('category_id')
+            ->pluck('aggregate', 'category_id')
+            ->all();
+    }
+
+    protected static function descendantIds($categoryId)
+    {
+        $ids = [];
+        $queue = [(int) $categoryId];
+        while ($queue) {
+            $parent = array_shift($queue);
+            $kids = Category::where('is_active', true)
+                ->where('parent_id', $parent)
+                ->pluck('id')
+                ->all();
+            foreach ($kids as $kid) {
+                $ids[] = (int) $kid;
+                $queue[] = (int) $kid;
+            }
+        }
+
+        return $ids;
     }
 }

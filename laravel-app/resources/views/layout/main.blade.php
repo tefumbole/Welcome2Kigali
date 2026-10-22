@@ -1644,6 +1644,7 @@
                                 <ul id="laundry-module" class="collapse list-unstyled ">
                                     @if(\App\Support\StaffAccess::canLaundry('laundry.received'))
                                         <li id="laundry-received-menu"><a href="{{ route('laundry.received') }}">{{ __('sidebar.laundry_received') }}@if(!empty($laundryCounts['received']['dresses'])) <span class="badge badge-count" title="{{ $laundryCounts['received']['dresses'] }} dresses · {{ $laundryCounts['received']['clients'] }} clients">{{ $laundryCounts['received']['dresses'] }}</span>@endif</a></li>
+                                        <li id="laundry-hold-menu"><a href="{{ route('laundry.hold') }}">On Hold@if(!empty($laundryCounts['hold']['dresses'])) <span class="badge badge-count">{{ $laundryCounts['hold']['dresses'] }}</span>@endif</a></li>
                                     @endif
                                     @if(\App\Support\StaffAccess::canLaundry('laundry.cleaning'))
                                         <li id="laundry-cleaning-menu"><a href="{{ route('laundry.cleaning') }}">{{ __('sidebar.laundry_cleaning') }}@if(!empty($laundryCounts['cleaning']['dresses'])) <span class="badge badge-count" title="{{ $laundryCounts['cleaning']['dresses'] }} dresses · {{ $laundryCounts['cleaning']['clients'] }} clients">{{ $laundryCounts['cleaning']['dresses'] }}</span>@endif</a></li>
@@ -2747,6 +2748,7 @@
                         </li>
                         @if(\App\Support\StaffAccess::canManageSiteContent())
                             <li><a href="{{ url('/admin/site-content') }}" data-nav-key="site-content"> <i class="dripicons-web"></i><span>{{ __('sidebar.site-content') }}</span></a></li>
+                            <li><a href="{{ url('/admin/guest-reviews') }}" data-nav-key="guest-reviews"> <i class="dripicons-message"></i><span>Guest Reviews</span></a></li>
                         @endif
                             <li><a href="#help-module" data-nav-key="help" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-question"></i><span>{{ __('sidebar.help') }}</span></a>
                                 <ul id="help-module" class="collapse list-unstyled ">
@@ -3692,49 +3694,21 @@
 
           (function () {
               var helpUrl = @json(url('/admin/help'));
-              var helpHashByMenu = {
-                  product: 'products',
-                  purchase: 'purchase',
-                  sale: 'pos',
-                  booking: 'rental',
-                  'events-module': 'events',
-                  events: 'events',
-                  'tasks-module': 'tasks',
-                  'jobs-module': 'jobs',
-                  'contracts-module': 'contracts',
-                  'announcements-module': 'announcements',
-                  'courses-module': 'courses',
-                  membership: 'members',
-                  'membership-module': 'members',
-                  'laundry-module': 'laundry',
-                  laundry: 'laundry',
-                  'timesheets-module': 'timesheets',
-                  'timesheet-admin-module': 'timesheets',
-                  order: 'orders',
-                  letter: 'letters',
-                  expense: 'expenses',
-                  quotation: 'quotations',
-                  assets: 'assets',
-                  transfer: 'transfer',
-                  return: 'returns',
-                  account: 'accounting',
-                  people: 'people',
-                  report: 'reports',
-                  setting: 'settings',
-                  hrm: 'people',
-                  people: 'people',
-                  shop: 'settings',
-                  payments: 'accounting',
-                  online_invitation: 'invitations',
-                  'internship-module': 'internships',
-                  'supervisor-module': 'internships',
-                  'staff-permissions': 'settings'
-              };
+              var helpHashByMenu = @json(\App\Support\HelpTopics::menuMap());
 
               function helpHrefForMenu($submenu) {
                   var id = $submenu.attr('id') || '';
-                  var hash = helpHashByMenu[id] || id.replace(/-module$/, '') || 'start';
-                  return helpUrl + '#' + hash;
+                  var topic = helpHashByMenu[id] || id.replace(/-module$/, '') || 'start';
+                  if (id === 'order') {
+                      var params = new URLSearchParams(window.location.search || '');
+                      var lane = params.get('lane') || '';
+                      if (lane === 'online') topic = 'orders';
+                      else if (lane === 'coffee') topic = 'restaurant-coffee';
+                      else if (lane === 'bar') topic = 'restaurant-bar';
+                      else if (lane === 'restaurant') topic = 'restaurant';
+                      else if (/\/orders/.test(window.location.pathname || '')) topic = 'restaurant';
+                  }
+                  return helpUrl + '?topic=' + encodeURIComponent(topic);
               }
 
               function appendHelpLinksToSubmenus() {
@@ -4114,15 +4088,29 @@
                         return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[ch];
                     });
                 }
-                function show(items) {
+                function show(items, summary, pending) {
                     var waiting = items.some(function (item) { return item.status === 'awaiting'; });
                     var ready = items.some(function (item) { return item.status === 'ready'; });
-                    title.textContent = waiting && ready ? 'Orders need attention' : (ready ? 'Ready for delivery' : 'Order waiting');
-                    body.innerHTML = items.map(function (item) {
-                        var label = item.status === 'ready' ? 'Ready for delivery' : 'Waiting';
-                        return '<p><strong>' + label + '</strong> · ' + esc(item.ref) + '<br>' + esc(item.name) + ' × ' + esc(item.qty) + '</p>';
+                    var countLabel = pending > 0 ? (' · ' + pending + ' pending') : '';
+                    title.textContent = (waiting && ready ? 'Orders need attention' : (ready ? 'Ready for delivery' : 'Order waiting')) + countLabel;
+                    var lines = '';
+                    if (summary && summary.length) {
+                        lines += summary.map(function (row) {
+                            return '<p><strong>' + esc(row.label) + '</strong>: ' +
+                                (row.awaiting ? (row.awaiting + ' awaiting') : '') +
+                                (row.awaiting && row.ready ? ', ' : '') +
+                                (row.ready ? (row.ready + ' ready') : '') +
+                                ' · <a class="go" style="margin:0;padding:2px 10px;font-size:12px;" href="' + esc(row.href) + '">Open</a></p>';
+                        }).join('');
+                    }
+                    lines += items.slice(0, 5).map(function (item) {
+                        var label = item.status === 'ready' ? 'Ready' : 'Waiting';
+                        return '<p><strong>' + label + '</strong> · ' + esc(item.lane_label || item.lane) + ' · ' + esc(item.ref) + '<br>' + esc(item.name) + ' × ' + esc(item.qty) + '</p>';
                     }).join('');
-                    open.href = items[0].href || open.href;
+                    body.innerHTML = lines;
+                    var primary = (summary && summary[0] && summary[0].href) || (items[0] && items[0].href) || open.href;
+                    open.href = primary;
+                    open.textContent = pending > 0 ? ('Treat ' + pending + ' pending') : 'Open';
                     box.hidden = false;
                     beep();
                 }
@@ -4136,7 +4124,7 @@
                             if (!fresh.length) return;
                             fresh.forEach(function (item) { seen[item.id] = 1; });
                             localStorage.setItem(seenKey, JSON.stringify(seen));
-                            show(fresh);
+                            show(fresh, data.summary || [], data.pending || fresh.length);
                             var onOrders = location.pathname === '/orders';
                             function typing() {
                                 var active = document.activeElement;

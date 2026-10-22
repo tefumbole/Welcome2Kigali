@@ -68,6 +68,8 @@ Route::get('/pay/invoice/{sale}/{token}', 'RestaurantPayController@show')->name(
 Route::post('/pay/invoice/{sale}/{token}', 'RestaurantPayController@start')->name('restaurant.pay.start');
 Route::get('/reviews', 'ReviewController@show')->name('beyond.reviews');
 Route::post('/reviews', 'ReviewController@store')->name('beyond.reviews.store');
+Route::post('/reviews/verify', 'ReviewController@verify')->name('beyond.reviews.verify');
+Route::post('/reviews/resend-otp', 'ReviewController@resendOtp')->name('beyond.reviews.resend');
 Route::get('/menu/qr', 'BeyondController@menuQr')->name('beyond.menu.qr');
 Route::get('/menu/qr.png', 'BeyondController@menuQrPng')->name('beyond.menu.qr.png');
 Route::get('/lang/{locale}', 'LanguageController@switchLanguage')->name('lang.switch');
@@ -251,6 +253,8 @@ Route::get('/product/{id}', 'FrontendController@product')->name('product');
 Route::get('/addToCart','CartController@addToCart')->name('addToCart');
 Route::get('/addToRentCart','CartController@addToRentCart')->name('addToRentCart');
 Route::get('/cart','CartController@cart')->name('cart');
+Route::get('/cart/service','CartController@setService')->name('cart.service');
+Route::post('/cart/service','CartController@setService');
 Route::get('/rent-cart','CartController@rentCart')->name('rent.cart');
 Route::post('/order','CartController@order')->name('order');
 Route::post('/rent/order','CartController@rentOrder')->name('rent.order');
@@ -350,6 +354,8 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
 	Route::post('/otp/screen/resend', 'HomeController@otpResend')->name('check.otp.resend');
     Route::get('/admin', 'HomeController@index');
     Route::get('/admin/help', 'HelpController@index')->name('help.index');
+
+    Route::get('/admin/guest-reviews', 'GuestReviewAdminController@index')->name('guest-reviews.index');
 
     // Site Content management (Admin/Owner) — reorder public + side menus
     Route::get('/admin/site-content', 'SiteContentController@index')->name('site-content.index');
@@ -517,6 +523,10 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
     Route::get('/admin/laundry/ready', 'LaundryController@ready')->name('laundry.ready');
     Route::post('/admin/laundry/ready/bulk', 'LaundryController@markReadyBulk')->name('laundry.ready.bulk');
     Route::post('/admin/laundry/{id}/ready', 'LaundryController@markReady')->name('laundry.ready.mark');
+    Route::get('/admin/laundry/hold', 'LaundryController@holdBoard')->name('laundry.hold');
+    Route::post('/admin/laundry/{id}/hold', 'LaundryController@hold')->name('laundry.hold.store');
+    Route::post('/admin/laundry/{id}/resume', 'LaundryController@resume')->name('laundry.resume');
+    Route::post('/admin/laundry/{id}/comment', 'LaundryController@updateComment')->name('laundry.comment');
     Route::post('/admin/laundry/{id}/pay', 'LaundryController@pay')->name('laundry.pay');
     Route::get('/admin/laundry/collect', 'LaundryController@collect')->name('laundry.collect');
     Route::post('/admin/laundry/{id}/collect', 'LaundryController@sendCollect')->name('laundry.collect.send');
@@ -824,6 +834,9 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
 	Route::post('/orders/items/{item}/deny', 'RestaurantOrderController@deny')->name('restaurant.deny');
 	Route::post('/orders/items/{item}/price', 'RestaurantOrderController@price')->name('restaurant.price');
 	Route::post('/orders/items/{item}/modification', 'RestaurantOrderController@modification')->name('restaurant.modification');
+	Route::post('/orders/items/{item}/hold', 'RestaurantOrderController@hold')->name('restaurant.hold');
+	Route::post('/orders/items/{item}/resume', 'RestaurantOrderController@resume')->name('restaurant.resume');
+	Route::post('/orders/items/{item}/comment', 'RestaurantOrderController@comment')->name('restaurant.comment');
 	Route::post('/orders/{order}/waitress', 'RestaurantOrderController@assignWaitress')->name('restaurant.waitress');
 	Route::post('/orders/tables', 'RestaurantOrderController@storeTable')->name('restaurant.tables.store');
 	Route::get('sales/lims_product_search', 'SaleController@limsProductSearch')->name('product_sale.search');

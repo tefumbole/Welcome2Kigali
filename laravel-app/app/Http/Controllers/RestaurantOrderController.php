@@ -122,6 +122,51 @@ class RestaurantOrderController extends Controller
         return back()->with('message', 'Accepted. The item is now being prepared.');
     }
 
+    public function hold(Request $request, $item)
+    {
+        $row = $this->item($item);
+        if ($deny = $this->denyOrder($request, $row, 'edit')) {
+            return $deny;
+        }
+        try {
+            $this->orders->hold($row, $request->user(), $request->input('comment', $request->input('note')));
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('not_permitted', $e->getMessage());
+        }
+
+        return back()->with('message', 'Order put on hold.');
+    }
+
+    public function resume(Request $request, $item)
+    {
+        $row = $this->item($item);
+        if ($deny = $this->denyOrder($request, $row, 'edit')) {
+            return $deny;
+        }
+        try {
+            $this->orders->resume($row, $request->user());
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('not_permitted', $e->getMessage());
+        }
+
+        return back()->with('message', 'Order taken off hold.');
+    }
+
+    public function comment(Request $request, $item)
+    {
+        $row = $this->item($item);
+        if ($deny = $this->denyOrder($request, $row, 'edit')) {
+            return $deny;
+        }
+        try {
+            $this->orders->updateItemComment($row, $request->user(), $request->input('comment', $request->input('note')));
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('not_permitted', $e->getMessage());
+        }
+
+        return back()->with('message', 'Comment saved.');
+    }
+
     public function estimate(Request $request, $item)
     {
         $row = $this->item($item);
@@ -267,24 +312,60 @@ class RestaurantOrderController extends Controller
             ->limit(12)
             ->get();
         $items = [];
+        $pendingByLane = [];
         foreach ($rows as $row) {
             $sale = $row->order ? $row->order->sale : null;
             $lane = $row->lane ?: 'restaurant';
+            $tab = $row->status === 'ready' ? 'ready' : 'awaiting';
+            if (! isset($pendingByLane[$lane])) {
+                $pendingByLane[$lane] = ['awaiting' => 0, 'ready' => 0];
+            }
+            if ($row->status === 'ready') {
+                $pendingByLane[$lane]['ready']++;
+            } else {
+                $pendingByLane[$lane]['awaiting']++;
+            }
             $items[] = [
                 'id' => (int) $row->id,
                 'name' => $row->product_name,
                 'qty' => $row->qty,
                 'status' => $row->status,
                 'lane' => $lane,
+                'lane_label' => RestaurantAccess::lanes()[$lane] ?? $lane,
                 'ref' => $sale ? $sale->reference_no : '',
                 'href' => route('restaurant.orders', [
                     'lane' => $lane,
-                    'tab' => $row->status === 'ready' ? 'ready' : 'awaiting',
+                    'tab' => $tab,
                 ]),
             ];
         }
 
-        return response()->json(['items' => $items]);
+        $counts = RestaurantAccess::queueCounts();
+        $summary = [];
+        foreach ($lanes as $lane) {
+            $awaiting = (int) ($counts[$lane]['awaiting'] ?? 0);
+            $ready = (int) ($counts[$lane]['ready'] ?? 0);
+            if ($awaiting + $ready < 1) {
+                continue;
+            }
+            $openTab = $awaiting > 0 ? 'awaiting' : 'ready';
+            $summary[] = [
+                'lane' => $lane,
+                'label' => RestaurantAccess::lanes()[$lane] ?? $lane,
+                'awaiting' => $awaiting,
+                'ready' => $ready,
+                'total' => $awaiting + $ready,
+                'href' => route('restaurant.orders', ['lane' => $lane, 'tab' => $openTab]),
+            ];
+        }
+
+        return response()->json([
+            'items' => $items,
+            'summary' => $summary,
+            'pending' => array_sum(array_map(function ($row) {
+                return (int) ($row['total'] ?? 0);
+            }, $summary)),
+        ]);
     }
 
     public function assignWaitress(Request $request, $order)

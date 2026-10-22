@@ -104,11 +104,11 @@
                             <table class="table table-sm">
                                 <thead>
                                     <tr>
-                                        @if(in_array($stage, ['received', 'cleaning'], true))<th style="width:40px;">Select</th>@endif
+                                        @if(in_array($stage, ['received', 'cleaning', 'hold'], true))<th style="width:40px;">Select</th>@endif
                                         <th>Dress</th>
                                         <th>Qty</th>
                                         <th>Price</th>
-                                        <th>Note</th>
+                                        <th>Comment</th>
                                         <th>Collect by</th>
                                         @if($stage === 'ready')<th>Cleaned by</th>@endif
                                     </tr>
@@ -124,11 +124,19 @@
                                             <td><input class="laundry-check" type="checkbox" name="item_id[]" value="{{ $item->id }}" checked></td>
                                         @elseif($stage === 'cleaning')
                                             <td><input class="laundry-check laundry-clean-item" type="checkbox" name="item_id[]" value="{{ $item->id }}" checked></td>
+                                        @elseif($stage === 'hold')
+                                            <td><input class="laundry-check" type="checkbox" name="item_id[]" form="laundry-resume-{{ $order->id }}" value="{{ $item->id }}" checked></td>
                                         @endif
                                         <td>{{ $item->name }}</td>
                                         <td>{{ $item->qty + 0 }}</td>
                                         <td>{{ number_format((float) $item->total, 0) }}</td>
-                                        <td>{{ $item->note ?: '—' }}</td>
+                                        <td>
+                                            @if(in_array($stage, ['received', 'cleaning', 'hold'], true))
+                                                <input type="text" form="laundry-comment-{{ $order->id }}" name="item_note[{{ $item->id }}]" class="form-control form-control-sm" value="{{ $item->note }}" placeholder="Comment">
+                                            @else
+                                                {{ $item->note ?: '—' }}
+                                            @endif
+                                        </td>
                                         <td>
                                             @if($stage === 'received')
                                                 <input type="datetime-local" name="item_collect_at[{{ $item->id }}]" class="form-control form-control-sm item-collect" value="{{ $collectValue }}">
@@ -152,27 +160,55 @@
                                 @endforeach
                                 </tbody>
                             </table>
-                            @if($order->notes)
+                            @if(in_array($stage, ['received', 'cleaning', 'hold'], true))
+                                <form method="POST" action="{{ route('laundry.comment', $order->id) }}" id="laundry-comment-{{ $order->id }}" class="mb-2">
+                                    @csrf
+                                    <div class="form-row align-items-end">
+                                        <div class="form-group col-md-8 mb-2">
+                                            <label class="small mb-1">Ticket comment</label>
+                                            <input type="text" name="notes" class="form-control form-control-sm" value="{{ $order->notes }}" placeholder="Comment visible on laundry boards">
+                                        </div>
+                                        <div class="form-group col-md-4 mb-2 text-md-right">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary">Save comments</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            @elseif($order->notes)
                                 <div class="laundry-comment"><strong>Comment:</strong> {{ $order->notes }}</div>
                             @endif
 
                             @if($stage === 'received')
                                     <div class="form-row align-items-end">
-                                        <div class="form-group col-md-5 mb-2">
+                                        <div class="form-group col-md-4 mb-2">
                                             <label class="small mb-1">Collection date &amp; time for all selected</label>
                                             <input type="datetime-local" name="collect_at" class="form-control form-control-sm collect-all" value="{{ optional($order->collect_at)->format('Y-m-d\TH:i') ?: $defaultCollect }}" required>
                                         </div>
-                                        <div class="form-group col-md-3 mb-2">
+                                        <div class="form-group col-md-2 mb-2">
                                             @if($order->isPaid())
                                                 <span class="badge badge-success">Paid</span>
                                             @else
                                                 <span class="badge badge-warning">Due {{ number_format($order->dueAmount(), 0) }}</span>
                                             @endif
                                         </div>
-                                        <div class="form-group col-md-4 mb-2 text-md-right">
+                                        <div class="form-group col-md-6 mb-2 text-md-right" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;">
                                             <button type="submit" class="btn btn-primary">Accept selected for cleaning</button>
+                                            <button type="submit" class="btn btn-outline-warning" formaction="{{ route('laundry.hold.store', $order->id) }}" formmethod="post">Put on hold</button>
                                         </div>
                                     </div>
+                                </form>
+                            @elseif($stage === 'cleaning')
+                                <form method="POST" action="{{ route('laundry.hold.store', $order->id) }}" class="mb-2">
+                                    @csrf
+                                    @foreach($stageItems as $item)
+                                        <input type="hidden" name="item_id[]" value="{{ $item->id }}">
+                                    @endforeach
+                                    <input type="text" name="comment" class="form-control form-control-sm mb-2" placeholder="Hold comment (optional)">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning">Put ticket on hold</button>
+                                </form>
+                            @elseif($stage === 'hold')
+                                <form method="POST" action="{{ route('laundry.resume', $order->id) }}" id="laundry-resume-{{ $order->id }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary">Resume selected</button>
                                 </form>
                             @elseif($stage === 'ready')
                                 <div class="d-flex flex-wrap align-items-center" style="gap:8px;">

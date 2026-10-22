@@ -7,7 +7,7 @@
 @section('content')
 <section class="bg-black text-white min-h-[70vh] py-12"
          x-data="{
-            service: 'Eat in',
+            service: {{ json_encode($orderService ?? 'Eat in') }},
             pay: '',
             takeawayFee: {{ (int) $takeawayFee }},
             subtotal: {{ (float) $total }},

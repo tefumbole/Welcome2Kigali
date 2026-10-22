@@ -54,17 +54,34 @@ class BeyondController extends Controller
         if (! \App\Support\ServiceCatalog::exists($service)) {
             abort(404);
         }
-        $categories = \App\Support\ServiceCatalog::categories($service);
+        $catalog = \App\Support\ServiceCatalog::class;
+        $tree = $catalog::categories($service);
         $current = null;
         if ($category !== null) {
-            $current = $categories->firstWhere('id', (int) $category);
+            $current = $catalog::findInTree($tree, (int) $category);
             if (! $current) {
                 return redirect()->route('beyond.services.show', $service);
             }
         } else {
-            $current = $categories->first(function ($row) {
+            $current = $tree->first(function ($row) {
                 return $row['count'] > 0;
-            }) ?: $categories->first();
+            }) ?: $tree->first();
+        }
+
+        $breadcrumb = $current ? $catalog::breadcrumb($tree, $current['id']) : [];
+        $parentNode = count($breadcrumb) > 1 ? $breadcrumb[count($breadcrumb) - 2] : null;
+        $siblings = $parentNode
+            ? collect($parentNode['children'] ?? [])
+            : $tree;
+        $subcategories = $current && ! empty($current['has_children'])
+            ? collect($current['children'] ?? [])
+            : collect();
+        $items = collect();
+        if ($current && empty($current['has_children'])) {
+            $items = $catalog::items($current['id'], true);
+        } elseif ($service === 'laundry' && $current) {
+            // Laundry: always list items under the selected category (and children).
+            $items = $catalog::items($current['id'], true);
         }
 
         $cartCount = 0;
@@ -74,10 +91,13 @@ class BeyondController extends Controller
 
         return view('beyond.service-show', [
             'service' => $service,
-            'meta' => \App\Support\ServiceCatalog::SERVICES[$service],
-            'categories' => $categories,
+            'meta' => $catalog::SERVICES[$service],
+            'categories' => $siblings,
+            'parents' => $tree,
             'current' => $current,
-            'items' => $current ? \App\Support\ServiceCatalog::items($current['id']) : collect(),
+            'subcategories' => $subcategories,
+            'breadcrumb' => $breadcrumb,
+            'items' => $items,
             'cartCount' => $cartCount,
         ]);
     }
@@ -188,6 +208,26 @@ class BeyondController extends Controller
             return [];
         }
 
+        if (\App\Support\ServiceCatalog::enabled()) {
+            $groups = \App\Support\ServiceCatalog::menuGroups();
+            if ($groups->isNotEmpty()) {
+                return $groups->map(function ($group) {
+                    $look = $this->menuSectionLook($group['name']);
+                    $group['tagline'] = $look['tagline'];
+                    $group['blurb'] = $look['blurb'];
+                    if (empty($group['image'])) {
+                        $group['image'] = $look['image'];
+                    }
+                    // Soft buckets for classic cafe names when no DB children exist.
+                    if (empty($group['has_children'])) {
+                        $group['buckets'] = $this->menuSoftBuckets($group['name'], $group['items']);
+                    }
+
+                    return $group;
+                })->values();
+            }
+        }
+
         $categoryNames = [
             'Coffee & Tea',
             'Iced & Specialty',
@@ -212,6 +252,7 @@ class BeyondController extends Controller
 
         return $categories->map(function ($category) {
             $items = \App\Product::where('category_id', $category->id)
+                ->where('is_active', true)
                 ->orderBy('id')
                 ->get()
                 ->map(function ($product) {
@@ -225,6 +266,7 @@ class BeyondController extends Controller
                         'name' => $product->name,
                         'details' => $product->product_details,
                         'image' => $this->menuProductImage($product->image),
+                        'icon' => \App\Support\ServiceCatalog::categoryIcon($product->name),
                         'price' => (int) $product->price,
                         'flavors' => $flavors,
                     ];
@@ -235,12 +277,57 @@ class BeyondController extends Controller
             return [
                 'id' => $category->id,
                 'name' => $category->name,
+                'icon' => \App\Support\ServiceCatalog::categoryIcon($category->name),
                 'tagline' => $look['tagline'],
                 'blurb' => $look['blurb'],
                 'image' => $this->menuCategoryImage($category, $look['image']),
                 'items' => $items,
+                'buckets' => $this->menuSoftBuckets($category->name, $items->all()),
+                'has_children' => false,
             ];
         })->values();
+    }
+
+    private function menuSoftBuckets($name, $items)
+    {
+        $items = collect($items)->values()->all();
+        if ($name === 'Iced & Specialty') {
+            $iced = [];
+            $specialty = [];
+            foreach ($items as $bucketItem) {
+                if (strpos($bucketItem['name'], 'Ice ') === 0) {
+                    $iced[] = $bucketItem;
+                } else {
+                    $specialty[] = $bucketItem;
+                }
+            }
+
+            return [
+                ['title' => 'Iced Coffees', 'icon' => 'glass-water', 'items' => $iced],
+                ['title' => 'Specialty Coffees / Brewing', 'icon' => 'coffee', 'items' => $specialty],
+            ];
+        }
+        if ($name === 'Coffee & Tea') {
+            return [['title' => 'Espresso Beverages', 'icon' => 'coffee', 'items' => $items]];
+        }
+        if ($name === 'Fresh & Detox Juices') {
+            $fresh = [];
+            $detox = [];
+            foreach ($items as $bucketItem) {
+                if (stripos($bucketItem['name'], 'Detox') !== false) {
+                    $detox[] = $bucketItem;
+                } else {
+                    $fresh[] = $bucketItem;
+                }
+            }
+
+            return [
+                ['title' => 'Fresh Juices', 'icon' => 'citrus', 'items' => $fresh],
+                ['title' => 'Detox Juices', 'icon' => 'sparkles', 'items' => $detox],
+            ];
+        }
+
+        return [['title' => $name, 'icon' => \App\Support\ServiceCatalog::categoryIcon($name), 'items' => $items]];
     }
 
     private function cafeCategories(array $categoryNames)
@@ -277,12 +364,9 @@ class BeyondController extends Controller
 
     private function menuCategoryImage($category, $fallback)
     {
-        $filename = trim((string) ($category->image ?? ''));
-        if ($filename !== '' && strtolower($filename) !== 'null' && $filename !== 'zummXD2dvAtI.png') {
-            $path = public_path('images/category/'.$filename);
-            if (is_file($path) && filesize($path) > 0) {
-                return \App\Support\PosProductImage::catalogUrl('category', $filename);
-            }
+        $fromCatalog = \App\Support\ServiceCatalog::categoryImage($category);
+        if ($fromCatalog) {
+            return $fromCatalog;
         }
 
         return $fallback;

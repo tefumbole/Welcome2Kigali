@@ -82,10 +82,6 @@
         color: #0A0A0A;
         transform: scale(1.04);
     }
-    body.home-landing .w2k-reviews { text-align: center; }
-    body.home-landing .w2k-reviews summary { display: inline-block; }
-    body.home-landing .w2k-reviews-score { justify-content: center; }
-    body.home-landing .w2k-reviews-list { max-height: 32vh; text-align: left; }
     body.home-landing .landing-hero-actions a i {
         width: 1rem;
         height: 1rem;
@@ -136,9 +132,6 @@
          decoding="async"
          fetchpriority="high">
     <div class="landing-hero-actions">
-        <div class="w-full flex justify-center mb-2">
-            @include('beyond.partials.review-summary', ['tone' => 'dark'])
-        </div>
         <a href="{{ url('/register-now') }}">
             {{ \App\Support\SiteContent::text('home.cta_primary', __('site.home.join')) }} <i data-lucide="arrow-right"></i>
         </a>

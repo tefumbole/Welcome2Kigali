@@ -420,14 +420,6 @@
 
 <main class="flex-1 min-h-0">
     @yield('content')
-    @php
-        $showReviewStrip = request()->is('about', 'events', 'events/*', 'menu', 'services', 'services/*', 'gallery', 'register-now');
-    @endphp
-    @if($showReviewStrip)
-        <div class="max-w-xl mx-auto px-4 py-8">
-            @include('beyond.partials.review-summary')
-        </div>
-    @endif
 </main>
 
 @unless(trim($__env->yieldContent('hide_footer')))
