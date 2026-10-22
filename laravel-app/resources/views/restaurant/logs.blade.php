@@ -2,7 +2,7 @@
 @section('content')
     <section class="container-fluid">
         @if(session('message'))<div class="alert alert-success">{{ session('message') }}</div>@endif
-        <h3>Order Logs@if(request('lane')) · {{ \App\Services\Restaurant\RestaurantAccess::lanes()[request('lane')] ?? request('lane') }}@endif</h3>
+        <h3>Order Logs @if(request('lane')) · {{ \App\Services\Restaurant\RestaurantAccess::lanes()[request('lane')] ?? request('lane') }} @endif</h3>
         <p class="text-muted">Time from order to delivered for each line.</p>
         <form method="get" id="w2k-log-filter" class="row" style="margin-bottom:16px;">
             @if(request('lane'))<input type="hidden" name="lane" value="{{ request('lane') }}">@endif
