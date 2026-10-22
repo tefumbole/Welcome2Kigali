@@ -291,7 +291,6 @@
     @else
         @foreach ($tabs as $group)
             @php
-                $pageNo++;
                 $sheetMod = '';
                 if (($group['name'] ?? '') === 'Smoothies') {
                     $sheetMod = ' menu-sheet--smoothies';
