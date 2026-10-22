@@ -60,6 +60,7 @@ Route::get('/menu', 'BeyondController@menu')->name('beyond.menu');
 Route::post('/menu', 'RestaurantMenuController@redirectToPos');
 Route::get('/order-confirm/{sale}/{token}', 'RestaurantMenuController@confirmation')->name('restaurant.public.confirm');
 Route::get('/order-track/{sale}/{token}', 'RestaurantTrackingController@show')->name('restaurant.track');
+Route::post('/order-track/{sale}/{token}/items/{item}/sign', 'RestaurantTrackingController@signChange')->name('restaurant.track.sign');
 Route::get('/order-review/{sale}/{token}', 'RestaurantTrackingController@review')->name('restaurant.review');
 Route::post('/order-review/{sale}/{token}', 'RestaurantTrackingController@storeReview')->name('restaurant.review.store');
 Route::get('/pay/invoice/callback', 'RestaurantPayController@callback')->name('restaurant.pay.callback');
@@ -809,6 +810,7 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
 	Route::post('importsale', 'SaleController@importSale')->name('sale.import');
 	Route::get('pos', 'SaleController@posSale')->name('sale.pos');
 	Route::get('/orders', 'RestaurantOrderController@board')->name('restaurant.orders');
+	Route::get('/orders/alerts', 'RestaurantOrderController@alerts')->name('restaurant.alerts');
 	Route::get('/orders/kitchen', 'RestaurantOrderController@kitchen')->name('restaurant.kitchen');
 	Route::get('/orders/bar', 'RestaurantOrderController@bar')->name('restaurant.bar');
 	Route::get('/orders/ready', 'RestaurantOrderController@ready')->name('restaurant.ready');
@@ -819,6 +821,9 @@ Route::group(['middleware' => ['auth', 'active', 'intern.compliance']], function
 	Route::post('/orders/items/{item}/ready', 'RestaurantOrderController@markReady')->name('restaurant.ready.mark');
 	Route::post('/orders/items/{item}/deliver', 'RestaurantOrderController@deliver')->name('restaurant.deliver');
 	Route::post('/orders/items/{item}/reject', 'RestaurantOrderController@reject')->name('restaurant.reject');
+	Route::post('/orders/items/{item}/deny', 'RestaurantOrderController@deny')->name('restaurant.deny');
+	Route::post('/orders/items/{item}/price', 'RestaurantOrderController@price')->name('restaurant.price');
+	Route::post('/orders/items/{item}/modification', 'RestaurantOrderController@modification')->name('restaurant.modification');
 	Route::post('/orders/{order}/waitress', 'RestaurantOrderController@assignWaitress')->name('restaurant.waitress');
 	Route::post('/orders/tables', 'RestaurantOrderController@storeTable')->name('restaurant.tables.store');
 	Route::get('sales/lims_product_search', 'SaleController@limsProductSearch')->name('product_sale.search');

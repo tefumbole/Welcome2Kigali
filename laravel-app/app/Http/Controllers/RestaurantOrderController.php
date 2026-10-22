@@ -60,7 +60,7 @@ class RestaurantOrderController extends Controller
         $status = $tab === 'accepted' ? 'preparing' : $tab;
         $items = collect();
         if (Schema::hasColumn('restaurant_order_items', 'lane')) {
-            $items = RestaurantOrderItem::with(['order.sale.customer', 'order.diningTable', 'order.waitress', 'acceptedBy'])
+            $items = RestaurantOrderItem::with(['order.sale.customer', 'order.diningTable', 'order.waitress', 'acceptedBy', 'productSale'])
                 ->where('status', $status)
                 ->where(function ($query) use ($lane) {
                     $query->where('lane', $lane);
@@ -75,7 +75,8 @@ class RestaurantOrderController extends Controller
                         });
                     }
                 })
-                ->orderBy('id')
+                ->orderBy('id', $status === 'delivered' ? 'desc' : 'asc')
+                ->limit($status === 'delivered' ? 40 : 80)
                 ->get();
         }
 
@@ -185,6 +186,105 @@ class RestaurantOrderController extends Controller
         }
 
         return back()->with('message', 'Rejection recorded. Use Return Sale if a refund or price change is authorised.');
+    }
+
+    public function deny(Request $request, $item)
+    {
+        $row = $this->item($item);
+        if ($deny = $this->denyOrder($request, $row, 'delete')) {
+            return $deny;
+        }
+        try {
+            $this->orders->deny($row, $request->user(), $request->input('reason'));
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('not_permitted', $e->getMessage());
+        }
+
+        return back()->with('message', 'Order denied. It will not be billed.');
+    }
+
+    public function price(Request $request, $item)
+    {
+        $row = $this->item($item);
+        if ($deny = $this->denyOrder($request, $row, 'edit')) {
+            return $deny;
+        }
+        try {
+            $this->orders->proposePrice($row, $request->user(), $request->input('price'), $request->input('note'));
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('not_permitted', $e->getMessage());
+        }
+
+        return back()->with('message', 'New price sent. The guest must sign before it replaces the original price.');
+    }
+
+    public function modification(Request $request, $item)
+    {
+        $row = $this->item($item);
+        if ($deny = $this->denyOrder($request, $row, 'edit')) {
+            return $deny;
+        }
+        try {
+            $this->orders->requestModification($row, $request->user(), $request->input('note'));
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('not_permitted', $e->getMessage());
+        }
+
+        return back()->with('message', 'Change sent. The guest must sign on the tracking page.');
+    }
+
+    public function alerts(Request $request)
+    {
+        $user = $request->user();
+        if (! $user || ! RestaurantAccess::canSeeOrders($user) || ! RestaurantAccess::installed()) {
+            return response()->json(['items' => []]);
+        }
+        $statuses = [];
+        if (RestaurantAccess::seeStatus($user, 'awaiting')) {
+            $statuses[] = 'awaiting';
+        }
+        if (RestaurantAccess::seeStatus($user, 'ready')) {
+            $statuses[] = 'ready';
+        }
+        $lanes = [];
+        foreach (array_keys(RestaurantAccess::lanes()) as $lane) {
+            if (RestaurantAccess::seeLane($user, $lane)) {
+                $lanes[] = $lane;
+            }
+        }
+        if (! $statuses || ! $lanes) {
+            return response()->json(['items' => []]);
+        }
+        $rows = RestaurantOrderItem::with(['order.sale'])
+            ->whereIn('status', $statuses)
+            ->where(function ($query) use ($lanes) {
+                $query->whereIn('lane', $lanes);
+                if (in_array('restaurant', $lanes, true)) {
+                    $query->orWhereNull('lane');
+                }
+            })
+            ->orderBy('id', 'desc')
+            ->limit(12)
+            ->get();
+        $items = [];
+        foreach ($rows as $row) {
+            $sale = $row->order ? $row->order->sale : null;
+            $lane = $row->lane ?: 'restaurant';
+            $items[] = [
+                'id' => (int) $row->id,
+                'name' => $row->product_name,
+                'qty' => $row->qty,
+                'status' => $row->status,
+                'lane' => $lane,
+                'ref' => $sale ? $sale->reference_no : '',
+                'href' => route('restaurant.orders', [
+                    'lane' => $lane,
+                    'tab' => $row->status === 'ready' ? 'ready' : 'awaiting',
+                ]),
+            ];
+        }
+
+        return response()->json(['items' => $items]);
     }
 
     public function assignWaitress(Request $request, $order)

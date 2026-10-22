@@ -345,9 +345,112 @@ class RestaurantOrderService
             'user_id' => $user->id,
             'remake_item_id' => $remake ? $remake->id : null,
         ]);
+        if (in_array($resolution, ['cancellation', 'refund'], true) && abs($qty - (float) $item->qty) < 0.001) {
+            $this->dropLineFromBill($item);
+        }
         $this->event($item->order, $item, 'rejected', $user->id, $resolution.': '.$reason);
 
         return $rejection;
+    }
+
+    public function deny(RestaurantOrderItem $item, User $user, $reason)
+    {
+        if (! in_array($item->status, ['awaiting', 'preparing'], true)) {
+            throw new \InvalidArgumentException('Only an order that is still open can be denied.');
+        }
+        $reason = trim((string) $reason);
+        if ($reason === '') {
+            throw new \InvalidArgumentException('A reason is required.');
+        }
+        $wasAwaiting = $item->status === 'awaiting';
+        $item->status = 'rejected';
+        $item->internal_note = $reason;
+        $item->save();
+        $this->dropLineFromBill($item);
+        if ($wasAwaiting) {
+            $this->restoreItemStock($item);
+        }
+        $order = $item->order ?: RestaurantOrder::find($item->restaurant_order_id);
+        $this->event($order, $item, 'denied', $user->id, $reason);
+        if ($order) {
+            $this->notify($order, $item->product_name.' was not accepted. '.$reason.'. This item will not be billed.');
+        }
+
+        return $item;
+    }
+
+    public function proposePrice(RestaurantOrderItem $item, User $user, $price, $note)
+    {
+        $this->assertOpenForChange($item);
+        $this->assertChangeColumns();
+        $price = round((float) $price, 2);
+        if ($price < 0) {
+            throw new \InvalidArgumentException('Enter a price of zero or more.');
+        }
+        $item->proposed_price = $price;
+        $item->proposed_note = trim((string) $note) !== '' ? trim((string) $note) : null;
+        $item->client_signature = null;
+        $item->client_signed_at = null;
+        $item->save();
+        $order = $item->order ?: RestaurantOrder::find($item->restaurant_order_id);
+        $this->event($order, $item, 'price_proposed', $user->id, (string) $price);
+        if ($order) {
+            $this->notify($order, 'The price of '.$item->product_name.' is now '.number_format($price, 0).' each. Please open the tracking link and sign to confirm. Until you sign, the original price stays.');
+        }
+
+        return $item;
+    }
+
+    public function requestModification(RestaurantOrderItem $item, User $user, $note)
+    {
+        $this->assertOpenForChange($item);
+        $this->assertChangeColumns();
+        $note = trim((string) $note);
+        if ($note === '') {
+            throw new \InvalidArgumentException('Describe the change the guest should confirm.');
+        }
+        $item->proposed_note = $note;
+        $item->client_signature = null;
+        $item->client_signed_at = null;
+        $item->save();
+        $order = $item->order ?: RestaurantOrder::find($item->restaurant_order_id);
+        $this->event($order, $item, 'modification', $user->id, $note);
+        if ($order) {
+            $this->notify($order, 'Please confirm a change to '.$item->product_name.': '.$note.'. Open the tracking link and sign.');
+        }
+
+        return $item;
+    }
+
+    public function signChange(RestaurantOrderItem $item, $name, $signature)
+    {
+        $this->assertChangeColumns();
+        if (! $item->awaitingSignature()) {
+            throw new \InvalidArgumentException('There is nothing waiting for a signature on this item.');
+        }
+        $name = trim((string) $name);
+        if ($name === '') {
+            throw new \InvalidArgumentException('Enter the name to sign with.');
+        }
+        $signature = (string) $signature;
+        if (! preg_match('#^data:image/png;base64,#', $signature) || strlen($signature) < 80 || strlen($signature) > 180000) {
+            throw new \InvalidArgumentException('Please sign in the box before submitting.');
+        }
+        $item->client_signature = $signature;
+        $item->client_signed_at = now();
+        if ($item->internal_note) {
+            $item->internal_note = trim($item->internal_note."\nSigned by ".$name);
+        } else {
+            $item->internal_note = 'Signed by '.$name;
+        }
+        $item->save();
+        if ($item->proposed_price !== null) {
+            $this->applySignedPrice($item);
+        }
+        $order = $item->order ?: RestaurantOrder::find($item->restaurant_order_id);
+        $this->event($order, $item, 'client_signed', null, $name);
+
+        return $item;
     }
 
     public function assignWaitress(RestaurantOrder $order, $userId, User $actor)
@@ -568,6 +671,9 @@ class RestaurantOrderService
 
     protected function event(RestaurantOrder $order, $item, $action, $userId, $note)
     {
+        if (! $order) {
+            return;
+        }
         RestaurantOrderEvent::create([
             'restaurant_order_id' => $order->id,
             'restaurant_order_item_id' => $item ? $item->id : null,
@@ -575,6 +681,122 @@ class RestaurantOrderService
             'user_id' => $userId,
             'note' => $note,
         ]);
+        RestaurantAccess::forgetCounts();
+    }
+
+    protected function assertOpenForChange(RestaurantOrderItem $item)
+    {
+        if (! in_array($item->status, ['awaiting', 'preparing', 'ready'], true)) {
+            throw new \InvalidArgumentException('This item can no longer be changed.');
+        }
+    }
+
+    protected function assertChangeColumns()
+    {
+        if (! Schema::hasColumn('restaurant_order_items', 'proposed_price')) {
+            throw new \InvalidArgumentException('Price changes are not available until the latest update is applied.');
+        }
+    }
+
+    protected function dropLineFromBill(RestaurantOrderItem $item)
+    {
+        if (! $item->product_sale_id) {
+            return;
+        }
+        $line = Product_Sale::find($item->product_sale_id);
+        if (! $line) {
+            return;
+        }
+        $amount = (float) $line->total;
+        $line->total = 0;
+        $line->net_unit_price = 0;
+        $line->tax = 0;
+        $line->save();
+        if ($amount <= 0) {
+            return;
+        }
+        $order = $item->order ?: RestaurantOrder::find($item->restaurant_order_id);
+        $sale = $order ? ($order->sale ?: Sale::find($order->sale_id)) : Sale::find($line->sale_id);
+        if (! $sale) {
+            return;
+        }
+        $sale->grand_total = max(0, round((float) $sale->grand_total - $amount, 2));
+        $sale->total_price = max(0, round((float) $sale->total_price - $amount, 2));
+        $sale->save();
+    }
+
+    protected function applySignedPrice(RestaurantOrderItem $item)
+    {
+        if (! $item->product_sale_id) {
+            return;
+        }
+        $line = Product_Sale::find($item->product_sale_id);
+        if (! $line) {
+            return;
+        }
+        $qty = (float) $line->qty;
+        if ($qty <= 0) {
+            $qty = (float) $item->qty ?: 1;
+        }
+        $old = (float) $line->total;
+        $new = round((float) $item->proposed_price * $qty, 2);
+        $line->net_unit_price = (float) $item->proposed_price;
+        $line->total = $new;
+        $line->save();
+        $order = $item->order ?: RestaurantOrder::find($item->restaurant_order_id);
+        $sale = $order ? ($order->sale ?: Sale::find($order->sale_id)) : Sale::find($line->sale_id);
+        if (! $sale) {
+            return;
+        }
+        $sale->grand_total = max(0, round((float) $sale->grand_total - $old + $new, 2));
+        $sale->total_price = max(0, round((float) $sale->total_price - $old + $new, 2));
+        $sale->save();
+    }
+
+    protected function restoreItemStock(RestaurantOrderItem $item)
+    {
+        $product = Product::find($item->product_id);
+        if (! $product) {
+            return;
+        }
+        $order = $item->order ?: RestaurantOrder::find($item->restaurant_order_id);
+        $sale = $order ? ($order->sale ?: Sale::find($order->sale_id)) : null;
+        $warehouseId = $sale ? $sale->warehouse_id : null;
+        $this->restoreStock($product, $item->qty, $warehouseId);
+    }
+
+    protected function restoreStock(Product $product, $qty, $warehouseId)
+    {
+        $quantity = $this->baseQty($product, $qty);
+        if ($product->type === 'combo' && $product->product_list) {
+            $ids = explode(',', $product->product_list);
+            $qtyList = explode(',', (string) $product->qty_list);
+            foreach ($ids as $key => $childId) {
+                $child = Product::find($childId);
+                if (! $child) {
+                    continue;
+                }
+                $childQty = $quantity * (isset($qtyList[$key]) ? (float) $qtyList[$key] : 1);
+                $this->returnQty($child, $childQty, $warehouseId);
+            }
+
+            return;
+        }
+        $this->returnQty($product, $quantity, $warehouseId);
+    }
+
+    protected function returnQty(Product $product, $quantity, $warehouseId)
+    {
+        $product->qty = (float) $product->qty + (float) $quantity;
+        $product->save();
+        if (! $warehouseId) {
+            return;
+        }
+        $bin = Product_Warehouse::where('product_id', $product->id)->where('warehouse_id', $warehouseId)->first();
+        if ($bin) {
+            $bin->qty = (float) $bin->qty + (float) $quantity;
+            $bin->save();
+        }
     }
 
     protected function assertStatus(RestaurantOrderItem $item, $from, $to)

@@ -4,27 +4,58 @@ namespace App\Services\Restaurant;
 
 use App\RestaurantOrderItem;
 use App\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Role;
 
 class RestaurantAccess
 {
+    protected static $permissionNames = [];
+
     public static function can($user, $permission)
     {
         if (! $user || ! $user->role_id) {
             return false;
         }
-        try {
-            $role = Role::find($user->role_id);
-            if (! $role) {
-                return false;
-            }
+        $names = self::namesForRole($user->role_id);
 
-            return $role->hasPermissionTo($permission);
-        } catch (\Throwable $e) {
-            return false;
+        return isset($names[$permission]);
+    }
+
+    protected static function namesForRole($roleId)
+    {
+        if (isset(self::$permissionNames[$roleId])) {
+            return self::$permissionNames[$roleId];
         }
+        $names = [];
+        try {
+            $role = Role::find($roleId);
+            if ($role) {
+                foreach ($role->permissions as $permission) {
+                    $names[$permission->name] = true;
+                }
+            }
+        } catch (\Throwable $e) {
+            $names = [];
+        }
+
+        return self::$permissionNames[$roleId] = $names;
+    }
+
+    public static function installed()
+    {
+        static $ready;
+        if ($ready !== null) {
+            return $ready;
+        }
+        try {
+            $ready = Schema::hasTable('restaurant_order_items') && Schema::hasColumn('restaurant_order_items', 'lane');
+        } catch (\Throwable $e) {
+            $ready = false;
+        }
+
+        return $ready;
     }
 
     public static function usersWithPermission($permission)
@@ -197,10 +228,29 @@ class RestaurantAccess
 
     public static function queueCounts()
     {
-        $counts = [];
-        if (! Schema::hasTable('restaurant_order_items') || ! Schema::hasColumn('restaurant_order_items', 'lane')) {
-            return $counts;
+        if (! self::installed()) {
+            return [];
         }
+        try {
+            return Cache::remember('w2k.order.counts', 15, function () {
+                return self::countQueues();
+            });
+        } catch (\Throwable $e) {
+            return self::countQueues();
+        }
+    }
+
+    public static function forgetCounts()
+    {
+        try {
+            Cache::forget('w2k.order.counts');
+        } catch (\Throwable $e) {
+        }
+    }
+
+    protected static function countQueues()
+    {
+        $counts = [];
         $rows = RestaurantOrderItem::query()
             ->select('lane', 'status', DB::raw('count(*) as total'))
             ->groupBy('lane', 'status')

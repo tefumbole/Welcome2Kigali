@@ -34,6 +34,10 @@ class RestaurantOrderWorkflowTest extends TestCase
             '--path' => 'database/migrations/2026_10_18_180000_create_restaurant_orders.php',
             '--force' => true,
         ]);
+        $this->artisan('migrate', [
+            '--path' => 'database/migrations/2026_10_22_120000_add_price_signature_to_restaurant_order_items.php',
+            '--force' => true,
+        ]);
     }
 
     public function test_mixed_order_is_one_bill_split_by_department()
@@ -292,6 +296,24 @@ class RestaurantOrderWorkflowTest extends TestCase
         $this->assertFalse($open['pending_delivery']);
         $this->assertEquals(3400, $open['due']);
         $this->assertSame('Due', $open['badge']);
+    }
+
+    public function test_denied_order_is_not_billed()
+    {
+        $product = $this->product('Soup', 'food', 8);
+        $sale = $this->order([['product_id' => $product->id, 'qty' => 1]]);
+        $order = RestaurantOrder::where('sale_id', $sale->id)->first();
+        $item = $order->items()->first();
+        app(RestaurantOrderService::class)->deny($item, $this->user('Cook', 1), 'Out of stock');
+
+        $sale = $sale->fresh();
+        $this->assertSame('rejected', $item->fresh()->status);
+        $this->assertEquals(0, (float) $sale->grand_total);
+        $this->assertEquals(8, (float) $product->fresh()->qty);
+        $lines = Product_Sale::where('sale_id', $sale->id)->get();
+        $result = RestaurantSettlement::compute($sale, $order->fresh()->load('items'), $lines);
+        $this->assertFalse($result['pending_delivery']);
+        $this->assertEquals(0, $result['due']);
     }
 
     public function test_stock_is_deducted_once()

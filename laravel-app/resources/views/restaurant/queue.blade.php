@@ -18,9 +18,23 @@
             background:#f6f0e4; color:#6a5420; font-size:12px; font-weight:700; letter-spacing:.04em;
         }
         .w2k-pill.late { background:#fde8e8; color:#8a1f1f; }
-        .w2k-actions .form-control { border-radius:10px; }
-        .w2k-actions .btn-primary { background:#C5A059; border-color:#C5A059; color:#0A0A0A; font-weight:700; }
+        .w2k-head { display:flex; justify-content:space-between; align-items:flex-end; gap:12px; padding:4px 4px 0; }
+        .w2k-head h1 { margin:2px 0 0; font-size:28px; font-weight:700; color:#0A0A0A; }
+        .w2k-actions .form-control { border-radius:10px; border-color:#eadfcd; }
+        .w2k-actions .btn-primary { background:#C5A059; border-color:#C5A059; color:#0A0A0A; font-weight:700; border-radius:999px; }
         .w2k-actions .btn-success { border-radius:999px; font-weight:700; }
+        .w2k-row { display:flex; flex-wrap:wrap; gap:8px; }
+        .w2k-choice { margin:0; }
+        .w2k-choice summary {
+            list-style:none; cursor:pointer; display:inline-block;
+            border:1px solid #0A0A0A; color:#0A0A0A; background:#fff;
+            border-radius:999px; padding:7px 12px; font-size:13px; font-weight:700;
+        }
+        .w2k-choice summary::-webkit-details-marker { display:none; }
+        .w2k-choice.deny summary { border-color:#8a1f1f; color:#8a1f1f; }
+        .w2k-choice form { margin-top:8px; }
+        .w2k-note { margin:8px 0 0; padding:8px 10px; border-radius:12px; background:#f6f0e4; color:#6a5420; font-size:13px; }
+        .w2k-note.signed { background:#e7f6ea; color:#1d6b32; }
         .w2k-empty { background:#fff; border:1px dashed #e4d7c3; border-radius:18px; padding:28px; color:#6d6256; }
         .w2k-reject { margin-top:8px; }
         .w2k-reject summary { cursor:pointer; color:#8a7350; font-size:13px; }
@@ -31,6 +45,13 @@
     <section class="container-fluid">
         @if(session('message'))<div class="alert alert-success">{{ session('message') }}</div>@endif
         @if(session('not_permitted'))<div class="alert alert-danger">{{ session('not_permitted') }}</div>@endif
+        <header class="w2k-head">
+            <div>
+                <p class="w2k-kicker">Orders</p>
+                <h1>{{ $lanes[$lane] ?? 'Orders' }} · {{ $tabs[$tab] ?? '' }}</h1>
+            </div>
+            <p class="w2k-meta">{{ $items->count() }} on this screen</p>
+        </header>
         <div class="w2k-board">
             @forelse($items as $item)
                 @php
@@ -69,14 +90,62 @@
                         </p>
                     </div>
                     <div class="w2k-actions">
+                        @if($item->productSale)
+                            <p class="w2k-meta">{{ number_format((float) $item->productSale->total, 0) }} RWF</p>
+                        @endif
+                        @if($item->awaitingSignature())
+                            <p class="w2k-note">
+                                @if($item->proposed_price !== null)
+                                    New price {{ number_format((float) $item->proposed_price, 0) }} each is waiting for the client's signature.
+                                @else
+                                    A change is waiting for the client's signature.
+                                @endif
+                                @if($item->proposed_note) {{ $item->proposed_note }} @endif
+                            </p>
+                        @elseif($item->client_signed_at)
+                            <p class="w2k-note signed">Client signed {{ $item->client_signed_at->format('H:i') }}.</p>
+                        @endif
                         @if($canAdd && $item->status === 'awaiting')
-                            <form method="post" action="{{ route('restaurant.accept', $item->id) }}">
+                            <form method="post" action="{{ route('restaurant.accept', $item->id) }}" style="margin-bottom:8px;">
                                 @csrf
                                 <div class="input-group">
                                     <input class="form-control" type="number" name="minutes" min="1" max="240" placeholder="Minutes, optional">
                                     <span class="input-group-btn"><button class="btn btn-primary" type="submit">Accept</button></span>
                                 </div>
                             </form>
+                        @endif
+                        @if(($canDelete || $canEdit) && in_array($item->status, ['awaiting', 'preparing', 'ready'], true))
+                            <div class="w2k-row">
+                                @if($canDelete && in_array($item->status, ['awaiting', 'preparing'], true))
+                                    <details class="w2k-choice deny">
+                                        <summary>Deny</summary>
+                                        <form method="post" action="{{ route('restaurant.deny', $item->id) }}">
+                                            @csrf
+                                            <input class="form-control" name="reason" placeholder="Reason" required>
+                                            <button class="btn btn-default btn-block" style="margin-top:6px;" type="submit">Deny this order</button>
+                                        </form>
+                                    </details>
+                                @endif
+                                @if($canEdit)
+                                    <details class="w2k-choice">
+                                        <summary>Change price</summary>
+                                        <form method="post" action="{{ route('restaurant.price', $item->id) }}">
+                                            @csrf
+                                            <input class="form-control" type="number" name="price" min="0" step="1" placeholder="New price each" required>
+                                            <input class="form-control" name="note" placeholder="Note for the guest" style="margin-top:6px;">
+                                            <button class="btn btn-primary btn-block" style="margin-top:6px;" type="submit">Send for signature</button>
+                                        </form>
+                                    </details>
+                                    <details class="w2k-choice">
+                                        <summary>Request a change</summary>
+                                        <form method="post" action="{{ route('restaurant.modification', $item->id) }}">
+                                            @csrf
+                                            <input class="form-control" name="note" placeholder="What should the guest confirm?" required>
+                                            <button class="btn btn-primary btn-block" style="margin-top:6px;" type="submit">Ask the guest to sign</button>
+                                        </form>
+                                    </details>
+                                @endif
+                            </div>
                         @endif
                         @if($canEdit && $item->status === 'preparing')
                             <form method="post" action="{{ route('restaurant.ready.mark', $item->id) }}" style="margin-bottom:8px;">
@@ -122,5 +191,4 @@
             @endforelse
         </div>
     </section>
-    <script>setTimeout(function () { window.location.reload(); }, 15000);</script>
 @endsection

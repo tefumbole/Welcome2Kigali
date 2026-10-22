@@ -1691,10 +1691,9 @@
                                 </ul>
                             </li>
                         @endif
-                        @if(\App\Services\Restaurant\RestaurantAccess::canSeeOrders(auth()->user()))
+                        @if(\App\Services\Restaurant\RestaurantAccess::canSeeOrders(auth()->user()) && \App\Services\Restaurant\RestaurantAccess::installed())
                             <li><a href="#order" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document"></i><span>{{ __('sidebar.order') }}</span><span></a>
                                 <ul id="order" class="collapse list-unstyled ">
-                                    @if(\Illuminate\Support\Facades\Schema::hasTable('restaurant_orders'))
                                         @php
                                             $cafeLanes = \App\Services\Restaurant\RestaurantAccess::lanes();
                                             $cafeTabs = \App\Services\Restaurant\RestaurantAccess::statuses();
@@ -1728,7 +1727,6 @@
                                             </li>
                                             @endif
                                         @endforeach
-                                    @endif
                                 </ul>
                             </li>
                         @endif
@@ -4068,6 +4066,92 @@
               }
             }, EVERY);
           })();
+        </script>
+        @endif
+        @if(auth()->check() && \App\Services\Restaurant\RestaurantAccess::canSeeOrders(auth()->user()) && \App\Services\Restaurant\RestaurantAccess::installed())
+        <style>
+            #w2k-order-pop { position:fixed; right:18px; bottom:18px; z-index:1080; width:min(380px, calc(100vw - 24px)); background:#0A0A0A; color:#fff8ea; border-radius:18px; box-shadow:0 18px 50px rgba(0,0,0,.28); padding:16px 16px 14px; }
+            #w2k-order-pop h2 { margin:0 0 8px; font-size:18px; color:#C5A059; }
+            #w2k-order-pop p { margin:0 0 6px; }
+            #w2k-order-pop a, #w2k-order-pop button { display:inline-block; margin:8px 8px 0 0; border-radius:999px; padding:8px 14px; font-weight:700; text-decoration:none; border:0; cursor:pointer; }
+            #w2k-order-pop .go { background:#C5A059; color:#0A0A0A; }
+            #w2k-order-pop .stay { background:transparent; color:#fff8ea; border:1px solid #C5A059; }
+        </style>
+        <div id="w2k-order-pop" hidden>
+            <h2 id="w2k-order-pop-title">Order waiting</h2>
+            <div id="w2k-order-pop-body"></div>
+            <a class="go" id="w2k-order-pop-open" href="{{ route('restaurant.orders') }}">Open</a>
+            <button type="button" class="stay" id="w2k-order-pop-close">Dismiss</button>
+        </div>
+        <script>
+            (function () {
+                var url = @json(route('restaurant.alerts'));
+                var seenKey = 'w2k-order-seen';
+                var box = document.getElementById('w2k-order-pop');
+                var title = document.getElementById('w2k-order-pop-title');
+                var body = document.getElementById('w2k-order-pop-body');
+                var open = document.getElementById('w2k-order-pop-open');
+                var close = document.getElementById('w2k-order-pop-close');
+                if (!box) return;
+                function seenMap() {
+                    try { return JSON.parse(localStorage.getItem(seenKey) || '{}'); } catch (e) { return {}; }
+                }
+                function beep() {
+                    try {
+                        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+                        var osc = ctx.createOscillator();
+                        var gain = ctx.createGain();
+                        osc.frequency.value = 880;
+                        gain.gain.value = 0.04;
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start();
+                        setTimeout(function () { osc.stop(); ctx.close(); }, 180);
+                    } catch (e) {}
+                }
+                function esc(value) {
+                    return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
+                        return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[ch];
+                    });
+                }
+                function show(items) {
+                    var waiting = items.some(function (item) { return item.status === 'awaiting'; });
+                    var ready = items.some(function (item) { return item.status === 'ready'; });
+                    title.textContent = waiting && ready ? 'Orders need attention' : (ready ? 'Ready for delivery' : 'Order waiting');
+                    body.innerHTML = items.map(function (item) {
+                        var label = item.status === 'ready' ? 'Ready for delivery' : 'Waiting';
+                        return '<p><strong>' + label + '</strong> · ' + esc(item.ref) + '<br>' + esc(item.name) + ' × ' + esc(item.qty) + '</p>';
+                    }).join('');
+                    open.href = items[0].href || open.href;
+                    box.hidden = false;
+                    beep();
+                }
+                function poll() {
+                    if (document.hidden) return;
+                    fetch(url, {headers: {'Accept': 'application/json'}, credentials: 'same-origin'})
+                        .then(function (res) { return res.ok ? res.json() : {items: []}; })
+                        .then(function (data) {
+                            var seen = seenMap();
+                            var fresh = (data.items || []).filter(function (item) { return !seen[item.id]; });
+                            if (!fresh.length) return;
+                            fresh.forEach(function (item) { seen[item.id] = 1; });
+                            localStorage.setItem(seenKey, JSON.stringify(seen));
+                            show(fresh);
+                            var onOrders = location.pathname === '/orders';
+                            function typing() {
+                                var active = document.activeElement;
+                                return active && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName);
+                            }
+                            if (onOrders && !typing()) {
+                                setTimeout(function () { if (!typing()) window.location.reload(); }, 6000);
+                            }
+                        })
+                        .catch(function () {});
+                }
+                close.addEventListener('click', function () { box.hidden = true; });
+                poll();
+                setInterval(poll, 12000);
+            })();
         </script>
         @endif
       </body>

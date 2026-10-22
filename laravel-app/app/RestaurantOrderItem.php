@@ -12,15 +12,30 @@ class RestaurantOrderItem extends Model
         'accepted_by', 'accepted_at', 'estimate_minutes', 'original_estimate_minutes',
         'expected_ready_at', 'ready_by', 'ready_at', 'delivered_by', 'delivered_at',
         'attempt_no', 'remake_of_id',
+        'proposed_price', 'proposed_note', 'client_signature', 'client_signed_at',
     ];
 
     protected $dates = [
-        'accepted_at', 'expected_ready_at', 'ready_at', 'delivered_at',
+        'accepted_at', 'expected_ready_at', 'ready_at', 'delivered_at', 'client_signed_at',
     ];
 
     public function order()
     {
         return $this->belongsTo('App\RestaurantOrder', 'restaurant_order_id');
+    }
+
+    public function productSale()
+    {
+        return $this->belongsTo('App\Product_Sale', 'product_sale_id');
+    }
+
+    public function awaitingSignature()
+    {
+        if ($this->client_signed_at) {
+            return false;
+        }
+
+        return $this->proposed_price !== null || trim((string) $this->proposed_note) !== '';
     }
 
     public function acceptedBy()

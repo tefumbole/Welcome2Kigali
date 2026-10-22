@@ -50,14 +50,15 @@ class RestaurantSettlement
         $deliveredIds = [];
         $pending = false;
         foreach ($order->items as $item) {
-            if ($item->status !== 'delivered') {
+            $closed = $item->status === 'rejected' || $item->status === 'cancelled';
+            if (! $closed && $item->status !== 'delivered') {
                 $pending = true;
             }
             if (! $item->product_sale_id) {
                 continue;
             }
             $queuedIds[(int) $item->product_sale_id] = true;
-            if (! $item->remake_of_id && $item->status === 'delivered') {
+            if (! $closed && ! $item->remake_of_id && $item->status === 'delivered') {
                 $deliveredIds[(int) $item->product_sale_id] = true;
             }
         }

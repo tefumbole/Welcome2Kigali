@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\OrderReview;
 use App\RestaurantOrder;
 use App\Sale;
+use App\Services\Restaurant\RestaurantOrderService;
 use App\Support\SalePayQr;
 use Illuminate\Http\Request;
 
@@ -69,5 +70,21 @@ class RestaurantTrackingController extends Controller
         }
 
         return $order;
+    }
+
+    public function signChange(Request $request, $sale, $token, $item)
+    {
+        $order = $this->order($sale, $token);
+        $row = $order->items->firstWhere('id', (int) $item);
+        if (! $row) {
+            abort(404);
+        }
+        try {
+            app(RestaurantOrderService::class)->signChange($row, $request->input('guest_name'), $request->input('signature'));
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('not_permitted', $e->getMessage());
+        }
+
+        return back()->with('message', 'Thank you. Your signature has been saved.');
     }
 }
