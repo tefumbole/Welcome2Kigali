@@ -40,6 +40,52 @@ class MomoPayController extends Controller
         }
 
         $amount = MomoUssd::amount($amount);
+        $this->applyPaid($purpose, $id, $amount);
+
+        if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+            $track = $this->trackUrlFor($purpose, $id);
+
+            return response()->json([
+                'ok' => true,
+                'paid' => true,
+                'purpose' => $purpose,
+                'id' => (int) $id,
+                'amount' => $amount,
+                'track_url' => $track,
+                'pay_url' => MomoUssd::payUrl($purpose, $id, $amount),
+            ]);
+        }
+
+        $back = $request->query('back');
+
+        // POS sale: send the teller straight to the printable invoice; the POS
+        // cart was already consumed when the sale was created.
+        if ($purpose === 'sale' && $back && \Illuminate\Support\Str::contains($back, '/pos') && auth()->check()) {
+            return redirect()->to(url('sales/gen_invoice/'.$id))->with('message', 'Payment received by MoMo.');
+        }
+
+        // Frontend cafe order: after guest confirms MoMo, go to order tracking when available.
+        $track = $this->trackUrlFor($purpose, $id);
+        if ($track && in_array($purpose, ['sale', 'order'], true) && (! $back || \Illuminate\Support\Str::contains((string) $back, '/menu'))) {
+            return redirect()->to($track)->with('momo_marked_paid', true);
+        }
+
+        $target = MomoUssd::payUrl($purpose, $id, $amount);
+        if ($back && \Illuminate\Support\Str::startsWith($back, url('/'))) {
+            $target .= '?back='.urlencode($back);
+        }
+
+        return redirect()->to($target)->with('momo_marked_paid', true);
+    }
+
+    /** Mark a Sale paid from the public order API (guest confirmed MoMo). */
+    public function confirmSalePaid(\App\Sale $sale, $amount)
+    {
+        $this->applyPaid('sale', $sale->id, MomoUssd::amount($amount));
+    }
+
+    protected function applyPaid($purpose, $id, $amount)
+    {
         $reference = $this->reference($purpose, $id);
         $record = $this->record($purpose, $id, $amount, $reference);
 
@@ -50,21 +96,26 @@ class MomoPayController extends Controller
         }
 
         $this->finalize($purpose, $id, $amount);
+    }
 
-        $back = $request->query('back');
+    protected function trackUrlFor($purpose, $id)
+    {
+        try {
+            if ($purpose === 'sale') {
+                $order = \App\RestaurantOrder::where('sale_id', $id)->first();
 
-        // POS sale: send the teller straight to the printable invoice; the POS
-        // cart was already consumed when the sale was created.
-        if ($purpose === 'sale' && $back && \Illuminate\Support\Str::contains($back, '/pos') && auth()->check()) {
-            return redirect()->to(url('sales/gen_invoice/'.$id))->with('message', 'Payment received by MoMo.');
+                return $order ? $order->trackUrl() : null;
+            }
+            if ($purpose === 'order') {
+                $order = \App\RestaurantOrder::where('checkout_token', 'web-order-'.$id)->first();
+
+                return $order ? $order->trackUrl() : null;
+            }
+        } catch (\Throwable $e) {
+            // ignore
         }
 
-        $target = MomoUssd::payUrl($purpose, $id, $amount);
-        if ($back && \Illuminate\Support\Str::startsWith($back, url('/'))) {
-            $target .= '?back='.urlencode($back);
-        }
-
-        return redirect()->to($target)->with('momo_marked_paid', true);
+        return null;
     }
 
     protected function record($purpose, $id, $amount, $reference)

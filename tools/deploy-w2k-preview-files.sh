@@ -77,7 +77,12 @@ FILES=(
   app/Http/Controllers/SaleController.php
   app/Http/Controllers/RestaurantOrderController.php
   app/Http/Controllers/TableController.php
+  app/Http/Controllers/PublicOrderController.php
   app/Http/Controllers/PaymentController.php
+  app/Http/Controllers/MomoPayController.php
+  app/Http/Controllers/BeyondController.php
+  app/Http/Middleware/VerifyCsrfToken.php
+  app/Support/ServiceCatalog.php
   app/Http/Controllers/RestaurantTrackingController.php
   app/Http/Controllers/RestaurantPayController.php
   app/Http/Controllers/RestaurantMenuController.php

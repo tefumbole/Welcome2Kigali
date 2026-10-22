@@ -23,5 +23,7 @@ class VerifyCsrfToken extends Middleware
         'payments/pawapay/*',
         'api/payments/stripe/*',
         'payments/stripe/webhook',
+        'api/public/orders',
+        'api/public/orders/*',
     ];
 }

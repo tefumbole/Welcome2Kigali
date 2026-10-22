@@ -62,25 +62,19 @@ class BeyondController extends Controller
             if (! $current) {
                 return redirect()->route('beyond.services.show', $service);
             }
-        } else {
-            $current = $tree->first(function ($row) {
-                return $row['count'] > 0;
-            }) ?: $tree->first();
         }
+        // No category in URL → parent categories only (click a category to see items).
 
         $breadcrumb = $current ? $catalog::breadcrumb($tree, $current['id']) : [];
         $parentNode = count($breadcrumb) > 1 ? $breadcrumb[count($breadcrumb) - 2] : null;
-        $siblings = $parentNode
-            ? collect($parentNode['children'] ?? [])
+        $siblings = $current
+            ? ($parentNode ? collect($parentNode['children'] ?? []) : $tree)
             : $tree;
         $subcategories = $current && ! empty($current['has_children'])
             ? collect($current['children'] ?? [])
             : collect();
         $items = collect();
         if ($current && empty($current['has_children'])) {
-            $items = $catalog::items($current['id'], true);
-        } elseif ($service === 'laundry' && $current) {
-            // Laundry: always list items under the selected category (and children).
             $items = $catalog::items($current['id'], true);
         }
 

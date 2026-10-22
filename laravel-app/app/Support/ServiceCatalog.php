@@ -266,8 +266,7 @@ class ServiceCatalog
 
     public static function menuGroups()
     {
-        // Flat cafe chips: every coffee/restaurant category with its own products.
-        // (Parent/child nesting stays on the Services pages; self-parent rows are ignored.)
+        // Parent categories only: hero uses the category main image; items include children.
         $preferred = [
             'coffee & tea' => 10,
             'iced & specialty' => 20,
@@ -283,36 +282,75 @@ class ServiceCatalog
             return $groups;
         }
 
-        $categories = Category::where('is_active', true)
-            ->whereIn('service', ['coffee', 'restaurant'])
-            ->orderBy('name')
-            ->get();
+        $roots = self::categoryTree('coffee')
+            ->concat(self::categoryTree('restaurant'))
+            ->values();
 
-        foreach ($categories as $category) {
-            $items = self::items($category->id, false)->map(function ($item) {
+        foreach ($roots as $root) {
+            if ((int) ($root['count'] ?? 0) < 1) {
+                continue;
+            }
+
+            $items = self::items($root['id'], true)->map(function ($item) {
                 return self::menuItemPayload($item);
             })->all();
             if (! $items) {
                 continue;
             }
 
-            $image = self::categoryImage($category) ?: self::menuFallbackImage($category->name);
+            $image = $root['image'] ?: self::menuFallbackImage($root['name']);
+            $buckets = [];
+            $children = collect($root['children'] ?? []);
+            if ($children->isNotEmpty()) {
+                foreach ($children as $child) {
+                    $childItems = self::items($child['id'], true)->map(function ($item) {
+                        return self::menuItemPayload($item);
+                    })->all();
+                    if (! $childItems) {
+                        continue;
+                    }
+                    $buckets[] = [
+                        'id' => $child['id'],
+                        'title' => $child['name'],
+                        'icon' => $child['icon'] ?? self::categoryIcon($child['name']),
+                        'image' => $child['image'] ?: null,
+                        'items' => $childItems,
+                    ];
+                }
+                // Products attached directly to the parent (not only children).
+                $ownItems = self::items($root['id'], false)->map(function ($item) {
+                    return self::menuItemPayload($item);
+                })->all();
+                if ($ownItems) {
+                    array_unshift($buckets, [
+                        'id' => $root['id'],
+                        'title' => $root['name'],
+                        'icon' => $root['icon'] ?? self::categoryIcon($root['name']),
+                        'image' => $image,
+                        'items' => $ownItems,
+                    ]);
+                }
+            }
+            if (! $buckets) {
+                $buckets = [[
+                    'id' => $root['id'],
+                    'title' => $root['name'],
+                    'icon' => $root['icon'] ?? self::categoryIcon($root['name']),
+                    'image' => $image,
+                    'items' => $items,
+                ]];
+            }
+
             $groups->push([
-                'id' => $category->id,
-                'name' => $category->name,
-                'icon' => self::categoryIcon($category->name),
+                'id' => $root['id'],
+                'name' => $root['name'],
+                'icon' => $root['icon'] ?? self::categoryIcon($root['name']),
                 'tagline' => '',
                 'blurb' => '',
                 'image' => $image,
                 'items' => $items,
-                'buckets' => [[
-                    'id' => $category->id,
-                    'title' => $category->name,
-                    'icon' => self::categoryIcon($category->name),
-                    'image' => $image,
-                    'items' => $items,
-                ]],
-                'has_children' => false,
+                'buckets' => $buckets,
+                'has_children' => ! empty($root['has_children']),
             ]);
         }
 

@@ -549,7 +549,24 @@ class CartController extends Controller
                 Session::forget('user_data');
                 Session::forget('otp');
 
-                return redirect()->away(\App\Support\MomoUssd::payUrl('order', $order_array[0], $grand_total).'?back='.urlencode(url('/menu')));
+                // Prefer MoMo QR on the linked Sale (kitchen/bar queue) when present.
+                $payPurpose = 'order';
+                $payId = $order_array[0];
+                try {
+                    $restaurant = \App\RestaurantOrder::where('checkout_token', 'web-order-'.$order_array[0])->first();
+                    if ($restaurant && $restaurant->sale_id) {
+                        $sale = \App\Sale::find($restaurant->sale_id);
+                        if ($sale) {
+                            $payPurpose = 'sale';
+                            $payId = $sale->id;
+                            $grand_total = $sale->grand_total;
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    // fall back to legacy order MoMo link
+                }
+
+                return redirect()->away(\App\Support\MomoUssd::payUrl($payPurpose, $payId, $grand_total).'?back='.urlencode(url('/menu')));
         } else {
             $message = 'You have placed an order. Please Clear your payment on delivery Time.';
         }

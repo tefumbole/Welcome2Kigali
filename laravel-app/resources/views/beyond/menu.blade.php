@@ -196,21 +196,20 @@
     @media (min-width: 1024px) {
         .menu-book { padding-bottom: 2rem; }
         .menu-sheet {
-            display: grid;
-            grid-template-columns: minmax(0, 1.15fr) minmax(280px, .9fr);
+            display: block;
             margin: 1.1rem auto;
             border-radius: 1.5rem;
         }
+        /* Category main picture on top, then items listed under it. */
         .menu-hero {
-            grid-column: 2;
-            grid-row: 1 / span 2;
-            min-height: 100%;
+            position: relative;
+            min-height: 18rem;
         }
-        .menu-hero img { min-height: 100%; position: absolute; inset: 0; }
+        .menu-hero img { min-height: 18rem; width: 100%; object-fit: cover; }
         .menu-hero:after {
-            background: linear-gradient(to top, rgba(7,7,7,.82) 0%, rgba(7,7,7,.12) 55%, transparent 100%);
+            background: linear-gradient(to top, rgba(7,7,7,.88) 0%, rgba(7,7,7,.25) 55%, transparent 100%);
         }
-        .menu-list { grid-column: 1; grid-row: 1; padding: 1.15rem 1.25rem 1.4rem; }
+        .menu-list { padding: 1.15rem 1.25rem 1.4rem; }
         .menu-dots {
             display: block;
             flex: 1 0 1.5rem;

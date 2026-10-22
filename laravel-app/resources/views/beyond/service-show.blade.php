@@ -61,7 +61,7 @@
             </div>
         @else
             <p class="text-[10px] tracking-[0.2em] uppercase text-brand-gold/80 mt-8 mb-3">
-                {{ !empty($current['has_children']) ? __('site.services.subcategories') : __('site.services.parent_categories') }}
+                {{ ($current && ! empty($current['has_children'])) ? __('site.services.subcategories') : __('site.services.parent_categories') }}
             </p>
             <div class="svc-cats flex md:grid md:grid-cols-4 lg:grid-cols-5 gap-3 overflow-x-auto pb-1">
                 @foreach (($subcategories->isNotEmpty() ? $subcategories : $categories) as $cat)

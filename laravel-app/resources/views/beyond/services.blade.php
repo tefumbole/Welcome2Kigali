@@ -60,28 +60,6 @@
                             </div>
                         @endif
 
-                        @if ($key === 'laundry')
-                            @php $laundryItems = \App\Support\ServiceCatalog::previewItems('laundry', 24); @endphp
-                            @if ($laundryItems->isNotEmpty())
-                                <p class="text-[10px] tracking-[0.2em] uppercase text-brand-gold/80 mt-5 mb-2">{{ __('site.services.laundry_items') }}</p>
-                                <ul class="m-0 p-0 list-none space-y-2 flex-1">
-                                    @foreach ($laundryItems as $item)
-                                        <li class="flex items-center gap-3 text-sm text-white/85">
-                                            @if ($item['image'])
-                                                <img src="{{ $item['image'] }}" alt="" class="w-9 h-9 rounded-lg object-cover border border-brand-gold/25">
-                                            @else
-                                                <span class="w-9 h-9 rounded-lg border border-brand-gold/40 flex items-center justify-center text-brand-gold">
-                                                    <i data-lucide="{{ $item['icon'] }}" class="w-4 h-4"></i>
-                                                </span>
-                                            @endif
-                                            <span class="flex-1 min-w-0 truncate">{{ \App\Support\SiteI18n::item($item['name']) }}</span>
-                                            <span class="text-brand-gold tabular-nums shrink-0">{{ number_format($item['price']) }}</span>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            @endif
-                        @endif
-
                         <div class="mt-5 flex flex-wrap gap-3">
                             @if ($cats->isNotEmpty())
                                 <a href="{{ $showUrl }}" class="inline-flex items-center gap-2 text-xs font-bold tracking-[0.14em] uppercase bg-brand-gold text-[#0A0A0A] rounded-full px-4 py-2">{{ __('site.services.cta_browse') }}</a>

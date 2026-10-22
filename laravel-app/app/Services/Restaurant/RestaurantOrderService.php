@@ -665,8 +665,17 @@ class RestaurantOrderService
             ]);
         }
 
+        $service = 'take_away';
+        try {
+            if (\App\Support\CafeOrder::service($order->address ?? '') === 'Eat in') {
+                $service = 'dine_in';
+            }
+        } catch (\Throwable $e) {
+            // keep take_away
+        }
+
         return $this->attachFromRequest($sale, Request::create('/', 'POST', [
-            'service_type' => 'take_away',
+            'service_type' => $service,
             'order_source' => 'frontend',
             'checkout_token' => $token,
             'customer_comment' => $order->address ?: null,
