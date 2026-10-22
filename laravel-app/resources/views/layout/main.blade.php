@@ -1726,14 +1726,10 @@
                                         @foreach($cafeLanes as $laneKey => $laneLabel)
                                             @if(\App\Services\Restaurant\RestaurantAccess::seeLane(auth()->user(), $laneKey))
                                             @php
-                                                $laneTotal = 0;
-                                                foreach ($cafeTabs as $tabKey => $tabLabel) {
-                                                    $laneTotal += $cafeCounts[$laneKey][$tabKey] ?? 0;
-                                                }
-                                                $openTab = \App\Services\Restaurant\RestaurantAccess::firstOpenStatus($laneKey, $cafeCounts);
+                                                $laneTotal = (int) ($cafeCounts[$laneKey]['awaiting'] ?? 0);
                                             @endphp
                                             <li id="orders-lane-{{ $laneKey }}" class="{{ $onCafeOrders && $cafeLane === $laneKey ? 'active' : '' }}">
-                                                <a href="{{ route('restaurant.orders', ['lane' => $laneKey, 'tab' => $openTab]) }}">{{ $laneLabel }}@if($laneTotal)<span class="badge">{{ $laneTotal }}</span>@endif</a>
+                                                <a href="{{ route('restaurant.orders', ['lane' => $laneKey, 'tab' => 'awaiting']) }}">{{ $laneLabel }}@if($laneTotal)<span class="badge">{{ $laneTotal }}</span>@endif</a>
                                                 <ul>
                                                     @foreach($cafeTabs as $tabKey => $tabLabel)
                                                         @if(\App\Services\Restaurant\RestaurantAccess::seeStatus(auth()->user(), $tabKey))
