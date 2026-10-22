@@ -51,6 +51,7 @@ class ProductController extends Controller
     public function productData(Request $request)
     {
         $columns = array(
+            1 => 'has_image',
             2 => 'name',
             3 => 'code',
             4 => 'brand_id',
@@ -84,27 +85,26 @@ class ProductController extends Controller
         else
             $limit = $totalData;
         $start = $request->input('start');
-        $order = 'products.'.$columns[$request->input('order.0.column')];
+        $orderCol = $request->input('order.0.column');
+        $sortColumn = isset($columns[$orderCol]) ? $columns[$orderCol] : 'name';
         $dir = $request->input('order.0.dir');
         if(empty($request->input('search.value'))){
             if($vendor_id == null) {
-                $products = Product::with('category', 'brand', 'unit')->offset($start)
+                $products = $this->orderProductList(Product::with('category', 'brand', 'unit')->offset($start)
                     ->where('is_active', true)
                     ->when($categoryIds, function ($query) use ($categoryIds) {
                         $query->whereIn('category_id', $categoryIds);
                     })
-                    ->limit($limit)
-                    ->orderBy($order, $dir)
+                    ->limit($limit), $sortColumn, $dir)
                     ->get();
             } else {
-                $products = Product::with('category', 'brand', 'unit')->offset($start)
+                $products = $this->orderProductList(Product::with('category', 'brand', 'unit')->offset($start)
                     ->where('is_active', true)
                     ->where('vendor_id', $vendor_id)
                     ->when($categoryIds, function ($query) use ($categoryIds) {
                         $query->whereIn('category_id', $categoryIds);
                     })
-                    ->limit($limit)
-                    ->orderBy($order, $dir)
+                    ->limit($limit), $sortColumn, $dir)
                     ->get();
             }
         }
@@ -139,8 +139,8 @@ class ProductController extends Controller
                         ['products.is_active', true]
                     ])
                     ->offset($start)
-                    ->limit($limit)
-                    ->orderBy($order, $dir)->get();
+                    ->limit($limit);
+                $products = $this->orderProductList($products, $sortColumn, $dir)->get();
             } else {
 
                 $products = $products->where([
@@ -166,8 +166,8 @@ class ProductController extends Controller
                         ['products.vendor_id', $vendor_id]
                     ])
                     ->offset($start)
-                    ->limit($limit)
-                    ->orderBy($order, $dir)->get();
+                    ->limit($limit);
+                $products = $this->orderProductList($products, $sortColumn, $dir)->get();
             }
 
 
@@ -962,6 +962,21 @@ class ProductController extends Controller
         return response()->json([
             'url' => \App\Support\PosProductImage::url($stored).'?v='.time(),
         ]);
+    }
+
+    protected function orderProductList($query, $column, $dir)
+    {
+        $dir = strtolower((string) $dir) === 'desc' ? 'desc' : 'asc';
+        if ($column === 'has_image') {
+            return $query->orderByRaw("(CASE WHEN products.image IS NULL OR TRIM(products.image) = '' OR LOWER(products.image) = 'null' OR products.image LIKE 'zummXD2dvAtI.png%' THEN 1 ELSE 0 END) ".$dir)
+                ->orderBy('products.name', 'asc');
+        }
+        $allowed = ['name', 'code', 'brand_id', 'category_id', 'qty', 'unit_id', 'price', 'cost'];
+        if (! in_array($column, $allowed, true)) {
+            $column = 'name';
+        }
+
+        return $query->orderBy('products.'.$column, $dir);
     }
 
     protected function categoryTreeIds($id)

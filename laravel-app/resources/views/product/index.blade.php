@@ -433,7 +433,7 @@
             'columnDefs': [
                 {
                     "orderable": false,
-                    'targets': [0, 1, 9, 10, 11]
+                    'targets': [0, 9, 10, 11]
                 },
                 {
                     'render': function(data, type, row, meta){

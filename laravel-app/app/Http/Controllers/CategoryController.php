@@ -28,10 +28,11 @@ class CategoryController extends Controller
     public function categoryData(Request $request)
     {
         $columns = array(
-            0 =>'id',
-            2 =>'name',
-            3=> 'parent_id',
-            4=> 'is_active',
+            0 => 'id',
+            1 => 'has_image',
+            2 => 'name',
+            3 => 'parent_id',
+            4 => 'is_active',
         );
 
         $totalData = Category::where('is_active', true)->count();
@@ -46,20 +47,18 @@ class CategoryController extends Controller
         $order = isset($columns[$orderCol]) ? $columns[$orderCol] : 'id';
         $dir = $request->input('order.0.dir') === 'desc' ? 'desc' : 'asc';
         if(empty($request->input('search.value')))
-            $categories = Category::offset($start)
+            $categories = $this->orderCategoryList(Category::offset($start)
                         ->where('is_active', true)
-                        ->limit($limit)
-                        ->orderBy($order,$dir)
+                        ->limit($limit), $order, $dir)
                         ->get();
         else
         {
             $search = $request->input('search.value');
-            $categories =  Category::where([
+            $categories = $this->orderCategoryList(Category::where([
                             ['name', 'LIKE', "%{$search}%"],
                             ['is_active', true]
                         ])->offset($start)
-                        ->limit($limit)
-                        ->orderBy($order,$dir)->get();
+                        ->limit($limit), $order, $dir)->get();
 
             $totalFiltered = Category::where([
                             ['name','LIKE',"%{$search}%"],
@@ -272,6 +271,21 @@ class CategoryController extends Controller
             $lims_category_data->save();
         }
         return 'Category deleted successfully!';
+    }
+
+    protected function orderCategoryList($query, $column, $dir)
+    {
+        $dir = strtolower((string) $dir) === 'desc' ? 'desc' : 'asc';
+        if ($column === 'has_image') {
+            return $query->orderByRaw("(CASE WHEN image IS NULL OR TRIM(image) = '' OR LOWER(image) = 'null' OR image LIKE 'zummXD2dvAtI.png%' THEN 1 ELSE 0 END) ".$dir)
+                ->orderBy('name', 'asc');
+        }
+        $allowed = ['id', 'name', 'parent_id', 'is_active'];
+        if (! in_array($column, $allowed, true)) {
+            $column = 'name';
+        }
+
+        return $query->orderBy($column, $dir);
     }
 
     protected function categoryTreeIds($id)
