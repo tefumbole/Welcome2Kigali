@@ -27,7 +27,7 @@
         body.beyond-pos-active .content-inner { min-height: 100vh; height: 100vh; overflow: hidden; }
         body.beyond-pos-active .content-inner > .page-content { padding-bottom: 0 !important; overflow: hidden; }
         body.beyond-pos-active .pos-section {
-            padding: 6px 8px 128px !important;
+            padding: 6px 8px 168px !important;
             height: 100%;
             overflow: hidden;
         }
@@ -69,18 +69,26 @@
             color: #C5A059 !important;
             border-radius: 10px;
         }
+        /* Fixed above the payment bar (z-index 999) so Grand Total stays visible. */
         body.beyond-pos-active .payment-amount {
-            position: sticky;
-            bottom: 76px;
-            z-index: 6;
-            margin-top: 10px !important;
-            box-shadow: 0 -8px 24px rgba(0,0,0,.18);
+            position: fixed !important;
+            left: 230px;
+            right: 0;
+            bottom: 58px;
+            z-index: 1000;
+            margin: 0 !important;
+            border-radius: 0;
+            border-top: 2px solid #C5A059;
+            box-shadow: 0 -8px 24px rgba(0,0,0,.22);
+        }
+        body.beyond-pos-active .page.active .payment-amount {
+            left: 70px;
         }
         body.beyond-pos-active .payment-amount h2 {
             color: #C5A059 !important;
             font-size: 1.65rem;
             line-height: 1.3;
-            padding: 12px 14px;
+            padding: 12px 16px;
             margin: 0;
             display: flex;
             justify-content: space-between;
@@ -421,9 +429,12 @@
         }
         @media (max-width: 1199px) {
             body.beyond-pos-active .payment-options,
-            body.beyond-pos-active .page.active .payment-options { left: 0; }
+            body.beyond-pos-active .page.active .payment-options,
+            body.beyond-pos-active .payment-amount,
+            body.beyond-pos-active .page.active .payment-amount { left: 0; }
+            body.beyond-pos-active .payment-amount { bottom: 64px; }
             body.beyond-pos-active .pos-section {
-                padding-bottom: 168px !important;
+                padding-bottom: 188px !important;
                 height: auto !important;
                 overflow: auto !important;
             }

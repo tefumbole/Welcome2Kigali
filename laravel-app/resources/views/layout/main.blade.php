@@ -4047,33 +4047,51 @@
           })();
         </script>
         @endif
-        @if(auth()->check() && \App\Services\Restaurant\RestaurantAccess::canSeeOrders(auth()->user()) && \App\Services\Restaurant\RestaurantAccess::installed())
+        @if(auth()->check() && \App\Services\Restaurant\RestaurantAccess::installed())
         <style>
-            #w2k-order-pop { position:fixed; right:18px; bottom:18px; z-index:1080; width:min(380px, calc(100vw - 24px)); background:#0A0A0A; color:#fff8ea; border-radius:18px; box-shadow:0 18px 50px rgba(0,0,0,.28); padding:16px 16px 14px; }
+            #w2k-order-pop { position:fixed; right:18px; bottom:18px; z-index:11000; width:min(400px, calc(100vw - 24px)); background:#0A0A0A; color:#fff8ea; border-radius:18px; box-shadow:0 18px 50px rgba(0,0,0,.28); padding:16px 16px 14px; }
             #w2k-order-pop h2 { margin:0 0 8px; font-size:18px; color:#C5A059; }
             #w2k-order-pop p { margin:0 0 6px; }
-            #w2k-order-pop a, #w2k-order-pop button { display:inline-block; margin:8px 8px 0 0; border-radius:999px; padding:8px 14px; font-weight:700; text-decoration:none; border:0; cursor:pointer; }
+            #w2k-order-pop .w2k-order-row { border-top:1px solid rgba(197,160,89,.28); padding:10px 0 4px; }
+            #w2k-order-pop .w2k-order-row:first-child { border-top:0; padding-top:0; }
+            #w2k-order-pop a, #w2k-order-pop button { display:inline-block; margin:6px 8px 0 0; border-radius:999px; padding:8px 14px; font-weight:700; text-decoration:none; border:0; cursor:pointer; }
             #w2k-order-pop .go { background:#C5A059; color:#0A0A0A; }
             #w2k-order-pop .stay { background:transparent; color:#fff8ea; border:1px solid #C5A059; }
+            #w2k-order-pop .w2k-order-actions { margin-top:4px; }
         </style>
         <div id="w2k-order-pop" hidden>
             <h2 id="w2k-order-pop-title">Order waiting</h2>
             <div id="w2k-order-pop-body"></div>
-            <a class="go" id="w2k-order-pop-open" href="{{ route('restaurant.orders') }}">Open</a>
-            <button type="button" class="stay" id="w2k-order-pop-close">Dismiss</button>
+            <button type="button" class="stay" id="w2k-order-pop-close">Dismiss all</button>
         </div>
         <script>
             (function () {
                 var url = @json(route('restaurant.alerts'));
-                var seenKey = 'w2k-order-seen';
+                var userId = @json((int) auth()->id());
+                var seenKey = 'w2k-order-seen-u' + userId;
                 var box = document.getElementById('w2k-order-pop');
                 var title = document.getElementById('w2k-order-pop-title');
                 var body = document.getElementById('w2k-order-pop-body');
-                var open = document.getElementById('w2k-order-pop-open');
                 var close = document.getElementById('w2k-order-pop-close');
+                var queue = [];
+                var soundedFor = {};
                 if (!box) return;
+
                 function seenMap() {
                     try { return JSON.parse(localStorage.getItem(seenKey) || '{}'); } catch (e) { return {}; }
+                }
+                function saveSeen(seen) {
+                    try { localStorage.setItem(seenKey, JSON.stringify(seen)); } catch (e) {}
+                }
+                function markSeen(id) {
+                    var seen = seenMap();
+                    seen[String(id)] = Date.now();
+                    saveSeen(seen);
+                }
+                function markSeenMany(ids) {
+                    var seen = seenMap();
+                    ids.forEach(function (id) { seen[String(id)] = Date.now(); });
+                    saveSeen(seen);
                 }
                 function beep() {
                     try {
@@ -4093,57 +4111,100 @@
                         return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[ch];
                     });
                 }
-                function show(items, summary, pending) {
-                    var waiting = items.some(function (item) { return item.status === 'awaiting'; });
-                    var ready = items.some(function (item) { return item.status === 'ready'; });
-                    var countLabel = pending > 0 ? (' · ' + pending + ' pending') : '';
-                    title.textContent = (waiting && ready ? 'Orders need attention' : (ready ? 'Ready for delivery' : 'Order waiting')) + countLabel;
-                    var lines = '';
-                    if (summary && summary.length) {
-                        lines += summary.map(function (row) {
-                            return '<p><strong>' + esc(row.label) + '</strong>: ' +
-                                (row.awaiting ? (row.awaiting + ' awaiting') : '') +
-                                (row.awaiting && row.ready ? ', ' : '') +
-                                (row.ready ? (row.ready + ' ready') : '') +
-                                ' · <a class="go" style="margin:0;padding:2px 10px;font-size:12px;" href="' + esc(row.href) + '">Open</a></p>';
-                        }).join('');
+                function render() {
+                    if (!queue.length) {
+                        box.hidden = true;
+                        body.innerHTML = '';
+                        return;
                     }
-                    lines += items.slice(0, 5).map(function (item) {
+                    var waiting = queue.some(function (item) { return item.status === 'awaiting'; });
+                    var ready = queue.some(function (item) { return item.status === 'ready'; });
+                    title.textContent = (waiting && ready ? 'Orders need attention' : (ready ? 'Ready for delivery' : 'Order waiting'))
+                        + ' · ' + queue.length + (queue.length === 1 ? ' open' : ' open');
+                    body.innerHTML = queue.slice(0, 8).map(function (item) {
                         var label = item.status === 'ready' ? 'Ready' : 'Waiting';
-                        return '<p><strong>' + label + '</strong> · ' + esc(item.lane_label || item.lane) + ' · ' + esc(item.ref) + '<br>' + esc(item.name) + ' × ' + esc(item.qty) + '</p>';
+                        return '<div class="w2k-order-row" data-id="' + esc(item.id) + '">' +
+                            '<p><strong>' + label + '</strong> · ' + esc(item.lane_label || item.lane) + ' · ' + esc(item.ref) +
+                            '<br>' + esc(item.name) + ' × ' + esc(item.qty) + '</p>' +
+                            '<div class="w2k-order-actions">' +
+                            '<a class="go" data-open-id="' + esc(item.id) + '" href="' + esc(item.href) + '">Open</a>' +
+                            '<button type="button" class="stay" data-dismiss-id="' + esc(item.id) + '">Dismiss</button>' +
+                            '</div></div>';
                     }).join('');
-                    body.innerHTML = lines;
-                    var primary = (summary && summary[0] && summary[0].href) || (items[0] && items[0].href) || open.href;
-                    open.href = primary;
-                    open.textContent = pending > 0 ? ('Treat ' + pending + ' pending') : 'Open';
                     box.hidden = false;
-                    beep();
+                }
+                function removeFromQueue(id) {
+                    id = String(id);
+                    queue = queue.filter(function (item) { return String(item.id) !== id; });
+                    markSeen(id);
+                    render();
+                }
+                function mergeFresh(items) {
+                    var seen = seenMap();
+                    var prev = {};
+                    queue.forEach(function (item) { prev[String(item.id)] = 1; });
+                    var next = [];
+                    var added = false;
+                    (items || []).forEach(function (item) {
+                        var id = String(item.id);
+                        if (seen[id]) return;
+                        next.push(item);
+                        if (!prev[id]) {
+                            added = true;
+                            if (!soundedFor[id]) {
+                                soundedFor[id] = 1;
+                                beep();
+                            }
+                        }
+                    });
+                    queue = next;
+                    render();
+                    return added;
                 }
                 function poll() {
-                    if (document.hidden) return;
-                    fetch(url, {headers: {'Accept': 'application/json'}, credentials: 'same-origin'})
+                    fetch(url, {headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'}, credentials: 'same-origin', cache: 'no-store'})
                         .then(function (res) { return res.ok ? res.json() : {items: []}; })
                         .then(function (data) {
-                            var seen = seenMap();
-                            var fresh = (data.items || []).filter(function (item) { return !seen[item.id]; });
-                            if (!fresh.length) return;
-                            fresh.forEach(function (item) { seen[item.id] = 1; });
-                            localStorage.setItem(seenKey, JSON.stringify(seen));
-                            show(fresh, data.summary || [], data.pending || fresh.length);
-                            var onOrders = location.pathname === '/orders';
+                            var added = mergeFresh(data.items || []);
+                            var onOrders = /\/orders(\/|$)/.test(location.pathname || '');
                             function typing() {
                                 var active = document.activeElement;
                                 return active && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName);
                             }
-                            if (onOrders && !typing()) {
-                                setTimeout(function () { if (!typing()) window.location.reload(); }, 6000);
+                            if (added && onOrders && !typing()) {
+                                setTimeout(function () { if (!typing()) window.location.reload(); }, 8000);
                             }
                         })
                         .catch(function () {});
                 }
-                close.addEventListener('click', function () { box.hidden = true; });
+                body.addEventListener('click', function (e) {
+                    var dismiss = e.target.closest('[data-dismiss-id]');
+                    if (dismiss) {
+                        e.preventDefault();
+                        removeFromQueue(dismiss.getAttribute('data-dismiss-id'));
+                        return;
+                    }
+                    var openBtn = e.target.closest('[data-open-id]');
+                    if (openBtn) {
+                        // Keep other notifications; only clear the one being opened.
+                        markSeen(openBtn.getAttribute('data-open-id'));
+                        queue = queue.filter(function (item) {
+                            return String(item.id) !== String(openBtn.getAttribute('data-open-id'));
+                        });
+                        // Let the browser follow the href; remaining rows stay for this session
+                        // after return via localStorage seen map.
+                    }
+                });
+                close.addEventListener('click', function () {
+                    markSeenMany(queue.map(function (item) { return item.id; }));
+                    queue = [];
+                    render();
+                });
+                document.addEventListener('visibilitychange', function () {
+                    if (!document.hidden) poll();
+                });
                 poll();
-                setInterval(poll, 12000);
+                setInterval(poll, 8000);
             })();
         </script>
         @endif

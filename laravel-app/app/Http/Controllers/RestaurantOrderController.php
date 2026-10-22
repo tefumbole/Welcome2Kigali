@@ -281,9 +281,11 @@ class RestaurantOrderController extends Controller
     public function alerts(Request $request)
     {
         $user = $request->user();
-        if (! $user || ! RestaurantAccess::canSeeOrders($user) || ! RestaurantAccess::installed()) {
-            return response()->json(['items' => []]);
+        if (! $user || ! RestaurantAccess::installed()) {
+            return response()->json(['items' => [], 'summary' => [], 'pending' => 0]);
         }
+        // Every logged-in staff member should hear new orders. Prefer their lane/status
+        // permissions when set; otherwise notify on all cafe lanes.
         $statuses = [];
         if (RestaurantAccess::seeStatus($user, 'awaiting')) {
             $statuses[] = 'awaiting';
@@ -291,14 +293,17 @@ class RestaurantOrderController extends Controller
         if (RestaurantAccess::seeStatus($user, 'ready')) {
             $statuses[] = 'ready';
         }
+        if (! $statuses) {
+            $statuses = ['awaiting', 'ready'];
+        }
         $lanes = [];
         foreach (array_keys(RestaurantAccess::lanes()) as $lane) {
             if (RestaurantAccess::seeLane($user, $lane)) {
                 $lanes[] = $lane;
             }
         }
-        if (! $statuses || ! $lanes) {
-            return response()->json(['items' => []]);
+        if (! $lanes) {
+            $lanes = array_keys(RestaurantAccess::lanes());
         }
         $rows = RestaurantOrderItem::with(['order.sale'])
             ->whereIn('status', $statuses)
