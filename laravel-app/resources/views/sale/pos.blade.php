@@ -1833,7 +1833,7 @@
                                                 @if(\Illuminate\Support\Facades\Schema::hasTable('restaurant_tables'))
                                                     @foreach(\App\RestaurantTable::where('is_active', 1)->orderBy('name')->get() as $table)
                                                         <option value="{{ $table->id }}">
-                                                            {{ $table->name }}@if($table->capacity) · {{ $table->capacity }}p@endif
+                                                            {{ $table->name }}@if($table->capacity) · {{ $table->capacity }}p @endif
                                                         </option>
                                                     @endforeach
                                                 @endif
