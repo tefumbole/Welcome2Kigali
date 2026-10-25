@@ -73,7 +73,8 @@
         body.beyond-pos-active .payment-amount {
             position: fixed !important;
             left: 230px;
-            right: 0;
+            right: auto;
+            width: calc((100vw - 230px) / 2);
             bottom: 58px;
             z-index: 1000;
             margin: 0 !important;
@@ -83,6 +84,7 @@
         }
         body.beyond-pos-active .page.active .payment-amount {
             left: 70px;
+            width: calc((100vw - 70px) / 2);
         }
         body.beyond-pos-active .payment-amount h2 {
             color: #C5A059 !important;
@@ -91,9 +93,9 @@
             padding: 12px 16px;
             margin: 0;
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: baseline;
-            gap: 12px;
+            gap: 16px;
         }
         body.beyond-pos-active .payment-amount #grand-total {
             color: #fff;
@@ -400,8 +402,14 @@
             padding: 0;
             border: 1px solid #C5A059;
             border-radius: 8px;
+            background: #fff;
             color: #C5A059;
             vertical-align: middle;
+        }
+        body.beyond-pos-active .pos-line-comment {
+            display: none;
+            width: 100%;
+            margin-top: 6px;
         }
         body.beyond-pos-active #product-warehouse-table { display: none; }
         body.beyond-pos-active .pos-order-comment { margin: 8px 12px 0; }
@@ -440,7 +448,7 @@
             body.beyond-pos-active .payment-options,
             body.beyond-pos-active .page.active .payment-options,
             body.beyond-pos-active .payment-amount,
-            body.beyond-pos-active .page.active .payment-amount { left: 0; }
+            body.beyond-pos-active .page.active .payment-amount { left: 0; width: 100%; right: 0; }
             body.beyond-pos-active .payment-amount { bottom: 64px; }
             body.beyond-pos-active .pos-section {
                 padding-bottom: 188px !important;
@@ -3893,6 +3901,14 @@
             calculateTotal();
         });
 
+        $("table.order-list").on("click", ".pos-line-plus", function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var $note = $(this).closest('td').find('.pos-line-comment');
+            $note.toggle();
+            if ($note.is(':visible')) $note.focus();
+        });
+
         //Edit product
         $("table.order-list").on("click", ".edit-product", function() {
             rowindex = $(this).closest('tr').index();
@@ -4396,7 +4412,7 @@
             var laundryHidden = isLaundryLine
                 ? '<input type="hidden" class="laundry-item-note" name="laundry_item_note[' + data[9] + ']" value="">'
                 : '';
-            cols += '<td class="col-sm-3 product-title"><strong>' + data[0] + '</strong><button type="button" class="edit-product btn btn-link pos-line-plus" data-toggle="modal" data-target="#editModal" title="Edit line"><i class="dripicons-plus"></i></button>' + laundryHidden + '</td>';
+            cols += '<td class="col-sm-3 product-title"><strong>' + data[0] + '</strong><button type="button" class="btn btn-link pos-line-plus" title="Add a comment"><i class="dripicons-plus"></i></button><input type="text" name="item_comment[]" class="form-control pos-line-comment" placeholder="Comment">' + laundryHidden + '</td>';
             cols += '<input type="hidden" class="batch-no" value="' + (batch_no[pos] || '') + '"/>';
             cols += '<input type="hidden" class="product-batch-id" name="product_batch_id[]" value="' + (product_batch_id[pos] || '') + '"/>';
             @if(in_array("price-change", $all_permission))
