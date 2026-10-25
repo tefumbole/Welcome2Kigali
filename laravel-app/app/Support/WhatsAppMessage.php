@@ -662,17 +662,35 @@ class WhatsAppMessage
     ) {
         $company = self::companyName();
         $money = function ($amount) use ($currencyCode) {
-            $formatted = is_numeric($amount)
-                ? number_format((float) $amount, 2)
-                : (string) $amount;
+            if (! is_numeric($amount)) {
+                $formatted = (string) $amount;
+            } else {
+                $number = (float) $amount;
+                $formatted = abs($number - round($number)) < 0.001
+                    ? number_format($number, 0)
+                    : number_format($number, 2);
+            }
+
             return $currencyCode !== '' ? trim($currencyCode.' '.$formatted) : $formatted;
         };
+        $row = function ($label, $value) {
+            $value = trim((string) $value);
+            if ($value === '') {
+                return '';
+            }
 
-        $msg = self::statusBlock('🧾', self::t('sale_title'));
+            return "■ *{$label}:* {$value}\n";
+        };
+
+        $serial = self::resolveSerial(null, self::t('sale_title'));
+        self::$lastSerial = $serial;
+
+        $msg = '*'.self::t('sale_title')."*\n";
+        $msg .= "──────────────\n\n";
         $msg .= self::greeting($customerName);
         $msg .= self::t('sale_intro', ['company' => $company])."\n\n";
-        $msg .= self::bullet(self::t('sale_order_no'), $referenceNo);
-        $msg .= self::bullet(self::t('sale_order_date'), $orderDate);
+        $msg .= $row(self::t('sale_order_no'), $referenceNo);
+        $msg .= $row(self::t('sale_order_date'), $orderDate);
 
         if (! empty($lines)) {
             $msg .= "\n*".self::t('sale_items').":*\n";
@@ -695,22 +713,21 @@ class WhatsAppMessage
             }
         }
 
-        $msg .= "\n";
-        $msg .= self::bullet(self::t('sale_total'), $money($grandTotal));
-        $msg .= self::bullet(self::t('sale_payment'), $payingMethod ?: '—');
+        $msg .= "\n──────────────\n";
+        $msg .= $row(self::t('sale_total'), $money($grandTotal));
+        $msg .= $row(self::t('sale_payment'), $payingMethod ?: '—');
         if (trim((string) $billingAddress) !== '') {
-            $msg .= self::bullet(self::t('sale_billing'), $billingAddress);
+            $msg .= $row(self::t('sale_billing'), $billingAddress);
         }
         if (trim((string) $deliveryAddress) !== '') {
-            $msg .= self::bullet(self::t('sale_delivery'), $deliveryAddress);
+            $msg .= $row(self::t('sale_delivery'), $deliveryAddress);
         }
         if (trim((string) $billerName) !== '') {
-            $msg .= self::bullet(self::t('sale_served'), $billerName);
+            $msg .= $row(self::t('sale_served'), $billerName);
         }
 
-        $msg .= "\n".self::t('sale_thanks', ['company' => $company]);
-        $msg .= self::reviewInvite();
-        $msg .= self::footer();
+        $msg .= "\n".self::t('sale_thanks', ['company' => $company])."\n";
+        $msg .= "\nRef: *{$serial}*\n*{$company}*";
 
         return $msg;
     }

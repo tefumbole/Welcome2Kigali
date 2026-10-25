@@ -374,29 +374,38 @@
         }
         body.beyond-pos-active table.order-list.table-fixed th:nth-child(1),
         body.beyond-pos-active table.order-list.table-fixed td:nth-child(1) {
-            width: 40%;
+            width: 38%;
             white-space: normal;
         }
         body.beyond-pos-active table.order-list.table-fixed th:nth-child(2),
-        body.beyond-pos-active table.order-list.table-fixed td:nth-child(2) { width: 7%; }
+        body.beyond-pos-active table.order-list.table-fixed td:nth-child(2) { width: 16%; }
         body.beyond-pos-active table.order-list.table-fixed th:nth-child(3),
-        body.beyond-pos-active table.order-list.table-fixed td:nth-child(3) { width: 18%; }
+        body.beyond-pos-active table.order-list.table-fixed td:nth-child(3) { width: 24%; }
         body.beyond-pos-active table.order-list.table-fixed th:nth-child(4),
-        body.beyond-pos-active table.order-list.table-fixed td:nth-child(4) { width: 12%; }
-        body.beyond-pos-active table.order-list.table-fixed th:nth-child(5),
-        body.beyond-pos-active table.order-list.table-fixed td:nth-child(5) {
-            width: 15%;
+        body.beyond-pos-active table.order-list.table-fixed td:nth-child(4) {
+            width: 14%;
             text-overflow: clip;
             font-weight: 700;
             text-align: right;
         }
-        body.beyond-pos-active table.order-list.table-fixed th:nth-child(6),
-        body.beyond-pos-active table.order-list.table-fixed td:nth-child(6) { width: 8%; }
-        body.beyond-pos-active table.order-list .item-line-comment {
-            white-space: normal;
-            margin-top: 4px;
-            max-width: 100%;
+        body.beyond-pos-active table.order-list.table-fixed th:nth-child(5),
+        body.beyond-pos-active table.order-list.table-fixed td:nth-child(5) { width: 8%; text-align: right; }
+        body.beyond-pos-active .pos-line-plus {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            margin-left: 8px;
+            padding: 0;
+            border: 1px solid #C5A059;
+            border-radius: 8px;
+            color: #C5A059;
+            vertical-align: middle;
         }
+        body.beyond-pos-active #product-warehouse-table { display: none; }
+        body.beyond-pos-active .pos-order-comment { margin: 8px 12px 0; }
+        body.beyond-pos-active .pos-order-comment label { font-weight: 700; margin-bottom: 4px; }
         body.beyond-pos-active table.order-list .input-group .btn {
             flex: 0 0 26px;
             padding: 2px 0;
@@ -1735,7 +1744,6 @@
                                                 <thead>
                                                 <tr>
                                                     <th>{{trans('file.product')}}</th>
-                                                    <th>{{trans('file.Batch No')}}</th>
                                                     <th>{{trans('file.Price')}}</th>
                                                     <th>{{trans('file.Quantity')}}</th>
                                                     <th>{{trans('file.Subtotal')}}</th>
@@ -1852,11 +1860,15 @@
                                             </select>
                                         </div>
                                         <div class="col-sm-3">
-                                            <label>Order note</label>
-                                            <input type="text" name="customer_comment" class="form-control" placeholder="Guest comment">
+                                            <label>Waitress note</label>
+                                            <input type="text" name="internal_note" class="form-control" placeholder="Staff note, optional">
                                         </div>
                                     </div>
                                     @endif
+                                    <div class="pos-order-comment">
+                                        <label>Comment</label>
+                                        <input type="text" name="customer_comment" class="form-control" placeholder="Comment for this order">
+                                    </div>
                                     <div class="payment-amount">
                                         <h2>{{trans('file.grand total')}} <span id="grand-total">0.00</span></h2>
                                     </div>
@@ -3028,8 +3040,13 @@
         // Restoring a corrupt cart from localStorage previously threw and killed all POS JS
         // (product click/search handlers never bound). Guard and discard bad state.
         try {
-            if (localStorage.getItem("tbody-id")) {
-                $("#tbody-id").html(localStorage.getItem("tbody-id"));
+            var savedCart = localStorage.getItem("tbody-id") || "";
+            if (savedCart.indexOf("item-line-comment") !== -1 || savedCart.indexOf("form-control batch-no") !== -1) {
+                clearPosCartStorage();
+                savedCart = "";
+            }
+            if (savedCart) {
+                $("#tbody-id").html(savedCart);
             }
 
             if (getSavedValue("localStorageQty")) {
@@ -4376,22 +4393,12 @@
             for (var li = 0; li < laundryCodes.length; li++) {
                 if (String(laundryCodes[li]) === String(data[1])) { isLaundryLine = true; break; }
             }
-            var commentHtml = '<input type="text" class="form-control form-control-sm mt-1 item-line-comment" name="item_comment[]" placeholder="Comment" autocomplete="off">';
-            if (isLaundryLine) {
-                commentHtml += '<input type="hidden" class="laundry-item-note" name="laundry_item_note[' + data[9] + ']" value="">';
-            }
-            var stockHtml = (product_type[pos] === 'digital') ? '' : '<p>In Stock: <span class="in-stock"></span></p>';
-            @if(in_array("price-change", $all_permission))
-                cols += '<td class="col-sm-3 product-title"><strong>' + data[0] + '</strong><br>' + data[1] + '<a class="edit-product btn btn-link" data-toggle="modal" data-target="#editModal"><i class="fa fa-pencil-square"></i></a>' + stockHtml + commentHtml + '</td>';
-            @else
-                cols += '<td class="col-sm-3 product-title"><button type="button" class="edit-product btn btn-link"><strong>' + data[0] + '</strong></button><br>' + data[1] + stockHtml + commentHtml + '</td>';
-            @endif
-            if(data[12]) {
-                cols += '<td class="col-sm-2"><input type="text" title="'+product_expired_date[pos]+'" class="form-control batch-no product_expired_date" value="'+batch_no[pos]+'" required/> <input type="hidden" class="product-batch-id" name="product_batch_id[]" value="'+product_batch_id[pos]+'"/> </td>';
-            }
-            else {
-                cols += '<td class="col-sm-2"><input type="text" class="form-control batch-no" disabled/> <input type="hidden" class="product-batch-id" name="product_batch_id[]"/> </td>';
-            }
+            var laundryHidden = isLaundryLine
+                ? '<input type="hidden" class="laundry-item-note" name="laundry_item_note[' + data[9] + ']" value="">'
+                : '';
+            cols += '<td class="col-sm-3 product-title"><strong>' + data[0] + '</strong><button type="button" class="edit-product btn btn-link pos-line-plus" data-toggle="modal" data-target="#editModal" title="Edit line"><i class="dripicons-plus"></i></button>' + laundryHidden + '</td>';
+            cols += '<input type="hidden" class="batch-no" value="' + (batch_no[pos] || '') + '"/>';
+            cols += '<input type="hidden" class="product-batch-id" name="product_batch_id[]" value="' + (product_batch_id[pos] || '') + '"/>';
             @if(in_array("price-change", $all_permission))
                 cols += '<td class="col-sm-2"><input onchange="changePrice(this)" onkeyup="changePrice(this)" type="number" class="product_price_change form-control" /></td>';
             @else

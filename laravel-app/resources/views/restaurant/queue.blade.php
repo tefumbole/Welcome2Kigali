@@ -92,7 +92,7 @@
                             · {{ $statusLabels[$item->status] ?? $item->status }}
                             @if($item->attempt_no > 1) · attempt {{ $item->attempt_no }} @endif
                         </span>
-                        @if($item->customer_comment)<p class="w2k-note">Comment: {{ $item->customer_comment }}</p>@endif
+                        @if($order && $order->customer_comment)<p class="w2k-note">Comment: {{ $order->customer_comment }}</p>@endif
                         @if($item->status === 'hold' && $item->internal_note)<p class="w2k-note">Hold: {{ $item->internal_note }}</p>@endif
                         <p class="w2k-meta">
                             @if($item->ready_at)

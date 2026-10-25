@@ -527,15 +527,76 @@ class RestaurantOrderService
         if (! $sale) {
             return;
         }
-        $lines = $order->items->map(function ($item) {
-            return $item->product_name.' x'.$this->qty($item);
-        })->implode(', ');
-        $text = $this->brand().' received order '.$sale->reference_no.' ('.$order->serviceLabel().').';
-        if ($lines !== '') {
-            $text .= ' '.$lines.'.';
+        try {
+            $sale->loadMissing(['customer', 'biller']);
+        } catch (\Throwable $e) {
+            $sale->load('customer');
         }
-        $text .= ' Total '.number_format((float) $sale->grand_total, 0).'. Track: '.$order->trackUrl();
-        $this->notify($order, $text);
+        $customer = $sale->customer;
+        if (! $customer || ! $customer->phone_number) {
+            return;
+        }
+        try {
+            $this->sendSaleConfirmation($order, $sale, $customer);
+        } catch (\Throwable $e) {
+            \Log::warning('restaurant sale message: '.$e->getMessage());
+            $this->notify($order, $this->brand().' confirmed order '.$sale->reference_no.'.');
+        }
+    }
+
+    protected function sendSaleConfirmation(RestaurantOrder $order, Sale $sale, $customer)
+    {
+        $items = $order->relationLoaded('items') ? $order->items : $order->items()->get();
+        $lines = [];
+        foreach ($items as $item) {
+            $priced = $item->product_sale_id ? Product_Sale::find($item->product_sale_id) : null;
+            $lines[] = [
+                'name' => $item->product_name,
+                'qty' => $this->qty($item),
+                'unit_price' => $priced ? (float) $priced->net_unit_price : 0,
+                'total' => $priced ? (float) $priced->total : 0,
+            ];
+        }
+        $currencyCode = '';
+        try {
+            $currency = \App\Currency::find(optional(\App\GeneralSetting::first())->currency);
+            $currencyCode = $currency ? (string) $currency->code : '';
+        } catch (\Throwable $e) {
+            $currencyCode = '';
+        }
+        $methods = [
+            1 => 'Cash', 2 => 'Gift Card', 3 => 'Credit Card', 4 => 'Cheque', 5 => 'Paypal',
+            6 => 'Deposit', 7 => 'Points', 8 => 'MoMo', 9 => 'Pay later', 10 => 'Credit',
+            11 => 'Group', 12 => 'Visa',
+        ];
+        $paying = isset($methods[(int) $sale->paid_by_id]) ? $methods[(int) $sale->paid_by_id] : '';
+        $biller = $sale->biller;
+        $when = $sale->created_at instanceof \DateTimeInterface
+            ? $sale->created_at->format('D, M d, Y H:i')
+            : (string) $sale->created_at;
+        $billing = $biller ? trim((string) ($biller->address ?: $biller->company_name ?: $biller->name)) : '';
+        $served = $biller ? trim((string) ($biller->name ?: $biller->company_name)) : '';
+        $msg = \App\Support\WhatsAppMessage::forRecipient($customer, function () use (
+            $customer, $sale, $when, $lines, $paying, $served, $billing, $order, $currencyCode
+        ) {
+            return \App\Support\WhatsAppMessage::saleConfirmation(
+                $customer->name,
+                $sale->reference_no,
+                $when,
+                $lines,
+                $sale->grand_total,
+                $paying,
+                $served,
+                $billing,
+                $order->serviceLabel(),
+                $currencyCode
+            );
+        });
+        $track = $order->trackUrl();
+        if ($track && strpos($msg, $track) === false) {
+            $msg = str_replace("\nRef:", "\n*Track your order:*\n".$track."\n\nRef:", $msg);
+        }
+        $this->notify($order, $msg);
     }
 
     protected function notify(RestaurantOrder $order, $body)
@@ -549,8 +610,12 @@ class RestaurantOrderService
             if (! $customer || ! $customer->phone_number) {
                 return;
             }
+            $track = $order->trackUrl();
+            if ($track && strpos($body, $track) === false) {
+                $body .= "\n".$track;
+            }
             app(\App\Services\Messaging\NotificationRouter::class)
-                ->sendWhatsAppText($customer->phone_number, $body."\n".$order->trackUrl());
+                ->sendWhatsAppText($customer->phone_number, $body);
         } catch (\Throwable $e) {
             \Log::warning('restaurant notify: '.$e->getMessage());
         }
